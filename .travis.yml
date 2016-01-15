@@ -47,10 +47,8 @@ env:
       # sale_other_product_description
     # incompatibility with account_analytic_accounts:
       # account_move_analytic
-    # depreceated and gives error:
-      # product_cost_currency
   # TODO find a way to make account_move_analytic compatible
-  - EXCLUDE="account_move_analytic,product_cost_currency,inter_company_move,account_interests,sale_other_product_description"
+  - EXCLUDE="account_move_analytic,inter_company_move,account_interests,sale_other_product_description"
   # dummy " for better formatting
 
   matrix:
