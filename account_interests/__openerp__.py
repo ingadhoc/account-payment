@@ -27,7 +27,8 @@
     'description': """
 Interests Management
 ====================
-Se debe setear en las cuentas deseadas (pr ejemplo deudores por venta), los intereses a aplicar
+Se debe setear en las cuentas deseadas (pr ejemplo deudores por venta),
+los intereses a aplicar
     """,
     'author':  'ADHOC SA',
     'website': 'www.adhoc.com.ar',
@@ -40,13 +41,13 @@ Se debe setear en las cuentas deseadas (pr ejemplo deudores por venta), los inte
     'data': [
         'interest_view.xml',
         'company_view.xml',
-        'security/ir.model.access.csv',    
+        'security/ir.model.access.csv',
     ],
     'demo': [
     ],
     'test': [
     ],
-    'installable': True,
+    'installable': False,
     'auto_install': False,
     'application': True,
 }
