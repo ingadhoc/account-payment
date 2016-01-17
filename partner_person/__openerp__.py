@@ -62,7 +62,7 @@ It also adds a configuration menu for choosing which fields do you wanna see.
     ],
     'test': [
     ],
-    'installable': True,
+    'installable': False,
     'auto_install': False,
     'application': True,
 }
