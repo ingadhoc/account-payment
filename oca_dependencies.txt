@@ -1,3 +1,0 @@
-aeroo_reports https://github.com/aeroo/aeroo_reports.git
-margin-analysis https://github.com/OCA/margin-analysis.git
-sale-workflow https://github.com/OCA/sale-workflow.git

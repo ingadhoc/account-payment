@@ -1,7 +1,0 @@
-<openerp>
-    <data>
-       <record id="account.action_account_moves_all_a" model="ir.actions.act_window">
-            <field name="view_mode">tree,form</field>
-        </record>
-    </data>
-</openerp>

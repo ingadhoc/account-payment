@@ -13,7 +13,7 @@
 Account Voucher Pop Up Print
 ============================
 ''',
-    'installable': True,
+    'installable': False,
     'name': 'Account Voucher Pop Up Print',
     'test': [],
     'version': '8.0.1.2.0'}
