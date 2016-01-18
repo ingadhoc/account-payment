@@ -1,3 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_discount_restriction_all,discount_restriction_all,model_res_users_discount_restriction,,1,0,0,0
-access_discount_restriction_manager,discount_restriction_manager,model_res_users_discount_restriction,base.group_erp_manager,1,1,1,1

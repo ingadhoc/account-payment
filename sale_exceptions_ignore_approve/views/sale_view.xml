@@ -1,9 +1,0 @@
-<?xml version="1.0" ?>
-<openerp>
-    <data>
-        <!-- disable main excpetion on tree view -->
-        <record id="sale_exceptions.view_order_tree" model="ir.ui.view">
-            <field name="active" eval="False"/>
-        </record>
-    </data>
-</openerp>

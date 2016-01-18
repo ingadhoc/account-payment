@@ -1,3 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_product_catalog_user,product.catalog.user,model_product_product_catalog_report,base.group_user,1,0,0,0
-access_product_catalog_manager,product.catalog.manager,model_product_product_catalog_report,base.group_sale_manager,1,1,1,1

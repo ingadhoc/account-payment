@@ -1,3 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-product_customer_price_employee,product_customer_price_employee,model_product_customer_price,base.group_user,1,0,0,0
-product_customer_price_manager,product_customer_price_manager,model_product_customer_price,base.group_sale_manager,1,1,1,1

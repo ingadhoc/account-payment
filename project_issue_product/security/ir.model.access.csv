@@ -1,4 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_product_template_project_manager,product.template projectmanager,product.model_product_template,project.group_project_manager,1,1,1,1
-access_product_product_project_manager,product.product projectmanager,product.model_product_product,project.group_project_manager,1,1,1,1
-access_product_category_project_manager,product.category projectmanager,product.model_product_category,project.group_project_manager,1,1,1,1

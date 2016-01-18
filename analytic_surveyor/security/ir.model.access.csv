@@ -1,4 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_account_analytic_account_lot_project_user,account_analytic_account_lot_project_user,model_account_analytic_account_lot,project.group_project_user,1,1,1,1
-access_account_analytic_account_lot_employee,account_analytic_account_lot_employee,model_account_analytic_account_lot,base.group_user,1,0,0,0
-access_res_country_state_town_employee,res_country_state_town_employee,model_res_country_state_town,base.group_user,1,1,1,1

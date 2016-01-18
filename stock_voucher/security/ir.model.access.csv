@@ -1,5 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-stock_picking_voucher_user,stock_picking_voucher_user,model_stock_picking_voucher,stock.group_stock_user,1,1,1,1
-stock_book_manager,stock_book_manager,model_stock_book,stock.group_stock_user,1,1,1,1
-stock_picking_voucher_all,stock_picking_voucher_all,model_stock_picking_voucher,,1,0,0,0
-stock_book_all,stock_book_all,model_stock_book,,1,0,0,0

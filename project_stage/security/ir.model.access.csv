@@ -1,4 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_project_stage_user,project.stage user,model_project_stage,project.group_project_user,1,0,0,0
-access_project_stage_manager,project.stage manager,model_project_stage,project.group_project_manager,1,1,1,1
-access_project_stage_sale_user,project.stage salesman,model_project_stage,base.group_sale_salesman,1,0,0,0
