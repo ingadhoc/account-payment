@@ -21,6 +21,7 @@ addons:
       - python-simplejson
       - python-serial
       - python-yaml
+      - libcups2-dev # for aeroo because this repo depends of reporting and reporting from aeroo
 #     Search your packages here:
 #       https://github.com/travis-ci/apt-package-whitelist/blob/master/ubuntu-precise
 #      - wkhtmltopdf  # only add if needed and check the before_install section below
@@ -56,6 +57,9 @@ virtualenv:
   system_site_packages: true
 
 install:
+  # aeroo reports because this repo depends of reporting and reporting from aeroo
+  - pip install git+https://github.com/aeroo/aeroolib.git@master pycups==1.9.68
+
   # repository requirements
   - pip install -r requirements.txt
 
