@@ -30,6 +30,8 @@ class account_check(models.Model):
     @api.depends('number', 'checkbook_id', 'checkbook_id.padding')
     def _get_name(self):
         padding = self.checkbook_id and self.checkbook_id.padding or 8
+        if len(str(self.number)) > padding:
+            padding = len(str(self.number))
         self.name = '%%0%sd' % padding % self.number
 
     @api.one
