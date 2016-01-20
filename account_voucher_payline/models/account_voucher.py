@@ -208,8 +208,11 @@ class account_voucher(models.Model):
                 'state': 'posted',
                 'number': name,
             })
-            if voucher.journal_id.entry_posted:
-                move_pool.post(cr, uid, [move_id], context={})
+            # CHANGE
+            # no matter journal selection, we post the entry
+            move_pool.post(cr, uid, [move_id], context={})
+            # if voucher.journal_id.entry_posted:
+                # move_pool.post(cr, uid, [move_id], context={})
             # We automatically reconcile the account move lines.
             reconcile = False
             for rec_ids in rec_list_ids:

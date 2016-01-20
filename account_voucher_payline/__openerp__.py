@@ -21,5 +21,5 @@ It also addts dummy_journal_id and dummy_amount fields that can be used with new
     'installable': True,
     'name': 'Account Voucher Payline',
     'test': [],
-    'version': '8.0.1.2.1',
+    'version': '8.0.1.2.2',
  }
