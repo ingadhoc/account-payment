@@ -8,7 +8,7 @@
             <field name="inherit_id" ref="payment.acquirer_form"/>
             <field name="arch" type="xml"> 
                 <field name="validation" position="after">
-                    <field name="only_published_for_group_ids" widget="many2many_tags"/>
+                    <field name="only_published_for_group_ids" widget="many2many_tags" attrs="{'invisible':[('website_published', '=', False)]}"/>
                 </field>
             </field>
         </record>   
