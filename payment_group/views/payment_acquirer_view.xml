@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data> 
+
+        <record id="account_payment_acquirer_form_view" model="ir.ui.view">
+            <field name="name">payment.acquirer.form</field>
+            <field name="model">payment.acquirer</field>
+            <field name="inherit_id" ref="payment.acquirer_form"/>
+            <field name="arch" type="xml"> 
+                <field name="validation" position="after">
+                    <field name="only_published_for_group_ids" widget="many2many_tags"/>
+                </field>
+            </field>
+        </record>   
+
+    </data>
+</openerp>
