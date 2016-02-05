@@ -18,6 +18,11 @@
                 <button name="proforma_voucher" position="before">
                     <button name="proforma_confirmed" class="oe_highlight" string="Confirm" states="draft"/>
                 </button>
+
+                <field name="company_id" position="after">
+                    <field name="confirmation_date"/>
+                </field>
+
                 <button name="proforma_voucher" position="after">
                     <button name="cancel_voucher" string="Cancel Receipt" states="confirmed"/>
                 </button>
@@ -55,6 +60,11 @@
                 <button name="proforma_voucher" position="after">
                     <button name="cancel_voucher" string="Cancel Receipt" states="confirmed"/>
                 </button>
+
+
+                <field name="company_id" position="after">
+                    <field name="confirmation_date"/>
+                </field>
 
                 <!-- Make validate only visible from confirmed -->
                 <button name="proforma_voucher" position="attributes">

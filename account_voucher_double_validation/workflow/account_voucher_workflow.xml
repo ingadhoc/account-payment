@@ -5,7 +5,7 @@
         <record id="act_confirmed" model="workflow.activity">
             <field name="wkf_id" ref="account_voucher.wkf"/>
             <field name="name">confirmed</field>
-            <field name="action">write({'state':'confirmed'})</field>
+            <field name="action">action_confirm()</field>
             <field name="kind">function</field>
         </record>
         

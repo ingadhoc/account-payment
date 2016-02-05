@@ -73,6 +73,9 @@ class account_voucher(models.Model):
         states={'draft': [('readonly', False)]},
         help='Amount to be advance and not conciliated with debts',
     )
+    confirmation_date = fields.Datetime(
+        'Fecha de Confirmación'
+        )
 
     @api.one
     @api.depends('writeoff_amount', 'advance_amount')
@@ -86,6 +89,13 @@ class account_voucher(models.Model):
         # TODO probablemente haya que multiplicar por sign dependiendo receipt o payment
         to_pay_amount = credit - debit + self.advance_amount
         self.to_pay_amount = to_pay_amount
+
+    @api.multi
+    def action_confirm(self):
+        self.write({
+            'state': 'confirmed',
+            'confirmation_date': fields.Datetime.now()
+            })
 
     @api.multi
     def proforma_voucher(self):
