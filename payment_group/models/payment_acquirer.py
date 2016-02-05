@@ -32,10 +32,8 @@ class PaymentAcquirer(models.Model):
             partner_group_ids = self.pool['res.groups'].search(cr, uid, [
                 ('users.partner_id', '=', partner_id),
                 ], context=context)
-            if (
-                    partner_group_ids not in
-                    acquirer.only_published_for_group_ids.ids
-                    ):
+            if not set(partner_group_ids).intersection(
+                    acquirer.only_published_for_group_ids.ids):
                 return False
         return super(PaymentAcquirer, self).render(
             cr, uid, id, reference, amount, currency_id, tx_id=tx_id,
