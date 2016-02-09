@@ -73,8 +73,10 @@ class account_voucher(models.Model):
         states={'draft': [('readonly', False)]},
         help='Amount to be advance and not conciliated with debts',
     )
-    confirmation_date = fields.Datetime(
-        'Fecha de Confirmación'
+    confirmation_date = fields.Date(
+        'Fecha de Confirmación',
+        readonly=True,
+        states={'draft': [('readonly', False)]},
         )
 
     @api.one
@@ -92,10 +94,16 @@ class account_voucher(models.Model):
 
     @api.multi
     def action_confirm(self):
-        self.write({
-            'state': 'confirmed',
-            'confirmation_date': fields.Datetime.now()
-            })
+        for voucher in self:
+            if not voucher.confirmation_date:
+                voucher.write({
+                    'state': 'confirmed',
+                    'confirmation_date': fields.Datetime.now()
+                    })
+            else:
+                voucher.write({
+                    'state': 'confirmed',
+                    })
 
     @api.multi
     def proforma_voucher(self):
