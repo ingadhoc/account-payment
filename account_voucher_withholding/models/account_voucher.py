@@ -31,13 +31,15 @@ class account_voucher(models.Model):
 
     @api.one
     @api.depends(
-        'withholding_ids',
+        'withholding_ids.amount',
         )
     def _get_withholdings_amount(self):
         self.withholdings_amount = self.get_withholdings_amount()[self.id]
-        # We force the update of paylines and amount
-        self._get_paylines_amount()
-        self._get_amount()
+
+    @api.depends('withholdings_amount')
+    def _get_amount(self):
+        """Only to Update Depends"""
+        return super(account_voucher, self)._get_amount()
 
     @api.multi
     def get_withholdings_amount(self):
