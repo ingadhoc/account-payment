@@ -32,6 +32,8 @@
     ],
     'installable': True,
     'name': 'Payment Acquirer Groups',
+    'description': 'Allow to set groups on payment acquires, only users of '
+    'that groups will be able to use them',
     'test': [],
     'version': '8.0.0.0.0',
  }
