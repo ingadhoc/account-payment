@@ -51,15 +51,58 @@ class account_voucher(models.Model):
         digits=dp.get_precision('Account'),
     )
 
-    @api.onchange('dummy_journal_id')
-    def change_dummy_journal_id(self):
+    @api.constrains(
+        'journal_id',
+        )
+    def check_journal_change(self):
+        if self.journal_id.payment_subtype not in (
+                'issue_check', 'third_check'):
+            msg = False
+            msg_template = _(
+                'You can not have checks in a not checks journal, check your '
+                '%s')
+            if self.delivered_third_check_ids:
+                msg = msg_template % _('Delivered Third Checks')
+            elif self.issued_check_ids:
+                msg = msg_template % _('Issued Third Checks')
+            elif self.received_third_check_ids:
+                msg = msg_template % _('Received Third Checks')
+            if msg:
+                raise Warning(msg)
+
+    @api.constrains(
+        'journal_id',
+        )
+    @api.onchange(
+        # because journal is old api change
+        'dummy_journal_id',
+        'journal_id',
+        )
+    def change_none_check_journal(self):
+        if self.journal_id.payment_subtype in (
+                'issue_check', 'third_check') and self.net_amount:
+            raise Warning(_(
+                'You can not use a check journal with Net Amount different , '
+                ' from 0. Correct it first'))
+
+    @api.onchange(
+        # because journal is old api change
+        'dummy_journal_id',
+        'journal_id',
+        )
+    def change_check_journal(self):
         """Unlink checks on journal change"""
-        # if we select checks journal we set net_amount to 0
-        if self.journal_id.payment_subtype in ('issue_check', 'third_check'):
-            self.net_amount = False
-        self.delivered_third_check_ids = False
-        self.issued_check_ids = False
-        self.received_third_check_ids = False
+        msg = False
+        msg_template = _(
+            'You can not change journal if there are %s, delete them first')
+        if self.delivered_third_check_ids:
+            msg = msg_template % _('Delivered Third Checks')
+        elif self.issued_check_ids:
+            msg = msg_template % _('Issued Third Checks')
+        elif self.received_third_check_ids:
+            msg = msg_template % _('Received Third Checks')
+        if msg:
+            raise Warning(msg)
 
     @api.multi
     def action_cancel_draft(self):
@@ -85,12 +128,6 @@ class account_voucher(models.Model):
             ('voucher_id', 'in', self.ids)])
         other_checks.check_check_cancellation()
         other_checks.signal_workflow('cancel')
-        # checks = self.env['account.check'].search([
-        #     '|',
-        #     ('voucher_id', 'in', self.ids),
-        #     ('third_handed_voucher_id', 'in', self.ids)])
-        # checks.check_check_cancellation()
-        # checks.signal_workflow('cancel')
         return super(account_voucher, self).cancel_voucher()
 
     def proforma_voucher(self, cr, uid, ids, context=None):
@@ -109,15 +146,16 @@ class account_voucher(models.Model):
 
     @api.one
     @api.depends(
-        'received_third_check_ids',
-        'delivered_third_check_ids',
-        'issued_check_ids'
+        'received_third_check_ids.amount',
+        'delivered_third_check_ids.amount',
+        'issued_check_ids.amount'
         )
     def _get_checks_amount(self):
+        # Hack because sometimes net_amount is not 0 and then we have an error
+        # we delete this hack because now we check net amount = 0 on checks
+        # journals
+        # self.net_amount = 0.0
         self.checks_amount = self.get_checks_amount()[self.id]
-        # We force the update of paylines and amount
-        self._get_paylines_amount()
-        self._get_amount()
 
     @api.multi
     def get_checks_amount(self):
@@ -132,6 +170,11 @@ class account_voucher(models.Model):
                 x.amount for x in voucher.issued_check_ids)
             res[voucher.id] = checks_amount
         return res
+
+    @api.depends('checks_amount')
+    def _get_amount(self):
+        """Only to Update Depends"""
+        return super(account_voucher, self)._get_amount()
 
     @api.multi
     def get_paylines_amount(self):
