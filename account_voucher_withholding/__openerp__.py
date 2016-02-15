@@ -44,5 +44,5 @@ Add withholding management on vouchers
     'installable': True,
     'name': 'Voucher Voucher Withholding',
     'test': [],
-    'version': '8.0.1.3.1',
+    'version': '8.0.1.3.2',
  }

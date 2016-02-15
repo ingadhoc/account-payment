@@ -3,7 +3,7 @@
 # For copyright and license notices, see __openerp__.py file in module root
 # directory
 ##############################################################################
-from openerp import models, fields, api, _
+from openerp import models, fields, api
 import openerp.addons.decimal_precision as dp
 
 
@@ -36,10 +36,12 @@ class account_voucher(models.Model):
     def _get_withholdings_amount(self):
         self.withholdings_amount = self.get_withholdings_amount()[self.id]
 
-    @api.depends('withholdings_amount')
-    def _get_amount(self):
+    @api.depends(
+        'withholdings_amount'
+        )
+    def _get_paylines_amount(self):
         """Only to Update Depends"""
-        return super(account_voucher, self)._get_amount()
+        return super(account_voucher, self)._get_paylines_amount()
 
     @api.multi
     def get_withholdings_amount(self):
