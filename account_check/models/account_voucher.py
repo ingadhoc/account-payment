@@ -171,10 +171,12 @@ class account_voucher(models.Model):
             res[voucher.id] = checks_amount
         return res
 
-    @api.depends('checks_amount')
-    def _get_amount(self):
+    @api.depends(
+        'checks_amount'
+        )
+    def _get_paylines_amount(self):
         """Only to Update Depends"""
-        return super(account_voucher, self)._get_amount()
+        return super(account_voucher, self)._get_paylines_amount()
 
     @api.multi
     def get_paylines_amount(self):
