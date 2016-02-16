@@ -20,7 +20,7 @@
                 </button>
 
                 <field name="company_id" position="after">
-                    <field name="confirmation_date"/>
+                    <field name="confirmation_date" attrs="{'invisible': [('confirmation_date', '=', False)]}"/>
                 </field>
 
                 <button name="proforma_voucher" position="after">

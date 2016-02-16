@@ -77,6 +77,7 @@ class account_voucher(models.Model):
         'Fecha de Confirmación',
         readonly=True,
         states={'draft': [('readonly', False)]},
+        copy=False,
         )
 
     @api.one
