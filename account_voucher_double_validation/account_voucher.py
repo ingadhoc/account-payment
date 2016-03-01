@@ -114,13 +114,15 @@ class account_voucher(models.Model):
         """
         for voucher in self:
             if voucher.amount != voucher.to_pay_amount:
-                raise Warning(_('You can not validate a Voucher that has\
-                    Total Amount different from To Pay Amount'))
+                raise Warning(_(
+                    'You can not validate a Voucher that has '
+                    'Total Amount different from To Pay Amount'))
             if not voucher.date:
                 voucher.date = fields.Date.context_today(self)
             if voucher.payment_date > fields.Date.context_today(self):
-                raise Warning(_('You can not validate a Voucher that has\
-                    Payment Date before Today'))
+                raise Warning(_(
+                    'You can not validate a Voucher that has '
+                    'Payment Date before Today'))
         return super(account_voucher, self).proforma_voucher()
 
     def onchange_amount(

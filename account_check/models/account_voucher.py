@@ -82,7 +82,7 @@ class account_voucher(models.Model):
         if self.journal_id.payment_subtype in (
                 'issue_check', 'third_check') and self.net_amount:
             raise Warning(_(
-                'You can not use a check journal with Net Amount different , '
+                'You can not use a check journal with Net Amount different '
                 ' from 0. Correct it first'))
 
     @api.onchange(
@@ -144,7 +144,7 @@ class account_voucher(models.Model):
                     check.signal_workflow('draft_router')
         return res
 
-    @api.one
+    @api.multi
     @api.depends(
         'received_third_check_ids.amount',
         'delivered_third_check_ids.amount',
@@ -155,24 +155,28 @@ class account_voucher(models.Model):
         # we delete this hack because now we check net amount = 0 on checks
         # journals
         # self.net_amount = 0.0
-        self.checks_amount = self.get_checks_amount()[self.id]
-
-    @api.multi
-    def get_checks_amount(self):
-        res = {}
         for voucher in self:
             checks_amount = 0.0
             checks_amount += sum(
-                x.amount for x in voucher.received_third_check_ids)
+                voucher.received_third_check_ids.mapped('amount'))
             checks_amount += sum(
-                x.amount for x in voucher.delivered_third_check_ids)
+                voucher.delivered_third_check_ids.mapped('amount'))
             checks_amount += sum(
-                x.amount for x in voucher.issued_check_ids)
-            res[voucher.id] = checks_amount
-        return res
+                voucher.issued_check_ids.mapped('amount'))
+            voucher.checks_amount = checks_amount
 
     @api.depends(
-        'checks_amount'
+        'received_third_check_ids.amount',
+        'delivered_third_check_ids.amount',
+        'issued_check_ids.amount',
+        )
+    def _get_amount(self):
+        """Only to Update Depends, should work with paylines amount depends
+        but it doesnt so we add it here"""
+        return super(account_voucher, self)._get_amount()
+
+    @api.depends(
+        'checks_amount',
         )
     def _get_paylines_amount(self):
         """Only to Update Depends"""
@@ -182,7 +186,7 @@ class account_voucher(models.Model):
     def get_paylines_amount(self):
         res = super(account_voucher, self).get_paylines_amount()
         for voucher in self:
-            checks_amount = voucher.get_checks_amount()[voucher.id]
+            checks_amount = voucher.checks_amount
             res[voucher.id] = res[voucher.id] + checks_amount
         return res
 

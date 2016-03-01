@@ -37,6 +37,14 @@ class account_voucher(models.Model):
         self.withholdings_amount = self.get_withholdings_amount()[self.id]
 
     @api.depends(
+        'withholding_ids.amount',
+        )
+    def _get_amount(self):
+        """Only to Update Depends, should work with paylines amount depends
+        but it doesnt so we add it here"""
+        return super(account_voucher, self)._get_amount()
+
+    @api.depends(
         'withholdings_amount'
         )
     def _get_paylines_amount(self):

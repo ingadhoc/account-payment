@@ -46,9 +46,13 @@ class account_voucher(models.Model):
         )
 
     @api.one
-    @api.depends('net_amount', 'paylines_amount')
+    @api.depends(
+        'net_amount',
+        'paylines_amount',
+        )
     def _get_amount(self):
-        self.amount = self.paylines_amount + self.net_amount
+        amount = self.paylines_amount + self.net_amount
+        self.amount = amount
 
     @api.one
     def _set_net_amount(self):
