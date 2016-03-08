@@ -3,7 +3,7 @@ from openerp import models, fields, api
 import openerp.addons.decimal_precision as dp
 
 
-class account_tax_withholding(models.Model):
+class AccountTaxWithholding(models.Model):
     _name = "account.tax.withholding"
     _description = "Account Withholding Taxes"
 
@@ -119,6 +119,10 @@ class account_tax_withholding(models.Model):
         digits=dp.get_precision('Account'),
         default=1,
         )
+    automatic_method = fields.Selection(
+        [],
+        string='Automatic Method',
+        )
 
     @api.model
     def create(self, vals):
@@ -126,7 +130,11 @@ class account_tax_withholding(models.Model):
             # if we have the right to create a journal, we should be able to
             # create it's sequence.
             vals.update({'sequence_id': self.sudo().create_sequence(vals).id})
-        return super(account_tax_withholding, self).create(vals)
+        return super(AccountTaxWithholding, self).create(vals)
+
+    @api.multi
+    def create_voucher_withholdings(self, voucher):
+        return True
 
     @api.model
     def create_sequence(self, vals):

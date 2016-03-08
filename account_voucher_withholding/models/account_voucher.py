@@ -78,7 +78,8 @@ class account_voucher(models.Model):
         return paylines_total + withholding_total
 
     # TODO ver si en vez de usar api.model usamos self y no pasamos el voucher
-    # TODO ver que todo esto solo funcione en payment y receipts y no en sale y purchase
+    # TODO ver que todo esto solo funcione en payment y receipts y no en sale
+    # y purchase
     @api.model
     def create_withholding_lines(
             self, voucher, move_id, company_currency, current_currency):
@@ -108,3 +109,11 @@ class account_voucher(models.Model):
                 })
             withholding_total += move_line.debit - move_line.credit
         return withholding_total
+
+    @api.multi
+    def suggest_withholdings(self):
+        for voucher in self:
+            self.env['account.tax.withholding'].search([
+                ('type_tax_use', 'in', [self.type, 'all']),
+                ('company_id', '=', self.company_id.id),
+                ]).create_voucher_withholdings(voucher)
