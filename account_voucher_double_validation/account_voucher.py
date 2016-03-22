@@ -7,6 +7,9 @@ from openerp.exceptions import Warning
 class account_voucher(models.Model):
     _inherit = "account.voucher"
 
+    journal_double_validation = fields.Boolean(
+        related='journal_id.double_validation'
+        )
     state = fields.Selection(
         selection=[
             ('draft', _('Draft')),
@@ -113,12 +116,14 @@ class account_voucher(models.Model):
         * Fix not date on voucher error, set actual date.
         """
         for voucher in self:
+            if not voucher.date:
+                voucher.date = fields.Date.context_today(self)
+            if not voucher.journal_id.double_validation:
+                continue
             if voucher.amount != voucher.to_pay_amount:
                 raise Warning(_(
                     'You can not validate a Voucher that has '
                     'Total Amount different from To Pay Amount'))
-            if not voucher.date:
-                voucher.date = fields.Date.context_today(self)
             if voucher.payment_date > fields.Date.context_today(self):
                 raise Warning(_(
                     'You can not validate a Voucher that has '
