@@ -15,5 +15,5 @@ class account_journal(models.Model):
         ('cant_be_cero', "Can't be 0"),
         ('must_be_cero', 'Must Be 0')],
         'Voucher Amount Restriction',
-        default='cant_be_cero',
+        # default='cant_be_cero',
         )
