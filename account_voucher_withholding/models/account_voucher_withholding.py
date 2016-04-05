@@ -79,6 +79,7 @@ class account_voucher_withholding(models.Model):
         # string='Type',
         # waiting for a PR 9081 to fix computed fields translations
         readonly=True,
+        store=True,
         )
 
     _sql_constraints = [
