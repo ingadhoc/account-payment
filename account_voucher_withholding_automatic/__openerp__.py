@@ -25,23 +25,23 @@
     'category': 'Accounting & Finance',
     'data': [
         'views/account_tax_withholding_view.xml',
-        'views/account_tax_withholding_template_view.xml',
         'views/account_withholding_view.xml',
         'views/account_voucher_view.xml',
-        'data/data.xml',
-        'security/security.xml',
-        'security/ir.model.access.csv'
+        'views/account_journal_view.xml',
+    ],
+    'demo': [
+        'demo/withholding_demo.xml',
     ],
     'depends': [
-        'account_voucher_payline'
+        'account_voucher_double_validation',
+        'account_voucher_withholding',
     ],
     'description': '''
-Account Voucher Withholding
-===========================
-Add withholding management on vouchers
+Account Voucher Withholding Automatic
+=====================================
 ''',
     'installable': True,
-    'name': 'Voucher Voucher Withholding',
+    'name': 'Voucher Voucher Withholding Automatic',
     'test': [],
-    'version': '8.0.1.4.3',
+    'version': '8.0.0.0.0',
  }

@@ -18,10 +18,11 @@
     'description': '''
 Account Voucher Double Validation
 =================================
-Add a new state called confirm on vouchers. 
-It also adds a payment date. Payments can not be validated before this payment date.
+Add a new state called confirm on vouchers.
+It also adds a payment date. Payments can not be validated before this payment
+date.
 ''',
     'installable': True,
     'name': "Account Voucher Double Validation",
     'test': [],
-    'version': '8.0.1.5.1'}
+    'version': '8.0.1.6.1'}

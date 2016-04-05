@@ -11,6 +11,7 @@
             <field name="accumulated_payments">month</field>
             <field name="type">percentage</field>
             <field name="amount" eval="0.10"/>
+            <field name="advances_are_withholdable" eval="False"/>
             <field name="non_taxable_minimum" eval="100"/>
             <field name="account_id" ref="account.rsa"/>
             <field name="ref_account_id" ref="account.rsa"/>

@@ -84,45 +84,6 @@ class account_voucher_withholding(models.Model):
         readonly=True,
         store=True,
         )
-    withholdable_invoiced_amount = fields.Float(
-        'Importe imputado sujeto a retención',
-        # compute='get_withholding_data',
-        readonly=True,
-        )
-    withholdable_advanced_amount = fields.Float(
-        'Importe a cuenta sujeto a retención',
-        # compute='get_withholding_data',
-        readonly=True,
-        )
-    accumulated_amount = fields.Float(
-        # compute='get_withholding_data',
-        readonly=True,
-        )
-    total_amount = fields.Float(
-        # compute='get_withholding_data',
-        readonly=True,
-        )
-    non_taxable_minimum = fields.Float(
-        'Non-taxable Minimum',
-        # compute='get_withholding_data',
-        readonly=True,
-        )
-    withholdable_base_amount = fields.Float(
-        # compute='get_withholding_data',
-        readonly=True,
-        )
-    period_withholding_amount = fields.Float(
-        # compute='get_withholding_data',
-        readonly=True,
-        )
-    previous_withholding_amount = fields.Float(
-        # compute='get_withholding_data',
-        readonly=True,
-        )
-    suggested_withholding_amount = fields.Float(
-        # compute='get_withholding_data',
-        readonly=True,
-        )
 
     _sql_constraints = [
         ('internal_number_uniq', 'unique(internal_number, tax_withholding_id)',

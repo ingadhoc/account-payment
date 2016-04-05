@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data> 
+
+        <record id="account_tax_withholding_form_view" model="ir.ui.view">
+            <field name="name">account.tax.withholding.form</field>
+            <field name="model">account.tax.withholding</field>
+            <field name="inherit_id" ref="account_voucher_withholding.account_tax_withholding_form_view"/>
+            <field name="arch" type="xml">
+                <group position="after">
+                    <group string="Tax Computation">
+                        <group>
+                            <label for="type"/>
+                            <div>
+                                <field name="type" class="oe_inline"/>
+                                <field name="amount" attrs="{'invisible':[('type', '!=', 'percentage')]}" class="oe_inline"/>
+                            </div>
+                            <field name="accumulated_payments" attrs="{'invisible':[('type', '=', 'none')]}"/>
+                        </group>
+                        <group attrs="{'invisible':[('type', '=', 'none')]}">
+                            <field name="advances_are_withholdable"/>
+                            <field name="base_amount_type" attrs="{'required':[('type', '!=', 'none')]}"/>
+                            <field name="non_taxable_minimum"/>
+                        </group>
+                    </group>
+                </group>
+            </field>
+        </record>   
+
+    </data>
+</openerp>

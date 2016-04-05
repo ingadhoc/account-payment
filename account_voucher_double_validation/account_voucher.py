@@ -28,8 +28,7 @@ class account_voucher(models.Model):
                 'confirmed': [('readonly', False)]}
         )
     net_amount = fields.Float(
-        states={'draft': [('readonly', False)],
-                'confirmed': [('readonly', False)]}
+        states={'confirmed': [('readonly', False)]}
         )
     journal_id = fields.Many2one(
         states={'draft': [('readonly', False)],
@@ -69,6 +68,11 @@ class account_voucher(models.Model):
         compute='_get_to_pay_amount',
         digits=dp.get_precision('Account'),
     )
+    difference_amount = fields.Float(
+        compute='_get_to_pay_amount',
+        help='Diferencia enre el importe a ser pagado y el importe pagado',
+        digits=dp.get_precision('Account'),
+        )
     advance_amount = fields.Float(
         'Advance Amount',
         digits=dp.get_precision('Account'),
@@ -86,15 +90,18 @@ class account_voucher(models.Model):
     @api.one
     @api.depends('writeoff_amount', 'advance_amount')
     def _get_to_pay_amount(self):
-        """On v8 it is only updated on save. 
+        """
+        On v8 it is only updated on save.
         In v9 should be updated live
         """
         # Can not use this way because old api
         debit = sum([x.amount for x in self.line_cr_ids])
         credit = sum([x.amount for x in self.line_dr_ids])
-        # TODO probablemente haya que multiplicar por sign dependiendo receipt o payment
+        # TODO probablemente haya que multiplicar por sign dependiendo receipt
+        # o payment
         to_pay_amount = credit - debit + self.advance_amount
         self.to_pay_amount = to_pay_amount
+        self.difference_amount = to_pay_amount - self.amount
 
     @api.multi
     def action_confirm(self):
