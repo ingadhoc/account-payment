@@ -56,6 +56,8 @@ class account_voucher(models.Model):
 
     @api.one
     def _set_net_amount(self):
+        print 'self.amount', self.amount
+        print 'self.paylines_amount', self.paylines_amount
         self.net_amount = self.amount - self.paylines_amount
 
     @api.one

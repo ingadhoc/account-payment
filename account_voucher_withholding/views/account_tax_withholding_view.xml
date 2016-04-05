@@ -46,6 +46,20 @@
                             <field name="automatic_method"/>
                             <field name="active"/>
                         </group>
+                        <group string="Tax Computation">
+                            <group>
+                                <label for="type"/>
+                                <div>
+                                    <field name="type" class="oe_inline"/>
+                                    <field name="amount" attrs="{'invisible':[('type', '!=', 'percentage')]}" class="oe_inline"/>
+                                </div>
+                                <field name="accumulated_payments" attrs="{'invisible':[('type', '=', 'none')]}"/>
+                            </group>
+                            <group attrs="{'invisible':[('type', '=', 'none')]}">
+                                <field name="base_amount_type" attrs="{'required':[('type', '!=', 'none')]}"/>
+                                <field name="non_taxable_minimum" ttrs="{'required':[('type', '!=', 'none')]}"/>
+                            </group>
+                        </group>
                         <group>
                             <group string="Positive Operations">
                                 <field name="account_id"/>

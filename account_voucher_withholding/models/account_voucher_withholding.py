@@ -6,6 +6,8 @@
 from openerp import models, fields, api, _
 import openerp.addons.decimal_precision as dp
 from openerp.exceptions import Warning
+# from dateutil.relativedelta import relativedelta
+# import datetime
 
 
 class account_voucher_withholding(models.Model):
@@ -13,6 +15,8 @@ class account_voucher_withholding(models.Model):
     _rec_name = "display_name"
     _description = "Account Withholding Voucher"
 
+    automatic = fields.Boolean(
+        )
     voucher_id = fields.Many2one(
         'account.voucher',
         'Voucher',
@@ -53,7 +57,6 @@ class account_voucher_withholding(models.Model):
         )
     amount = fields.Float(
         'Amount',
-        required=True,
         digits=dp.get_precision('Account'),
         readonly=True,
         states={'draft': [('readonly', False)]},
@@ -78,6 +81,45 @@ class account_voucher_withholding(models.Model):
         string='Tipo',
         # string='Type',
         # waiting for a PR 9081 to fix computed fields translations
+        readonly=True,
+        )
+    withholdable_invoiced_amount = fields.Float(
+        'Importe imputado sujeto a retención',
+        # compute='get_withholding_data',
+        readonly=True,
+        )
+    withholdable_advanced_amount = fields.Float(
+        'Importe a cuenta sujeto a retención',
+        # compute='get_withholding_data',
+        readonly=True,
+        )
+    accumulated_amount = fields.Float(
+        # compute='get_withholding_data',
+        readonly=True,
+        )
+    total_amount = fields.Float(
+        # compute='get_withholding_data',
+        readonly=True,
+        )
+    non_taxable_minimum = fields.Float(
+        'Non-taxable Minimum',
+        # compute='get_withholding_data',
+        readonly=True,
+        )
+    withholdable_base_amount = fields.Float(
+        # compute='get_withholding_data',
+        readonly=True,
+        )
+    period_withholding_amount = fields.Float(
+        # compute='get_withholding_data',
+        readonly=True,
+        )
+    previous_withholding_amount = fields.Float(
+        # compute='get_withholding_data',
+        readonly=True,
+        )
+    suggested_withholding_amount = fields.Float(
+        # compute='get_withholding_data',
         readonly=True,
         )
 

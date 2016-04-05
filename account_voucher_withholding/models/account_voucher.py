@@ -113,7 +113,10 @@ class account_voucher(models.Model):
     @api.multi
     def suggest_withholdings(self):
         for voucher in self:
+            amount = voucher.amount
             self.env['account.tax.withholding'].search([
                 ('type_tax_use', 'in', [self.type, 'all']),
                 ('company_id', '=', self.company_id.id),
                 ]).create_voucher_withholdings(voucher)
+            voucher.invalidate_cache()
+            voucher.amount = amount

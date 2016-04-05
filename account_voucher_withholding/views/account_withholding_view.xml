@@ -49,10 +49,28 @@
                     </header>
                     <sheet string="Withholding Vouchers">
                         <field name="type" invisible="1"/>
+                        <h1>
+                            <!-- <label for="tax_withholding_id"/> -->
+                            <field name="tax_withholding_id" domain="[('type_tax_use','in',(type, 'all'))]" placeholder="Withholding..."/>
+                        </h1>
+                        <group string="Calculation">  
+                            <group>
+                                <field name="withholdable_invoiced_amount"/>
+                                <field name="withholdable_advanced_amount"/>
+                                <field name="accumulated_amount"/>
+                                <field name="total_amount"/>
+                                <field name="non_taxable_minimum"/>
+                            </group>
+                            <group>
+                                <field name="withholdable_base_amount"/>
+                                <field name="period_withholding_amount"/>
+                                <field name="previous_withholding_amount"/>
+                                <field name="suggested_withholding_amount"/>
+                            </group>
+                        </group>
                         <group>  
                             <group>
                                 <field name="name"/>
-                                <field name="tax_withholding_id" domain="[('type_tax_use','in',(type, 'all'))]"/>
                                 <field name="amount"/>
                                 <field name="move_line_id"/>
                                 <field name="partner_id"/>

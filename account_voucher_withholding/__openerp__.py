@@ -32,7 +32,9 @@
         'security/security.xml',
         'security/ir.model.access.csv'
     ],
-    'demo': [],
+    'demo': [
+        'demo/withholding_demo.xml',
+    ],
     'depends': [
         'account_voucher_payline'
     ],
