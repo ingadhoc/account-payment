@@ -79,10 +79,10 @@ class AccountTaxWithholding(models.Model):
             # voucher_withholding.get_withholding_data()
         return True
 
-    @api.multi
-    def get_non_taxable_minimum(self, voucher):
-        self.ensure_one()
-        return self.non_taxable_minimum
+    # @api.multi
+    # def get_non_taxable_minimum(self, voucher):
+    #     self.ensure_one()
+    #     return self.non_taxable_minimum
 
     @api.multi
     def get_withholdable_invoiced_amount(self, voucher):
@@ -149,7 +149,8 @@ class AccountTaxWithholding(models.Model):
             accumulated_amount +
             withholdable_advanced_amount +
             withholdable_invoiced_amount)
-        non_taxable_minimum = self.get_non_taxable_minimum(voucher)
+        # non_taxable_minimum = self.get_non_taxable_minimum(voucher)
+        non_taxable_minimum = self.non_taxable_minimum
         withholdable_base_amount = total_amount - non_taxable_minimum
         period_withholding_amount = withholdable_base_amount * self.amount
         # period_withholding_amount = self.get_period_withholding_amount(
