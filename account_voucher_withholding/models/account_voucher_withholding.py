@@ -6,6 +6,8 @@
 from openerp import models, fields, api, _
 import openerp.addons.decimal_precision as dp
 from openerp.exceptions import Warning
+# from dateutil.relativedelta import relativedelta
+# import datetime
 
 
 class account_voucher_withholding(models.Model):
@@ -13,6 +15,8 @@ class account_voucher_withholding(models.Model):
     _rec_name = "display_name"
     _description = "Account Withholding Voucher"
 
+    automatic = fields.Boolean(
+        )
     voucher_id = fields.Many2one(
         'account.voucher',
         'Voucher',
@@ -53,7 +57,6 @@ class account_voucher_withholding(models.Model):
         )
     amount = fields.Float(
         'Amount',
-        required=True,
         digits=dp.get_precision('Account'),
         readonly=True,
         states={'draft': [('readonly', False)]},

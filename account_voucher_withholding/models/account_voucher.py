@@ -78,7 +78,8 @@ class account_voucher(models.Model):
         return paylines_total + withholding_total
 
     # TODO ver si en vez de usar api.model usamos self y no pasamos el voucher
-    # TODO ver que todo esto solo funcione en payment y receipts y no en sale y purchase
+    # TODO ver que todo esto solo funcione en payment y receipts y no en sale
+    # y purchase
     @api.model
     def create_withholding_lines(
             self, voucher, move_id, company_currency, current_currency):

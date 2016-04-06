@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from openerp import models, fields, api
 import openerp.addons.decimal_precision as dp
+from dateutil.relativedelta import relativedelta
+import datetime
 
 
-class account_tax_withholding(models.Model):
+class AccountTaxWithholding(models.Model):
     _name = "account.tax.withholding"
     _description = "Account Withholding Taxes"
 
@@ -25,14 +27,6 @@ class account_tax_withholding(models.Model):
         default=True,
         help="If the active field is set to False,"
              "it will allow you to hide the tax without removing it.")
-    # TODO add this field  and other for automation
-    # type = fields.Selection(
-    #     [('percent', 'Percentage'), ('fixed', 'Fixed Amount'),
-    #      ('none', 'None'), ('code', 'Python Code'), ('balance', 'Balance')],
-    #     'Type',
-    #     required=True,
-    #     help="The computation method for the tax amount."
-    #     )
     sequence_id = fields.Many2one(
         'ir.sequence',
         'Internal Number Sequence',
@@ -81,7 +75,6 @@ class account_tax_withholding(models.Model):
     tax_code_id = fields.Many2one(
         'account.tax.code',
         'Tax Code',
-        required=True,
         help="Use this code for the tax declaration.",
         )
     base_sign = fields.Float(
@@ -104,7 +97,6 @@ class account_tax_withholding(models.Model):
     ref_tax_code_id = fields.Many2one(
         'account.tax.code',
         'Refund Tax Code',
-        required=True,
         help="Use this code for the tax declaration.",
         )
     ref_base_sign = fields.Float(
@@ -126,7 +118,7 @@ class account_tax_withholding(models.Model):
             # if we have the right to create a journal, we should be able to
             # create it's sequence.
             vals.update({'sequence_id': self.sudo().create_sequence(vals).id})
-        return super(account_tax_withholding, self).create(vals)
+        return super(AccountTaxWithholding, self).create(vals)
 
     @api.model
     def create_sequence(self, vals):
@@ -151,7 +143,8 @@ class account_chart_template(models.Model):
         'account.tax.withholding.template',
         'chart_template_id',
         'Withholding Template List',
-        help='List of all the withholding that have to be installed by the wizard'
+        help='List of all the withholding that have to be installed by the '
+        'wizard'
         )
 
 

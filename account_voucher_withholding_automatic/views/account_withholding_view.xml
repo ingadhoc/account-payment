@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data> 
+
+        <record id="account_voucher_withholding_form_view" model="ir.ui.view">
+            <field name="name">account.voucher.withholding.form</field>
+            <field name="model">account.voucher.withholding</field>
+            <field name="inherit_id" ref="account_voucher_withholding.account_voucher_withholding_form_view"/>
+            <field name="arch" type="xml"> 
+                <form>
+                    <field name="automatic" invisible="1"/>
+                    <field name="accumulated_payments" invisible="1"/>
+                </form>
+                <h1 position="after">
+                    <group string="Calculation" attrs="{'invisible': [('automatic', '=', False)]}">
+                        <group>
+                            <field name="withholdable_invoiced_amount"/>
+                            <field name="withholdable_advanced_amount"/>
+                            <field name="accumulated_amount" attrs="{'invisible': [('accumulated_payments', '=', False)]}"/>
+                            <field name="total_amount"/>
+                            <field name="non_taxable_minimum"/>
+                        </group>
+                        <group>
+                            <field name="withholdable_base_amount"/>
+                            <field name="period_withholding_amount" attrs="{'invisible': [('accumulated_payments', '=', False)]}"/>
+                            <field name="previous_withholding_amount" attrs="{'invisible': [('accumulated_payments', '=', False)]}"/>
+                            <field name="computed_withholding_amount"/>
+                        </group>
+                    </group>
+                </h1>
+            </field>
+        </record>   
+
+    </data>
+</openerp>

@@ -43,12 +43,18 @@
         <record id="view_vendor_payment_form" model="ir.ui.view">
             <field name="name">account.voucher.customer.pay.form</field>
             <field name="model">account.voucher</field>
-            <field name="inherit_id" ref="account_voucher.view_vendor_payment_form"/>
+            <field name="inherit_id" ref="account_voucher_payline.view_vendor_payment_form"/>
+            <!-- <field name="inherit_id" ref="account_voucher.view_vendor_payment_form"/> -->
             <field name="arch" type="xml">
                 <form>
                     <field name="journal_double_validation" invisible="1"/>
                 </form>
 
+                <field name="amount_readonly" position="after">
+                    <label string="(" class="oe_inline" attrs="{'invisible':[('journal_double_validation', '=', False)]}"/>
+                    <field name="difference_amount" class="oe_inline" attrs="{'invisible':[('journal_double_validation', '=', False)]}"/>
+                    <label string=")" class="oe_inline" attrs="{'invisible':[('journal_double_validation', '=', False)]}"/>
+                </field>
                 <!-- Add confirmed to statusbar visible -->
                 <field name="state" position="attributes">
                     <attribute name="statusbar_visible">draft,confirmed,posted</attribute>
@@ -91,6 +97,10 @@
             <field name="model">account.voucher</field>
             <field name="inherit_id" ref="account_voucher.view_voucher_tree"/>
             <field name="arch" type="xml">
+                <tree position="attributes">
+                    <attribute name="colors">blue:state == 'draft';gray:state == 'cancel';red:audit;green:state == 'confirmed'</attribute>
+                </tree>
+
                 <field name="date" position="before">
                     <field name="payment_date"/>
                 </field>

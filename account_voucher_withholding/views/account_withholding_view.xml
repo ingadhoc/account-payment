@@ -49,10 +49,13 @@
                     </header>
                     <sheet string="Withholding Vouchers">
                         <field name="type" invisible="1"/>
+                        <h1>
+                            <!-- <label for="tax_withholding_id"/> -->
+                            <field name="tax_withholding_id" domain="[('type_tax_use','in',(type, 'all'))]" placeholder="Withholding..."/>
+                        </h1>
                         <group>  
                             <group>
                                 <field name="name"/>
-                                <field name="tax_withholding_id" domain="[('type_tax_use','in',(type, 'all'))]"/>
                                 <field name="amount"/>
                                 <field name="move_line_id"/>
                                 <field name="partner_id"/>
