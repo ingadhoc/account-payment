@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
-from openerp import models, fields, api
+from openerp import models, fields, api, _
 import openerp.addons.decimal_precision as dp
+# from openerp.addons.account.account import get_precision_tax
+from openerp.exceptions import Warning
+from ast import literal_eval
 from dateutil.relativedelta import relativedelta
 import datetime
 
@@ -38,7 +41,8 @@ class AccountTaxWithholding(models.Model):
     #     )
     type = fields.Selection([
         ('none', 'None'),
-        ('percentage', 'Percentage'),
+        # ('percentage', 'Percentage'),
+        ('based_on_rule', 'Based On Rule'),
         # ('fixed', 'Fixed Amount'),
         # ('code', 'Python Code'), ('balance', 'Balance')
          ],
@@ -47,14 +51,38 @@ class AccountTaxWithholding(models.Model):
         default='none',
         help="The computation method for the tax amount."
         )
-    amount = fields.Float(
-        'Amount',
-        digits=dp.get_precision('Account'),
-        help="For taxes of type percentage, enter % ratio between 0-1."
+    rule_ids = fields.One2many(
+        'account.tax.withholding.rule',
+        'tax_withholding_id',
+        'Rules',
         )
+    # amount = fields.Float(
+    #     'Amount',
+    #     # digits=dp.get_precision('Account'),
+    #     digits=get_precision_tax(),
+    #     help="For taxes of type percentage, enter % ratio between 0-1."
+    #     )
+
+    @api.multi
+    def _get_rule(self, voucher):
+        self.ensure_one()
+        for rule in self.rule_ids:
+            try:
+                domain = literal_eval(rule.domain)
+            except Exception, e:
+                raise Warning(_(
+                    'Could not eval rule domain "%s".\n'
+                    'This is what we get:\n%s' % (rule.domain, e)))
+            domain.append(('id', '=', voucher.id))
+            applies = voucher.search(domain)
+            if applies:
+                return rule
+        return False
 
     @api.multi
     def create_voucher_withholdings(self, voucher):
+        # for tax in self.filtered(lambda x: x.type == 'based_on_rule'):
+        #     voucher.search([()])
         # for tax in self.filtered(lambda x: x.type == 'percentage'):
         for tax in self.filtered(lambda x: x.type != 'none'):
             voucher_withholding = self.env[
@@ -66,12 +94,6 @@ class AccountTaxWithholding(models.Model):
             vals = tax.get_withholding_vals(voucher)
             if not vals.get('amount'):
                 continue
-            # vals = {
-            #     # 'amount': voucher.amount * tax.amount,
-            #     'voucher_id': voucher.id,
-            #     'tax_withholding_id': tax.id,
-            #     'automatic': True,
-            #         }
             if voucher_withholding:
                 voucher_withholding.write(vals)
             else:
@@ -151,8 +173,17 @@ class AccountTaxWithholding(models.Model):
             withholdable_invoiced_amount)
         # non_taxable_minimum = self.get_non_taxable_minimum(voucher)
         non_taxable_minimum = self.non_taxable_minimum
-        withholdable_base_amount = total_amount - non_taxable_minimum
-        period_withholding_amount = withholdable_base_amount * self.amount
+        withholdable_base_amount = ((total_amount > non_taxable_minimum) and (
+            total_amount - non_taxable_minimum) or 0.0)
+        rule = self._get_rule(voucher)
+        percentage = 0.0
+        fix_amount = 0.0
+        if rule:
+            percentage = rule.percentage
+            fix_amount = rule.fix_amount
+        period_withholding_amount = (
+            withholdable_base_amount * percentage + fix_amount)
+        # period_withholding_amount = withholdable_base_amount * self.amount
         # period_withholding_amount = self.get_period_withholding_amount(
         #     withholdable_base_amount, voucher)
         computed_withholding_amount = (

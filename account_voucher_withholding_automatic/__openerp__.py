@@ -28,6 +28,7 @@
         'views/account_withholding_view.xml',
         'views/account_voucher_view.xml',
         'views/account_journal_view.xml',
+        'security/ir.model.access.csv',
     ],
     'demo': [
         'demo/withholding_demo.xml',
@@ -43,5 +44,5 @@ Account Voucher Withholding Automatic
     'installable': True,
     'name': 'Voucher Voucher Withholding Automatic',
     'test': [],
-    'version': '8.0.0.0.0',
+    'version': '8.0.0.1.0',
  }

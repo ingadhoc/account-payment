@@ -34,7 +34,11 @@ class account_voucher_withholding(models.Model):
         required=True,
         default='/',
         readonly=True,
-        states={'draft': [('readonly', False)]},
+        # we add confirmed state for compatibility with double validation
+        states={
+            'draft': [('readonly', False)],
+            'confirmed': [('readonly', False)]
+            },
         )
     date = fields.Date(
         'Date',
@@ -50,7 +54,10 @@ class account_voucher_withholding(models.Model):
         string='Withholding',
         required=True,
         readonly=True,
-        states={'draft': [('readonly', False)]},
+        states={
+            'draft': [('readonly', False)],
+            'confirmed': [('readonly', False)]
+            },
         )
     comment = fields.Text(
         'Additional Information',
@@ -59,7 +66,10 @@ class account_voucher_withholding(models.Model):
         'Amount',
         digits=dp.get_precision('Account'),
         readonly=True,
-        states={'draft': [('readonly', False)]},
+        states={
+            'draft': [('readonly', False)],
+            'confirmed': [('readonly', False)]
+            },
         )
     move_line_id = fields.Many2one(
         'account.move.line',
