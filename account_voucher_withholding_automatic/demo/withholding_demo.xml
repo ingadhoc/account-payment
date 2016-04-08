@@ -9,8 +9,9 @@
             <!-- <field name="ref_tax_code_id" ref="l10n_ar_invoice.ri_tax_code_retencion_iva_aplicada"/> -->
             <field name="base_amount_type">total_amount</field>
             <field name="accumulated_payments">month</field>
-            <field name="type">percentage</field>
-            <field name="amount" eval="0.10"/>
+            <field name="type">based_on_rule</field>
+            <!-- <field name="type">percentage</field> -->
+            <!-- <field name="amount" eval="0.10"/> -->
             <field name="advances_are_withholdable" eval="False"/>
             <field name="non_taxable_minimum" eval="100"/>
             <field name="account_id" ref="account.rsa"/>
@@ -18,6 +19,11 @@
             <field name="type_tax_use">payment</field>
             <field name="company_id" ref="base.main_company"/>
             <field name="ref_tax_sign" eval="-1"/>
+        </record>
+        <record id="with_monthly_rule_1" model="account.tax.withholding.rule">
+            <field name="tax_withholding_id" ref="with_monthly"/>
+            <field name="percentage" eval="0.10"/>
+            <field name="fix_amount" eval="5.0"/>
         </record>
 
         <record id="with_no_acum" model="account.tax.withholding">
@@ -27,14 +33,19 @@
             <!-- <field name="ref_tax_code_id" ref="l10n_ar_invoice.ri_tax_code_retencion_iva_aplicada"/> -->
             <field name="base_amount_type">untaxed_amount</field>
             <field name="accumulated_payments"></field>
-            <field name="type">percentage</field>
-            <field name="amount" eval="0.15"/>
+            <field name="type">based_on_rule</field>
+            <!-- <field name="amount" eval="0.15"/> -->
             <field name="non_taxable_minimum" eval="0"/>
             <field name="account_id" ref="account.rsa"/>
             <field name="ref_account_id" ref="account.rsa"/>
             <field name="type_tax_use">payment</field>
             <field name="company_id" ref="base.main_company"/>
             <field name="ref_tax_sign" eval="-1"/>
+        </record>
+        <record id="with_no_acum_rule_1" model="account.tax.withholding.rule">
+            <field name="tax_withholding_id" ref="with_no_acum"/>
+            <field name="percentage" eval="0.15"/>
+            <field name="fix_amount" eval="0.0"/>
         </record>
 
         <record id="with_no_auto" model="account.tax.withholding">

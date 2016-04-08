@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from openerp import models, fields, api
 import openerp.addons.decimal_precision as dp
-from dateutil.relativedelta import relativedelta
-import datetime
+# from dateutil.relativedelta import relativedelta
+# import datetime
 
 
 class AccountTaxWithholding(models.Model):
