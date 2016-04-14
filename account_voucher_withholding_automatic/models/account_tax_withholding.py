@@ -127,7 +127,8 @@ class AccountTaxWithholding(models.Model):
         factor = 1.0
         if self.base_amount_type == 'untaxed_amount':
             invoice = voucher_line.move_line_id.invoice
-            factor = invoice.amount_untaxed / invoice.amount_total
+            factor = (invoice.amount_total and (
+                invoice.amount_untaxed / invoice.amount_total) or 1.0)
         return factor
 
     @api.multi
