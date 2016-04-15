@@ -2,11 +2,11 @@
 from openerp import models, fields
 
 
-class account_journal(models.Model):
-    _inherit = "account.journal"
+class res_company(models.Model):
+    _inherit = "res.company"
 
     double_validation = fields.Boolean(
-        'Double Validation?',
+        'Double Validation on Payments?',
         help='Use two steps validation on payments to suppliers of this '
         'journal?',
         )

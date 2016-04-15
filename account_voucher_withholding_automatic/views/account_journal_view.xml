@@ -4,10 +4,10 @@
         <record id="view_account_journal_form" model="ir.ui.view">
             <field name="name">account.journal.form</field>
             <field name="model">account.journal</field>
-            <field name="inherit_id" ref="account_voucher_double_validation.view_account_journal_form"/>
+            <field name="inherit_id" ref="account.view_account_journal_form"/>
             <field name="arch" type="xml">
-                <field name="double_validation" position="before">
-                    <field name="automatic_withholdings" attrs="{'invisible':['|', ('type','not in', ('cash', 'bank')), ('double_validation','=', False)]}"/>
+                <field name="centralisation" position="before">
+                    <field name="automatic_withholdings" attrs="{'invisible':['|', ('type','not in', ('cash', 'bank'))]}"/>
                 </field>
             </field>
         </record>

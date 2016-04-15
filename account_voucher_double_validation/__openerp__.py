@@ -7,7 +7,7 @@
     'data': [
         'workflow/account_voucher_workflow.xml',
         'views/account_voucher_view.xml',
-        'views/account_journal_view.xml',
+        'views/res_company_view.xml',
         'security/ir.model.access.csv',
     ],
     'demo': [],
@@ -25,4 +25,4 @@ date.
     'installable': True,
     'name': "Account Voucher Double Validation",
     'test': [],
-    'version': '8.0.1.6.1'}
+    'version': '8.0.1.7.1'}
