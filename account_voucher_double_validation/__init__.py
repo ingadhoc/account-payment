@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 import account_voucher
-import account_journal
+import res_company
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
