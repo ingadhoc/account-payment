@@ -28,7 +28,13 @@ class account_voucher(models.Model):
                 'confirmed': [('readonly', False)]}
         )
     net_amount = fields.Float(
-        states={'confirmed': [('readonly', False)]}
+        states={'draft': [('readonly', False)],
+                'confirmed': [('readonly', False)]}
+        )
+    net_amount_copy = fields.Float(
+        related='net_amount',
+        states={
+            'confirmed': [('readonly', False)]}
         )
     journal_id = fields.Many2one(
         states={'draft': [('readonly', False)],
@@ -125,7 +131,11 @@ class account_voucher(models.Model):
         for voucher in self:
             if not voucher.date:
                 voucher.date = fields.Date.context_today(self)
-            if not voucher.company_double_validation:
+            # only check payments for now
+            if (
+                    voucher.type != 'payment' or
+                    not voucher.company_double_validation
+                    ):
                 continue
             if voucher.amount != voucher.to_pay_amount:
                 raise Warning(_(

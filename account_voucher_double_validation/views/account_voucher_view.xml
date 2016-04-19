@@ -43,12 +43,21 @@
         <record id="view_vendor_payment_form" model="ir.ui.view">
             <field name="name">account.voucher.customer.pay.form</field>
             <field name="model">account.voucher</field>
-            <field name="inherit_id" ref="account_voucher_payline.view_vendor_payment_form"/>
+            <!-- heredamos de cheques porque cheques modifica el attrs de net_amount -->
+            <field name="inherit_id" ref="account_check.view_vendor_payment_check_form"/>
+            <!-- <field name="inherit_id" ref="account_voucher_payline.view_vendor_payment_form"/> -->
             <!-- <field name="inherit_id" ref="account_voucher.view_vendor_payment_form"/> -->
             <field name="arch" type="xml">
                 <form>
                     <field name="company_double_validation" invisible="1"/>
                 </form>
+
+                <field name="net_amount" position="after">
+                    <field name="net_amount_copy" attrs="{'invisible': ['|', ('company_double_validation', '=', False), ('payment_subtype', '!=', False)]}" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                </field>
+                <field name="net_amount" position="attributes">
+                    <attribute name="attrs">{'invisible': ['|', ('company_double_validation', '=', True), ('payment_subtype', '!=', False)]}</attribute>
+                </field>
 
                 <field name="amount_readonly" position="after">
                     <label string="(" class="oe_inline" attrs="{'invisible':[('company_double_validation', '=', False)]}"/>
