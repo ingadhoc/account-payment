@@ -139,7 +139,8 @@ class account_voucher(models.Model):
                     not voucher.company_double_validation
                     ):
                 continue
-            if voucher.amount != voucher.to_pay_amount:
+            if voucher.currency_id.round(
+                    voucher.amount - voucher.to_pay_amount):
                 raise Warning(_(
                     'You can not validate a Voucher that has '
                     'Total Amount different from To Pay Amount'))
