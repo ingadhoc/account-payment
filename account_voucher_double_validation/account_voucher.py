@@ -28,14 +28,16 @@ class account_voucher(models.Model):
                 'confirmed': [('readonly', False)]}
         )
     net_amount = fields.Float(
+        required=False,
         states={'draft': [('readonly', False)],
                 'confirmed': [('readonly', False)]}
         )
-    net_amount_copy = fields.Float(
-        related='net_amount',
-        states={
-            'confirmed': [('readonly', False)]}
-        )
+    # no funciono bien
+    # net_amount_copy = fields.Float(
+    #     related='net_amount',
+    #     states={
+    #         'confirmed': [('readonly', False)]}
+    #     )
     journal_id = fields.Many2one(
         states={'draft': [('readonly', False)],
                 'confirmed': [('readonly', False)]}
