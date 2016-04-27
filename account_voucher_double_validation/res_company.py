@@ -9,4 +9,5 @@ class res_company(models.Model):
         'Double Validation on Payments?',
         help='Use two steps validation on payments to suppliers of this '
         'journal?',
-        )
+        readonly=True,
+    )
