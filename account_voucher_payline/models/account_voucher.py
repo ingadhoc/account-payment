@@ -57,7 +57,7 @@ class account_voucher(models.Model):
     def _get_reconciled_amount(self):
         debit = sum(self.line_cr_ids.mapped('amount'))
         credit = sum(self.line_dr_ids.mapped('amount'))
-        reconciled_amount = credit - debit
+        reconciled_amount = debit - credit
         if self.type == 'payment':
             reconciled_amount = -1 * reconciled_amount
         self.reconciled_amount = reconciled_amount
