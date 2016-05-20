@@ -53,4 +53,4 @@ msgstr "Importe de Líneas de Pago"
 #: view:account.voucher:account_voucher_payline.view_vendor_receipt_dialog_form
 #: view:account.voucher:account_voucher_payline.view_vendor_receipt_form
 msgid "Total Amount"
-msgstr "Importe total"
+msgstr "Importe Total"
