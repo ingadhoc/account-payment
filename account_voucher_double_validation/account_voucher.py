@@ -9,7 +9,7 @@ class account_voucher(models.Model):
 
     company_double_validation = fields.Boolean(
         related='company_id.double_validation'
-        )
+    )
     state = fields.Selection(
         selection=[
             ('draft', _('Draft')),
@@ -18,20 +18,21 @@ class account_voucher(models.Model):
             ('proforma', _('Pro-forma')),
             ('posted', _('Posted'))
         ])
-    # we need amount to be not readonly on confirmed in order to compute the value
+    # we need amount to be not readonly on confirmed in order to compute the
+    # value
     amount = fields.Float(
         states={'draft': [('readonly', False)],
                 'confirmed': [('readonly', False)]}
-        )
+    )
     account_id = fields.Many2one(
         states={'draft': [('readonly', False)],
                 'confirmed': [('readonly', False)]}
-        )
+    )
     net_amount = fields.Float(
         required=False,
         states={'draft': [('readonly', False)],
                 'confirmed': [('readonly', False)]}
-        )
+    )
     # no funciono bien
     # net_amount_copy = fields.Float(
     #     related='net_amount',
@@ -41,32 +42,32 @@ class account_voucher(models.Model):
     journal_id = fields.Many2one(
         states={'draft': [('readonly', False)],
                 'confirmed': [('readonly', False)]}
-        )
+    )
     received_third_check_ids = fields.One2many(
         states={'draft': [('readonly', False)],
                 'confirmed': [('readonly', False)]}
-        )
+    )
     issued_check_ids = fields.One2many(
         states={'draft': [('readonly', False)],
                 'confirmed': [('readonly', False)]}
-        )
+    )
     delivered_third_check_ids = fields.One2many(
         states={'draft': [('readonly', False)],
                 'confirmed': [('readonly', False)]}
-        )
+    )
     withholding_ids = fields.One2many(
         states={'draft': [('readonly', False)],
                 'confirmed': [('readonly', False)]}
-        )
+    )
     date = fields.Date(
         default=False,
-        )
+    )
     payment_date = fields.Date(
         string='Payment Date',
         readonly=True,
         states={'draft': [('readonly', False)]},
         help='Payment can not be validated before this date',
-        )
+    )
     to_pay_amount = fields.Float(
         'Importe a Pagar',
         # _('To Pay Amount'),
@@ -80,7 +81,7 @@ class account_voucher(models.Model):
         compute='_get_to_pay_amount',
         help='Diferencia enre el importe a ser pagado y el importe pagado',
         digits=dp.get_precision('Account'),
-        )
+    )
     advance_amount = fields.Float(
         'Advance Amount',
         digits=dp.get_precision('Account'),
@@ -93,7 +94,7 @@ class account_voucher(models.Model):
         readonly=True,
         states={'draft': [('readonly', False)]},
         copy=False,
-        )
+    )
 
     @api.one
     @api.depends('writeoff_amount', 'advance_amount')
@@ -118,11 +119,11 @@ class account_voucher(models.Model):
                 voucher.write({
                     'state': 'confirmed',
                     'confirmation_date': fields.Datetime.now()
-                    })
+                })
             else:
                 voucher.write({
                     'state': 'confirmed',
-                    })
+                })
 
     @api.multi
     def proforma_voucher(self):
@@ -137,7 +138,7 @@ class account_voucher(models.Model):
             if (
                     voucher.type != 'payment' or
                     not voucher.company_double_validation
-                    ):
+            ):
                 continue
             if voucher.currency_id.round(
                     voucher.amount - voucher.to_pay_amount):

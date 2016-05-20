@@ -20,7 +20,7 @@
 ##############################################################################
 {
     'name': 'Account Check Management',
-    'version': '8.0.2.3.4',
+    'version': '8.0.2.3.5',
     'category': 'Accounting',
     'sequence': 14,
     'summary': 'Accounting, Payment, Check, Third, Issue',
@@ -28,7 +28,7 @@
 Account Check Management
 ========================
     """,
-    'author':  'OpenERP Team de Localizacion Argentina',
+    'author': 'OpenERP Team de Localizacion Argentina',
     'license': 'AGPL-3',
     'images': [
     ],

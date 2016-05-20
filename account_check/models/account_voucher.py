@@ -22,7 +22,7 @@ class account_voucher(models.Model):
         readonly=True,
         copy=False,
         states={'draft': [('readonly', False)]}
-        )
+    )
     issued_check_ids = fields.One2many(
         'account.check', 'voucher_id', 'Issued Checks',
         domain=[('type', '=', 'issue_check')],
@@ -31,7 +31,7 @@ class account_voucher(models.Model):
         required=False,
         readonly=True,
         states={'draft': [('readonly', False)]}
-        )
+    )
     delivered_third_check_ids = fields.One2many(
         'account.check', 'third_handed_voucher_id',
         'Third Checks', domain=[('type', '=', 'third_check')],
@@ -40,7 +40,7 @@ class account_voucher(models.Model):
         required=False,
         readonly=True,
         states={'draft': [('readonly', False)]}
-        )
+    )
     checks_amount = fields.Float(
         _('Importe en Cheques'),
         # waiting for a PR 9081 to fix computed fields translations
@@ -53,7 +53,7 @@ class account_voucher(models.Model):
 
     @api.constrains(
         'journal_id',
-        )
+    )
     def check_journal_change(self):
         if self.journal_id.payment_subtype not in (
                 'issue_check', 'third_check'):
@@ -72,24 +72,26 @@ class account_voucher(models.Model):
 
     @api.constrains(
         'journal_id',
-        )
+    )
     @api.onchange(
         # because journal is old api change
         'dummy_journal_id',
         'journal_id',
-        )
+    )
     def change_none_check_journal(self):
         if self.journal_id.payment_subtype in (
-                'issue_check', 'third_check') and self.net_amount:
-            raise Warning(_(
-                'You can not use a check journal with Net Amount different '
-                ' from 0. Correct it first'))
+                'issue_check', 'third_check'):
+                # 'issue_check', 'third_check') and self.net_amount:
+            self.net_amount = 0
+            # raise Warning(_(
+            #     'You can not use a check journal with Net Amount different '
+            #     ' from 0. Correct it first'))
 
     @api.onchange(
         # because journal is old api change
         'dummy_journal_id',
         'journal_id',
-        )
+    )
     def change_check_journal(self):
         """Unlink checks on journal change"""
         msg = False
@@ -149,11 +151,10 @@ class account_voucher(models.Model):
         'received_third_check_ids.amount',
         'delivered_third_check_ids.amount',
         'issued_check_ids.amount'
-        )
+    )
     def _get_checks_amount(self):
         # Hack because sometimes net_amount is not 0 and then we have an error
-        # we delete this hack because now we check net amount = 0 on checks
-        # journals
+        # we delete this hack because now set it on change_none_check_journal
         # self.net_amount = 0.0
         for voucher in self:
             checks_amount = 0.0
@@ -169,7 +170,7 @@ class account_voucher(models.Model):
         'received_third_check_ids.amount',
         'delivered_third_check_ids.amount',
         'issued_check_ids.amount',
-        )
+    )
     def _get_amount(self):
         """Only to Update Depends, should work with paylines amount depends
         but it doesnt so we add it here"""
@@ -177,7 +178,7 @@ class account_voucher(models.Model):
 
     @api.depends(
         'checks_amount',
-        )
+    )
     def _get_paylines_amount(self):
         """Only to Update Depends"""
         return super(account_voucher, self)._get_paylines_amount()
@@ -225,6 +226,6 @@ class account_voucher(models.Model):
                 self.prepare_move_line(
                     voucher, amount, move_id, name, company_currency,
                     current_currency, payment_date, account, partner)
-                    )
+            )
             checks_total += move_line.debit - move_line.credit
         return checks_total

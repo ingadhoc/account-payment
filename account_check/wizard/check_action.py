@@ -26,25 +26,25 @@ class account_check_action(models.TransientModel):
         domain="[('company_id','=',company_id), "
         "('type', 'in', ['cash', 'bank', 'general']), "
         "('payment_subtype', 'not in', ['issue_check', 'third_check'])]"
-        )
+    )
     account_id = fields.Many2one(
         'account.account',
         'Account',
         domain="[('company_id','=',company_id), "
         "('type', 'in', ('other', 'liquidity'))]"
-        )
+    )
     date = fields.Date(
         'Date', required=True, default=fields.Date.context_today
-        )
+    )
     action_type = fields.Char(
         'Action type passed on the context', required=True
-        )
+    )
     company_id = fields.Many2one(
         'res.company',
         'Company',
         required=True,
         default=_get_company_id
-        )
+    )
 
     @api.onchange('journal_id')
     def onchange_journal_id(self):
@@ -85,7 +85,7 @@ class account_check_action(models.TransientModel):
         self = self.with_context(
             company_id=self.company_id.id,
             force_company=self.company_id.id,
-            )
+        )
 
         for check in self.env['account.check'].browse(
                 self._context.get('active_ids', [])):
@@ -158,7 +158,7 @@ class account_check_action(models.TransientModel):
             'journal_id': journal.id,
             'period_id': period_id,
             'date': self.date,
-            'ref':  ref,
+            'ref': ref,
         }
 
         debit_line_vals = {
@@ -186,4 +186,4 @@ class account_check_action(models.TransientModel):
             'credit_line_vals': credit_line_vals,
             'check_move_field': check_move_field,
             'signal': signal,
-            }
+        }
