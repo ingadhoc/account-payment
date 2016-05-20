@@ -80,10 +80,12 @@ class account_voucher(models.Model):
     )
     def change_none_check_journal(self):
         if self.journal_id.payment_subtype in (
-                'issue_check', 'third_check') and self.net_amount:
-            raise Warning(_(
-                'You can not use a check journal with Net Amount different '
-                ' from 0. Correct it first'))
+                'issue_check', 'third_check'):
+                # 'issue_check', 'third_check') and self.net_amount:
+            self.net_amount = 0
+            # raise Warning(_(
+            #     'You can not use a check journal with Net Amount different '
+            #     ' from 0. Correct it first'))
 
     @api.onchange(
         # because journal is old api change
@@ -152,8 +154,7 @@ class account_voucher(models.Model):
     )
     def _get_checks_amount(self):
         # Hack because sometimes net_amount is not 0 and then we have an error
-        # we delete this hack because now we check net amount = 0 on checks
-        # journals
+        # we delete this hack because now set it on change_none_check_journal
         # self.net_amount = 0.0
         for voucher in self:
             checks_amount = 0.0
