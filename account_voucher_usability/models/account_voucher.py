@@ -11,6 +11,9 @@ class AccountVoucher(models.Model):
     @api.multi
     def recompute_voucher_lines(
             self, partner_id, journal_id, price, currency_id, ttype, date):
+        """
+        Set amount 0 on voucher lines except if invoice_id is send in context
+        """
         default = super(AccountVoucher, self).recompute_voucher_lines(
             partner_id, journal_id, price, currency_id, ttype, date)
         values = default.get('value', {})
@@ -24,3 +27,20 @@ class AccountVoucher(models.Model):
             if isinstance(val_dr, dict):
                 val_dr.update({'amount': 0.0, 'reconcile': False})
         return default
+
+    @api.multi
+    def onchange_amount(
+            self, amount, rate, partner_id, journal_id, currency_id, ttype,
+            date, payment_rate_currency_id, company_id):
+        """
+        Do not refresh lines on amount change
+        """
+        res = super(AccountVoucher, self).onchange_amount(
+            amount, rate, partner_id, journal_id, currency_id, ttype,
+            date, payment_rate_currency_id, company_id)
+        if self._context.get('invoice_id'):
+            return res
+        values = res.get('value', {})
+        values.pop('line_cr_ids', False)
+        values.pop('line_dr_ids', False)
+        return res
