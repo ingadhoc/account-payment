@@ -30,7 +30,7 @@ class account_check_dreject(models.TransientModel):
         'account.account',
         'Expense Account',
         domain=[('type', 'in', ['other'])],
-        )
+    )
     has_expense = fields.Boolean(
         'Has Expense', default=True)
     expense_amount = fields.Float(
@@ -51,7 +51,7 @@ class account_check_dreject(models.TransientModel):
         self = self.with_context(
             company_id=self.company_id.id,
             force_company=self.company_id.id,
-            )
+        )
 
         for check in self.env['account.check'].browse(
                 self._context.get('active_ids', [])):
@@ -136,8 +136,8 @@ class account_check_dreject(models.TransientModel):
         }
 
         invoice = self.env['account.invoice'].with_context(
-                {'document_type': 'debit_note'}
-            ).create(
+            {'document_type': 'debit_note'}
+        ).create(
             invoice_vals)
         check.write({debit_note_field: invoice.id})
 
