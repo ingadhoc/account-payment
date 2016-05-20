@@ -25,12 +25,12 @@ msgstr "Comprobante de contabilidad"
 #. module: account_voucher_double_validation
 #: field:account.voucher,advance_amount:0
 msgid "Advance Amount"
-msgstr "Monto de Adelanto"
+msgstr "Importe de Adelanto"
 
 #. module: account_voucher_double_validation
 #: help:account.voucher,advance_amount:0
 msgid "Amount to be advance and not conciliated with debts"
-msgstr "Monto a ser Adelantado y no conciliado con deudas"
+msgstr "Importe a ser Adelantado y no conciliado con deudas"
 
 #. module: account_voucher_double_validation
 #: view:account.voucher:account_voucher_double_validation.view_vendor_payment_form
@@ -103,7 +103,7 @@ msgstr "No puedes validar un Pago que posee Fecha de Pago anterior al día de ho
 msgid ""
 "You can not validate a Voucher that has                    Total Amount "
 "different from To Pay Amount"
-msgstr "No puedes validar un Pago que tenga un Monto Total distinto del Monto A Pagar"
+msgstr "No puedes validar un Pago que tenga un Importe Total distinto del Importe A Pagar"
 
 #. module: account_voucher_double_validation
 #: view:account.voucher:account_voucher_double_validation.view_vendor_payment_form

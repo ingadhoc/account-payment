@@ -25,7 +25,7 @@ msgstr "Comprobante de contabilidad"
 #. module: account_voucher_payline
 #: field:account.voucher,net_amount:0
 msgid "Amount"
-msgstr "Monto"
+msgstr "Importe"
 
 #. module: account_voucher_payline
 #: help:account.voucher,net_amount:0
