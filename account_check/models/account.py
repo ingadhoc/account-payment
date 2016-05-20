@@ -13,7 +13,7 @@ class account_journal(models.Model):
         'account.checkbook',
         'journal_id',
         'Checkbooks',
-        )
+    )
 
     @api.model
     def _get_payment_subtype(self):
