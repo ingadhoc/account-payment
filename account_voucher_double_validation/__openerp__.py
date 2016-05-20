@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {'active': False,
-    'author':  'Ingenieria ADHOC',
+    'author': 'Ingenieria ADHOC',
     'website': 'www.ingadhoc.com',
     'license': 'AGPL-3',
     'category': 'Accounting & Finance',
@@ -14,7 +14,7 @@
     'depends': [
         'account_voucher_withholding',
         'account_check',
-        ],
+    ],
     'description': '''
 Account Voucher Double Validation
 =================================
@@ -25,4 +25,4 @@ date.
     'installable': True,
     'name': "Account Voucher Double Validation",
     'test': [],
-    'version': '8.0.1.9.0'}
+    'version': '8.0.1.10.0'}

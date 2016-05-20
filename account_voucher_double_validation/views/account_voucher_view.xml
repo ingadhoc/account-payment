@@ -78,9 +78,9 @@
                 <field name="reconciled_amount" position="after">
                     <field name="to_pay_amount" attrs="{'invisible': [('company_double_validation', '=', False)]}"/>
                 </field>
-                <field name="reconciled_amount" position="attributes">
+<!--                 <field name="reconciled_amount" position="attributes">
                     <attribute name="invisible">1</attribute>
-                </field>
+                </field> -->
                 <field name="amount_readonly" position="after">
                     <label string="(" class="oe_inline" attrs="{'invisible':[('company_double_validation', '=', False)]}"/>
                     <field name="difference_amount" class="oe_inline" attrs="{'invisible':[('company_double_validation', '=', False)]}"/>
