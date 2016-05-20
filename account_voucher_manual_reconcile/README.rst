@@ -2,9 +2,9 @@
    :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
    :alt: License: AGPL-3
 
-=========================
-Account Voucher Usability
-=========================
+================================
+Account Voucher Manual Reconcile
+================================
 
 Account voucher lines amount won't be auto completed any more.
 

@@ -15,7 +15,7 @@
                         <field name="issued_check_ids" attrs="{'invisible':[('payment_subtype','!=', 'issue_check')]}" context="{'default_type':'issue_check','from_voucher':True,'default_journal_id':journal_id}"/> 
                     </page>
                 </page>
-                <field name="journal_id" position="after">
+                <field name="net_amount" position="after">
                     <field name="checks_amount" widget="monetary" options="{'currency_field': 'currency_id'}" attrs="{'invisible':[('payment_subtype','=', False)]}"/>
                 </field>
                 <field name="net_amount" position="attributes">
@@ -36,7 +36,7 @@
                         <field name="received_third_check_ids"/> 
                     </page>
                 </page>
-                <field name="journal_id" position="after">
+                <field name="net_amount" position="after">
                     <field name="checks_amount" widget="monetary" options="{'currency_field': 'currency_id'}" attrs="{'invisible':[('payment_subtype','=', False)]}"/>
                 </field>
                 <field name="net_amount" position="attributes">
@@ -63,7 +63,7 @@
                         <field name="issued_check_ids" attrs="{'invisible':[('payment_subtype','!=', 'issue_check')]}" context="{'default_type':'issue_check','from_voucher':True,'default_journal_id':journal_id}"/> 
                     </page>
                 </notebook>
-                <field name="journal_id" position="after">
+                <field name="net_amount" position="after">
                     <field name="checks_amount" widget="monetary" options="{'currency_field': 'currency_id'}" attrs="{'invisible':[('payment_subtype','=', False)]}"/>
                 </field>
                 <field name="net_amount" position="attributes">

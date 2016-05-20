@@ -16,15 +16,19 @@
                     <field name="dummy_journal_id" invisible="1"/>
                     <field name="paylines_amount" invisible="1"/>
                 </form>
-                <field name="amount" position="after">
-                    <field name="amount_readonly" string="Total Amount"/>
-                </field>
                 <!-- TODO check if we want to use this in some cases, to set a value -->
                 <field name="amount" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </field>
                 <field name="journal_id" position="after">
+                    <separator colspan="2"/>
+                    <field name="reconciled_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    <separator colspan="2"/>
                     <field name="net_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    <label for="amount_readonly" string="Total Amount"/>
+                    <div>
+                        <field name="amount_readonly" class="oe_inline" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    </div>
                 </field>
             </field>
         </record>
@@ -39,18 +43,19 @@
                     <field name="dummy_journal_id" invisible="1"/>
                     <field name="paylines_amount" invisible="1"/>
                 </form>
-                <field name="amount" position="after">
-                    <label for="amount_readonly" string="Total Amount"/>
-                    <div>
-                        <field name="amount_readonly" class="oe_inline"/>
-                    </div>
-                </field>
                 <!-- TODO check if we want to use this in some cases, to set a value -->
                 <field name="amount" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </field>
                 <field name="journal_id" position="after">
+                    <separator colspan="2"/>
+                    <field name="reconciled_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    <separator colspan="2"/>
                     <field name="net_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    <label for="amount_readonly" string="Total Amount"/>
+                    <div>
+                        <field name="amount_readonly" class="oe_inline" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    </div>
                 </field>
             </field>
         </record>
@@ -65,18 +70,19 @@
                     <field name="dummy_journal_id" invisible="1"/>
                     <field name="paylines_amount" invisible="1"/>
                 </form>
-                <field name="amount" position="after">
-                    <label for="amount_readonly" string="Total Amount"/>
-                    <div>
-                        <field name="amount_readonly" class="oe_inline"/>
-                    </div>
-                </field>
                 <!-- TODO check if we want to use this in some cases, to set a value -->
                 <field name="amount" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </field>
                 <field name="journal_id" position="after">
+                    <separator colspan="2"/>
+                    <field name="reconciled_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    <separator colspan="2"/>
                     <field name="net_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    <label for="amount_readonly" string="Total Amount"/>
+                    <div>
+                        <field name="amount_readonly" class="oe_inline" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    </div>
                 </field>
             </field>
         </record>

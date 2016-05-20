@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {'active': False,
-    'author':  'ADHOC SA',
+    'author': 'ADHOC SA',
     'website': 'www.adhoc.com.ar',
     'license': 'AGPL-3',
     'category': 'Accounting & Finance',
@@ -23,5 +23,5 @@ new api onchange events.
     'installable': True,
     'name': 'Account Voucher Payline',
     'test': [],
-    'version': '8.0.1.3.4',
+    'version': '8.0.1.4.0',
  }

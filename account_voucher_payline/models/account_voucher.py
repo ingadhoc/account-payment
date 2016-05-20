@@ -37,19 +37,36 @@ class account_voucher(models.Model):
         string='Total Amount',
         digits=dp.get_precision('Account'),
         readonly=True,
-        )
+    )
     dummy_journal_id = fields.Many2one(
         related='journal_id',
         readonly=True,
         string='Dummy Journa',
         help='Field used for new api onchange methods over journal',
-        )
+    )
+    reconciled_amount = fields.Float(
+        compute='_get_reconciled_amount',
+        string='Reconciled Amount',
+    )
+
+    @api.one
+    @api.depends(
+        'line_cr_ids.amount',
+        'line_dr_ids.amount',
+    )
+    def _get_reconciled_amount(self):
+        debit = sum(self.line_cr_ids.mapped('amount'))
+        credit = sum(self.line_dr_ids.mapped('amount'))
+        reconciled_amount = credit - debit
+        if self.type == 'payment':
+            reconciled_amount = -1 * reconciled_amount
+        self.reconciled_amount = reconciled_amount
 
     @api.one
     @api.depends(
         'net_amount',
         'paylines_amount',
-        )
+    )
     def _get_amount(self):
         amount = self.paylines_amount + self.net_amount
         self.amount = amount
@@ -102,7 +119,7 @@ class account_voucher(models.Model):
             self.prepare_move_line(
                 voucher, amount, move_id, name, company_currency,
                 current_currency, payment_date, account, partner)
-                )
+        )
         return move_line
 
     @api.model
@@ -118,24 +135,28 @@ class account_voucher(models.Model):
             credit = self._convert_amount(amount, voucher.id)
         elif voucher.type in ('sale', 'receipt'):
             debit = self._convert_amount(amount, voucher.id)
-        if debit < 0: credit = -debit; debit = 0.0
-        if credit < 0: debit = -credit; credit = 0.0
+        if debit < 0:
+            credit = -debit
+            debit = 0.0
+        if credit < 0:
+            debit = -credit
+            credit = 0.0
         sign = debit - credit < 0 and -1 or 1
         move_line = {
-                'name': name,
-                'debit': debit,
-                'credit': credit,
-                'account_id': account.id,
-                'partner_id': partner.id,
-                'move_id': move_id,
-                'journal_id': voucher.journal_id.id,
-                'period_id': voucher.period_id.id,
-                'currency_id': company_currency != current_currency and  current_currency or False,
-                'amount_currency': (sign * abs(amount) # amount < 0 for refunds
-                    if company_currency != current_currency else 0.0),
-                'date': voucher.date,
-                'date_maturity': date_due or False,
-            }
+            'name': name,
+            'debit': debit,
+            'credit': credit,
+            'account_id': account.id,
+            'partner_id': partner.id,
+            'move_id': move_id,
+            'journal_id': voucher.journal_id.id,
+            'period_id': voucher.period_id.id,
+            'currency_id': company_currency != current_currency and current_currency or False,
+            'amount_currency': (sign * abs(amount)  # amount < 0 for refunds
+                                if company_currency != current_currency else 0.0),
+            'date': voucher.date,
+            'date_maturity': date_due or False,
+        }
         return move_line
 
     def action_move_line_create(self, cr, uid, ids, context=None):
@@ -218,7 +239,7 @@ class account_voucher(models.Model):
             # no matter journal selection, we post the entry
             move_pool.post(cr, uid, [move_id], context={})
             # if voucher.journal_id.entry_posted:
-                # move_pool.post(cr, uid, [move_id], context={})
+            # move_pool.post(cr, uid, [move_id], context={})
             # We automatically reconcile the account move lines.
             reconcile = False
             for rec_ids in rec_list_ids:
