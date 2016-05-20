@@ -23,7 +23,7 @@
         <record id="view_vendor_receipt_form" model="ir.ui.view">
             <field name="name">account.voucher.form.receipts.pay.inherit</field>
             <field name="model">account.voucher</field>
-            <field name="inherit_id" ref="account_voucher.view_vendor_receipt_form"/>
+            <field name="inherit_id" ref="account_voucher_payline.view_vendor_receipt_form"/>
             <field name="arch" type="xml">
                 <label for="amount_readonly" position="before">
                     <field name="withholdings_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
@@ -41,7 +41,7 @@
         <record id="view_vendor_payment_form" model="ir.ui.view">
             <field name="name">account.voucher.form.receipts.pay.inherit</field>
             <field name="model">account.voucher</field>
-            <field name="inherit_id" ref="account_voucher.view_vendor_payment_form"/>
+            <field name="inherit_id" ref="account_voucher_payline.view_vendor_payment_form"/>
             <field name="arch" type="xml">
                 <label for="amount_readonly" position="before">
                     <field name="withholdings_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
