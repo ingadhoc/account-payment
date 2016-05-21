@@ -8,6 +8,7 @@
         'workflow/account_voucher_workflow.xml',
         'views/account_voucher_view.xml',
         'views/res_company_view.xml',
+        'views/account_journal_view.xml',
         'security/ir.model.access.csv',
     ],
     'demo': [],

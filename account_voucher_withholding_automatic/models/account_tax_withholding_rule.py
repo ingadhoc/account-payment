@@ -10,7 +10,7 @@ class AccountTaxWithholdingRule(models.Model):
 
     sequence = fields.Integer(
         default=10,
-        )
+    )
     # name = fields.Char(
     #     required=True,
     #     )
@@ -18,20 +18,20 @@ class AccountTaxWithholdingRule(models.Model):
         required=True,
         default="[]",
         help='Write a domain over account voucher module'
-        )
+    )
     tax_withholding_id = fields.Many2one(
         'account.tax.withholding',
         'Tax Withholding',
         required=True,
         ondelete='cascade',
-        )
+    )
     percentage = fields.Float(
         'Percentage',
         digits=get_precision_tax(),
         help="Enter % ratio between 0-1."
-        )
+    )
     fix_amount = fields.Float(
         'Amount',
         digits=dp.get_precision('Account'),
         help="Fixed Amount after percentaje"
-        )
+    )

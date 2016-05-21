@@ -15,27 +15,27 @@ class AccountTaxWithholding(models.Model):
     non_taxable_minimum = fields.Float(
         'Non-taxable Minimum',
         digits=dp.get_precision('Account'),
-        )
+    )
     base_amount_type = fields.Selection([
         ('untaxed_amount', 'Untaxed Amount'),
         ('total_amount', 'Total Amount'),
         # neto gravado + no gravado / neto gravado / importe total
         # importe de iva?
-        ],
+    ],
         'Base Amount',
         help='Base amount used to get withholding amount',
-        )
+    )
     advances_are_withholdable = fields.Boolean(
         'Advances are Withholdable?',
         default=True,
-        )
+    )
     accumulated_payments = fields.Selection([
         ('month', 'Month'),
         ('year', 'Year'),
-        ],
+    ],
         string='Accumulated Payments',
         help='If none is selected, then payments are not accumulated',
-        )
+    )
     # TODO implement
     # allow_modification = fields.Boolean(
     #     )
@@ -45,17 +45,17 @@ class AccountTaxWithholding(models.Model):
         ('based_on_rule', 'Based On Rule'),
         # ('fixed', 'Fixed Amount'),
         # ('code', 'Python Code'), ('balance', 'Balance')
-         ],
+    ],
         'Type',
         required=True,
         default='none',
         help="The computation method for the tax amount."
-        )
+    )
     rule_ids = fields.One2many(
         'account.tax.withholding.rule',
         'tax_withholding_id',
         'Rules',
-        )
+    )
     # amount = fields.Float(
     #     'Amount',
     #     # digits=dp.get_precision('Account'),
@@ -90,7 +90,7 @@ class AccountTaxWithholding(models.Model):
                     ('voucher_id', '=', voucher.id),
                     ('tax_withholding_id', '=', tax.id),
                     ('automatic', '=', True),
-                    ], limit=1)
+                ], limit=1)
             vals = tax.get_withholding_vals(voucher)
             if not vals.get('amount'):
                 continue
@@ -150,7 +150,7 @@ class AccountTaxWithholding(models.Model):
                 ('partner_id', '=', voucher.partner_id.id),
                 ('state', '=', 'posted'),
                 ('id', '!=', voucher.id),
-                ]
+            ]
             if accumulated_payments == 'month':
                 from_relative_delta = relativedelta(day=1)
             elif accumulated_payments == 'year':
@@ -159,14 +159,14 @@ class AccountTaxWithholding(models.Model):
             previos_vouchers_domain += [
                 ('date', '<=', to_date),
                 ('date', '>=', from_date),
-                ]
+            ]
             same_period_vouchers = voucher.search(previos_vouchers_domain)
             accumulated_amount = sum(same_period_vouchers.mapped('amount'))
             previous_withholding_amount = sum(
                 self.env['account.voucher.withholding'].search([
                     ('voucher_id', 'in', same_period_vouchers.ids),
                     ('tax_withholding_id', '=', self.id),
-                    ]).mapped('amount'))
+                ]).mapped('amount'))
 
         total_amount = (
             accumulated_amount +
