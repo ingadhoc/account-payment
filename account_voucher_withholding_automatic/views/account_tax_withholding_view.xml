@@ -29,6 +29,7 @@
                             <field name="advances_are_withholdable"/>
                             <field name="base_amount_type" attrs="{'required':[('type', '!=', 'none')]}"/>
                             <field name="non_taxable_minimum"/>
+                            <field name="non_taxable_amount"/>
                         </group>
                     </group>
                 </group>

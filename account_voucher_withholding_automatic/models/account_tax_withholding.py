@@ -12,9 +12,15 @@ class AccountTaxWithholding(models.Model):
     _inherit = "account.tax.withholding"
     _description = "Account Withholding Taxes"
 
+    non_taxable_amount = fields.Float(
+        'Non-taxable Amount',
+        digits=dp.get_precision('Account'),
+        help="Amounts lower than this wont't have any withholding"
+    )
     non_taxable_minimum = fields.Float(
         'Non-taxable Minimum',
         digits=dp.get_precision('Account'),
+        help="Amount to be substracted before applying alicuot"
     )
     base_amount_type = fields.Selection([
         ('untaxed_amount', 'Untaxed Amount'),
@@ -62,6 +68,14 @@ class AccountTaxWithholding(models.Model):
     #     digits=get_precision_tax(),
     #     help="For taxes of type percentage, enter % ratio between 0-1."
     #     )
+
+    @api.one
+    @api.constrains('non_taxable_amount', 'non_taxable_minimum')
+    def check_non_taxable_amounts(self):
+        if self.non_taxable_amount > self.non_taxable_minimum:
+            raise Warning(_(
+                'Non-taxable Amount can not be greater than Non-taxable '
+                'Minimum'))
 
     @api.multi
     def _get_rule(self, voucher):
@@ -174,8 +188,9 @@ class AccountTaxWithholding(models.Model):
             withholdable_invoiced_amount)
         # non_taxable_minimum = self.get_non_taxable_minimum(voucher)
         non_taxable_minimum = self.non_taxable_minimum
+        non_taxable_amount = self.non_taxable_amount
         withholdable_base_amount = ((total_amount > non_taxable_minimum) and (
-            total_amount - non_taxable_minimum) or 0.0)
+            total_amount - non_taxable_amount) or 0.0)
         rule = self._get_rule(voucher)
         percentage = 0.0
         fix_amount = 0.0
@@ -196,6 +211,7 @@ class AccountTaxWithholding(models.Model):
             'accumulated_amount': accumulated_amount,
             'total_amount': total_amount,
             'non_taxable_minimum': non_taxable_minimum,
+            'non_taxable_amount': non_taxable_amount,
             'withholdable_base_amount': withholdable_base_amount,
             'period_withholding_amount': period_withholding_amount,
             'previous_withholding_amount': previous_withholding_amount,

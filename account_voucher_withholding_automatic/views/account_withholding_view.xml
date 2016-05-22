@@ -19,6 +19,7 @@
                             <field name="accumulated_amount" attrs="{'invisible': [('accumulated_payments', '=', False)]}"/>
                             <field name="total_amount"/>
                             <field name="non_taxable_minimum"/>
+                            <field name="non_taxable_amount"/>
                         </group>
                         <group>
                             <field name="withholdable_base_amount"/>

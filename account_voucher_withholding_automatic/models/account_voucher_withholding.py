@@ -39,6 +39,11 @@ class account_voucher_withholding(models.Model):
         # compute='get_withholding_data',
         readonly=True,
     )
+    non_taxable_amount = fields.Float(
+        'Non-taxable Amount',
+        # compute='get_withholding_data',
+        readonly=True,
+    )
     withholdable_base_amount = fields.Float(
         # compute='get_withholding_data',
         readonly=True,

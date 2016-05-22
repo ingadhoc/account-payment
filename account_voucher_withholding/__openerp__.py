@@ -19,7 +19,7 @@
 #
 ##############################################################################
 {
-    'author':  'ADHOC SA',
+    'author': 'ADHOC SA',
     'website': 'www.adhoc.com.ar',
     'license': 'AGPL-3',
     'category': 'Accounting & Finance',
@@ -43,5 +43,5 @@ Add withholding management on vouchers
     'installable': True,
     'name': 'Voucher Voucher Withholding',
     'test': [],
-    'version': '8.0.1.4.3',
- }
+    'version': '8.0.1.5.0',
+}

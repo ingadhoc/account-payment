@@ -16,19 +16,21 @@ class account_voucher_withholding(models.Model):
     _description = "Account Withholding Voucher"
 
     automatic = fields.Boolean(
-        )
+    )
     voucher_id = fields.Many2one(
         'account.voucher',
         'Voucher',
         required=True,
         ondelete='cascade',
-        )
+    )
     display_name = fields.Char(
         compute='get_display_name'
-        )
+    )
     name = fields.Char(
         'Number',
-        )
+    )
+    description = fields.Char(
+    )
     internal_number = fields.Char(
         'Internal Number',
         required=True,
@@ -38,17 +40,17 @@ class account_voucher_withholding(models.Model):
         states={
             'draft': [('readonly', False)],
             'confirmed': [('readonly', False)]
-            },
-        )
+        },
+    )
     date = fields.Date(
         'Date',
         required=True,
         default=fields.Date.context_today,
-        )
+    )
     state = fields.Selection(
         related='voucher_id.state',
         default='draft',
-        )
+    )
     tax_withholding_id = fields.Many2one(
         'account.tax.withholding',
         string='Withholding',
@@ -57,11 +59,11 @@ class account_voucher_withholding(models.Model):
         states={
             'draft': [('readonly', False)],
             'confirmed': [('readonly', False)]
-            },
-        )
+        },
+    )
     comment = fields.Text(
         'Additional Information',
-        )
+    )
     amount = fields.Float(
         'Amount',
         digits=dp.get_precision('Account'),
@@ -69,23 +71,23 @@ class account_voucher_withholding(models.Model):
         states={
             'draft': [('readonly', False)],
             'confirmed': [('readonly', False)]
-            },
-        )
+        },
+    )
     move_line_id = fields.Many2one(
         'account.move.line',
         'Journal Item',
         readonly=True,
-        )
+    )
     # Related fields
     partner_id = fields.Many2one(
         related='voucher_id.partner_id',
         store=True, readonly=True,
-        )
+    )
     company_id = fields.Many2one(
         'res.company',
         related='voucher_id.company_id',
         string='Company', store=True, readonly=True
-        )
+    )
     type = fields.Selection(
         related='voucher_id.type',
         string='Tipo',
@@ -93,7 +95,7 @@ class account_voucher_withholding(models.Model):
         # waiting for a PR 9081 to fix computed fields translations
         readonly=True,
         store=True,
-        )
+    )
 
     _sql_constraints = [
         ('internal_number_uniq', 'unique(internal_number, tax_withholding_id)',
