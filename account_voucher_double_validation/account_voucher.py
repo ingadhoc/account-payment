@@ -140,8 +140,10 @@ class account_voucher(models.Model):
                     not voucher.company_double_validation
             ):
                 continue
-            if voucher.currency_id.round(
-                    voucher.amount - voucher.to_pay_amount):
+            if (
+                    voucher.currency_id.round(
+                        voucher.amount - voucher.to_pay_amount) and
+                    not voucher.journal_id.allow_validation_difference):
                 raise Warning(_(
                     'You can not validate a Voucher that has '
                     'Total Amount different from To Pay Amount'))
@@ -150,6 +152,15 @@ class account_voucher(models.Model):
                     'You can not validate a Voucher that has '
                     'Payment Date before Today'))
         return super(account_voucher, self).proforma_voucher()
+
+    @api.onchange('currency_id')
+    def currency_change_check(self):
+        if self.state == 'confirmed':
+            return {'warning': {
+                'title': _('Warning!'),
+                'message': _(
+                    'You can not change to a journal of other currency on '
+                    'confirmed state, you should return to draft state')}}
 
     def onchange_amount(
             self, cr, uid, ids, amount, rate, partner_id, journal_id,

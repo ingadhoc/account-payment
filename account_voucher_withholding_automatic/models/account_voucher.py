@@ -16,7 +16,7 @@ class AccountVoucher(models.Model):
             self.env['account.tax.withholding'].search([
                 ('type_tax_use', 'in', [self.type, 'all']),
                 ('company_id', '=', self.company_id.id),
-                ]).create_voucher_withholdings(voucher)
+            ]).create_voucher_withholdings(voucher)
 
     @api.multi
     def action_confirm(self):
@@ -25,5 +25,5 @@ class AccountVoucher(models.Model):
             ('type', '=', 'payment'),
             ('journal_id.automatic_withholdings', '=', True),
             ('id', 'in', self.ids),
-            ]).compute_withholdings()
+        ]).compute_withholdings()
         return res

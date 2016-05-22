@@ -19,7 +19,7 @@
 #
 ##############################################################################
 {
-    'author':  'ADHOC SA',
+    'author': 'ADHOC SA',
     'website': 'www.adhoc.com.ar',
     'license': 'AGPL-3',
     'category': 'Accounting & Finance',
@@ -45,4 +45,4 @@ Account Voucher Withholding Automatic
     'name': 'Voucher Voucher Withholding Automatic',
     'test': [],
     'version': '8.0.0.1.0',
- }
+}

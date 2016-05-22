@@ -19,6 +19,7 @@
         "account_voucher",
     ],
     "data": [
+        'views/account_voucher_view.xml',
     ],
     "demo": [
     ],

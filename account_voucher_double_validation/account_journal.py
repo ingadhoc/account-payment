@@ -10,7 +10,7 @@ class AccountJournal(models.Model):
 
     _inherit = "account.journal"
 
-    automatic_withholdings = fields.Boolean(
-        help='Make withholdings automatically on payments vouchers'
-        ' confirmation'
+    allow_validation_difference = fields.Boolean(
+        help='If you are using double confirmation, you can allow some '
+        'journals to be validate with difference to confirmation amount'
     )

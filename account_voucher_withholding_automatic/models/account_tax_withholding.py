@@ -12,30 +12,36 @@ class AccountTaxWithholding(models.Model):
     _inherit = "account.tax.withholding"
     _description = "Account Withholding Taxes"
 
+    non_taxable_amount = fields.Float(
+        'Non-taxable Amount',
+        digits=dp.get_precision('Account'),
+        help="Amounts lower than this wont't have any withholding"
+    )
     non_taxable_minimum = fields.Float(
         'Non-taxable Minimum',
         digits=dp.get_precision('Account'),
-        )
+        help="Amount to be substracted before applying alicuot"
+    )
     base_amount_type = fields.Selection([
         ('untaxed_amount', 'Untaxed Amount'),
         ('total_amount', 'Total Amount'),
         # neto gravado + no gravado / neto gravado / importe total
         # importe de iva?
-        ],
+    ],
         'Base Amount',
         help='Base amount used to get withholding amount',
-        )
+    )
     advances_are_withholdable = fields.Boolean(
         'Advances are Withholdable?',
         default=True,
-        )
+    )
     accumulated_payments = fields.Selection([
         ('month', 'Month'),
         ('year', 'Year'),
-        ],
+    ],
         string='Accumulated Payments',
         help='If none is selected, then payments are not accumulated',
-        )
+    )
     # TODO implement
     # allow_modification = fields.Boolean(
     #     )
@@ -45,23 +51,31 @@ class AccountTaxWithholding(models.Model):
         ('based_on_rule', 'Based On Rule'),
         # ('fixed', 'Fixed Amount'),
         # ('code', 'Python Code'), ('balance', 'Balance')
-         ],
+    ],
         'Type',
         required=True,
         default='none',
         help="The computation method for the tax amount."
-        )
+    )
     rule_ids = fields.One2many(
         'account.tax.withholding.rule',
         'tax_withholding_id',
         'Rules',
-        )
+    )
     # amount = fields.Float(
     #     'Amount',
     #     # digits=dp.get_precision('Account'),
     #     digits=get_precision_tax(),
     #     help="For taxes of type percentage, enter % ratio between 0-1."
     #     )
+
+    @api.one
+    @api.constrains('non_taxable_amount', 'non_taxable_minimum')
+    def check_non_taxable_amounts(self):
+        if self.non_taxable_amount > self.non_taxable_minimum:
+            raise Warning(_(
+                'Non-taxable Amount can not be greater than Non-taxable '
+                'Minimum'))
 
     @api.multi
     def _get_rule(self, voucher):
@@ -90,7 +104,7 @@ class AccountTaxWithholding(models.Model):
                     ('voucher_id', '=', voucher.id),
                     ('tax_withholding_id', '=', tax.id),
                     ('automatic', '=', True),
-                    ], limit=1)
+                ], limit=1)
             vals = tax.get_withholding_vals(voucher)
             if not vals.get('amount'):
                 continue
@@ -150,7 +164,7 @@ class AccountTaxWithholding(models.Model):
                 ('partner_id', '=', voucher.partner_id.id),
                 ('state', '=', 'posted'),
                 ('id', '!=', voucher.id),
-                ]
+            ]
             if accumulated_payments == 'month':
                 from_relative_delta = relativedelta(day=1)
             elif accumulated_payments == 'year':
@@ -159,14 +173,14 @@ class AccountTaxWithholding(models.Model):
             previos_vouchers_domain += [
                 ('date', '<=', to_date),
                 ('date', '>=', from_date),
-                ]
+            ]
             same_period_vouchers = voucher.search(previos_vouchers_domain)
             accumulated_amount = sum(same_period_vouchers.mapped('amount'))
             previous_withholding_amount = sum(
                 self.env['account.voucher.withholding'].search([
                     ('voucher_id', 'in', same_period_vouchers.ids),
                     ('tax_withholding_id', '=', self.id),
-                    ]).mapped('amount'))
+                ]).mapped('amount'))
 
         total_amount = (
             accumulated_amount +
@@ -174,8 +188,9 @@ class AccountTaxWithholding(models.Model):
             withholdable_invoiced_amount)
         # non_taxable_minimum = self.get_non_taxable_minimum(voucher)
         non_taxable_minimum = self.non_taxable_minimum
+        non_taxable_amount = self.non_taxable_amount
         withholdable_base_amount = ((total_amount > non_taxable_minimum) and (
-            total_amount - non_taxable_minimum) or 0.0)
+            total_amount - non_taxable_amount) or 0.0)
         rule = self._get_rule(voucher)
         percentage = 0.0
         fix_amount = 0.0
@@ -196,6 +211,7 @@ class AccountTaxWithholding(models.Model):
             'accumulated_amount': accumulated_amount,
             'total_amount': total_amount,
             'non_taxable_minimum': non_taxable_minimum,
+            'non_taxable_amount': non_taxable_amount,
             'withholdable_base_amount': withholdable_base_amount,
             'period_withholding_amount': period_withholding_amount,
             'previous_withholding_amount': previous_withholding_amount,

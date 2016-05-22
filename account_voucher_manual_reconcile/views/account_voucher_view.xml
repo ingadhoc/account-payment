@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        
+        <record id="view_vendor_receipt_dialog_form" model="ir.ui.view">
+            <field name="name">account.voucher.receipt.dialog.form</field>
+            <field name="model">account.voucher</field>
+            <field name="inherit_id" ref="account_voucher.view_vendor_receipt_dialog_form"/>
+            <field name="arch" type="xml">
+                <!-- estamos pisando el contexto porque no encontramos una mejor forma -->
+                <field name="journal_id" position="attributes">
+                    <attribute name="on_change">onchange_journal(journal_id, line_dr_ids, False, partner_id, date, amount, type, company_id, {'currency_id':currency_id})</attribute>
+                </field>
+            </field>
+        </record>
+
+        <record id="view_vendor_receipt_form" model="ir.ui.view">
+            <field name="name">account.voucher.receipt.form</field>
+            <field name="model">account.voucher</field>
+            <field name="inherit_id" ref="account_voucher.view_vendor_receipt_form"/>
+            <field name="arch" type="xml">
+                <!-- estamos pisando el contexto porque no encontramos una mejor forma -->
+                <field name="journal_id" position="attributes">
+                    <attribute name="on_change">onchange_journal(journal_id, line_dr_ids, False, partner_id, date, amount, type, company_id, {'currency_id':currency_id})</attribute>
+                </field>
+            </field>
+        </record>
+        
+        <record id="view_vendor_payment_form" model="ir.ui.view">
+            <field name="name">account.voucher.customer.pay.form</field>
+            <field name="model">account.voucher</field>
+            <field name="inherit_id" ref="account_voucher.view_vendor_payment_form"/>
+            <field name="arch" type="xml">
+                <!-- estamos pisando el contexto porque no encontramos una mejor forma -->
+                <field name="journal_id" position="attributes">
+                    <attribute name="on_change">onchange_journal(journal_id, line_dr_ids, False, partner_id, date, amount, type, company_id, {'currency_id':currency_id})</attribute>
+                </field>
+            </field>
+        </record>
+
+    </data>
+</openerp>
