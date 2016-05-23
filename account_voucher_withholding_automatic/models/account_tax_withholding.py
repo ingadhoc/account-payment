@@ -4,6 +4,7 @@ import openerp.addons.decimal_precision as dp
 # from openerp.addons.account.account import get_precision_tax
 from openerp.exceptions import Warning
 from ast import literal_eval
+from openerp.addons.account.account import get_precision_tax
 from dateutil.relativedelta import relativedelta
 import datetime
 
@@ -25,11 +26,17 @@ class AccountTaxWithholding(models.Model):
     base_amount_type = fields.Selection([
         ('untaxed_amount', 'Untaxed Amount'),
         ('total_amount', 'Total Amount'),
+        ('percentage_of_total', 'Percentage Of Total'),
         # neto gravado + no gravado / neto gravado / importe total
         # importe de iva?
     ],
         'Base Amount',
         help='Base amount used to get withholding amount',
+    )
+    base_amount_percentage = fields.Float(
+        'Percentage',
+        digits=get_precision_tax(),
+        help="Enter % ratio between 0-1."
     )
     advances_are_withholdable = fields.Boolean(
         'Advances are Withholdable?',
@@ -143,6 +150,8 @@ class AccountTaxWithholding(models.Model):
             invoice = voucher_line.move_line_id.invoice
             factor = (invoice.amount_total and (
                 invoice.amount_untaxed / invoice.amount_total) or 1.0)
+        elif self.base_amount_type == 'percentage_of_total':
+            factor = self.base_amount_percentage
         return factor
 
     @api.multi
