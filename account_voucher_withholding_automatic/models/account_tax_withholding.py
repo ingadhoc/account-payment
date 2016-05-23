@@ -115,6 +115,9 @@ class AccountTaxWithholding(models.Model):
                 ], limit=1)
             vals = tax.get_withholding_vals(voucher)
             if not vals.get('amount'):
+                # if on refresh no more withholding, we delete if it exists
+                if voucher_withholding:
+                    voucher_withholding.unlink()
                 continue
             if voucher_withholding:
                 voucher_withholding.write(vals)
