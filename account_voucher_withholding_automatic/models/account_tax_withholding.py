@@ -16,12 +16,12 @@ class AccountTaxWithholding(models.Model):
     non_taxable_amount = fields.Float(
         'Non-taxable Amount',
         digits=dp.get_precision('Account'),
-        help="Amounts lower than this wont't have any withholding"
+        help="Amount to be substracted before applying alicuot"
     )
     non_taxable_minimum = fields.Float(
         'Non-taxable Minimum',
         digits=dp.get_precision('Account'),
-        help="Amount to be substracted before applying alicuot"
+        help="Amounts lower than this wont't have any withholding"
     )
     base_amount_type = fields.Selection([
         ('untaxed_amount', 'Untaxed Amount'),
@@ -211,9 +211,14 @@ class AccountTaxWithholding(models.Model):
         rule = self._get_rule(voucher)
         percentage = 0.0
         fix_amount = 0.0
+        comment = False
         if rule:
             percentage = rule.percentage
             fix_amount = rule.fix_amount
+            comment = '%s x %s + %s' % (
+                withholdable_base_amount,
+                percentage,
+                fix_amount)
         period_withholding_amount = (
             withholdable_base_amount * percentage + fix_amount)
         # period_withholding_amount = withholdable_base_amount * self.amount
@@ -237,6 +242,7 @@ class AccountTaxWithholding(models.Model):
             'voucher_id': voucher.id,
             'tax_withholding_id': self.id,
             'automatic': True,
+            'comment': comment,
         }
         # self.withholdable_invoiced_amount = withholdable_invoiced_amount
         # self.accumulated_amount = accumulated_amount
