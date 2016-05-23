@@ -36,7 +36,8 @@ class AccountTaxWithholding(models.Model):
     base_amount_percentage = fields.Float(
         'Percentage',
         digits=get_precision_tax(),
-        help="Enter % ratio between 0-1."
+        help="Enter % ratio between 0-1.",
+        default=1,
     )
     advances_are_withholdable = fields.Boolean(
         'Advances are Withholdable?',
@@ -141,6 +142,13 @@ class AccountTaxWithholding(models.Model):
                 sign = sign * -1.0
             amount += line.amount * sign * factor
         return amount
+
+    @api.one
+    @api.constrains('base_amount_percentage')
+    def check_base_amount_percentage(self):
+        if self.base_amount_percentage > 1:
+            raise Warning(_(
+                'Base Amount Percentage can not be greater than 1'))
 
     @api.multi
     def get_withholdable_factor(self, voucher_line):
