@@ -30,7 +30,7 @@
                             <label for="base_amount_type" attrs="{'required':[('type', '!=', 'none')]}"/>
                             <div for="base_amount_type" attrs="{'required':[('type', '!=', 'none')]}">
                                 <field name="base_amount_type" attrs="{'required':[('type', '!=', 'none')]}" class="oe_inline"/>
-                                <field name="base_amount_percentage" attrs="{'required':[('base_amount_type', '=', 'percentage_of_total')], 'invisible':[('base_amount_type', '!=', 'percentage_of_total')]}" class="oe_inline"/>
+                                <!-- <field name="base_amount_percentage" attrs="{'required':[('base_amount_type', '=', 'percentage_of_total')], 'invisible':[('base_amount_type', '!=', 'percentage_of_total')]}" class="oe_inline"/> -->
                             </div>
                             <field name="non_taxable_minimum"/>
                             <field name="non_taxable_amount"/>
