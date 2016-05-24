@@ -3,19 +3,29 @@
 # * account_voucher_withholding
 # 
 # Translators:
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
 msgid ""
 msgstr ""
-"Project-Id-Version: odoo-addons (8.0)\n"
+"Project-Id-Version: account-payment (8.0)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-05 13:55+0000\n"
-"PO-Revision-Date: 2015-12-29 18:43+0000\n"
-"Last-Translator: Juan Jose Scarafia <scarafia.juanjose@gmail.com>\n"
-"Language-Team: Spanish (http://www.transifex.com/adhoc/ingadhoc-odoo-addons-8-0/language/es/)\n"
+"POT-Creation-Date: 2016-05-24 13:23+0000\n"
+"PO-Revision-Date: 2016-05-24 20:32+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>\n"
+"Language-Team: Spanish (http://www.transifex.com/adhoc/ingadhoc-account-payment-8-0/language/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Language: es\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: account_voucher_withholding
+#: help:account.voucher.withholding,state:0
+msgid ""
+" * The 'Draft' status is used when a user is encoding a new and unconfirmed Voucher.                         \n"
+"* The 'Pro-forma' when voucher is in Pro-forma status,voucher does not have an voucher number.                         \n"
+"* The 'Posted' status is used when user create voucher,a voucher number is generated and voucher entries are created in account                         \n"
+"* The 'Cancelled' status is used when user cancel voucher."
+msgstr " * The 'Draft' status is used when a user is encoding a new and unconfirmed Voucher.                         \n* The 'Pro-forma' when voucher is in Pro-forma status,voucher does not have an voucher number.                         \n* The 'Posted' status is used when user create voucher,a voucher number is generated and voucher entries are created in account                         \n* The 'Cancelled' status is used when user cancel voucher."
 
 #. module: account_voucher_withholding
 #: field:account.tax.withholding,account_id:0
@@ -70,6 +80,11 @@ msgstr "Importe"
 #: field:account.tax.withholding.template,account_analytic_id:0
 msgid "Analytic Account"
 msgstr "Cuenta Analítica"
+
+#. module: account_voucher_withholding
+#: field:account.voucher.withholding,automatic:0
+msgid "Automatic"
+msgstr "Automático"
 
 #. module: account_voucher_withholding
 #: field:account.tax.withholding,base_code_id:0
@@ -127,8 +142,20 @@ msgstr "Deducciones Realizadas"
 #. module: account_voucher_withholding
 #: field:account.tax.withholding,description:0
 #: field:account.tax.withholding.template,description:0
+#: field:account.voucher.withholding,description:0
 msgid "Description"
 msgstr "Descripción"
+
+#. module: account_voucher_withholding
+#: field:account.tax.withholding,display_name:0
+#: field:account.tax.withholding.template,display_name:0
+msgid "Display Name"
+msgstr "Display Name"
+
+#. module: account_voucher_withholding
+#: field:account.voucher.withholding,display_name:0
+msgid "Display name"
+msgstr "Display name"
 
 #. module: account_voucher_withholding
 #: view:account.voucher.withholding:account_voucher_withholding.account_voucher_withholding_filter_view
@@ -159,6 +186,16 @@ msgid ""
 msgstr "Si el campo activo se setea como Falso, le va a permitir ocultar el impuesto sin borrarlo."
 
 #. module: account_voucher_withholding
+#: help:account.voucher,withholdings_amount:0
+msgid "Importe a ser Pagado con Retenciones"
+msgstr "Importe a ser Pagado con Retenciones"
+
+#. module: account_voucher_withholding
+#: field:account.voucher,withholdings_amount:0
+msgid "Importe en Retenciones"
+msgstr "Importe en Retenciones"
+
+#. module: account_voucher_withholding
 #: field:account.voucher.withholding,internal_number:0
 msgid "Internal Number"
 msgstr "Número Interno"
@@ -178,6 +215,13 @@ msgstr "El Número Interno debe ser único por Impuesto de Retención!"
 #: field:account.voucher.withholding,move_line_id:0
 msgid "Journal Item"
 msgstr "Apunte Contable"
+
+#. module: account_voucher_withholding
+#: field:account.tax.withholding,__last_update:0
+#: field:account.tax.withholding.template,__last_update:0
+#: field:account.voucher.withholding,__last_update:0
+msgid "Last Modified on"
+msgstr "Última Modificación en"
 
 #. module: account_voucher_withholding
 #: field:account.tax.withholding,write_uid:0
@@ -284,6 +328,11 @@ msgid "Refund/negative Operations"
 msgstr "Operaciones de Reintegro/Negativas"
 
 #. module: account_voucher_withholding
+#: field:account.voucher.withholding,state:0
+msgid "Status"
+msgstr "Estado"
+
+#. module: account_voucher_withholding
 #: field:account.tax.withholding,type_tax_use:0
 #: field:account.tax.withholding.template,type_tax_use:0
 msgid "Tax Application"
@@ -302,7 +351,7 @@ msgid "Tax Code Sign"
 msgstr "Signo Código Impuesto"
 
 #. module: account_voucher_withholding
-#: code:addons/account_voucher_withholding/models/account_voucher_withholding.py:110
+#: code:addons/account_voucher_withholding/models/account_voucher_withholding.py:126
 #, python-format
 msgid "Tax Withholding is Required!"
 msgstr "Impuesto de Retención Requerido!"
@@ -311,6 +360,11 @@ msgstr "Impuesto de Retención Requerido!"
 #: model:ir.model,name:account_voucher_withholding.model_account_chart_template
 msgid "Templates for Account Chart"
 msgstr "Plantillas para el plan contable"
+
+#. module: account_voucher_withholding
+#: field:account.voucher.withholding,type:0
+msgid "Tipo"
+msgstr "Tipo"
 
 #. module: account_voucher_withholding
 #: view:account.voucher.withholding:account_voucher_withholding.account_voucher_withholding_tree_view
@@ -352,7 +406,7 @@ msgid "Voucher"
 msgstr "Comprobante"
 
 #. module: account_voucher_withholding
-#: code:addons/account_voucher_withholding/models/account_voucher_withholding.py:101
+#: code:addons/account_voucher_withholding/models/account_voucher_withholding.py:117
 #, python-format
 msgid "Voucher and Tax Withholding must belong to the same company"
 msgstr "El Comprobante y el Impuesto de Retención deben pertenecer a la misma compañía"
@@ -397,6 +451,11 @@ msgstr "Lista de Plantilla de Retencion"
 #: model:ir.ui.menu,name:account_voucher_withholding.menu_account_voucher_withholding
 msgid "Withholding Vouchers"
 msgstr "Comprobantes de Retención"
+
+#. module: account_voucher_withholding
+#: view:account.voucher.withholding:account_voucher_withholding.account_voucher_withholding_form_view
+msgid "Withholding..."
+msgstr "Retención..."
 
 #. module: account_voucher_withholding
 #: field:account.voucher,withholding_ids:0

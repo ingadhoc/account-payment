@@ -5,12 +5,12 @@
 # Translators:
 msgid ""
 msgstr ""
-"Project-Id-Version: odoo-addons (8.0)\n"
+"Project-Id-Version: account-payment (8.0)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-22 13:44+0000\n"
-"PO-Revision-Date: 2015-10-01 16:14+0000\n"
-"Last-Translator: Juan Jose Scarafia <scarafia.juanjose@gmail.com>\n"
-"Language-Team: Turkish (http://www.transifex.com/adhoc/ingadhoc-odoo-addons-8-0/language/tr/)\n"
+"POT-Creation-Date: 2016-05-24 13:23+0000\n"
+"PO-Revision-Date: 2016-05-20 18:06+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>\n"
+"Language-Team: Turkish (http://www.transifex.com/adhoc/ingadhoc-account-payment-8-0/language/tr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
@@ -33,9 +33,20 @@ msgid "Amount Paid With Journal Method"
 msgstr "Yevmiye yöntemiyle ödenen tutar"
 
 #. module: account_voucher_payline
+#: help:account.voucher,paylines_amount:0
 #: code:addons/account_voucher_payline/models/account_voucher.py:23
 #, python-format
 msgid "Amount Paid With Paylines: checks, withholdings, etc."
+msgstr ""
+
+#. module: account_voucher_payline
+#: field:account.voucher,dummy_journal_id:0
+msgid "Dummy Journa"
+msgstr ""
+
+#. module: account_voucher_payline
+#: help:account.voucher,dummy_journal_id:0
+msgid "Field used for new api onchange methods over journal"
 msgstr ""
 
 #. module: account_voucher_payline
@@ -44,14 +55,26 @@ msgid "Invoice"
 msgstr ""
 
 #. module: account_voucher_payline
+#: field:account.voucher,paylines_amount:0
 #: code:addons/account_voucher_payline/models/account_voucher.py:20
 #, python-format
 msgid "Paylines Amount"
 msgstr ""
 
 #. module: account_voucher_payline
+#: field:account.voucher,reconciled_amount:0
+msgid "Reconciled Amount"
+msgstr ""
+
+#. module: account_voucher_payline
 #: view:account.voucher:account_voucher_payline.view_vendor_payment_form
 #: view:account.voucher:account_voucher_payline.view_vendor_receipt_dialog_form
 #: view:account.voucher:account_voucher_payline.view_vendor_receipt_form
+#: field:account.voucher,amount_readonly:0
 msgid "Total Amount"
 msgstr "Toplam Tutar"
+
+#. module: account_voucher_payline
+#: help:account.voucher,amount_readonly:0
+msgid "Total Amount Paid"
+msgstr ""

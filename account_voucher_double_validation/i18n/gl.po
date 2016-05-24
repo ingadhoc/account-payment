@@ -1,0 +1,199 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * account_voucher_double_validation
+# 
+# Translators:
+msgid ""
+msgstr ""
+"Project-Id-Version: account-payment (8.0)\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-05-24 13:23+0000\n"
+"PO-Revision-Date: 2016-05-22 22:19+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>\n"
+"Language-Team: Galician (http://www.transifex.com/adhoc/ingadhoc-account-payment-8-0/language/gl/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Language: gl\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: account_voucher_double_validation
+#: model:ir.model,name:account_voucher_double_validation.model_account_voucher
+msgid "Accounting Voucher"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: field:account.voucher,advance_amount:0
+msgid "Advance Amount"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: field:account.journal,allow_validation_difference:0
+msgid "Allow validation difference"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: help:account.voucher,advance_amount:0
+msgid "Amount to be advance and not conciliated with debts"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: view:account.voucher:account_voucher_double_validation.view_vendor_payment_form
+msgid "Cancel Receipt"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: code:addons/account_voucher_double_validation/account_voucher.py:17
+#, python-format
+msgid "Cancelled"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: model:ir.model,name:account_voucher_double_validation.model_res_company
+msgid "Companies"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: view:account.voucher:account_voucher_double_validation.view_vendor_payment_form
+msgid "Confirm"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: code:addons/account_voucher_double_validation/account_voucher.py:16
+#, python-format
+msgid "Confirmed"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: help:account.voucher,difference_amount:0
+msgid "Diferencia enre el importe a ser pagado y el importe pagado"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: field:account.voucher,difference_amount:0
+msgid "Difference amount"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: field:account.voucher,company_double_validation:0
+#: field:res.company,double_validation:0
+msgid "Double Validation on Payments?"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: code:addons/account_voucher_double_validation/account_voucher.py:15
+#, python-format
+msgid "Draft"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: field:account.voucher,confirmation_date:0
+msgid "Fecha de Confirmación"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: help:account.journal,allow_validation_difference:0
+msgid ""
+"If you are using double confirmation, you can allow some journals to be "
+"validate with difference to confirmation amount"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: field:account.voucher,to_pay_amount:0
+msgid "Importe a Pagar"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: help:account.voucher,to_pay_amount:0
+msgid "Importe a ser pagado"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: model:ir.model,name:account_voucher_double_validation.model_account_journal
+msgid "Journal"
+msgstr "Diario"
+
+#. module: account_voucher_double_validation
+#: field:account.voucher,payment_date:0
+msgid "Payment Date"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: help:account.voucher,payment_date:0
+msgid "Payment can not be validated before this date"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: code:addons/account_voucher_double_validation/account_voucher.py:19
+#, python-format
+msgid "Posted"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: code:addons/account_voucher_double_validation/account_voucher.py:18
+#, python-format
+msgid "Pro-forma"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: view:account.voucher:account_voucher_double_validation.view_voucher_tree
+msgid "Total"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: help:account.voucher,company_double_validation:0
+#: help:res.company,double_validation:0
+msgid "Use two steps validation on payments to suppliers of this journal?"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: view:account.voucher:account_voucher_double_validation.view_vendor_payment_form
+msgid "Validate"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: code:addons/account_voucher_double_validation/account_voucher.py:160
+#, python-format
+msgid "Warning!"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: code:addons/account_voucher_double_validation/account_voucher.py:161
+#, python-format
+msgid ""
+"You can not change to a journal of other currency on confirmed state, you "
+"should return to draft state"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: code:addons/account_voucher_double_validation/account_voucher.py:151
+#, python-format
+msgid "You can not validate a Voucher that has Payment Date before Today"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: code:addons/account_voucher_double_validation/account_voucher.py:147
+#, python-format
+msgid ""
+"You can not validate a Voucher that has Total Amount different from To Pay "
+"Amount"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: view:account.voucher:account_voucher_double_validation.view_voucher_tree
+msgid ""
+"blue:state == 'draft';gray:state == 'cancel';red:audit;green:state == "
+"'confirmed'"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: view:account.voucher:account_voucher_double_validation.view_vendor_payment_form
+msgid "draft,confirmed,posted"
+msgstr ""
+
+#. module: account_voucher_double_validation
+#: view:account.voucher:account_voucher_double_validation.view_vendor_payment_form
+msgid ""
+"{'invisible': ['|', ('company_double_validation', '=', True), ('state', "
+"'!=', 'draft')]}"
+msgstr ""

@@ -3,14 +3,15 @@
 # * account_voucher_constraint
 # 
 # Translators:
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
 msgid ""
 msgstr ""
-"Project-Id-Version: odoo-addons (8.0)\n"
+"Project-Id-Version: account-payment (8.0)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-22 13:44+0000\n"
-"PO-Revision-Date: 2015-09-23 17:20+0000\n"
-"Last-Translator: <>\n"
-"Language-Team: Spanish (http://www.transifex.com/adhoc/ingadhoc-odoo-addons-8-0/language/es/)\n"
+"POT-Creation-Date: 2016-05-24 13:23+0000\n"
+"PO-Revision-Date: 2016-05-24 20:26+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>\n"
+"Language-Team: Spanish (http://www.transifex.com/adhoc/ingadhoc-account-payment-8-0/language/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
@@ -25,7 +26,7 @@ msgstr "Comprobante de contabilidad"
 #. module: account_voucher_constraint
 #: selection:account.journal,voucher_amount_restriction:0
 msgid "Can't be 0"
-msgstr ""
+msgstr "No puede ser 0"
 
 #. module: account_voucher_constraint
 #: model:ir.model,name:account_voucher_constraint.model_account_journal
@@ -35,7 +36,7 @@ msgstr "Diario"
 #. module: account_voucher_constraint
 #: selection:account.journal,voucher_amount_restriction:0
 msgid "Must Be 0"
-msgstr ""
+msgstr "Debe ser 0"
 
 #. module: account_voucher_constraint
 #: code:addons/account_voucher_constraint/models/account_voucher.py:23
@@ -43,7 +44,7 @@ msgstr ""
 msgid ""
 "On Journal '%s' amount can't be cero!\n"
 "* Voucher id: %i"
-msgstr ""
+msgstr "En el Diario '%s' el importe no puede ser cero!\n* Id Registro: %i "
 
 #. module: account_voucher_constraint
 #: code:addons/account_voucher_constraint/models/account_voucher.py:30
@@ -51,9 +52,9 @@ msgstr ""
 msgid ""
 "On Journal '%s' amount must be cero!\n"
 "* Voucher id: %i"
-msgstr ""
+msgstr "En el Diario '%s' el importe debe ser cero!\n* Id Registro: %i "
 
 #. module: account_voucher_constraint
 #: field:account.journal,voucher_amount_restriction:0
 msgid "Voucher Amount Restriction"
-msgstr ""
+msgstr "Restricción en Comprobante de Pago"

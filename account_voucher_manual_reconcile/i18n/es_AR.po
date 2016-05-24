@@ -1,0 +1,32 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * account_voucher_manual_reconcile
+# 
+# Translators:
+msgid ""
+msgstr ""
+"Project-Id-Version: account-payment (8.0)\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-05-24 13:23+0000\n"
+"PO-Revision-Date: 2016-05-22 22:19+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>\n"
+"Language-Team: Spanish (Argentina) (http://www.transifex.com/adhoc/ingadhoc-account-payment-8-0/language/es_AR/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Language: es_AR\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: account_voucher_manual_reconcile
+#: model:ir.model,name:account_voucher_manual_reconcile.model_account_voucher
+msgid "Accounting Voucher"
+msgstr "Comprobante de contabilidad"
+
+#. module: account_voucher_manual_reconcile
+#: view:account.voucher:account_voucher_manual_reconcile.view_vendor_payment_form
+#: view:account.voucher:account_voucher_manual_reconcile.view_vendor_receipt_dialog_form
+#: view:account.voucher:account_voucher_manual_reconcile.view_vendor_receipt_form
+msgid ""
+"onchange_journal(journal_id, line_dr_ids, False, partner_id, date, amount, "
+"type, company_id, {'currency_id':currency_id})"
+msgstr ""
