@@ -34,6 +34,8 @@
                             </div>
                             <field name="non_taxable_minimum"/>
                             <field name="non_taxable_amount"/>
+                            <field name="user_error_message"/>
+                            <field name="user_error_domain" attrs="{'invisible': [('user_error_message', '=', False)]}"/>
                         </group>
                     </group>
                 </group>

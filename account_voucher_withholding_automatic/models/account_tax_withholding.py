@@ -39,6 +39,12 @@ class AccountTaxWithholding(models.Model):
     #     help="Enter % ratio between 0-1.",
     #     default=1,
     # )
+    user_error_message = fields.Char(
+    )
+    user_error_domain = fields.Char(
+        default="[]",
+        help='Write a domain over account voucher module'
+    )
     advances_are_withholdable = fields.Boolean(
         'Advances are Withholdable?',
         default=True,
@@ -113,6 +119,17 @@ class AccountTaxWithholding(models.Model):
                     ('tax_withholding_id', '=', tax.id),
                     ('automatic', '=', True),
                 ], limit=1)
+            if tax.user_error_message and tax.user_error_domain:
+                try:
+                    domain = literal_eval(tax.user_error_domain)
+                except Exception, e:
+                    raise Warning(_(
+                        'Could not eval rule domain "%s".\n'
+                        'This is what we get:\n%s' % (
+                            tax.user_error_domain, e)))
+                domain.append(('id', '=', voucher.id))
+                if voucher.search(domain):
+                    raise Warning(tax.user_error_message)
             vals = tax.get_withholding_vals(voucher)
             if not vals.get('amount'):
                 # if on refresh no more withholding, we delete if it exists
