@@ -50,6 +50,7 @@ class account_voucher_withholding(models.Model):
     state = fields.Selection(
         related='voucher_id.state',
         default='draft',
+        readonly=True,
     )
     tax_withholding_id = fields.Many2one(
         'account.tax.withholding',

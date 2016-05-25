@@ -8,7 +8,8 @@ class account_voucher(models.Model):
     _inherit = "account.voucher"
 
     company_double_validation = fields.Boolean(
-        related='company_id.double_validation'
+        related='company_id.double_validation',
+        readonly=True,
     )
     state = fields.Selection(
         selection=[

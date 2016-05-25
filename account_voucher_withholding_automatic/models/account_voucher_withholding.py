@@ -14,7 +14,8 @@ class account_voucher_withholding(models.Model):
     _inherit = "account.voucher.withholding"
 
     accumulated_payments = fields.Selection(
-        related='tax_withholding_id.accumulated_payments'
+        related='tax_withholding_id.accumulated_payments',
+        readonly=True,
     )
     withholdable_invoiced_amount = fields.Float(
         'Importe imputado sujeto a retención',
