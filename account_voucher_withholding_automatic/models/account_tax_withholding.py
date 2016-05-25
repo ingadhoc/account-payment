@@ -94,6 +94,9 @@ class AccountTaxWithholding(models.Model):
     @api.multi
     def _get_rule(self, voucher):
         self.ensure_one()
+        # do not return rule if other type
+        if self.type != 'based_on_rule':
+            return False
         for rule in self.rule_ids:
             try:
                 domain = literal_eval(rule.domain)
@@ -162,13 +165,6 @@ class AccountTaxWithholding(models.Model):
                 sign = sign * -1.0
             amount += line.amount * sign * factor
         return amount
-
-    @api.one
-    @api.constrains('base_amount_percentage')
-    def check_base_amount_percentage(self):
-        if self.base_amount_percentage > 1:
-            raise Warning(_(
-                'Base Amount Percentage can not be greater than 1'))
 
     @api.multi
     def get_withholdable_factor(self, voucher_line):
