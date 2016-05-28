@@ -5,12 +5,12 @@
 # Translators:
 # Gonzalo Ruzafa <gr@ingadhoc.com>, 2015
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2015
-# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2015-2016
 msgid ""
 msgstr ""
 "Project-Id-Version: account-payment (8.0)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-24 13:23+0000\n"
+"POT-Creation-Date: 2016-05-28 19:39+0000\n"
 "PO-Revision-Date: 2016-05-24 20:29+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>\n"
 "Language-Team: Spanish (http://www.transifex.com/adhoc/ingadhoc-account-payment-8-0/language/es/)\n"
@@ -46,7 +46,7 @@ msgid "Cancel Receipt"
 msgstr "Cancelar Recibo"
 
 #. module: account_voucher_double_validation
-#: code:addons/account_voucher_double_validation/account_voucher.py:17
+#: code:addons/account_voucher_double_validation/account_voucher.py:18
 #, python-format
 msgid "Cancelled"
 msgstr "Cancelado"
@@ -62,7 +62,7 @@ msgid "Confirm"
 msgstr "Confirmar"
 
 #. module: account_voucher_double_validation
-#: code:addons/account_voucher_double_validation/account_voucher.py:16
+#: code:addons/account_voucher_double_validation/account_voucher.py:17
 #, python-format
 msgid "Confirmed"
 msgstr "Confirmado"
@@ -84,7 +84,7 @@ msgid "Double Validation on Payments?"
 msgstr "Doble Validación en Pagos?"
 
 #. module: account_voucher_double_validation
-#: code:addons/account_voucher_double_validation/account_voucher.py:15
+#: code:addons/account_voucher_double_validation/account_voucher.py:16
 #, python-format
 msgid "Draft"
 msgstr "Borrador"
@@ -127,13 +127,13 @@ msgid "Payment can not be validated before this date"
 msgstr "El pago no puede ser validado antes que esta fecha"
 
 #. module: account_voucher_double_validation
-#: code:addons/account_voucher_double_validation/account_voucher.py:19
+#: code:addons/account_voucher_double_validation/account_voucher.py:20
 #, python-format
 msgid "Posted"
 msgstr "Asentado"
 
 #. module: account_voucher_double_validation
-#: code:addons/account_voucher_double_validation/account_voucher.py:18
+#: code:addons/account_voucher_double_validation/account_voucher.py:19
 #, python-format
 msgid "Pro-forma"
 msgstr "Pro-forma"
@@ -155,13 +155,13 @@ msgid "Validate"
 msgstr "Validar"
 
 #. module: account_voucher_double_validation
-#: code:addons/account_voucher_double_validation/account_voucher.py:160
+#: code:addons/account_voucher_double_validation/account_voucher.py:161
 #, python-format
 msgid "Warning!"
 msgstr "¡Advertencia!"
 
 #. module: account_voucher_double_validation
-#: code:addons/account_voucher_double_validation/account_voucher.py:161
+#: code:addons/account_voucher_double_validation/account_voucher.py:162
 #, python-format
 msgid ""
 "You can not change to a journal of other currency on confirmed state, you "
@@ -169,13 +169,13 @@ msgid ""
 msgstr "No puede cambiar a un diario de otra moneda en estado confirmado, debe volver al estado borrador "
 
 #. module: account_voucher_double_validation
-#: code:addons/account_voucher_double_validation/account_voucher.py:151
+#: code:addons/account_voucher_double_validation/account_voucher.py:152
 #, python-format
 msgid "You can not validate a Voucher that has Payment Date before Today"
 msgstr "No puede validar un Comprobante que tiene fecha de Pago anterior a Hoy"
 
 #. module: account_voucher_double_validation
-#: code:addons/account_voucher_double_validation/account_voucher.py:147
+#: code:addons/account_voucher_double_validation/account_voucher.py:148
 #, python-format
 msgid ""
 "You can not validate a Voucher that has Total Amount different from To Pay "

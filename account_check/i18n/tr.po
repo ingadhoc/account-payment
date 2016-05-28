@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: account-payment (8.0)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-24 13:23+0000\n"
-"PO-Revision-Date: 2016-05-20 11:29+0000\n"
+"POT-Creation-Date: 2016-05-28 19:39+0000\n"
+"PO-Revision-Date: 2016-05-28 19:39+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>\n"
 "Language-Team: Turkish (http://www.transifex.com/adhoc/ingadhoc-account-payment-8-0/language/tr/)\n"
 "MIME-Version: 1.0\n"
@@ -142,11 +142,17 @@ msgid "Check Rejected"
 msgstr "Karşılıksız"
 
 #. module: account_check
-#: code:addons/account_check/wizard/check_reject.py:125
-#: code:addons/account_check/wizard/check_reject.py:170
+#: code:addons/account_check/wizard/check_reject.py:144
+#: code:addons/account_check/wizard/check_reject.py:189
 #, python-format
 msgid "Check Rejected N: "
 msgstr "Karşılıksız Çek/Senet No:"
+
+#. module: account_check
+#: code:addons/account_check/wizard/check_reject.py:225
+#, python-format
+msgid "Check Rejection Expense"
+msgstr ""
 
 #. module: account_check
 #: model:ir.actions.act_window,name:account_check.action_check_return
@@ -339,11 +345,6 @@ msgstr "Taslak"
 #: field:account.check.dreject,expense_account:0
 msgid "Expense Account"
 msgstr "Masraf Hesabı"
-
-#. module: account_check
-#: field:account.check,rejection_account_move_id:0
-msgid "Expense Account Move"
-msgstr "Masraf Hesap Hareketi"
 
 #. module: account_check
 #: field:account.check.dreject,expense_amount:0
@@ -551,14 +552,14 @@ msgid "Next Check Number"
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/wizard/check_reject.py:122
+#: code:addons/account_check/wizard/check_reject.py:141
 #, python-format
 msgid "No journal for rejection in company %s"
 msgstr "Lütfen \"%s\" firması için satış yevmiyesi tanımlayınız."
 
 #. module: account_check
 #: code:addons/account_check/wizard/check_action.py:121
-#: code:addons/account_check/wizard/check_reject.py:164
+#: code:addons/account_check/wizard/check_reject.py:182
 #, python-format
 msgid "Not period found for this date"
 msgstr ""
@@ -580,7 +581,7 @@ msgid "Number Padding"
 msgstr "Dolgu Adedi"
 
 #. module: account_check
-#: code:addons/account_check/wizard/check_reject.py:60
+#: code:addons/account_check/wizard/check_reject.py:69
 #, python-format
 msgid "Only deposited or handed checks can be rejected."
 msgstr "Sadece bankaya verilen ve cirolanmış çek/senetler karşılıksız yapılabilir"
@@ -619,7 +620,7 @@ msgid "Payment Date"
 msgstr "Vade Tarihi"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:311
+#: code:addons/account_check/models/account_check.py:312
 #, python-format
 msgid "Payment Date must be greater than Issue Date"
 msgstr "Vade Tarihi Verilme Tarihinden sonra olmalıdır"
@@ -658,16 +659,31 @@ msgid "Rejected"
 msgstr "Karşılıksız"
 
 #. module: account_check
-#: code:addons/account_check/wizard/check_reject.py:177
+#: code:addons/account_check/wizard/check_reject.py:196
 #, python-format
 msgid "Rejected Check Nr. "
 msgstr "Karşılıksız Çek/Senet No."
 
 #. module: account_check
-#: code:addons/account_check/wizard/check_reject.py:82
+#: code:addons/account_check/wizard/check_reject.py:93
 #, python-format
 msgid "Rejected Expenses, Check N: "
 msgstr "Karşılıksız Masrafları, Çek/Senet No:"
+
+#. module: account_check
+#: field:account.check.dreject,rejection_account_id:0
+msgid "Rejection Account"
+msgstr ""
+
+#. module: account_check
+#: field:account.check,rejection_account_move_id:0
+msgid "Rejection Account Move"
+msgstr ""
+
+#. module: account_check
+#: help:account.check.dreject,rejection_account_id:0
+msgid "Rejection account, for eg. \"Rejected Checks\""
+msgstr ""
 
 #. module: account_check
 #: view:account.check:account_check.view_account_check_form
@@ -731,7 +747,7 @@ msgid "Supplier Reject Debit Note"
 msgstr "Tedarikçi Karşılıksız Ödeme Notu"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:323
+#: code:addons/account_check/models/account_check.py:324
 #, python-format
 msgid "The Check must be in draft state for unlink !"
 msgstr "Çek/senet sadece taslak durumunda silinebilir !"
@@ -795,38 +811,38 @@ msgid "To Draft"
 msgstr "Taslak Yap"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:397
+#: code:addons/account_check/models/account_check.py:398
 #, python-format
 msgid "To cancel a debit you must first delete Debit Account Move!"
 msgstr "Ödemeyi iptal etmek için önce Ödeme Muhasebe Hareketini silmelisiniz!"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:407
+#: code:addons/account_check/models/account_check.py:408
 #, python-format
 msgid "To cancel a deposit you must first delete the Deposit Account Move!"
 msgstr "Bankaya vermeyi iptal etmek için önce Bankaya Yatırma Muhasebe Hareketini silmelisiniz!"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:417
+#: code:addons/account_check/models/account_check.py:418
 #, python-format
 msgid "To cancel a deposit you must first delete the Return Account Move!"
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:387
+#: code:addons/account_check/models/account_check.py:388
 #, python-format
 msgid "To cancel a rejection you must first delete Expense Account Move!"
 msgstr "Karşılıksızı iptal etmek için önce Masraf Muhasebe Hareketini silmelisiniz!"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:379
+#: code:addons/account_check/models/account_check.py:380
 #, python-format
 msgid ""
 "To cancel a rejection you must first delete the customer reject debit note!"
 msgstr "Karşılıksızı iptal etmek için önce Müşteri Karşılıksız Muhasebe Hareketini silmelisiniz!"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:383
+#: code:addons/account_check/models/account_check.py:384
 #, python-format
 msgid ""
 "To cancel a rejection you must first delete the supplier reject debit note!"
@@ -880,7 +896,7 @@ msgid ""
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:439
+#: code:addons/account_check/models/account_check.py:440
 #, python-format
 msgid ""
 "You can not cancel issue checks in states other than \"draft or \"handed\". "
@@ -888,7 +904,7 @@ msgid ""
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:445
+#: code:addons/account_check/models/account_check.py:446
 #, python-format
 msgid ""
 "You can not cancel third checks in states other than \"draft or \"holding\"."
@@ -896,7 +912,7 @@ msgid ""
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:449
+#: code:addons/account_check/models/account_check.py:450
 #, python-format
 msgid "You can not cancel third checks that are being used on payments"
 msgstr ""

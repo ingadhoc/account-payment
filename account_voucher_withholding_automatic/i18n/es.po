@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: account-payment (8.0)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-24 13:23+0000\n"
-"PO-Revision-Date: 2016-05-24 20:32+0000\n"
+"POT-Creation-Date: 2016-05-28 19:39+0000\n"
+"PO-Revision-Date: 2016-05-25 21:30+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>\n"
 "Language-Team: Spanish (http://www.transifex.com/adhoc/ingadhoc-account-payment-8-0/language/es/)\n"
 "MIME-Version: 1.0\n"
@@ -75,12 +75,6 @@ msgid "Base Amount"
 msgstr "Importe Base"
 
 #. module: account_voucher_withholding_automatic
-#: code:addons/account_voucher_withholding_automatic/models/account_tax_withholding.py:170
-#, python-format
-msgid "Base Amount Percentage can not be greater than 1"
-msgstr "Base Amount Percentage can not be greater than 1"
-
-#. module: account_voucher_withholding_automatic
 #: help:account.tax.withholding,base_amount_type:0
 msgid "Base amount used to get withholding amount"
 msgstr "Importe base usado para obtener el importe de la retención"
@@ -106,8 +100,8 @@ msgid "Computed withholding amount"
 msgstr "Importe de retención calculado"
 
 #. module: account_voucher_withholding_automatic
-#: code:addons/account_voucher_withholding_automatic/models/account_tax_withholding.py:103
-#: code:addons/account_voucher_withholding_automatic/models/account_tax_withholding.py:128
+#: code:addons/account_voucher_withholding_automatic/models/account_tax_withholding.py:106
+#: code:addons/account_voucher_withholding_automatic/models/account_tax_withholding.py:131
 #, python-format
 msgid ""
 "Could not eval rule domain \"%s\".\n"
