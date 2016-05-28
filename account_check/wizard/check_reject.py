@@ -26,6 +26,15 @@ class account_check_dreject(models.TransientModel):
         'Check State')
     reject_date = fields.Date(
         'Reject Date', required=True, default=fields.Date.context_today)
+    # TODO implementar rejection acount en issue checks y los dos pasos como
+    # dejamos en el readme
+    rejection_account_id = fields.Many2one(
+        'account.account',
+        'Rejection Account',
+        # required=True,
+        help='Rejection account, for eg. "Rejected Checks"',
+        domain=[('type', 'in', ['other'])],
+    )
     expense_account = fields.Many2one(
         'account.account',
         'Expense Account',
@@ -65,8 +74,10 @@ class account_check_dreject(models.TransientModel):
                 if self.has_expense and self.expense_to_customer:
                     self.make_expense_invoice_line(
                         customer_invoice, check)
-                elif self.has_expense:
-                    self.make_expenses_move(check)
+                # for deposit check we make a move, for handed we create a
+                # debitnoe
+                if check.state == 'deposited':
+                    self.make_rejection_move(check)
 
             if check.state == 'handed':
                 supplier_invoice = self.make_invoice(
@@ -92,6 +103,12 @@ class account_check_dreject(models.TransientModel):
     @api.multi
     def make_invoice(self, invoice_type, check):
         self.ensure_one()
+        # account_id es la cuenta de la linea de factura de rechazo
+        if check.type == 'third_check':
+            account_id = self.rejection_account_id.id
+        else:
+            account_id = (
+                check.voucher_id.journal_id.default_credit_account_id.id)
         if invoice_type == 'in_invoice':
             debit_note_field = 'supplier_reject_debit_note_id'
             journal = self.env['account.journal'].search([
@@ -100,8 +117,8 @@ class account_check_dreject(models.TransientModel):
             partner_id = check.destiny_partner_id.id
             partner_account_id = (
                 check.voucher_id.partner_id.property_account_payable.id)
-            account_id = (
-                check.voucher_id.journal_id.default_credit_account_id.id)
+            # account_id = (
+            #     check.voucher_id.journal_id.default_credit_account_id.id)
         else:
             debit_note_field = 'customer_reject_debit_note_id'
             journal = self.env['account.journal'].search([
@@ -110,13 +127,15 @@ class account_check_dreject(models.TransientModel):
             partner_account_id = (
                 check.voucher_id.partner_id.property_account_receivable.id)
             partner_id = check.voucher_id.partner_id.id
-            if check.state == 'handed':
-                account_id = (
-                    check.voucher_id.journal_id.default_credit_account_id.id)
-            else:
-                deposit_move = check.deposit_account_move_id
-                account_id = (
-                    deposit_move.journal_id.default_credit_account_id.id)
+            # if check.state == 'handed':
+            #     account_id = (
+            #         check.voucher_id.journal_id.default_credit_account_id.id)
+            # else:
+            #     # print 'aaaaaaa'
+            #     account_id = self.rejection_account_id.id
+            #     # deposit_move = check.deposit_account_move_id
+            #     # account_id = (
+            #     #     deposit_move.journal_id.default_credit_account_id.id)
 
         if not journal:
             raise Warning(_('No journal for rejection in company %s') %
@@ -149,13 +168,12 @@ class account_check_dreject(models.TransientModel):
             'price_unit': check.amount,
             'quantity': 1,
         }
-
         invoice.invoice_line.create(invoice_line_vals)
 
         return invoice
 
     @api.multi
-    def make_expenses_move(self, check):
+    def make_rejection_move(self, check):
         self.ensure_one()
 
         period = self.env['account.period'].find(
@@ -164,43 +182,67 @@ class account_check_dreject(models.TransientModel):
             raise Warning(_('Not period found for this date'))
         period_id = period.id
 
+        journal = check.deposit_account_move_id.journal_id
         name = self.env['ir.sequence'].next_by_id(
-            check.voucher_id.journal_id.sequence_id.id)
+            journal.sequence_id.id)
 
         ref = _('Check Rejected N: ')
         ref += check.name
         move = self.with_context({}).env['account.move'].create({
             'name': name,
-            'journal_id': check.voucher_id.journal_id.id,
+            'journal_id': journal.id,
             'period_id': period_id,
             'date': self.reject_date,
             'ref': _('Rejected Check Nr. ') + check.name,
         })
 
+        # reject move line
         move.line_id.with_context({}).create({
             'name': name,
-            'centralisation': 'normal',
-            'account_id': self.expense_account.id,
+            'account_id': self.rejection_account_id.id,
             'move_id': move.id,
             'period_id': period_id,
-            'debit': self.expense_amount,
+            'debit': check.amount,
+            'credit': 0.0,
             'ref': ref,
         })
 
-        if check.state == 'handed':
-            account_id = (
-                check.voucher_id.journal_id.default_credit_account_id.id)
-        else:
-            deposit_move = check.deposit_account_move_id
-            account_id = deposit_move.journal_id.default_credit_account_id.id
+        account_id = journal.default_credit_account_id.id
+
+        # bank amount
         move.line_id.with_context({}).create({
             'name': name,
-            'centralisation': 'normal',
             'account_id': account_id,
             'move_id': move.id,
             'period_id': period_id,
-            'credit': self.expense_amount,
+            'credit': check.amount,
+            'debit': 0.0,
             'ref': ref,
         })
+
+        # expense move lines
+        if self.has_expense and self.expense_account:
+            ref_expense = _('Check Rejection Expense')
+            # rejection expense
+            move.line_id.with_context({}).create({
+                'name': name,
+                'account_id': self.expense_account.id,
+                'move_id': move.id,
+                'period_id': period_id,
+                'debit': self.expense_amount,
+                'credit': 0.0,
+                'ref': ref_expense,
+            })
+            # rejection bank move
+            move.line_id.with_context({}).create({
+                'name': name,
+                'account_id': account_id,
+                'move_id': move.id,
+                'period_id': period_id,
+                'credit': self.expense_amount,
+                'debit': 0.0,
+                'ref': ref_expense,
+            })
+
         move.button_validate()
-        check.write({'expense_account_move_id': move.id})
+        check.write({'rejection_account_move_id': move.id})

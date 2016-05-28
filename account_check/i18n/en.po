@@ -328,7 +328,7 @@ msgid "Expense Account"
 msgstr "Expense Account"
 
 #. module: account_check
-#: field:account.check,expense_account_move_id:0
+#: field:account.check,rejection_account_move_id:0
 msgid "Expense Account Move"
 msgstr "Expense Account Move"
 

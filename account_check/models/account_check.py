@@ -163,10 +163,11 @@ class account_check(models.Model):
         readonly=True,
         copy=False,
     )
-    expense_account_move_id = fields.Many2one(
+    rejection_account_move_id = fields.Many2one(
         'account.move',
-        'Expense Account Move',
+        'Rejection Account Move',
         readonly=True,
+        oldname='expense_account_move_id',
         copy=False,
     )
     replacing_check_id = fields.Many2one(
@@ -383,7 +384,7 @@ class account_check(models.Model):
                 raise Warning(_(
                     'To cancel a rejection you must first delete the supplier '
                     'reject debit note!'))
-            if check.expense_account_move_id:
+            if check.rejection_account_move_id:
                 raise Warning(_(
                     'To cancel a rejection you must first delete Expense '
                     'Account Move!'))

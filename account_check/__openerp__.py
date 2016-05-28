@@ -20,14 +20,10 @@
 ##############################################################################
 {
     'name': 'Account Check Management',
-    'version': '8.0.2.4.0',
+    'version': '8.0.2.5.0',
     'category': 'Accounting',
     'sequence': 14,
     'summary': 'Accounting, Payment, Check, Third, Issue',
-    'description': """
-Account Check Management
-========================
-    """,
     'author': 'OpenERP Team de Localizacion Argentina',
     'license': 'AGPL-3',
     'images': [

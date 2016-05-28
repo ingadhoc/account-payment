@@ -66,8 +66,8 @@ class account_change_check(models.TransientModel):
     def change_original_check(self):
         self.checkbook_id = self.original_check_id.checkbook_id
         self.vat = self.original_check_id.vat
-        self.vat = self.original_check_id.owner_name
-        self.vat = self.original_check_id.bank_id
+        self.owner_name = self.original_check_id.owner_name
+        self.bank_id = self.original_check_id.bank_id
 
     @api.multi
     def confirm(self):
