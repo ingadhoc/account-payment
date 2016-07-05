@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!-- FORMVIEW -->
+        <record id="check_action_form_view" model="ir.ui.view">
+            <field name="name">account.check.action.form</field>
+            <field name="model">account.check.action</field>
+            <field name="inherit_id" ref="account.check_action_form_view"/>
+            <field name="arch" type="xml">
+                <button name="action_confirm" position="attributes">
+                    <attribute name="string">Confirm And Print</attribute>
+                </button>
+            </field>
+        </record>
+    </data>
+</openerp>
