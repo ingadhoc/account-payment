@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+<!-- Printed Invoice -->
+<record id="action_aeroo_account_check_report" model="ir.actions.report.xml">
+    <field name="name">Check Report </field>
+    <field name="type">ir.actions.report.xml</field>
+    <field name="model">account.check.action</field>
+    <field name="report_name">action_aeroo_account_check_report</field>
+    <field name="report_type">aeroo</field>
+    <field name="in_format">oo-odt</field>
+    <field name="report_rml">account_check_reports/report/account_check_report.odt</field>
+    <field name="out_format" ref="report_aeroo.report_mimetypes_pdf_odt"/>
+    <field name="tml_source">file</field>
+    <field name="parser_state">loc</field>
+    <field name="parser_loc">l10n_ar_aeroo_base/parser.py</field>
+</record>
+
+    </data>
+</openerp>
