@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: account-payment (8.0)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-24 13:23+0000\n"
+"POT-Creation-Date: 2016-05-28 19:39+0000\n"
 "PO-Revision-Date: 2016-05-24 20:32+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>\n"
 "Language-Team: Spanish (http://www.transifex.com/adhoc/ingadhoc-account-payment-8-0/language/es/)\n"
@@ -351,7 +351,7 @@ msgid "Tax Code Sign"
 msgstr "Signo Código Impuesto"
 
 #. module: account_voucher_withholding
-#: code:addons/account_voucher_withholding/models/account_voucher_withholding.py:126
+#: code:addons/account_voucher_withholding/models/account_voucher_withholding.py:127
 #, python-format
 msgid "Tax Withholding is Required!"
 msgstr "Impuesto de Retención Requerido!"
@@ -406,7 +406,7 @@ msgid "Voucher"
 msgstr "Comprobante"
 
 #. module: account_voucher_withholding
-#: code:addons/account_voucher_withholding/models/account_voucher_withholding.py:117
+#: code:addons/account_voucher_withholding/models/account_voucher_withholding.py:118
 #, python-format
 msgid "Voucher and Tax Withholding must belong to the same company"
 msgstr "El Comprobante y el Impuesto de Retención deben pertenecer a la misma compañía"
