@@ -139,6 +139,9 @@ class AccountTaxWithholding(models.Model):
                 if voucher_withholding:
                     voucher_withholding.unlink()
                 continue
+            # TODO perhups we can do the same here with the amount
+            # we copy withholdable_base_amount on base_amount
+            vals['base_amount'] = vals.get('withholdable_base_amount')
             if voucher_withholding:
                 voucher_withholding.write(vals)
             else:
@@ -255,6 +258,7 @@ class AccountTaxWithholding(models.Model):
             'previous_withholding_amount': previous_withholding_amount,
             'computed_withholding_amount': computed_withholding_amount,
             'amount': computed_withholding_amount,
+            'base_amount': withholdable_base_amount,
             'voucher_id': voucher.id,
             'tax_withholding_id': self.id,
             'automatic': True,

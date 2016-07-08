@@ -57,6 +57,7 @@
                             <group>
                                 <field name="name"/>
                                 <field name="description"/>
+                                <field name="base_amount"/>
                                 <field name="amount"/>
                                 <field name="move_line_id"/>
                                 <field name="partner_id"/>

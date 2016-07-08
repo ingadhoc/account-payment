@@ -65,6 +65,15 @@ class account_voucher_withholding(models.Model):
     comment = fields.Text(
         'Additional Information',
     )
+    base_amount = fields.Float(
+        'Base Amount',
+        digits=dp.get_precision('Account'),
+        readonly=True,
+        states={
+            'draft': [('readonly', False)],
+            'confirmed': [('readonly', False)]
+        },
+    )
     amount = fields.Float(
         'Amount',
         digits=dp.get_precision('Account'),

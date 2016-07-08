@@ -44,5 +44,5 @@ Account Voucher Withholding Automatic
     'installable': True,
     'name': 'Voucher Voucher Withholding Automatic',
     'test': [],
-    'version': '8.0.0.3.0',
+    'version': '8.0.0.4.0',
 }
