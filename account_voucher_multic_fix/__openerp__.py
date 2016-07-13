@@ -19,7 +19,7 @@
 #
 ##############################################################################
 {
-    'author':  'ADHOC SA',
+    'author': 'ADHOC SA',
     'website': 'www.adhoc.com.ar',
     'license': 'AGPL-3',
     'category': 'Accounting & Finance',
@@ -37,4 +37,4 @@ Account Voucher Multi Company Fixes
     'installable': True,
     'name': 'Account Voucher Multi Company Fixes',
     'test': [],
-    'version': '8.0.1.2.0'}
+    'version': '8.0.1.3.0'}
