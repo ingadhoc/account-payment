@@ -73,10 +73,10 @@
 <!--                 <field name="amount" position="before">
                 </field> -->
                 <field name="reconciled_amount" position="before">
-                    <field name="advance_amount" attrs="{'invisible': [('company_double_validation', '=', False)]}"/>
+                    <field name="advance_amount" attrs="{'invisible': [('company_double_validation', '=', False)]}" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 </field>
                 <field name="reconciled_amount" position="after">
-                    <field name="to_pay_amount" attrs="{'invisible': [('company_double_validation', '=', False)]}"/>
+                    <field name="to_pay_amount" attrs="{'invisible': [('company_double_validation', '=', False)]}" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 </field>
 <!--                 <field name="reconciled_amount" position="attributes">
                     <attribute name="invisible">1</attribute>

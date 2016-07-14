@@ -26,4 +26,4 @@ date.
     'installable': True,
     'name': "Account Voucher Double Validation",
     'test': [],
-    'version': '8.0.1.11.0'}
+    'version': '8.0.1.12.0'}
