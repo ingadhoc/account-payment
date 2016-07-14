@@ -62,15 +62,17 @@ class AccountVoucher(models.Model):
         res = super(AccountVoucher, self).onchange_journal(
             journal_id, line_ids, tax_id, partner_id, date, amount, ttype,
             company_id)
+        # we comment this becaouse it makes module incompatible with
+        # account_multic_fix, we should improove this
         # we only clean lines if currency is the same
-        context = dict(self.env.context)
-        currency_id = context.get('currency_id', False)
-        journal = self.env['account.journal'].browse(journal_id)
-        new_currency = journal.currency or journal.company_id.currency_id
-        if currency_id and new_currency.id == currency_id:
-            values = res.get('value', {})
-            values.pop('line_cr_ids', False)
-            values.pop('line_dr_ids', False)
+        # context = dict(self.env.context)
+        # currency_id = context.get('currency_id', False)
+        # journal = self.env['account.journal'].browse(journal_id)
+        # new_currency = journal.currency or journal.company_id.currency_id
+        # if currency_id and new_currency.id == currency_id:
+        #     values = res.get('value', {})
+        #     values.pop('line_cr_ids', False)
+        #     values.pop('line_dr_ids', False)
         return res
 
     # Esto lo dejamos porque lo usamos antes para tener una actualizacion
