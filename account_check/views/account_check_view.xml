@@ -98,6 +98,7 @@
                             <field name="replacing_check_id" attrs="{'invisible':[('replacing_check_id','=',False)]}"/>
                             <field name="debit_account_move_id" attrs="{'invisible':[('debit_account_move_id','=',False)]}"/>
                             <field name="deposit_account_move_id" attrs="{'invisible':[('deposit_account_move_id','=',False)]}"/>
+                            <field name="deposit_date" attrs="{'invisible':[('deposit_date','=',False)]}"/>
                             <field name="customer_reject_debit_note_id" attrs="{'invisible':[('customer_reject_debit_note_id','=',False)]}"/>
                             <field name="rejection_account_move_id" attrs="{'invisible':[('rejection_account_move_id','=',False)]}"/>
                             <field name="supplier_reject_debit_note_id" attrs="{'invisible':[('supplier_reject_debit_note_id','=',False)]}"/>
