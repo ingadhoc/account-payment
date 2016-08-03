@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+<!-- Printed Invoice -->
+<record id="action_aeroo_account_check_deposit_report" model="ir.actions.report.xml">
+    <field name="name">Check Deposit Report</field>
+    <field name="type">ir.actions.report.xml</field>
+    <field name="model">account.check</field>
+    <field name="report_name">account_check_deposit_report</field>
+    <field name="report_type">aeroo</field>
+    <field name="in_format">oo-odt</field>
+    <field name="report_rml">account_check_reports/report/account_check_deposit_report.odt</field>
+    <field name="out_format" ref="report_aeroo.report_mimetypes_pdf_odt"/>
+    <field name="tml_source">file</field>
+    <field name="parser_state">loc</field>
+    <field name="parser_loc">l10n_ar_aeroo_base/parser.py</field>
+</record>
+
+    <ir_set>
+        <field eval="'action'" name="key"/>
+        <field eval="'client_print_multi'" name="key2"/>
+        <field eval="['account.check']" name="models"/>
+        <field name="name">Check Deposit Report</field>
+        <field eval="'ir.actions.report.xml,'+str(action_aeroo_account_check_deposit_report)" name="value"/>
+        <field eval="True" name="isobject"/>
+        <field eval="True" name="replace"/>
+    </ir_set>
+    
+    </data>
+</openerp>

@@ -39,7 +39,7 @@ Account Check Reports
     },
     'data': [
         'views/account_check_view.xml',
-        'report/account_check_report.xml'
+        'report/account_check_deposit_report.xml',
     ],
     'demo': [
     ],
