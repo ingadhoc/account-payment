@@ -24,4 +24,5 @@ class account_check_action(models.TransientModel):
     def action_confirm(self):
         assert len(self) == 1
         super(account_check_action, self).action_confirm()
-        return self.env['report'].get_action(self, 'action_aeroo_account_check_report')
+        return self.env['report'].get_action(
+            self.check_ids, 'account_check_deposit_report')

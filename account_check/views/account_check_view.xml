@@ -128,9 +128,11 @@
                     <field name="state"/>
                     <field name="owner_name"/>
                     <field name="vat"/>
+                    <field name="deposit_date"/>
                     <group expand="0" string="Group By...">
                         <filter string="Issue Date" context="{'group_by':'issue_date'}"/>
                         <filter string="Payment Date" context="{'group_by':'payment_date'}"/>                        
+                        <filter string="Deposit Date" context="{'group_by':'deposit_date'}"/>                        
                         <filter string="Journal" context="{'group_by':'journal_id'}"/>
                         <filter string="State" context="{'group_by':'state'}"/>
                         <filter string="Source Partner" context="{'group_by':'source_partner_id'}"/>
