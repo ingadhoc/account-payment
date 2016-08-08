@@ -20,7 +20,7 @@
 ##############################################################################
 {
     'name': 'Account Check Management',
-    'version': '8.0.2.7.0',
+    'version': '8.0.2.8.0',
     'category': 'Accounting',
     'sequence': 14,
     'summary': 'Accounting, Payment, Check, Third, Issue',
