@@ -4,7 +4,7 @@
 {
     "name": "Account Voucher Manual Reconcile",
     "summary": "Avoid automatic computation of voucher lines",
-    "version": "8.0.1.0.0",
+    "version": "8.0.1.1.0",
     "category": "Uncategorized",
     "website": "www.adhoc.com.ar",
     "author": "ADHOC SA, Odoo Community Association (OCA)",
@@ -19,7 +19,6 @@
         "account_voucher",
     ],
     "data": [
-        'views/account_voucher_view.xml',
     ],
     "demo": [
     ],
