@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!-- creamos grupo que puede confirmar pagos -->
+        <record id="group_confirm_payments" model="res.groups">
+            <field name="name">Confirm Payments</field>
+            <field name="users" eval="[(4, ref('base.user_root'))]"/>
+        </record>
+        <!-- agregamos grupo a account manager -->
+        <record id="account.group_account_manager" model="res.groups">
+            <field name="implied_ids" eval="[(4,ref('group_confirm_payments'))]"/>
+        </record>
+    </data>
+</openerp>

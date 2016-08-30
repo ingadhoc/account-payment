@@ -99,7 +99,7 @@
 
                 <!-- Add confirmed and cancel from confirmed buttons -->
                 <button name="proforma_voucher" position="before">
-                    <button name="proforma_confirmed" class="oe_highlight" string="Confirm" attrs="{'invisible': ['|', ('company_double_validation', '=', False), ('state', '!=', 'draft')]}"/>
+                    <button name="proforma_confirmed" class="oe_highlight" string="Confirm" attrs="{'invisible': ['|', ('company_double_validation', '=', False), ('state', '!=', 'draft')]}" groups="account_voucher_double_validation.group_confirm_payments"/>
                     <button name="proforma_voucher" string="Validate" attrs="{'invisible': ['|', ('company_double_validation', '=', False), ('state', '!=', 'confirmed')]}" invisible="context.get('line_type', False)" class="oe_highlight"/>
                 </button>
 
