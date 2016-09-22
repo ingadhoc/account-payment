@@ -12,6 +12,7 @@ _logger = logging.getLogger(__name__)
 class account_voucher(models.Model):
     _inherit = "account.voucher"
 
+    @api.multi
     @api.constrains('state', 'journal_id', 'amount')
     def check_journal_amount_restriction(self):
         for voucher in self.filtered(lambda x: x.state == 'posted'):

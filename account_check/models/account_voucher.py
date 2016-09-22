@@ -51,6 +51,7 @@ class account_voucher(models.Model):
         digits=dp.get_precision('Account'),
     )
 
+    @api.one
     @api.constrains(
         'journal_id',
     )
@@ -70,6 +71,7 @@ class account_voucher(models.Model):
             if msg:
                 raise Warning(msg)
 
+    @api.one
     @api.constrains(
         'journal_id',
     )
