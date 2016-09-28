@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from openerp import models, fields, api, _
 import openerp.addons.decimal_precision as dp
-# from openerp.addons.account.account import get_precision_tax
 from openerp.exceptions import Warning
 from ast import literal_eval
-from openerp.addons.account.account import get_precision_tax
+from openerp.tools.safe_eval import safe_eval as eval
+# from openerp.addons.account.account import get_precision_tax
 from dateutil.relativedelta import relativedelta
 import datetime
 
@@ -64,12 +64,24 @@ class AccountTaxWithholding(models.Model):
         # ('percentage', 'Percentage'),
         ('based_on_rule', 'Based On Rule'),
         # ('fixed', 'Fixed Amount'),
-        # ('code', 'Python Code'), ('balance', 'Balance')
+        ('code', 'Python Code'),
+        # ('balance', 'Balance')
     ],
         'Type',
         required=True,
         default='none',
         help="The computation method for the tax amount."
+    )
+    python_compute = fields.Text(
+        'Python Code',
+        default='''
+# withholdable_base_amount
+# voucher: account.voucher object
+# partner: res.partner object
+# withholding_tax: account.tax.withholding object
+
+result = withholdable_base_amount * 0.10
+        ''',
     )
     rule_ids = fields.One2many(
         'account.tax.withholding.rule',
@@ -134,25 +146,24 @@ class AccountTaxWithholding(models.Model):
                 if voucher.search(domain):
                     raise Warning(tax.user_error_message)
             vals = tax.get_withholding_vals(voucher)
-            if not vals.get('amount'):
+            if not vals.get('computed_withholding_amount'):
                 # if on refresh no more withholding, we delete if it exists
                 if voucher_withholding:
                     voucher_withholding.unlink()
                 continue
-            # TODO perhups we can do the same here with the amount
+
             # we copy withholdable_base_amount on base_amount
             vals['base_amount'] = vals.get('withholdable_base_amount')
+            vals['amount'] = vals.get('computed_withholding_amount')
+
+            # por ahora no imprimimos el comment, podemos ver de llevarlo a
+            # otro campo si es de utilidad
+            vals.pop('comment')
             if voucher_withholding:
                 voucher_withholding.write(vals)
             else:
                 voucher_withholding = voucher_withholding.create(vals)
-            # voucher_withholding.get_withholding_data()
         return True
-
-    # @api.multi
-    # def get_non_taxable_minimum(self, voucher):
-    #     self.ensure_one()
-    #     return self.non_taxable_minimum
 
     @api.multi
     def get_withholdable_invoiced_amount(self, voucher):
@@ -211,7 +222,14 @@ class AccountTaxWithholding(models.Model):
                 ('date', '>=', from_date),
             ]
             same_period_vouchers = voucher.search(previos_vouchers_domain)
-            accumulated_amount = sum(same_period_vouchers.mapped('amount'))
+            for same_period_voucher in same_period_vouchers:
+                # obtenemos importe acumulado sujeto a retencion de voucher
+                # anteriores
+                accumulated_amount += self.get_withholdable_invoiced_amount(
+                    same_period_voucher)
+                if self.advances_are_withholdable:
+                    accumulated_amount += same_period_voucher.advance_amount
+            # accumulated_amount = sum(same_period_vouchers.mapped('amount'))
             previous_withholding_amount = sum(
                 self.env['account.voucher.withholding'].search([
                     ('voucher_id', 'in', same_period_vouchers.ids),
@@ -227,24 +245,36 @@ class AccountTaxWithholding(models.Model):
         non_taxable_amount = self.non_taxable_amount
         withholdable_base_amount = ((total_amount > non_taxable_minimum) and (
             total_amount - non_taxable_amount) or 0.0)
-        rule = self._get_rule(voucher)
-        percentage = 0.0
-        fix_amount = 0.0
+
         comment = False
-        if rule:
-            percentage = rule.percentage
-            fix_amount = rule.fix_amount
-            comment = '%s x %s + %s' % (
-                withholdable_base_amount,
-                percentage,
-                fix_amount)
-        period_withholding_amount = (
-            withholdable_base_amount * percentage + fix_amount)
-        # period_withholding_amount = withholdable_base_amount * self.amount
-        # period_withholding_amount = self.get_period_withholding_amount(
-        #     withholdable_base_amount, voucher)
-        computed_withholding_amount = (
-            period_withholding_amount - previous_withholding_amount)
+        if self.type == 'code':
+            localdict = {
+                'withholdable_base_amount': withholdable_base_amount,
+                'voucher': voucher,
+                'partner': voucher.partner_id,
+                'withholding_tax': self,
+            }
+            eval(self.python_compute, localdict, mode="exec", nocopy=True)
+            period_withholding_amount = localdict['result']
+        else:
+            rule = self._get_rule(voucher)
+            percentage = 0.0
+            fix_amount = 0.0
+            if rule:
+                percentage = rule.percentage
+                fix_amount = rule.fix_amount
+                comment = '%s x %s + %s' % (
+                    withholdable_base_amount,
+                    percentage,
+                    fix_amount)
+
+            period_withholding_amount = (
+                (total_amount > non_taxable_minimum) and (
+                    withholdable_base_amount * percentage + fix_amount) or 0.0)
+
+        # withholding can not be negative
+        computed_withholding_amount = max(0, (
+            period_withholding_amount - previous_withholding_amount))
 
         return {
             'withholdable_invoiced_amount': withholdable_invoiced_amount,
@@ -257,26 +287,9 @@ class AccountTaxWithholding(models.Model):
             'period_withholding_amount': period_withholding_amount,
             'previous_withholding_amount': previous_withholding_amount,
             'computed_withholding_amount': computed_withholding_amount,
-            'amount': computed_withholding_amount,
             'base_amount': withholdable_base_amount,
             'voucher_id': voucher.id,
             'tax_withholding_id': self.id,
             'automatic': True,
             'comment': comment,
         }
-        # self.withholdable_invoiced_amount = withholdable_invoiced_amount
-        # self.accumulated_amount = accumulated_amount
-        # self.total_amount = total_amount
-        # self.non_taxable_minimum = non_taxable_minimum
-        # self.withholdable_base_amount = withholdable_base_amount
-        # self.period_withholding_amount = period_withholding_amount
-        # # TODO, que este valor lo devuelva el tax
-        # self.previous_withholding_amount = previous_withholding_amount
-        # self.computed_withholding_amount
-        # self.amount = computed_withholding_amount
-
-
-# class account_tax_withholding_template(models.Model):
-#     _inherit = "account.tax.withholding.template"
-#     _inherit = "account.tax.withholding"
-    # _description = "Account Withholding Taxes Template"
