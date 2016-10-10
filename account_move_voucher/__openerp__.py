@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {'active': False,
-    'author':  'ADHOC SA',
+    'author': 'ADHOC SA',
     'website': 'www.adhoc.com.ar',
     'license': 'AGPL-3',
     'category': 'Accounting & Finance',
@@ -18,8 +18,8 @@ Create Vouchers from Account Move
 Creates a new residual field on account move
 Creates a method to pay moves with residual
 ''',
-    'installable': True,
+    'installable': False,
     'name': 'Account Move Voucher',
     'test': [],
-    'version': '8.0.1.2.0',
+    'version': '9.0.1.0.0',
  }

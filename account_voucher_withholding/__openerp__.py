@@ -40,8 +40,8 @@ Account Voucher Withholding
 ===========================
 Add withholding management on vouchers
 ''',
-    'installable': True,
+    'installable': False,
     'name': 'Voucher Voucher Withholding',
     'test': [],
-    'version': '8.0.1.7.0',
+    'version': '9.0.1.0.0',
 }

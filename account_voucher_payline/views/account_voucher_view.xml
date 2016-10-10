@@ -5,7 +5,7 @@
         <!-- Receipt dialog Form  -->
         <record id="view_vendor_receipt_dialog_form" model="ir.ui.view">
             <field name="name">account.voucher.receipt.dialog.receipt.inherit.form</field>
-            <field name="model">account.voucher</field>
+            <field name="model">account.payment</field>
             <field name="inherit_id" ref="account_voucher.view_vendor_receipt_dialog_form"/>
             <field name="arch" type="xml">
                 <notebook position="before">
@@ -13,7 +13,6 @@
                     <notebook name="voucher_payline"/>
                 </notebook>
                 <form>
-                    <field name="dummy_journal_id" invisible="1"/>
                     <field name="paylines_amount" invisible="1"/>
                 </form>
                 <!-- TODO check if we want to use this in some cases, to set a value -->
@@ -33,14 +32,13 @@
             </field>
         </record>
 
-        <!-- Customer Receipt Form  -->
-        <record id="view_vendor_receipt_form" model="ir.ui.view">
-            <field name="name">account.voucher.form.receipts.pay.inherit</field>
-            <field name="model">account.voucher</field>
-            <field name="inherit_id" ref="account_voucher.view_vendor_receipt_form"/>
+        <!-- Pay form  -->
+        <record id="view_account_payment_form" model="ir.ui.view">
+            <field name="name">account.payment.form</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account.view_account_payment_form"/>
             <field name="arch" type="xml">
                 <form>
-                    <field name="dummy_journal_id" invisible="1"/>
                     <field name="paylines_amount" invisible="1"/>
                 </form>
                 <!-- TODO check if we want to use this in some cases, to set a value -->
@@ -60,14 +58,13 @@
             </field>
         </record>
 
-        <!-- Supplier Receipt Form  -->
-        <record id="view_vendor_payment_form" model="ir.ui.view">
-            <field name="name">account.voucher.form.receipts.pay.inherit</field>
-            <field name="model">account.voucher</field>
-            <field name="inherit_id" ref="account_voucher.view_vendor_payment_form"/>
+        <!-- Pay from invoice  -->
+        <record id="view_account_payment_invoice_form" model="ir.ui.view">
+            <field name="name">account.payment.invoice.form</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account.view_account_payment_invoice_form"/>
             <field name="arch" type="xml">
                 <form>
-                    <field name="dummy_journal_id" invisible="1"/>
                     <field name="paylines_amount" invisible="1"/>
                 </form>
                 <!-- TODO check if we want to use this in some cases, to set a value -->

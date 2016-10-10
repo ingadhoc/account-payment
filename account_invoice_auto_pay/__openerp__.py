@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {'active': False,
-    'author':  'ADHOC SA',
+    'author': 'ADHOC SA',
     'website': 'www.adhoc.com.ar',
     'license': 'AGPL-3',
     'category': 'Accounting & Finance',
@@ -18,7 +18,7 @@ Account Invoice Auto Pay
 ========================
 Auto pay invoice if residual = 0
 ''',
-    'installable': True,
+    'installable': False,
     'name': 'Account Invoice Auto Pay',
     'test': [],
-    'version': '8.0.1.2.0'}
+    'version': '9.0.1.0.0',

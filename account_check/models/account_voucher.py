@@ -76,8 +76,6 @@ class account_voucher(models.Model):
         'journal_id',
     )
     @api.onchange(
-        # because journal is old api change
-        'dummy_journal_id',
         'journal_id',
     )
     def change_none_check_journal(self):
@@ -90,8 +88,6 @@ class account_voucher(models.Model):
             #     ' from 0. Correct it first'))
 
     @api.onchange(
-        # because journal is old api change
-        'dummy_journal_id',
         'journal_id',
     )
     def change_check_journal(self):

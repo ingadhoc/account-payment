@@ -19,7 +19,7 @@
 #
 ##############################################################################
 {
-    'author':  'ADHOC SA',
+    'author': 'ADHOC SA',
     'website': 'www.adhoc.com.ar',
     'license': 'AGPL-3',
     'category': 'Accounting & Finance',
@@ -33,7 +33,7 @@ Account Voucher Contact
 =======================
 Show Invoice Partner on voucher lines, usefull when you want to know the contact making a payment
 ''',
-    'installable': True,
+    'installable': False,
     'name': 'Account Voucher Contact',
     'test': [],
-    'version': '8.0.1.2.0'}
+    'version': '9.0.1.0.0',

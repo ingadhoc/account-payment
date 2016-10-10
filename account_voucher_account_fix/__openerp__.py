@@ -19,7 +19,7 @@
 #
 ##############################################################################
 {
-    'author':  'ADHOC SA',
+    'author': 'ADHOC SA',
     'website': 'www.adhoc.com.ar',
     'license': 'AGPL-3',
     'category': 'Accounting & Finance',
@@ -32,7 +32,7 @@ Account Voucher Account Fix
 ===========================
 * If payment choose credit account, if receipt choose debit account
 ''',
-    'installable': True,
+    'installable': False,
     'name': 'Account Voucher Multi Company Fixes',
     'test': [],
-    'version': '8.0.1.2.0'}
+    'version': '9.0.1.0.0',

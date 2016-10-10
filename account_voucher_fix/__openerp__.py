@@ -19,7 +19,7 @@
 #
 ##############################################################################
 {
-    'author':  'ADHOC SA',
+    'author': 'ADHOC SA',
     'website': 'www.adhoc.com.ar',
     'license': 'AGPL-3',
     'category': 'Accounting & Finance',
@@ -32,7 +32,7 @@ Account Voucher Fix
 ===================
 * Make move_line_id delete oncascade to avoid error on voucher cancelation
 ''',
-    'installable': True,
+    'installable': False,
     'name': 'Account Voucher Fix',
     'test': [],
-    'version': '8.0.1.2.0'}
+    'version': '9.0.1.0.0',

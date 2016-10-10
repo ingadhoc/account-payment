@@ -34,7 +34,7 @@ Account Voucher Multi Company Fixes
 * When changing company on account_voucher, change the journal domain to fit that company
 * When changing journal, update credit and debit lines for moves of that jounral company
 ''',
-    'installable': True,
+    'installable': False,
     'name': 'Account Voucher Multi Company Fixes',
     'test': [],
-    'version': '8.0.1.3.0'}
+    'version': '9.0.1.0.0',

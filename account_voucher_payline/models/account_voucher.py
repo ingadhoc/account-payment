@@ -7,7 +7,7 @@ class account_voucher(models.Model):
 
     _inherit = "account.voucher"
 
-    net_amount = fields.Float(
+    net_amount = fields.Monetary(
         'Amount',
         digits=dp.get_precision('Account'),
         required=True,
@@ -16,13 +16,13 @@ class account_voucher(models.Model):
         states={'draft': [('readonly', False)]},
         help='Amount Paid With Journal Method',
     )
-    paylines_amount = fields.Float(
+    paylines_amount = fields.Monetary(
         _('Paylines Amount'),
         compute='_get_paylines_amount',
         digits=dp.get_precision('Account'),
         help=_('Amount Paid With Paylines: checks, withholdings, etc.'),
     )
-    amount = fields.Float(
+    amount = fields.Monetary(
         string='Total Amount',
         compute='_get_amount',
         inverse='_set_net_amount',
@@ -32,19 +32,13 @@ class account_voucher(models.Model):
     )
     # we created amount_readonly because we keep amount invisible so
     # it can be setted (if we make amount readonly it wont be setted).
-    amount_readonly = fields.Float(
+    amount_readonly = fields.Monetary(
         related='amount',
         string='Total Amount',
         digits=dp.get_precision('Account'),
         readonly=True,
     )
-    dummy_journal_id = fields.Many2one(
-        related='journal_id',
-        readonly=True,
-        string='Dummy Journa',
-        help='Field used for new api onchange methods over journal',
-    )
-    reconciled_amount = fields.Float(
+    reconciled_amount = fields.Monetary(
         compute='_get_reconciled_amount',
         string='Reconciled Amount',
     )

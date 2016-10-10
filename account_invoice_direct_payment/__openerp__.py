@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {'active': False,
-    'author':  'ADHOC SA',
+    'author': 'ADHOC SA',
     'website': 'www.adhoc.com.ar',
     'license': 'AGPL-3',
     'category': 'Accounting & Finance',
@@ -20,5 +20,5 @@ THIS module has not been tested and is not finished yet
     'installable': False,
     'name': 'Account Invoice Direct Payment',
     'test': [],
-    'version': '8.0.1.2.0',
+    'version': '9.0.1.0.0',
  }

@@ -19,36 +19,36 @@
 #
 ##############################################################################
 {
-    "name": "Account Voucher Constraints",
-    'version': '8.0.0.0.0',
+    'name': 'Account Voucher Constraints',
+    'version': '9.0.1.0.0',
     'category': 'Localization/Argentina',
     'sequence': 14,
-    'author':  'ADHOC SA',
+    'author': 'ADHOC SA',
     'website': 'www.adhoc.com.ar',
     'license': 'AGPL-3',
     'summary': '',
-    "description": """
+    'description': '''
 Account Voucher Constraints
 ===========================
-Add to cash/bank journals a field "voucher_amount_restriction" with values:
+Add to cash/bank journals a field 'voucher_amount_restriction' with values:
 * Can't be 0 (default): Voucher must have amount specified
 * Must be 0
 If you want to use voucher only for reconciliation we suggest you to create a
-journal called "Reconciliations" with option "Must be 0"
-    """,
-    "depends": [
-        "account_voucher",
+journal called 'Reconciliations' with option 'Must be 0'
+    ''',
+    'depends': [
+        'account_voucher',
     ],
     'external_dependencies': {
     },
-    "data": [
+    'data': [
         'views/account_journal_view.xml',
     ],
     'demo': [
     ],
     'test': [
     ],
-    'installable': True,
+    'installable': False,
     'auto_install': False,
     'application': False,
 }

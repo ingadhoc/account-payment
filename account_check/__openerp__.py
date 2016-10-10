@@ -20,7 +20,7 @@
 ##############################################################################
 {
     'name': 'Account Check Management',
-    'version': '8.0.2.8.0',
+    'version': '9.0.1.0.0',
     'category': 'Accounting',
     'sequence': 14,
     'summary': 'Accounting, Payment, Check, Third, Issue',
@@ -30,7 +30,7 @@
     ],
     'depends': [
         'account_voucher_payline',
-        'account_journal_payment_subtype',
+        'account',
     ],
     'data': [
         'wizard/check_action_view.xml',
@@ -49,7 +49,7 @@
     ],
     'test': [
     ],
-    'installable': True,
+    'installable': False,
     'auto_install': False,
     'application': True,
 }
