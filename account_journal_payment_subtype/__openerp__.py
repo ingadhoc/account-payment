@@ -36,5 +36,5 @@ This addon is used by addons that implement different payment subtypes such as c
     'license': 'AGPL-3',
     'depends': ['account_voucher'],
     'data': ['views/account_journal_payment_subtype_view.xml'],
-    'installable': True,
+    'installable': False,
 }
