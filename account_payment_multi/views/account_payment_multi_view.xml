@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- © 2016 ADHOC SA
+     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
+
+<openerp>
+<data>
+
+<record id="view_account_payment_multi_tree" model="ir.ui.view">
+    <field name="name">account.payment.multi.tree</field>
+    <field name="model">account.payment.multi</field>
+    <field name="arch" type="xml">
+        <tree decoration-info="state=='draft'" decoration-muted="state=='reconciled'" edit="false">
+            <field name="payment_date"/>
+            <field name="name"/>
+            <field name="partner_id" string="Customer"/>
+            <field name="to_pay_amount"/>
+            <field name="state"/>
+            <field name="company_id" groups="base.group_multi_company"/>
+            <field name="currency_id" invisible="1"/>
+            <field name="partner_type" invisible="1"/>
+        </tree>
+    </field>
+</record>
+
+<record id="view_account_supplier_payment_multi_tree" model="ir.ui.view">
+    <field name="name">account.supplier.payment.tree</field>
+    <field name="model">account.payment.multi</field>
+    <field name="arch" type="xml">
+        <tree decoration-info="state=='draft'" decoration-muted="state=='reconciled'" edit="false">
+            <field name="payment_date"/>
+            <field name="name"/>
+            <field name="partner_id" string="Vendor"/>
+            <field name="to_pay_amount"/>
+            <field name="company_id" groups="base.group_multi_company"/>
+            <field name="state"/>
+            <field name="currency_id" invisible="1"/>
+            <field name="partner_type" invisible="1"/>
+        </tree>
+    </field>
+</record>
+
+<record id="view_account_payment_multi_search" model="ir.ui.view">
+    <field name="name">account.payment.multi.search</field>
+    <field name="model">account.payment.multi</field>
+    <field name="arch" type="xml">
+        <search string="Payments">
+            <field name="name" filter_domain="['|', ('name','ilike',self), ('communication','ilike',self)]" string="Description"/>
+            <separator/>
+            <field name="partner_id" />
+            <field name="company_id" groups="base.group_multi_company" />
+            <filter string="Payable" domain="[('payment_type','=','outbound')]"/>
+            <filter string="Receivable" domain="[('payment_type','=','inbound')]"/>
+            <separator/>
+            <filter string="Draft" domain="[('state','=','draft')]" name='state_draft'/>
+            <filter string="Posted" domain="[('state','=','posted')]" name='state_posted'/>
+            <filter string="Sent" domain="[('state','=','sent')]" name='state_sent'/>
+            <filter string="Reconciled" domain="[('state','=','reconciled')]"/>
+            <separator/>
+            <filter string="Partner" domain="[]" context="{'group_by': 'partner_id'}"/>
+            <filter string="State" domain="[]" context="{'group_by': 'state'}"/>
+            <filter string="Currency" domain="[]" context="{'group_by': 'currency_id'}" groups="base.group_multi_currency"/>
+            <filter string="Company" domain="[]" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+        </search>
+    </field>
+</record>
+
+<record id="view_account_payment_multi_form" model="ir.ui.view">
+    <field name="name">Payment Multi</field>
+    <field name="model">account.payment.multi</field>
+    <field name="arch" type="xml">
+        <form string="Register Payment">
+            <header>
+                <button name="post" class="oe_highlight" states="draft" string="Confirm" type="object"/>
+                <button name="cancel" attrs="{'invisible': [('state', '=', 'draft')]}" string="Cancel" type="object"/>
+                <field name="state" widget="statusbar" statusbar_visible="posted,reconciled"/>
+            </header>
+            <sheet>
+                <div class="oe_button_box" name="button_box">
+                    <button class="oe_stat_button" name="button_journal_entries"
+                            string="Journal Items" type="object"
+                            groups="account.group_account_manager"
+                            attrs="{'invisible':[('move_line_ids','=',[])]}" icon="fa-bars"/>
+                    <field name="move_line_ids" invisible="1"/>
+                    <!-- <button class="oe_stat_button" name="button_invoices"
+                            string="Invoices" type="object"
+                            attrs="{'invisible':[('has_invoices','=',False)]}" icon="fa-bars"/> -->
+                    <field name="has_invoices" invisible="1"/>
+                </div>
+                <field name="id" invisible="1"/>
+                <div class="oe_title" attrs="{'invisible': [('state', '=', 'draft')]}">
+                    <h1><field name="name"/></h1>
+                </div>
+                <group>
+                    <group>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="payment_type" widget="radio" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                        <field name="partner_type" nolabel="1" widget="selection" string="" attrs="{'required': [('payment_type', 'in', ('inbound', 'outbound'))], 'invisible': [('payment_type', 'not in', ('inbound', 'outbound'))], 'readonly': [('state', '!=', 'draft')]}"/>
+                        <field name="partner_id" nolabel="1" attrs="{'required': [('payment_type', 'in', ('inbound', 'outbound'))], 'invisible': [('payment_type', 'not in', ('inbound', 'outbound'))], 'readonly': [('state', '!=', 'draft')]}" context="{'default_is_company': True, 'default_supplier': payment_type == 'outbound', 'default_customer': payment_type == 'inbound'}"/>
+                        <!-- <label for="amount"/>
+                        <div name="amount_div" class="o_row">
+                            <field name="amount" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            <field name="currency_id" options="{'no_create': True, 'no_open': True}" groups="base.group_multi_currency" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                        </div> -->
+                    </group>
+                    <group>
+                        <field name="payment_date" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                        <field name="communication" attrs="{'invisible': [('state', '!=', 'draft'), ('communication', '=', False)], 'readonly': [('state', '!=', 'draft')]}"/>
+                    </group>
+                    <group>
+                        <field name="reconciled_amount" options="{'currency_field': 'currency_id'}"/>
+                        <field name="unreconciled_amount" options="{'currency_field': 'currency_id'}"/>
+                        <field name="to_pay_amount" options="{'currency_field': 'currency_id'}"/>
+                    </group>
+                    <group>
+                        <field name="payments_amount" options="{'currency_field': 'currency_id'}"/>
+                        <label for="payment_difference" attrs="{'invisible': [('payment_difference', '=', 0.0)]}"/>
+                        <div attrs="{'invisible': [('payment_difference', '=', 0.0)]}">
+                            <field name="payment_difference"/>
+                            <field name="payment_difference_handling" widget="radio" nolabel="1"/>
+                        </div>
+                        <field name="writeoff_account_id" string="Post Difference In"
+                            attrs="{'invisible': [('payment_difference_handling','=','open')], 'required': [('payment_difference_handling', '=', 'reconcile')]}"/>
+                    </group>
+                </group>
+                <group col="1">
+                    <field name="invoice_ids" attrs="{'readonly': [('state', '!=', 'draft')]}">
+                        <tree decoration-info="state == 'draft'" decoration-muted="state == 'cancel'" string="Invoice">
+                            <!-- <field name="partner_id" groups="base.group_user" string="Customer"/> -->
+                            <field name="date_invoice"/>
+                            <field name="number"/>
+                            <field name="commercial_partner_id" invisible="1"/>
+                            <field name="reference" invisible="1"/>
+                            <field name="name" invisible="1"/>
+                            <field name="journal_id" invisible="1"/>
+                            <!-- <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/> -->
+                            <field name="user_id"/>
+                            <field name="date_due"/>
+                            <field name="origin"/>
+                            <field name="amount_total_signed"/>
+                            <field name="residual_signed"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_currency_id" invisible="1"/>
+                            <field name="state"/>
+                            <field name="type" invisible="context.get('type',True)"/>
+                        </tree>
+                    </field>
+                    <field name="payment_ids" widget="one2many_list " attrs="{'readonly': [('state', '!=', 'draft')]}" context="{'default_payment_type': payment_type, 'default_payment_date': payment_date, 'default_partner_id': partner_id, 'default_partner_type': partner_type, 'payment_multi': True, 'default_amount': payment_difference}">
+                        <!-- la modificamos para que sea editable y menos campos -->
+                        <tree decoration-info="state=='draft'" decoration-muted="state=='reconciled'">
+                            <!-- <field name="payment_date"/> -->
+                            <field name="name"/>
+                            <field name="journal_id"/>
+                            <field name="payment_method_id"/>
+                            <!-- <field name="partner_id" string="Customer"/> -->
+                            <field name="amount"/>
+                            <field name="state"/>
+                            <!-- <field name="company_id" groups="base.group_multi_company"/> -->
+                            <field name="currency_id" invisible="1"/>
+                            <field name="partner_type" invisible="1"/>
+                        </tree>
+                        <!-- TODO borrar, al final parecio mejor usar la form -->
+                        <!-- <tree editable="bottom">
+                            <field name="state" invisible="1"/>
+                            <field name="payment_type" invisible="1"/>
+                            <field name="partner_id" invisible="1"/>
+                            <field name="partner_type" invisible="1"/>
+                            <field name="payment_date" invisible="1"/>
+                            <field name="journal_id" widget="selection" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            <field name="hide_payment_method" invisible="1"/>
+                            <field name="payment_method_id" string=" " widget="radio" attrs="{'invisible': [('hide_payment_method', '=', True)], 'readonly': [('state', '!=', 'draft')]}"/>
+                            <field name="payment_method_code" invisible="1"/>
+                            <field name="amount" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            <field name="currency_id" options="{'no_create': True, 'no_open': True}" groups="base.group_multi_currency" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                        </tree> -->
+                    </field>
+                </group>
+            </sheet>
+        </form>
+    </field>
+</record>
+
+<record id="view_account_payment_multi_graph" model="ir.ui.view">
+    <field name="name">account.payment.multi.graph</field>
+    <field name="model">account.payment.multi</field>
+    <field name="arch" type="xml">
+        <graph string="Invoices" type="bar" stacked="1">
+            <field name="payment_type"/>
+            <!-- <field name="journal_id"/> -->
+            <field name="to_pay_amount" type="measure"/>
+        </graph>
+    </field>
+</record>
+
+<record id="action_account_payments_multi" model="ir.actions.act_window">
+    <field name="name">Payments Multi</field>
+    <field name="res_model">account.payment.multi</field>
+    <field name="view_type">form</field>
+    <field name="view_mode">tree,form,graph</field>
+    <field name="context">{'default_payment_type': 'inbound'}</field>
+    <field name="domain">[('partner_type', '=', 'customer')]</field>
+    <field name="view_id" ref="view_account_payment_multi_tree"/>
+    <field name="help" type="html">
+        <p class="oe_view_nocontent_create">
+          Click to register a payment
+        </p><p>
+          Payments are used to register liquidity movements (send or collect).
+          You can then process those payments by your own means or by using installed facilities.
+        </p>
+    </field>
+</record>
+
+<record id="action_account_payments_multi_payable" model="ir.actions.act_window">
+    <field name="name">Payments Multi</field>
+    <field name="res_model">account.payment.multi</field>
+    <field name="view_type">form</field>
+    <field name="view_mode">tree,form,graph</field>
+    <field name="context">{'default_payment_type': 'outbound'}</field>
+    <field name="domain">[('partner_type', '=', 'supplier')]</field>
+    <field name="view_id" ref="view_account_supplier_payment_multi_tree"/>
+    <field name="help" type="html">
+        <p class="oe_view_nocontent_create">
+          Click to register a payment
+        </p><p>
+          Payments are used to register liquidity movements (send or collect).
+          You can then process those payments by your own means or by using installed facilities.
+        </p>
+    </field>
+</record>
+
+<menuitem action="action_account_payments_multi" id="menu_action_account_payments_multi_receivable" parent="account.menu_finance_receivables" sequence="20" groups="account.group_account_user"/>
+<menuitem action="action_account_payments_multi_payable" id="menu_action_account_payments_multi_payable" parent="account.menu_finance_payables" sequence="20" groups="account.group_account_user"/>
+</data>
+</openerp>
