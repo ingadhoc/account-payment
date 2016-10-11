@@ -1,4 +1,4 @@
-[![Runbot Status](http://runbot.adhoc.com.ar/runbot/badge/flat/18/8.0.svg)](http://runbot.adhoc.com.ar/runbot/repo/github-com-ingadhoc-account-payment-18)
+[![Runbot Status](http://runbot.adhoc.com.ar/runbot/badge/flat/9/8.0.svg)](http://runbot.adhoc.com.ar/runbot/repo/github-com-ingadhoc-account-payment-9)
 [![Build Status](https://travis-ci.org/ingadhoc/account-payment.svg?branch=8.0)](https://travis-ci.org/ingadhoc/account-payment)
 [![Coverage Status](https://coveralls.io/repos/ingadhoc/account-payment/badge.png?branch=8.0)](https://coveralls.io/r/ingadhoc/account-payment?branch=8.0)
 [![Code Climate](https://codeclimate.com/github/ingadhoc/account-payment/badges/gpa.svg)](https://codeclimate.com/github/ingadhoc/account-payment)
