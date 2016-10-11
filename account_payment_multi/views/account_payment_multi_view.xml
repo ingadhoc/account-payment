@@ -81,10 +81,6 @@
                             groups="account.group_account_manager"
                             attrs="{'invisible':[('move_line_ids','=',[])]}" icon="fa-bars"/>
                     <field name="move_line_ids" invisible="1"/>
-                    <!-- <button class="oe_stat_button" name="button_invoices"
-                            string="Invoices" type="object"
-                            attrs="{'invisible':[('has_invoices','=',False)]}" icon="fa-bars"/> -->
-                    <field name="has_invoices" invisible="1"/>
                 </div>
                 <field name="id" invisible="1"/>
                 <div class="oe_title" attrs="{'invisible': [('state', '=', 'draft')]}">
@@ -124,6 +120,7 @@
                     </group>
                 </group>
                 <group col="1">
+                    <field name="reconciled_move_line_ids" attrs="{'readonly': [('state', '!=', 'draft')]}" context="{'tree_view_ref': 'account_payment_multi.view_move_line_tree'}"/>
                     <field name="invoice_ids" attrs="{'readonly': [('state', '!=', 'draft')]}">
                         <tree decoration-info="state == 'draft'" decoration-muted="state == 'cancel'" string="Invoice">
                             <!-- <field name="partner_id" groups="base.group_user" string="Customer"/> -->

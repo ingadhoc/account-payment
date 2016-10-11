@@ -41,7 +41,8 @@ class AccountPaymentMulti(models.Model):
     state = fields.Selection([('draft', 'Draft'), ('posted', 'Posted'), ('sent', 'Sent'), ('reconciled', 'Reconciled')], readonly=True, default='draft', copy=False, string="Status")
 
     invoice_ids = fields.Many2many('account.invoice', 'account_invoice_payment_multi_rel', 'payment_id', 'invoice_id', string="Invoices", copy=False,)
-    has_invoices = fields.Boolean(compute="_get_has_invoices", help="Technical field used for usability purposes")
+    reconciled_move_line_ids = fields.Many2many(
+        'account.move.line', 'account_move_line_payment_multi_rel', 'payment_multi_id', 'move_line_id', string="Reconciled Lines", copy=False,)
     payment_difference = fields.Monetary(compute='_compute_payment_difference', readonly=True)
     payment_difference_handling = fields.Selection([('open', 'Keep open'), ('reconcile', 'Mark invoice as fully paid')], default='open', string="Payment Difference", copy=False)
     # TODO add journal?
@@ -50,11 +51,6 @@ class AccountPaymentMulti(models.Model):
     payment_ids = fields.One2many('account.payment', 'payment_multi_id', string='Payments')
     # payment_ids = fields.One2many('account.payment', 'payment_multi_id', copy=False, ondelete='cascade')
     move_line_ids = fields.One2many(related='payment_ids.move_line_ids', readonly=True, copy=False)
-
-    @api.one
-    @api.depends('invoice_ids')
-    def _get_has_invoices(self):
-        self.has_invoices = bool(self.invoice_ids)
 
     @api.one
     @api.depends('to_pay_amount', 'payments_amount')
@@ -66,30 +62,51 @@ class AccountPaymentMulti(models.Model):
     def _compute_payments_amount(self):
         self.payments_amount = sum(self.payment_ids.mapped('amount'))
 
+    # TODO borrar reconciled_move_line_ids o invoice_ids
     @api.one
     @api.onchange(
-        'invoice_ids', 'payment_date', 'currency_id',)
+        'invoice_ids', 'reconciled_move_line_ids', 'payment_date', 'currency_id',)
     @api.constrains(
-        'invoice_ids', 'payment_date', 'currency_id',)
+        'invoice_ids', 'reconciled_move_line_ids', 'payment_date', 'currency_id',)
     def set_reconciled_amount(self):
         # we dont make it computed because we want to store value.
         # TODO check if odoo implement this kind of hybrid field
         payment_currency = self.currency_id or self.company_id.currency_id
-        invoices = self._get_invoices()
 
-        if all(inv.currency_id == payment_currency for inv in invoices):
-            total = sum(invoices.mapped('residual_signed'))
-        else:
+        if self.reconciled_move_line_ids:
             total = 0
-            for inv in invoices:
-                print 'payment_currency', payment_currency
-                print 'inv.company_currency_id', inv.company_currency_id
-                if inv.company_currency_id != payment_currency:
-                    total += inv.company_currency_id.with_context(
-                        date=self.payment_date).compute(
-                        inv.residual_company_signed, payment_currency)
+            for rml in self.reconciled_move_line_ids:
+                # si tiene moneda y es distinta convertimos el monto de moneda
+                # si tiene moneda y es igual llevamos el monto de moneda
+                # si no tiene moneda y es distinta convertimos el monto comun
+                # si no tiene moneda y es igual llevamos el monto comun
+                if rml.currency_id:
+                    if rml.currency_id != payment_currency:
+                        total += rml.currency_id.with_context(
+                            date=self.payment_date).compute(
+                            rml.amount_residual_currency, payment_currency)
+                    else:
+                        total += rml.amount_residual_currency
                 else:
-                    total += inv.residual_company_signed
+                    if self.company_id.currency_id != payment_currency:
+                        total += self.company_id.currency_id.with_context(
+                            date=self.payment_date).compute(
+                            rml.amount_residual, payment_currency)
+                    else:
+                        total += rml.amount_residual
+        else:
+            invoices = self._get_invoices()
+            if all(inv.currency_id == payment_currency for inv in invoices):
+                total = sum(invoices.mapped('residual_signed'))
+            else:
+                total = 0
+                for inv in invoices:
+                    if inv.company_currency_id != payment_currency:
+                        total += inv.company_currency_id.with_context(
+                            date=self.payment_date).compute(
+                            inv.residual_company_signed, payment_currency)
+                    else:
+                        total += inv.residual_company_signed
         self.reconciled_amount = abs(total)
 
     @api.one
@@ -118,6 +135,7 @@ class AccountPaymentMulti(models.Model):
     @api.onchange('partner_id', 'partner_type')
     def _get_invoice_domain(self):
         # clean actual invoice and payments
+        self.reconciled_move_line_ids = False
         self.invoice_ids = False
         self.payment_ids.unlink()
         if self.partner_id and self.partner_type:
@@ -129,10 +147,21 @@ class AccountPaymentMulti(models.Model):
                     ('type', 'in', inv_types),
                     ('state', '=', 'open'),
                 ],
+                'reconciled_move_line_ids': [
+                    ('partner_id.commercial_partner_id', '=',
+                        commercial_partner.id),
+                    # TODO agregar filtro de cuenta o algo
+                    # ('type', 'in', inv_types),
+                    ('reconciled', '=', False),
+                    # '|',
+                    # ('amount_residual', '!=', False),
+                    # ('amount_residual_currency', '!=', False),
+                ],
             }}
 
     @api.model
     def default_get(self, fields):
+        # TODO si usamos los move lines esto no haria falta
         rec = super(AccountPaymentMulti, self).default_get(fields)
         invoice_defaults = self.resolve_2many_commands(
             'invoice_ids', rec.get('invoice_ids'))
@@ -150,6 +179,7 @@ class AccountPaymentMulti(models.Model):
         return rec
 
     def _get_invoices(self):
+        # TODO si usamos los move lines esto no haria falta
         return self.invoice_ids
 
     @api.multi
