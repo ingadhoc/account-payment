@@ -31,6 +31,12 @@ class AccountPaymentMulti(models.Model):
     payment_date = fields.Date(string='Payment Date', default=fields.Date.context_today, required=True, copy=False)
     communication = fields.Char(string='Memo')
 
+    reconcile = fields.Selection([
+        ('invoices', 'Invoices'),
+        ('move_lines', 'Entry Lines')],
+        required=True,
+        default='invoices',
+    )
     unreconciled_amount = fields.Monetary()
     reconciled_amount = fields.Monetary(readonly=True)
     # reconciled_amount = fields.Monetary(compute='_compute_amounts')
@@ -48,7 +54,7 @@ class AccountPaymentMulti(models.Model):
     # TODO add journal?
     writeoff_account_id = fields.Many2one('account.account', string="Difference Account", domain=[('deprecated', '=', False)], copy=False)
 
-    payment_ids = fields.One2many('account.payment', 'payment_multi_id', string='Payments')
+    payment_ids = fields.One2many('account.payment', 'payment_multi_id', string='Payment Lines')
     # payment_ids = fields.One2many('account.payment', 'payment_multi_id', copy=False, ondelete='cascade')
     move_line_ids = fields.One2many(related='payment_ids.move_line_ids', readonly=True, copy=False)
 
@@ -158,6 +164,10 @@ class AccountPaymentMulti(models.Model):
                     # ('amount_residual_currency', '!=', False),
                 ],
             }}
+
+    @api.multi
+    def auto_compute(self):
+        raise UserError(_('Not implemented yet'))
 
     @api.model
     def default_get(self, fields):

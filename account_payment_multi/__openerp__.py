@@ -19,9 +19,10 @@
         # "account",
     ],
     "data": [
-        'views/account_payment_multi_view.xml',
         'views/account_payment_view.xml',
         'views/account_move_line_view.xml',
+        'views/account_invoice_view.xml',
+        'views/account_payment_multi_view.xml',
         # "security/some_model_security.xml",
         # "security/ir.model.access.csv",
         # "views/assets.xml",

@@ -1,8 +1,3 @@
-TODO:
-al cambiar compania limpiar facturas y pagos
-pasar compania en dominio de facturas
-filtrar diarios por compania en los payments individuales
-
 .. image:: https://img.shields.io/badge/licence-AGPL--3-blue.svg
    :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
    :alt: License: AGPL-3
