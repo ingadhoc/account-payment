@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-{'active': False,
+{
     'author': 'ADHOC SA',
     'website': 'www.adhoc.com.ar',
     'license': 'AGPL-3',
@@ -12,7 +12,7 @@
     'depends': [
         'account_voucher',
         'account_cancel',
-        ],
+    ],
     'description': '''
 Account Invoice Auto Pay
 ========================
@@ -22,3 +22,4 @@ Auto pay invoice if residual = 0
     'name': 'Account Invoice Auto Pay',
     'test': [],
     'version': '9.0.1.0.0',
+}

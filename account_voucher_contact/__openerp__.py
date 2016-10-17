@@ -37,3 +37,4 @@ Show Invoice Partner on voucher lines, usefull when you want to know the contact
     'name': 'Account Voucher Contact',
     'test': [],
     'version': '9.0.1.0.0',
+}

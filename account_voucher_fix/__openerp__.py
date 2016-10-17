@@ -36,3 +36,4 @@ Account Voucher Fix
     'name': 'Account Voucher Fix',
     'test': [],
     'version': '9.0.1.0.0',
+}

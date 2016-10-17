@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-{'active': False,
+{
     'author': 'Ingenieria ADHOC',
     'website': 'www.ingadhoc.com',
     'license': 'AGPL-3',
@@ -28,3 +28,4 @@ date.
     'name': 'Account Voucher Double Validation',
     'test': [],
     'version': '9.0.1.0.0',
+}
