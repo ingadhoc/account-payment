@@ -28,13 +28,27 @@ class AccountPayment(models.Model):
     #             [('state', '=', 'active'), ('journal_id', '=', journal_id)])
     #         return checkbooks and checkbooks[0] or False
 
-    # @api.one
-    # @api.depends('number', 'checkbook_id', 'checkbook_id.padding')
+    # Odoo by default use communication to store check number
+    deposited_check_ids = fields.One2many(
+        'account.move.line',
+        'check_deposit_id',
+        string='Deposited Checks',
+        readonly=True,
+        states={'draft': [('readonly', '=', False)]}
+    )
+
+    @api.one
+    @api.onchange('check_number', 'checkbook_id')
+    # @api.depends('check_number', 'checkbook_id', 'checkbook_id.padding')
     # def _get_name(self):
-    #     padding = self.checkbook_id and self.checkbook_id.padding or 8
-    #     if len(str(self.number)) > padding:
-    #         padding = len(str(self.number))
-    #     self.name = '%%0%sd' % padding % self.number
+    def change_check_number(self):
+        # TODO make default padding a parameter
+        if self.payment_method_code in ['received_third_check', 'issue_check']:
+            padding = self.checkbook_id and self.checkbook_id.padding or 8
+            if len(str(self.check_number)) > padding:
+                padding = len(str(self.check_number))
+            self.communication = _('Check nbr %s') % (
+                '%%0%sd' % padding % self.check_number)
 
     # @api.one
     # @api.depends(
@@ -68,8 +82,8 @@ class AccountPayment(models.Model):
     #     compute='_get_name',
     #     string=_('Number')
     # )
-    check_number = fields.Integer(
-        _('Number'),
+    check_number = fields.Char(
+        'Number',
         # required=True,
         readonly=True,
         states={'draft': [('readonly', False)]},
@@ -142,23 +156,34 @@ class AccountPayment(models.Model):
     #     'Clearing',
     #     readonly=True,
     #     states={'draft': [('readonly', False)]})
-    # state = fields.Selection([
-    #     ('draft', 'Draft'),
-    #     ('holding', 'Holding'),
-    #     ('deposited', 'Deposited'),
-    #     ('handed', 'Handed'),
-    #     ('rejected', 'Rejected'),
-    #     ('debited', 'Debited'),
-    #     ('returned', 'Returned'),
-    #     ('changed', 'Changed'),
-    #     ('cancel', 'Cancel'),
-    # ],
-    #     'State',
-    #     required=True,
-    #     track_visibility='onchange',
-    #     default='draft',
-    #     copy=False,
-    # )
+    check_state = fields.Selection([
+        ('draft', 'Draft'),
+        ('holding', 'Holding'),
+        ('deposited', 'Deposited'),
+        ('handed', 'Handed'),
+        ('rejected', 'Rejected'),
+        ('debited', 'Debited'),
+        ('returned', 'Returned'),
+        ('changed', 'Changed'),
+        ('cancel', 'Cancel'),
+    ],
+        'Check State',
+        # required=True,
+        # track_visibility='onchange',
+        default='draft',
+        compute='_compute_check_state'
+        # copy=False,
+    )
+
+    @api.one
+    def _compute_check_state(self):
+        state = False
+        if self.payment_method_code == 'received_third_check':
+            if self.state == 'draft':
+                state = 'draft'
+            elif self.state == 'posted':
+                state = 'holding'
+        self.check_state = state
     # supplier_reject_debit_note_id = fields.Many2one(
     #     'account.invoice',
     #     'Supplier Reject Debit Note',
@@ -194,13 +219,14 @@ class AccountPayment(models.Model):
     #     string='Subtype',
     #     readonly=True, store=True
     # )
-    # checkbook_id = fields.Many2one(
-    #     'account.checkbook',
-    #     'Checkbook',
-    #     readonly=True,
-    #     states={'draft': [('readonly', False)]},
-    #     default=_get_checkbook,
-    # )
+    checkbook_id = fields.Many2one(
+        'account.checkbook',
+        'Checkbook',
+        readonly=True,
+        states={'draft': [('readonly', False)]},
+        # TODO hacer con un onchange
+        # default=_get_checkbook,
+    )
     # debit_account_move_id = fields.Many2one(
     #     'account.move',
     #     'Debit Account Move',
@@ -309,6 +335,7 @@ class AccountPayment(models.Model):
     # ]
 
     @api.one
+    @api.constrains('check_issue_date', 'check_payment_date')
     @api.onchange('check_issue_date', 'check_payment_date')
     def onchange_date(self):
         if (
@@ -321,9 +348,28 @@ class AccountPayment(models.Model):
     @api.one
     @api.onchange('partner_id')
     def onchange_voucher(self):
-        self.owner_name = self.partner_id.name
-        self.owner_vat = self.partner_id.vat
+        self.check_owner_name = self.partner_id.name
+        # TODO use document number instead of vat?
+        self.check_owner_vat = self.partner_id.vat
 
+    def _get_liquidity_move_line_vals(self, amount):
+        vals = super(AccountPayment, self)._get_liquidity_move_line_vals(
+            amount)
+        if self.payment_method_code in [
+                'received_third_check',
+                'delivered_third_check',
+                'issue_check']:
+            vals['date_maturity'] = self.check_payment_date
+            vals['check_bank_id'] = self.check_bank_id.id
+            vals['check_owner_name'] = self.check_owner_name
+            vals['check_owner_vat'] = self.check_owner_vat
+            vals['checkbook_id'] = self.checkbook_id.id
+            vals['check_issue_date'] = self.check_issue_date
+            if self.payment_method_code == 'issue_check':
+                vals['check_type'] = 'issue_check'
+            else:
+                vals['check_type'] = 'third_check'
+        return vals
     # @api.one
     # def unlink(self):
     #     if self.state not in ('draft'):

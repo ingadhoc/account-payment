@@ -6,7 +6,7 @@ from openerp import models, fields, api, _
 ##############################################################################
 
 
-class account_journal(models.Model):
+class AccountJournal(models.Model):
     _inherit = 'account.journal'
 
     # checkbook_ids = fields.One2many(
@@ -15,14 +15,41 @@ class account_journal(models.Model):
     #     'Checkbooks',
     # )
 
+    # @api.model
+    # def create(self, vals):
+    #     journal = super(AccountJournal, self.with_context(vals=vals)).create(vals)
+    #     default_account = vals.get('default_debit_account_id') or vals.get('default_credit_account_id')
+    #     if not default_account and 
+    #     return journal
+
+    # @api.constrains('')
+    # def create(self, vals):
+    #     if '' in 
+
+    @api.one
+    # @api.constrains()
+    def check_checks_journal(self):
+        # TODO add constrains
+        # if self.default_debit_account_id
+        return True
+
     @api.model
-    def _get_payment_subtype(self):
-        selection = super(account_journal, self)._get_payment_subtype()
-        selection.append(('issue_check', _('Issue Check')))
-        selection.append(('third_check', _('Third Check')))
-        # same functionality as checks, no need to have both for now
-        # selection.append(('promissory', _('Promissory Note')))
-        return selection
+    def _prepare_liquidity_account(self, name, company, currency_id, type):
+        vals = super(AccountJournal, self)._prepare_liquidity_account(
+            name, company, currency_id, type)
+        print 'self._context', self._context
+        print 'name', name
+        print 'type', type
+        return vals
+
+    # @api.model
+    # def _get_payment_subtype(self):
+    #     selection = super(account_journal, self)._get_payment_subtype()
+    #     selection.append(('issue_check', _('Issue Check')))
+    #     selection.append(('third_check', _('Third Check')))
+    #     # same functionality as checks, no need to have both for now
+    #     # selection.append(('promissory', _('Promissory Note')))
+    #     return selection
 
     # @api.model
     # def _enable_checks_on_bank_journals(self):

@@ -33,6 +33,12 @@
     ],
     'data': [
         'data/account_payment_method_data.xml',
+        'data/account_journal_data.xml',
+        'data/account_deposit_sequence.xml',
+        'views/account_payment_view.xml',
+        'views/account_move_line_view.xml',
+        'views/account_journal_dashboard_view.xml',
+        # 'views/account_check_deposit_view.xml',
         # 'wizard/check_action_view.xml',
         # 'wizard/view_check_reject.xml',
         # 'wizard/change_check_view.xml',

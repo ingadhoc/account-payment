@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <!-- TODO use 1 -->
+<data noupdate="0">
+
+<!-- if you install this module then you want a third checks journal -->
+<record id="third_checks_journal" model="account.journal">
+    <field name="name">Third Checks</field>
+    <field name="code">TCHK</field>
+    <field name="type">cash</field>
+    <field name="company_id" ref="base.main_company"/>
+    <field name="inbound_payment_method_ids" eval="[(6, 0, [ref('account_payment_method_received_third_check')])]"/>
+    <field name="outbound_payment_method_ids" eval="[(6, 0, [ref('account_payment_method_delivered_third_check')])]"/>
+</record>
+
+</data>
+</openerp>
+
