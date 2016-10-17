@@ -13,10 +13,12 @@
                     <field name="type"/>
                     <field name="tax_withholding_id"/>
                     <field name="partner_id"/>
+                    <field name="period_id"/>
                     <field name="company_id" groups="base.group_multi_company"/>
                     <group expand="0" string="Group By...">
                         <filter string="Type" context="{'group_by':'type'}"/>
-                        <filter string="Withholding Tax" context="{'group_by':'tax_withholding_id'}"/>           
+                        <filter string="Withholding Tax" context="{'group_by':'tax_withholding_id'}"/>   
+                        <filter string="Period" context="{'group_by':'period_id'}"/>        
                     </group>
                 </search>
             </field>

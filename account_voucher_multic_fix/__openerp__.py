@@ -38,3 +38,4 @@ Account Voucher Multi Company Fixes
     'name': 'Account Voucher Multi Company Fixes',
     'test': [],
     'version': '9.0.1.0.0',
+}
