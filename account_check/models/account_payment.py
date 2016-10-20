@@ -29,6 +29,21 @@ class AccountPayment(models.Model):
     #         return checkbooks and checkbooks[0] or False
 
     # Odoo by default use communication to store check number
+    readonly_currency_id = fields.Many2one(
+        related='currency_id',
+        readonly=True,
+    )
+    readonly_amount = fields.Monetary(
+        # string='Payment Amount',
+        # required=True
+        related='amount',
+        readonly=True,
+    )
+
+    @api.onchange('deposited_check_ids')
+    def onchange_checks(self):
+        self.amount = sum(self.deposited_check_ids.mapped('balance'))
+
     deposited_check_ids = fields.One2many(
         'account.move.line',
         'check_deposit_id',
@@ -82,7 +97,7 @@ class AccountPayment(models.Model):
     #     compute='_get_name',
     #     string=_('Number')
     # )
-    check_number = fields.Char(
+    check_number = fields.Integer(
         'Number',
         # required=True,
         readonly=True,

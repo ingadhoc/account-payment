@@ -101,16 +101,16 @@
 
 
         <!-- Third Check Menu -->
-<!--         <record model="ir.actions.act_window" id="action_third_check">
+        <record model="ir.actions.act_window" id="action_third_check">
             <field name="name">Third Checks</field>
-            <field name="res_model">account.payment</field>
+            <field name="res_model">account.move.line</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form,calendar</field>
             <field name="search_view_id" ref=""/>
             <field name="view_id" ref="view_account_third_check_tree"/>
             <field name="domain">[('payment_method_code','=','received_third_check')]</field>
             <field name="context">{'search_default_check_state':'holding'}</field>
-        </record> -->
+        </record>
         
 <!--         <menuitem
             action="action_third_check"
@@ -119,16 +119,16 @@
             parent="account.menu_finance_bank_and_cash"/>  -->
         
         <!-- Issued Check Menu -->
-<!--         <record model="ir.actions.act_window" id="action_issue_check">
+        <record model="ir.actions.act_window" id="action_issue_check">
             <field name="name">Issue Checks</field>
-            <field name="res_model">account.payment</field>
+            <field name="res_model">account.move.line</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form,calendar</field>
             <field name="search_view_id" ref=""/>
             <field name="view_id" ref="view_account_issue_check_tree"/>
             <field name="domain">[('payment_method_code','=','issue_check')]</field>
             <field name="context">{'search_default_check_state':'handed'}</field>
-        </record> -->
+        </record>
         
 <!--         <menuitem
             action="action_issue_check"

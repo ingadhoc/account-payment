@@ -27,10 +27,24 @@
                     <!-- ('account_id', '=', journal_default_account_id) -->
                     <!-- TODO use  -->
                 </xpath>
+                <label for="amount" position="before">
+                    <label for="readonly_amount"/>
+                    <div name="readonly_amount_div" class="o_row" attrs="{'invisible': [('payment_method_code', '!=', 'delivered_third_check')]}">
+                        <field name="readonly_amount"/>
+                        <field name="readonly_currency_id" groups="base.group_multi_currency"/>
+                    </div>
+                </label>
+                <label for="amount" position="attributes">
+                    <attribute name="attrs">{'invisible': [('payment_method_code', '=', 'delivered_third_check')]}</attribute>
+                </label>
+                <div name="amount_div" position="attributes">
+                    <attribute name="attrs">{'invisible': [('payment_method_code', '=', 'delivered_third_check')]}</attribute>
+                </div>
                 <field name="payment_method_code" position="after">
                     <field name="deposited_check_ids"
                            widget="many2many_tags"
-                           domain="[('journal_id', '=', journal_id),('check_deposit_id', '=', False)]"
+                           options="{'no_create': True}"
+                           domain="[('journal_id', '=', journal_id), ('check_state', '=', 'holding'), ('check_type', '=', 'third_check')]"
                            attrs="{'invisible': ['|', ('payment_method_code', '!=', 'delivered_third_check'), ('payment_type', '!=', 'transfer')], 'required': [('payment_method_code', '=', 'delivered_third_check'), ('payment_type', '=', 'transfer')]}"
                             />
                             <!-- context="{'currency': currency_id, -->
@@ -65,7 +79,7 @@
         </record>
 
     <!--  Checks tree view -->
-        <record model="ir.ui.view" id="view_account_third_check_tree">
+        <record model="ir.ui.view" id="view_account_payment_third_check_tree">
             <field name="name">account.third.check.tree</field>
             <field name="model">account.payment</field>
             <field name="priority">100</field>
@@ -89,7 +103,7 @@
             </field>
         </record>
 
-        <record model="ir.ui.view" id="view_account_issue_check_tree">
+        <record model="ir.ui.view" id="view_account_payment_issue_check_tree">
             <field name="name">account.issue.check.tree</field>
             <field name="model">account.payment</field>
             <field name="priority">100</field>
@@ -112,7 +126,7 @@
 
 
         <!-- Third Check Menu -->
-        <record model="ir.actions.act_window" id="action_third_check">
+        <record model="ir.actions.act_window" id="action_payment_third_check">
             <field name="name">Third Checks</field>
             <field name="res_model">account.payment</field>
             <field name="view_type">form</field>
@@ -130,7 +144,7 @@
             parent="account.menu_finance_bank_and_cash"/>  -->
         
         <!-- Issued Check Menu -->
-        <record model="ir.actions.act_window" id="action_issue_check">
+        <record model="ir.actions.act_window" id="action_payment_issue_check">
             <field name="name">Issue Checks</field>
             <field name="res_model">account.payment</field>
             <field name="view_type">form</field>

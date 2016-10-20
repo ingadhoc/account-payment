@@ -1,8 +1,47 @@
+Alternativas:
+    Seguimos como estabamos:
+        no se permiten múltiples medios de pago
+        retenciones en mismo asiento y mismo diario de pago
+        habría que extender para poder pagar cosas que no sean facturas?
+    
+    Como estabamos + cheques con efectivo:
+        considerar a cheques como efectivo y permitir mezclar de alguna manera
+        retenciones (idem)
+        extender pagos (idem)
+
+    Nueva clase múltiples medios de pago:
+        un asiento para cada medio de pago utilizado
+        un asiento para cada retención? O todas las retenciones en uno?
+        un asiento/pago para cada cheque o todos en uno?
+        un asiento para ajuste? Diario particular? Debería exigir NC o ND?
+        extender pagos (idem)
+
+Preguntas:
+     como debería ser un asiento cuando se usa múltiples medios de pago (muchos asientos? donde va la retención? en otro diario?)
+
+DEFINIR:
+    Nombre de múltiples medios de pago (Payments / pagos / accunt.payment el oficial)
+        Pagos Múltiples
+        Pagos ??
+    Circuitos y posibilidades con cheques (que documento interviene en cada uno)
+        cobro cheque de tercero
+            pago entrante (vencimiento, cuit, )
+    Esta bien deposito de cheques análogo a transferencia? gastos? Circuito de cociliación y demás
+
+
+Ver como odoo conciliac paracialmente en la v9
+
+Definiticiones:
+    Sumar conciliaciones parciales
+    No permitimos ajustes en el pago, el ajuste va en la caja y luego va. Los AJUSTES SE HACEN CON UN DIARIO SI SE NECESITA
+
+
 Descripción de la nueva propuesta:
     La idea es hacerlo más a la odoo way, por ej:
         https://www.odoo.com/documentation/user/9.0/accounting/receivables/customer_payments/check.html
         https://www.odoo.com/documentation/user/9.0/accounting/payables/pay/check.html
         https://www.odoo.com/documentation/user/9.0/accounting/bank/misc/batch.html
+        https://github.com/OCA/account-financial-tools/blob/8.0/account_check_deposit
     Entonces proponemos hacer un cheque un account.payment
     La idea sería:
         1. Crear diario tipo "cash" con Debit Methods y payment methods "Third Check"

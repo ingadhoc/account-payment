@@ -28,7 +28,7 @@ class AccountMoveLine(models.Model):
         default=fields.Date.context_today,
     )
     check_state = fields.Selection([
-        ('draft', 'Draft'),
+        # ('draft', 'Draft'),
         ('holding', 'Holding'),
         ('deposited', 'Deposited'),
         ('handed', 'Handed'),
@@ -36,13 +36,14 @@ class AccountMoveLine(models.Model):
         ('debited', 'Debited'),
         ('returned', 'Returned'),
         ('changed', 'Changed'),
-        ('cancel', 'Cancel'),
+        # ('cancel', 'Cancel'),
     ],
         'Check State',
         # required=True,
         # track_visibility='onchange',
-        default='draft',
-        compute='_compute_check_state'
+        # default='draft',
+        default='holding',
+        # compute='_compute_check_state'
         # copy=False,
     )
     checkbook_id = fields.Many2one(
@@ -54,15 +55,20 @@ class AccountMoveLine(models.Model):
         # default=_get_checkbook,
     )
 
-    @api.one
-    def _compute_check_state(self):
-        state = False
-        # if self.payment_method_code == 'received_third_check':
-        #     if self.state == 'draft':
-        #         state = 'draft'
-        #     elif self.state == 'posted':
-        #         state = 'holding'
-        self.check_state = state
+    # @api.one
+    # def _compute_check_state(self):
+    #     state = False
+    #     # por ahora implementamos los third checks
+    #     if self.check_type == 'third_check':
+    #         # default state
+    #         self.state = 'holding'
+    #         if self.
+    #     # if self.payment_method_code == 'received_third_check':
+    #     #     if self.state == 'draft':
+    #     #         state = 'draft'
+    #     #     elif self.state == 'posted':
+    #     #         state = 'holding'
+    #     self.check_state = state
     check_bank_id = fields.Many2one(
         'res.bank', 'Bank',
         # readonly=True,
