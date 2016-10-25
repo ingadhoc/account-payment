@@ -77,6 +77,7 @@
             </field>
         </record>   
 
+        <!-- Left for convenience. TODO: Remove in a future version -->
         <record model="ir.actions.act_window" id="action_account_voucher_withholding">
             <field name="name">Withholding Vouchers</field>
             <field name="res_model">account.voucher.withholding</field>
@@ -85,7 +86,45 @@
             <field name="context">{'search_default_state': 'posted'}</field>
         </record>
 
+        <!-- Left for convenience. TODO: Remove in a future version -->
         <menuitem action="action_account_voucher_withholding" id="menu_account_voucher_withholding" parent="account.menu_finance_bank_and_cash" sequence="11"/>
+
+
+        <record model="ir.actions.act_window" id="action_account_voucher_withholding_suffered">
+            <field name="name">Suffered Withholdings</field>
+            <field name="res_model">account.voucher.withholding</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('type', '=', 'receipt')]</field>
+            <field name="context">{'search_default_state': 'posted'}</field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_account_voucher_withholding_applied">
+            <field name="name">Applied Withholdings</field>
+            <field name="res_model">account.voucher.withholding</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('type', '=', 'payment')]</field>
+            <field name="context">{'search_default_state': 'posted'}</field>
+        </record>
+
+        <menuitem
+            name="Tax Withholdings"
+            id="menu_account_withholding"
+            parent="account.menu_finance_periodical_processing"
+            sequence="31" />
+
+        <menuitem
+            action="action_account_voucher_withholding_suffered"
+            id="menu_account_voucher_withholding_suffered"
+            parent="menu_account_withholding"
+            sequence="10" />
+
+        <menuitem
+            action="action_account_voucher_withholding_applied"
+            id="menu_account_voucher_withholding_applied"
+            parent="menu_account_withholding"
+            sequence="11" />
 
     </data>
 </openerp>
