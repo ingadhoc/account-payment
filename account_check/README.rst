@@ -1,88 +1,73 @@
-# Account Check Management
+.. image:: https://img.shields.io/badge/licence-AGPL--3-blue.svg
+   :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
+   :alt: License: AGPL-3
 
-## Resumen de circuitos y operaciones:
+=================
+Checks Management
+=================
 
-### Cheques de terceros depositado
-Cobro (account.voucher) / diario "Cheques de terceros" / Estado "En mano"
-* Valores en cartera
-*       a deudores x venta
+This module add checks management including functionality for issue and third checks.
 
-#### Deposito y rechazo
-Depósito (account.move) / diario "Bancos" / Estado "Depositado"
-* Banco
-*       a Valores en cartera
+Installation
+============
 
-Rechazo (account.move) / diario "Bancos" / Estado "Rechazado"
-* valores rechazadods   500
-* gastos                100
-*       a Bancos            600
+To install this module, you need to:
 
-Nota de débito (ND) / 
-* deudores x venta    600
-*       a gastos              100
-*       a valores rechazadods 500
+#. Just install this module
 
-#### Entrega y rechazo
-Pago a proveedor (PAGO)
-    proveedores
-        a valores en cartera
+Configuration
+=============
 
-Rechazo cheque pasado (nota de debito)
-    valores rechazados
-    gasto
-        a proveedores
+To configure this module, you need to:
 
-Nota de debito a cliente (idem arriba)
-    deudores x venta    600
-        gastos                100
-        a valores rechazadods 500
+#. Go to ... (TODO)
 
-#### Devolución
-TODO
+Usage
+=====
 
-#### Cambio
-TODO
+To use this module, you need to:
 
+#. Go to ... (TODO)
 
-VALORES PROPIOS
+.. image:: https://odoo-community.org/website/image/ir.attachment/5784_f2813bd/datas
+   :alt: Try me on Runbot
+   :target: https://runbot.adhoc.com.ar/
 
-PAGO
-    proveedores
-        a cheques dif
+.. repo_id is available in https://github.com/OCA/maintainer-tools/blob/master/tools/repos_with_ids.txt
+.. branch is "8.0" for example
 
-DEBITO
-    cheq dif
-        a banco
+Known issues / Roadmap
+======================
 
-RECHAZO Nota de débito
-    cheques dif
-    gastos
-        a proveed
+* ...
 
+Bug Tracker
+===========
 
+Bugs are tracked on `GitHub Issues
+<https://github.com/ingadhoc/{project_repo}/issues>`_. In case of trouble, please
+check there if your issue has already been reported. If you spotted it first,
+help us smashing it by providing a detailed and welcomed feedback.
 
+Credits
+=======
 
-Debito
-    cheq dif
-        a banco
+Images
+------
 
-Rechazo (ASIENTO DE RECHAZO)
-    banco
-        a valores propios rechazados
-    (aca podriamos agregar el gasto bancario tmb=)
+* ADHOC SA: `Icon <http://fotos.subefotos.com/83fed853c1e15a8023b86b2b22d6145bo.png>`_.
+
+Contributors
+------------
 
 
+Maintainer
+----------
 
+.. image:: http://fotos.subefotos.com/83fed853c1e15a8023b86b2b22d6145bo.png
+   :alt: Odoo Community Association
+   :target: https://www.adhoc.com.ar
 
+This module is maintained by the ADHOC SA.
 
-
-Rechazo 
-Valores 3ros rechazados
-    a valores en cartera
-
-
-
-Rechazo cheque pasado
-    Marco cheque como rechazado
-        Valores 3ros rechazados
-            a proveedores
+To contribute to this module, please visit https://www.adhoc.com.ar.

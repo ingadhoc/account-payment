@@ -13,7 +13,6 @@ class account_checkbook(models.Model):
 
     _name = 'account.checkbook'
     _description = 'Account Checkbook'
-    _inherit = ['mail.thread']
 
     @api.one
     def _get_next_check_number(self):
