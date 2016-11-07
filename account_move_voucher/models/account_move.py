@@ -102,6 +102,9 @@ class account_move(models.Model):
                 'close_after_process': True,
                 # 'invoice_type': self.type,
                 # 'invoice_id': self.id,
+                'move_line_ids': self.line_id.filtered(
+                    lambda x: x.account_id.type in [
+                        'payable', 'receivable']).ids,
                 'default_type': voucher_type,
                 'default_company_id': self.company_id.id,
                 'type': 'voucher_type',
