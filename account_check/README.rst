@@ -1,147 +1,73 @@
-Alternativas:
-    Seguimos como estabamos:
-        no se permiten múltiples medios de pago
-        retenciones en mismo asiento y mismo diario de pago
-        habría que extender para poder pagar cosas que no sean facturas?
-    
-    Como estabamos + cheques con efectivo:
-        considerar a cheques como efectivo y permitir mezclar de alguna manera
-        retenciones (idem)
-        extender pagos (idem)
+.. image:: https://img.shields.io/badge/licence-AGPL--3-blue.svg
+   :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
+   :alt: License: AGPL-3
 
-    Nueva clase múltiples medios de pago:
-        un asiento para cada medio de pago utilizado
-        un asiento para cada retención? O todas las retenciones en uno?
-        un asiento/pago para cada cheque o todos en uno?
-        un asiento para ajuste? Diario particular? Debería exigir NC o ND?
-        extender pagos (idem)
+=================
+Checks Management
+=================
 
-Preguntas:
-     como debería ser un asiento cuando se usa múltiples medios de pago (muchos asientos? donde va la retención? en otro diario?)
+This module add checks management including functionality for issue and third checks.
 
-DEFINIR:
-    Nombre de múltiples medios de pago (Payments / pagos / accunt.payment el oficial)
-        Pagos Múltiples
-        Pagos ??
-    Circuitos y posibilidades con cheques (que documento interviene en cada uno)
-        cobro cheque de tercero
-            pago entrante (vencimiento, cuit, )
-    Esta bien deposito de cheques análogo a transferencia? gastos? Circuito de cociliación y demás
+Installation
+============
 
+To install this module, you need to:
 
-Ver como odoo conciliac paracialmente en la v9
+#. Just install this module
 
-Definiticiones:
-    Sumar conciliaciones parciales
-    No permitimos ajustes en el pago, el ajuste va en la caja y luego va. Los AJUSTES SE HACEN CON UN DIARIO SI SE NECESITA
+Configuration
+=============
 
+To configure this module, you need to:
 
-Descripción de la nueva propuesta:
-    La idea es hacerlo más a la odoo way, por ej:
-        https://www.odoo.com/documentation/user/9.0/accounting/receivables/customer_payments/check.html
-        https://www.odoo.com/documentation/user/9.0/accounting/payables/pay/check.html
-        https://www.odoo.com/documentation/user/9.0/accounting/bank/misc/batch.html
-        https://github.com/OCA/account-financial-tools/blob/8.0/account_check_deposit
-    Entonces proponemos hacer un cheque un account.payment
-    La idea sería:
-        1. Crear diario tipo "cash" con Debit Methods y payment methods "Third Check"
-            TODO que la cuenta que se crea sea reconciliable y que no deje elegir manual tmb
-        2- Luego el cheque:
-            a) se puede usar para pagar
-            a) se puede usar para depositar
-    Para cheques de terceros:
+#. Go to ... (TODO)
 
-TODO:
-Podemos tratar de hacer que el cheque en si sea el apunte contable. De esta manera es mas facil dar de alta datos inciales y no dependemos de cambios de objetos ni nada.
+Usage
+=====
 
-Tratamos de mantener la logica de https://www.odoo.com/documentation/user/9.0/accounting/receivables/customer_payments/check.html
+To use this module, you need to:
 
+#. Go to ... (TODO)
 
-# Account Check Management
+.. image:: https://odoo-community.org/website/image/ir.attachment/5784_f2813bd/datas
+   :alt: Try me on Runbot
+   :target: https://runbot.adhoc.com.ar/
 
-## Resumen de circuitos y operaciones:
+.. repo_id is available in https://github.com/OCA/maintainer-tools/blob/master/tools/repos_with_ids.txt
+.. branch is "8.0" for example
 
-### Cheques de terceros depositado
-Cobro (account.voucher) / diario "Cheques de terceros" / Estado "En mano"
-* Valores en cartera
-*       a deudores x venta
+Known issues / Roadmap
+======================
 
-#### Deposito y rechazo
-Depósito (account.move) / diario "Bancos" / Estado "Depositado"
-* Banco
-*       a Valores en cartera
+* ...
 
-Rechazo (account.move) / diario "Bancos" / Estado "Rechazado"
-* valores rechazadods   500
-* gastos                100
-*       a Bancos            600
+Bug Tracker
+===========
 
-Nota de débito (ND) / 
-* deudores x venta    600
-*       a gastos              100
-*       a valores rechazadods 500
+Bugs are tracked on `GitHub Issues
+<https://github.com/ingadhoc/{project_repo}/issues>`_. In case of trouble, please
+check there if your issue has already been reported. If you spotted it first,
+help us smashing it by providing a detailed and welcomed feedback.
 
-#### Entrega y rechazo
-Pago a proveedor (PAGO)
-    proveedores
-        a valores en cartera
+Credits
+=======
 
-Rechazo cheque pasado (nota de debito)
-    valores rechazados
-    gasto
-        a proveedores
+Images
+------
 
-Nota de debito a cliente (idem arriba)
-    deudores x venta    600
-        gastos                100
-        a valores rechazadods 500
+* ADHOC SA: `Icon <http://fotos.subefotos.com/83fed853c1e15a8023b86b2b22d6145bo.png>`_.
 
-#### Devolución
-TODO
-
-#### Cambio
-TODO
+Contributors
+------------
 
 
-VALORES PROPIOS
+Maintainer
+----------
 
-PAGO
-    proveedores
-        a cheques dif
+.. image:: http://fotos.subefotos.com/83fed853c1e15a8023b86b2b22d6145bo.png
+   :alt: Odoo Community Association
+   :target: https://www.adhoc.com.ar
 
-DEBITO
-    cheq dif
-        a banco
+This module is maintained by the ADHOC SA.
 
-RECHAZO Nota de débito
-    cheques dif
-    gastos
-        a proveed
-
-
-
-
-Debito
-    cheq dif
-        a banco
-
-Rechazo (ASIENTO DE RECHAZO)
-    banco
-        a valores propios rechazados
-    (aca podriamos agregar el gasto bancario tmb=)
-
-
-
-
-
-
-Rechazo 
-Valores 3ros rechazados
-    a valores en cartera
-
-
-
-Rechazo cheque pasado
-    Marco cheque como rechazado
-        Valores 3ros rechazados
-            a proveedores
+To contribute to this module, please visit https://www.adhoc.com.ar.
