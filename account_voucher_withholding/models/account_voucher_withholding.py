@@ -141,3 +141,10 @@ class account_voucher_withholding(models.Model):
             sequence = tax_withholding.sequence_id
             vals['internal_number'] = sequence.next_by_id(sequence.id) or '/'
         return super(account_voucher_withholding, self).create(vals)
+
+    @api.one
+    def unlink(self):
+        if self.state not in ('draft'):
+            raise Warning(_(
+                'Only withholding of vouchers on draft state can be deleted!'))
+        return super(account_voucher_withholding, self).unlink()

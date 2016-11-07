@@ -87,20 +87,28 @@ class account_voucher(models.Model):
         # perhups we can move all this to voucher_payline
         # commercial_partner = self.env['res.partner'].browse(
         #     partner_id).commercial_partner_id
-        account_type = None
-        if self._context.get('account_id'):
-            account_type = self.env['account.account'].browse(
-                self._context['account_id']).type
-        if ttype == 'payment':
-            if not account_type:
-                account_type = 'payable'
+
+        if self._context.get('move_line_ids'):
+            domain = [
+                ('id', 'in', self._context.get('move_line_ids')),
+                ('company_id', '=', company.id),
+            ]
         else:
-            if not account_type:
-                account_type = 'receivable'
-        move_lines = self.env['account.move.line'].search([
-            ('state', '=', 'valid'),
-            ('company_id', '=', company.id),
-            ('account_id.type', '=', account_type),
-            ('reconcile_id', '=', False),
-            ('partner_id', '=', partner_id)])
+            account_type = None
+            if self._context.get('account_id'):
+                account_type = self.env['account.account'].browse(
+                    self._context['account_id']).type
+            if ttype == 'payment':
+                if not account_type:
+                    account_type = 'payable'
+            else:
+                if not account_type:
+                    account_type = 'receivable'
+            domain = [
+                ('state', '=', 'valid'),
+                ('company_id', '=', company.id),
+                ('account_id.type', '=', account_type),
+                ('reconcile_id', '=', False),
+                ('partner_id', '=', partner_id)]
+        move_lines = self.env['account.move.line'].search(domain)
         return move_lines
