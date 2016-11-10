@@ -4,7 +4,7 @@
 # directory
 ##############################################################################
 from openerp import fields, models, _, api
-from openerp.exceptions import Warning
+from openerp.exceptions import UserError
 import logging
 # import openerp.addons.decimal_precision as dp
 _logger = logging.getLogger(__name__)
@@ -51,6 +51,11 @@ class AccountPayment(models.Model):
         readonly=True,
         states={'draft': [('readonly', '=', False)]}
     )
+    communication = fields.Char(
+        # because onchange function is not called on onchange and we want
+        # to clean check number name
+        copy=False,
+    )
 
     @api.one
     @api.onchange('check_number', 'checkbook_id')
@@ -59,11 +64,15 @@ class AccountPayment(models.Model):
     def change_check_number(self):
         # TODO make default padding a parameter
         if self.payment_method_code in ['received_third_check', 'issue_check']:
-            padding = self.checkbook_id and self.checkbook_id.padding or 8
-            if len(str(self.check_number)) > padding:
-                padding = len(str(self.check_number))
-            self.communication = _('Check nbr %s') % (
-                '%%0%sd' % padding % self.check_number)
+            if not self.check_number:
+                communication = False
+            else:
+                padding = self.checkbook_id and self.checkbook_id.padding or 8
+                if len(str(self.check_number)) > padding:
+                    padding = len(str(self.check_number))
+                communication = _('Check nbr %s') % (
+                    '%%0%sd' % padding % self.check_number)
+            self.communication = communication
 
     # @api.one
     # @api.depends(
@@ -269,12 +278,6 @@ class AccountPayment(models.Model):
         readonly=True,
         states={'draft': [('readonly', False)]}
     )
-    # currency_id = fields.Many2one(
-    #     'res.currency',
-    #     string='Currency',
-    #     readonly=True,
-    #     related='voucher_id.journal_id.currency',
-    # )
     check_owner_vat = fields.Char(
         # TODO rename to Owner VAT
         'Owner Vat',
@@ -305,49 +308,25 @@ class AccountPayment(models.Model):
     #     copy=False
     # )
 
-    # def _check_number_interval(self, cr, uid, ids, context=None):
-    #     for obj in self.browse(cr, uid, ids, context=context):
-    #         if obj.type != 'issue_check' or (
-    #                 obj.checkbook_id and
-    #                 obj.checkbook_id.range_from <= obj.number <=
-    #                 obj.checkbook_id.range_to):
-    #             return True
-    #     return False
-
-    # def _check_number_issue(self, cr, uid, ids, context=None):
-    #     for obj in self.browse(cr, uid, ids, context=context):
-    #         if obj.type == 'issue_check':
-    #             same_number_check_ids = self.search(
-    #                 cr, uid, [
-    #                     ('id', '!=', obj.id),
-    #                     ('number', '=', obj.number),
-    #                     ('checkbook_id', '=', obj.checkbook_id.id)],
-    #                 context=context)
-    #             if same_number_check_ids:
-    #                 return False
-    #     return True
-
-    # def _check_number_third(self, cr, uid, ids, context=None):
-    #     for obj in self.browse(cr, uid, ids, context=context):
-    #         if obj.type == 'third_check':
-    #             same_number_check_ids = self.search(
-    #                 cr, uid, [
-    #                     ('id', '!=', obj.id),
-    #                     ('number', '=', obj.number),
-    #                     ('voucher_id.partner_id', '=',
-    #                         obj.voucher_id.partner_id.id)], context=context)
-    #             if same_number_check_ids:
-    #                 return False
-    #     return True
-
-    # _constraints = [
-    #     (_check_number_issue,
-    #         'Check Number must be unique per Checkbook!',
-    #         ['number', 'checkbook_id', 'type']),
-    #     (_check_number_third,
-    #         'Check Number must be unique per Owner and Bank!',
-    #         ['number', 'bank_id', 'owner_name', 'type']),
-    # ]
+    @api.onchange(
+        'payment_method_code',
+        'check_number',
+    )
+    @api.constrains(
+        'payment_method_code',
+        'check_number',
+    )
+    def check_number_interval(self):
+        for rec in self:
+            if (
+                    rec.payment_method_code == 'issue_check' and
+                    rec.checkbook_id and (
+                        rec.check_number < rec.checkbook_id.range_from or
+                        rec.check_number > rec.checkbook_id.range_to)):
+                raise UserError(_(
+                    'Check number must be between %s and %s on checkbook '
+                    '%s(%s)') % (rec.checkbook_id.name, rec.checkbook_id.id))
+        return False
 
     @api.one
     @api.constrains('check_issue_date', 'check_payment_date')
@@ -357,12 +336,12 @@ class AccountPayment(models.Model):
                 self.check_issue_date and self.check_payment_date and
                 self.check_issue_date > self.check_payment_date):
             self.check_payment_date = False
-            raise Warning(
+            raise UserError(
                 _('Check Payment Date must be greater than Issue Date'))
 
     @api.one
     @api.onchange('partner_id')
-    def onchange_voucher(self):
+    def onchange_partner_check(self):
         self.check_owner_name = self.partner_id.name
         # TODO use document number instead of vat?
         self.check_owner_vat = self.partner_id.vat
@@ -378,6 +357,7 @@ class AccountPayment(models.Model):
             vals['check_bank_id'] = self.check_bank_id.id
             vals['check_owner_name'] = self.check_owner_name
             vals['check_owner_vat'] = self.check_owner_vat
+            vals['check_number'] = self.check_number
             vals['checkbook_id'] = self.checkbook_id.id
             vals['check_issue_date'] = self.check_issue_date
             if self.payment_method_code == 'issue_check':
@@ -385,142 +365,9 @@ class AccountPayment(models.Model):
             else:
                 vals['check_type'] = 'third_check'
         return vals
-    # @api.one
-    # def unlink(self):
-    #     if self.state not in ('draft'):
-    #         raise Warning(
-    #             _('The Check must be in draft state for unlink !'))
-    #     return super(account_check, self).unlink()
 
-    # @api.one
-    # @api.onchange('checkbook_id')
-    # def onchange_checkbook(self):
-    #     if self.checkbook_id:
-    #         self.number = self.checkbook_id.next_check_number
-
-    # @api.multi
-    # def action_cancel_draft(self):
-    #     # go from canceled state to draft state
-    #     self.write({'state': 'draft'})
-    #     self.delete_workflow()
-    #     self.create_workflow()
-    #     return True
-
-    # @api.multi
-    # def action_hold(self):
-    #     self.write({'state': 'holding'})
-    #     return True
-
-    # @api.multi
-    # def action_deposit(self):
-    #     self.write({'state': 'deposited'})
-    #     return True
-
-    # @api.multi
-    # def action_return(self):
-    #     self.write({'state': 'returned'})
-    #     return True
-
-    # @api.multi
-    # def action_change(self):
-    #     self.write({'state': 'changed'})
-    #     return True
-
-    # @api.multi
-    # def action_hand(self):
-    #     self.write({'state': 'handed'})
-    #     return True
-
-    # @api.multi
-    # def action_reject(self):
-    #     self.write({'state': 'rejected'})
-    #     return True
-
-    # @api.multi
-    # def action_debit(self):
-    #     self.write({'state': 'debited'})
-    #     return True
-
-    # @api.multi
-    # def action_cancel_rejection(self):
-    #     for check in self:
-    #         if check.customer_reject_debit_note_id:
-    #             raise Warning(_(
-    #                 'To cancel a rejection you must first delete the customer '
-    #                 'reject debit note!'))
-    #         if check.supplier_reject_debit_note_id:
-    #             raise Warning(_(
-    #                 'To cancel a rejection you must first delete the supplier '
-    #                 'reject debit note!'))
-    #         if check.rejection_account_move_id:
-    #             raise Warning(_(
-    #                 'To cancel a rejection you must first delete Expense '
-    #                 'Account Move!'))
-    #         check.signal_workflow('cancel_rejection')
-    #     return True
-
-    # @api.multi
-    # def action_cancel_debit(self):
-    #     for check in self:
-    #         if check.debit_account_move_id:
-    #             raise Warning(_(
-    #                 'To cancel a debit you must first delete Debit '
-    #                 'Account Move!'))
-    #         check.signal_workflow('debited_handed')
-    #     return True
-
-    # @api.multi
-    # def action_cancel_deposit(self):
-    #     for check in self:
-    #         if check.deposit_account_move_id:
-    #             raise Warning(_(
-    #                 'To cancel a deposit you must first delete the Deposit '
-    #                 'Account Move!'))
-    #         check.signal_workflow('cancel_deposit')
-    #     return True
-
-    # @api.multi
-    # def action_cancel_return(self):
-    #     for check in self:
-    #         if check.return_account_move_id:
-    #             raise Warning(_(
-    #                 'To cancel a deposit you must first delete the Return '
-    #                 'Account Move!'))
-    #         check.signal_workflow('cancel_return')
-    #     return True
-
-    # TODO implementar para caso issue y third
-    # @api.multi
-    # def action_cancel_change(self):
-    #     for check in self:
-    #         if check.replacing_check_id:
-    #             raise Warning(_(
-    #                 'To cancel a return you must first delete the replacing '
-    #                 'check!'))
-    #         check.signal_workflow('cancel_change')
-    #     return True
-
-    # @api.multi
-    # def check_check_cancellation(self):
-    #     for check in self:
-    #         if check.type == 'issue_check' and check.state not in [
-    #                 'draft', 'handed']:
-    #             raise Warning(_(
-    #                 'You can not cancel issue checks in states other than '
-    #                 '"draft or "handed". First try to change check state.'))
-    #         # third checks received
-    #         elif check.type == 'third_check' and check.state not in [
-    #                 'draft', 'holding']:
-    #             raise Warning(_(
-    #                 'You can not cancel third checks in states other than '
-    #                 '"draft or "holding". First try to change check state.'))
-    #         elif check.type == 'third_check' and check.third_handed_voucher_id:
-    #             raise Warning(_(
-    #                 'You can not cancel third checks that are being used on '
-    #                 'payments'))
-    #     return True
-
-    # @api.multi
-    # def action_cancel(self):
-    #     self.write({'state': 'cancel'})
-    #     return True
+    @api.one
+    @api.onchange('checkbook_id')
+    def onchange_checkbook(self):
+        if self.checkbook_id:
+            self.check_number = self.checkbook_id.next_check_number

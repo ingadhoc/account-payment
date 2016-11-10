@@ -9,11 +9,11 @@ from openerp import models, fields, api, _
 class AccountJournal(models.Model):
     _inherit = 'account.journal'
 
-    # checkbook_ids = fields.One2many(
-    #     'account.checkbook',
-    #     'journal_id',
-    #     'Checkbooks',
-    # )
+    checkbook_ids = fields.One2many(
+        'account.checkbook',
+        'journal_id',
+        'Checkbooks',
+    )
 
     # @api.model
     # def create(self, vals):
