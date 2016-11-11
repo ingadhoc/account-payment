@@ -35,6 +35,10 @@ class account_check_dreject(models.TransientModel):
         help='Rejection account, for eg. "Rejected Checks"',
         domain=[('type', 'in', ['other'])],
     )
+    expense_analytic_account_id = fields.Many2one(
+        'account.analytic.account',
+        'Expense Analytic Account',
+    )
     expense_account = fields.Many2one(
         'account.account',
         'Expense Account',
@@ -98,6 +102,7 @@ class account_check_dreject(models.TransientModel):
             'account_id': self.expense_account.id,
             'price_unit': self.expense_amount,
             'quantity': 1,
+            'account_analytic_id': self.expense_analytic_account_id.id,
         })
 
     @api.multi
@@ -232,6 +237,7 @@ class account_check_dreject(models.TransientModel):
                 'debit': self.expense_amount,
                 'credit': 0.0,
                 'ref': ref_expense,
+                'analytic_account_id': self.expense_analytic_account_id.id,
             })
             # rejection bank move
             move.line_id.with_context({}).create({
