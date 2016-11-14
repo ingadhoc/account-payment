@@ -17,6 +17,7 @@
                         <field name="rejection_account_id" domain="[('company_id','=',company_id), ('type', 'in', ['other'])]" attrs="{'invisible':[('type','!=','third_check')], 'required':[('type','=','third_check')]}"/>
                         <field name="has_expense"/>
                         <field name="expense_account" domain="[('company_id','=',company_id), ('type', 'in', ['other'])]" attrs="{'invisible':[('has_expense','=',False)],'required':[('has_expense','=',True)]}"/>
+                        <field name="expense_analytic_account_id" domain="[('company_id','=',company_id), ('type', '!=', 'view')]" attrs="{'invisible':[('has_expense','=',False)]}" groups="analytic.group_analytic_accounting"/>
                         <field name="expense_amount" attrs="{'invisible':[('has_expense','=',False)],'required':[('has_expense','=',True)]}"/>
                         <field name="expense_to_customer" attrs="{'invisible':['|',('type','!=','third_check'),('has_expense','=',False)]}"/>
                     </group>    
