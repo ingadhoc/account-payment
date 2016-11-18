@@ -58,6 +58,9 @@ class AccountPaymentGroup(models.Model):
     communication = fields.Char(
         string='Memo'
     )
+    notes = fields.Text(
+        string='Notes'
+    )
 
     # campos nuevos
     reconcile = fields.Selection([
