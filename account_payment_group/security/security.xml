@@ -1,0 +1,10 @@
+<openerp>
+<data noupdate="0">
+    <record model="ir.rule" id="account_payment_group_comp_rule">
+        <field name="name">Account payment group company rule</field>
+        <field name="model_id" ref="model_account_payment_group"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+    </record>
+</data>
+</openerp>
