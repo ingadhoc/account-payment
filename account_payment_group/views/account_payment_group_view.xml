@@ -146,6 +146,9 @@
                             </tree>
                         </field>
                     </page>
+                    <page string="Notes">
+                        <field name="notes"/>
+                    </page>
                 </notebook>
             </sheet>
         </form>
