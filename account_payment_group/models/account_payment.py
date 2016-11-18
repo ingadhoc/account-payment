@@ -9,5 +9,5 @@ from openerp.exceptions import UserError, ValidationError
 class AccountPayment(models.Model):
     _inherit = "account.payment"
 
-    payment_multi_id = fields.Many2one(
-        'account.payment.multi', 'Payment Multi')
+    payment_group_id = fields.Many2one(
+        'account.payment.group', 'Payment Multi')

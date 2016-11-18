@@ -3,11 +3,10 @@
    :alt: License: AGPL-3
 
 ==============
-{module_title}
+Payment Groups
 ==============
 
-This module extends the functionality of ... to support ...
-and allow you to ...
+This module extends the functionality of payments to suport paying with multiple payment methods at once
 
 Installation
 ============

@@ -5,9 +5,9 @@
 <openerp>
 <data>
 
-<record id="view_account_payment_multi_tree" model="ir.ui.view">
-    <field name="name">account.payment.multi.tree</field>
-    <field name="model">account.payment.multi</field>
+<record id="view_account_payment_group_tree" model="ir.ui.view">
+    <field name="name">account.payment.group.tree</field>
+    <field name="model">account.payment.group</field>
     <field name="arch" type="xml">
         <tree decoration-info="state=='draft'" decoration-muted="state=='reconciled'" edit="false">
             <field name="payment_date"/>
@@ -22,9 +22,9 @@
     </field>
 </record>
 
-<record id="view_account_supplier_payment_multi_tree" model="ir.ui.view">
+<!-- <record id="view_account_supplier_payment_group_tree" model="ir.ui.view">
     <field name="name">account.supplier.payment.tree</field>
-    <field name="model">account.payment.multi</field>
+    <field name="model">account.payment.group</field>
     <field name="arch" type="xml">
         <tree decoration-info="state=='draft'" decoration-muted="state=='reconciled'" edit="false">
             <field name="payment_date"/>
@@ -37,11 +37,11 @@
             <field name="partner_type" invisible="1"/>
         </tree>
     </field>
-</record>
+</record> -->
 
-<record id="view_account_payment_multi_search" model="ir.ui.view">
-    <field name="name">account.payment.multi.search</field>
-    <field name="model">account.payment.multi</field>
+<record id="view_account_payment_group_search" model="ir.ui.view">
+    <field name="name">account.payment.group.search</field>
+    <field name="model">account.payment.group</field>
     <field name="arch" type="xml">
         <search string="Payments">
             <field name="name" filter_domain="['|', ('name','ilike',self), ('communication','ilike',self)]" string="Description"/>
@@ -64,9 +64,9 @@
     </field>
 </record>
 
-<record id="view_account_payment_multi_form" model="ir.ui.view">
+<record id="view_account_payment_group_form" model="ir.ui.view">
     <field name="name">Payment Multi</field>
-    <field name="model">account.payment.multi</field>
+    <field name="model">account.payment.group</field>
     <field name="arch" type="xml">
         <form string="Register Payment">
             <header>
@@ -114,23 +114,23 @@
                         <label for="payment_difference" attrs="{'invisible': [('payment_difference', '=', 0.0)]}"/>
                         <div attrs="{'invisible': [('payment_difference', '=', 0.0)]}">
                             <field name="payment_difference"/>
-                            <field name="payment_difference_handling" widget="radio" nolabel="1"/>
+                            <!-- <field name="payment_difference_handling" widget="radio" nolabel="1"/> -->
                         </div>
-                        <field name="writeoff_account_id" string="Post Difference In"
-                            attrs="{'invisible': [('payment_difference_handling','=','open')], 'required': [('payment_difference_handling', '=', 'reconcile')]}"/>
+                        <!-- <field name="writeoff_account_id" string="Post Difference In"
+                            attrs="{'invisible': [('payment_difference_handling','=','open')], 'required': [('payment_difference_handling', '=', 'reconcile')]}"/> -->
                     </group>
                 </group>
                 <notebook>
                     <page string="Reconciled Lines" attrs="{'invisible': [('reconcile', '!=', 'move_lines')]}">
                         <button name="auto_compute" string="Auto Compute" class="oe_link" type="object"/>
-                        <field name="reconciled_move_line_ids" attrs="{'readonly': [('state', '!=', 'draft')]}" context="{'tree_view_ref': 'account_payment_multi.view_move_line_tree'}"/>
+                        <field name="reconciled_move_line_ids" attrs="{'readonly': [('state', '!=', 'draft')]}" context="{'tree_view_ref': 'account_payment_group.view_move_line_tree'}"/>
                     </page>
                     <page string="Reconciled Invoices" attrs="{'invisible': [('reconcile', '!=', 'invoices')]}">
                         <button name="auto_compute" string="Auto Compute" class="oe_link" type="object"/>
-                        <field name="invoice_ids" attrs="{'readonly': [('state', '!=', 'draft')]}" context="{'tree_view_ref': 'account_payment_multi.view_account_invoice_tree'}"/>
+                        <field name="invoice_ids" attrs="{'readonly': [('state', '!=', 'draft')]}" context="{'tree_view_ref': 'account_payment_group.view_account_invoice_tree'}"/>
                     </page>
                     <page string="Payment Lines">
-                        <field name="payment_ids" attrs="{'readonly': [('state', '!=', 'draft')]}" context="{'default_payment_type': payment_type, 'default_payment_date': payment_date, 'default_partner_id': partner_id, 'default_partner_type': partner_type, 'payment_multi': True, 'default_amount': payment_difference}">
+                        <field name="payment_ids" attrs="{'readonly': [('state', '!=', 'draft')]}" context="{'default_payment_type': payment_type, 'default_payment_date': payment_date, 'default_partner_id': partner_id, 'default_partner_type': partner_type, 'payment_group': True, 'default_amount': payment_difference}">
                             <!-- la modificamos para que sea editable y menos campos -->
                             <tree decoration-info="state=='draft'" decoration-muted="state=='reconciled'">
                                 <!-- <field name="payment_date"/> -->
@@ -152,9 +152,9 @@
     </field>
 </record>
 
-<record id="view_account_payment_multi_graph" model="ir.ui.view">
-    <field name="name">account.payment.multi.graph</field>
-    <field name="model">account.payment.multi</field>
+<record id="view_account_payment_group_graph" model="ir.ui.view">
+    <field name="name">account.payment.group.graph</field>
+    <field name="model">account.payment.group</field>
     <field name="arch" type="xml">
         <graph string="Invoices" type="bar" stacked="1">
             <field name="payment_type"/>
@@ -164,14 +164,14 @@
     </field>
 </record>
 
-<record id="action_account_payments_multi" model="ir.actions.act_window">
-    <field name="name">Payments Multi</field>
-    <field name="res_model">account.payment.multi</field>
+<record id="action_account_payments_group" model="ir.actions.act_window">
+    <field name="name">Customer Payments</field>
+    <field name="res_model">account.payment.group</field>
     <field name="view_type">form</field>
     <field name="view_mode">tree,form,graph</field>
     <field name="context">{'default_payment_type': 'inbound'}</field>
     <field name="domain">[('partner_type', '=', 'customer')]</field>
-    <field name="view_id" ref="view_account_payment_multi_tree"/>
+    <!-- <field name="view_id" ref="view_account_payment_group_tree"/> -->
     <field name="help" type="html">
         <p class="oe_view_nocontent_create">
           Click to register a payment
@@ -182,14 +182,14 @@
     </field>
 </record>
 
-<record id="action_account_payments_multi_payable" model="ir.actions.act_window">
-    <field name="name">Payments Multi</field>
-    <field name="res_model">account.payment.multi</field>
+<record id="action_account_payments_group_payable" model="ir.actions.act_window">
+    <field name="name">Supplier Payments</field>
+    <field name="res_model">account.payment.group</field>
     <field name="view_type">form</field>
     <field name="view_mode">tree,form,graph</field>
     <field name="context">{'default_payment_type': 'outbound'}</field>
     <field name="domain">[('partner_type', '=', 'supplier')]</field>
-    <field name="view_id" ref="view_account_supplier_payment_multi_tree"/>
+    <!-- <field name="view_id" ref="view_account_supplier_payment_group_tree"/> -->
     <field name="help" type="html">
         <p class="oe_view_nocontent_create">
           Click to register a payment
@@ -200,7 +200,8 @@
     </field>
 </record>
 
-<menuitem action="action_account_payments_multi" id="menu_action_account_payments_multi_receivable" parent="account.menu_finance_receivables" sequence="20" groups="account.group_account_user"/>
-<menuitem action="action_account_payments_multi_payable" id="menu_action_account_payments_multi_payable" parent="account.menu_finance_payables" sequence="20" groups="account.group_account_user"/>
+<menuitem action="action_account_payments_group" id="menu_action_account_payments_group_receivable" parent="account.menu_finance_receivables" sequence="20" groups="account.group_account_user"/>
+<menuitem action="action_account_payments_group_payable" id="menu_action_account_payments_group_payable" parent="account.menu_finance_payables" sequence="20" groups="account.group_account_user"/>
+<!-- <menuitem action="action_account_payments_group_payable" id="menu_action_account_payments_group_payable" parent="account.menu_finance_payables" sequence="20" groups="account.group_account_user"/> -->
 </data>
 </openerp>
