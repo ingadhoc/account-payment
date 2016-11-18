@@ -22,13 +22,6 @@ addons:
       - python-serial
       - python-yaml
       - libcups2-dev # for aeroo because this repo depends of reporting and reporting from aeroo
-      # FE
-      - python-dev
-      - swig
-      - libffi-dev
-      - libssl-dev
-      - python-m2crypto
-      - python-httplib2
 #     Search your packages here:
 #       https://github.com/travis-ci/apt-package-whitelist/blob/master/ubuntu-precise
 #      - wkhtmltopdf  # only add if needed and check the before_install section below
@@ -40,7 +33,7 @@ addons:
 
 env:
   global:
-  - VERSION="8.0" TESTS="0" LINT_CHECK="0" TRANSIFEX="0"
+  - VERSION="9.0" TESTS="0" LINT_CHECK="0" TRANSIFEX="0"
   - TRANSIFEX_USER='jjscarafia'
   # to get secure, run 'travis encrypt TRANSIFEX_PASSWORD=[transifex_password] -r [github_repo]'
   # example of github repo 'ingadhoc/odoo-infrastructure'
@@ -49,8 +42,7 @@ env:
   - TRANSIFEX_TEAM='46451'
 
   matrix:
-  # TODO enable lint check
-  #- LINT_CHECK="1"
+  - LINT_CHECK="1"
   - TRANSIFEX="1"
   - TESTS="1" ODOO_REPO="odoo/odoo" 
 # either use the two lines above or the two below. Don't change the default if
