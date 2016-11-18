@@ -2,32 +2,32 @@
    :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
    :alt: License: AGPL-3
 
-=================
-Checks Management
-=================
+==============
+Payment Groups
+==============
 
-This module add checks management including functionality for issue and third checks.
+This module extends the functionality of payments to suport paying with multiple payment methods at once
 
 Installation
 ============
 
 To install this module, you need to:
 
-#. Just install this module
+#. Do this ...
 
 Configuration
 =============
 
 To configure this module, you need to:
 
-#. Go to ... (TODO)
+#. Go to ...
 
 Usage
 =====
 
 To use this module, you need to:
 
-#. Go to ... (TODO)
+#. Go to ...
 
 .. image:: https://odoo-community.org/website/image/ir.attachment/5784_f2813bd/datas
    :alt: Try me on Runbot

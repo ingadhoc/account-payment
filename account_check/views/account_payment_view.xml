@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!-- TODO inherit other form views also (like check printing module) -->
+        <record id="view_account_payment_form_inherited" model="ir.ui.view">
+            <field name="name">account.payment.form.inherited</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account.view_account_payment_form" />
+            <field name="arch" type="xml">
+<!--                 <field name="state" position="after">
+                    <field name="check_state" widget="statusbar" statusbar_visible="holding,deposited" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])]}"/>
+                </field> -->
+
+                <!-- TODO hacer invisible si ('payment_type', '!=', 'transfer') -->
+                <xpath expr="//field[@name='communication']" position="after">
+                    <field name="check_number" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'delivered_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}"/>
+                    <field name="check_issue_date" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'delivered_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}"/>
+                    <field name="check_payment_date" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'delivered_third_check', 'issue_check'])]}"/>
+                    <field name="check_bank_id" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}"/>
+                    <field name="check_owner_vat" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}"/>
+                    <field name="check_owner_name" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}"/>
+                    <!-- TODO add to domain? -->
+                    <!-- ('currency_id', '=', currency_none_same_company_id), -->
+                    <!-- ('check_deposit_id', '=', False), -->
+                    <!-- ('debit', '>', 0), -->
+                    <!-- ('reconcile_id', '=', False), -->
+                    <!-- ('account_id', '=', journal_default_account_id) -->
+                    <!-- TODO use  -->
+                </xpath>
+                <label for="amount" position="before">
+                    <label for="readonly_amount"/>
+                    <div name="readonly_amount_div" class="o_row" attrs="{'invisible': [('payment_method_code', '!=', 'delivered_third_check')]}">
+                        <field name="readonly_amount"/>
+                        <field name="readonly_currency_id" groups="base.group_multi_currency"/>
+                    </div>
+                </label>
+                <label for="amount" position="attributes">
+                    <attribute name="attrs">{'invisible': [('payment_method_code', '=', 'delivered_third_check')]}</attribute>
+                </label>
+                <div name="amount_div" position="attributes">
+                    <attribute name="attrs">{'invisible': [('payment_method_code', '=', 'delivered_third_check')]}</attribute>
+                </div>
+                <field name="payment_method_code" position="after">
+                    <field name="deposited_check_ids"
+                           widget="many2many_tags"
+                           options="{'no_create': True}"
+                           domain="[('journal_id', '=', journal_id), ('check_state', '=', 'holding'), ('check_type', '=', 'third_check')]"
+                           attrs="{'invisible': ['|', ('payment_method_code', '!=', 'delivered_third_check'), ('payment_type', '!=', 'transfer')], 'required': [('payment_method_code', '=', 'delivered_third_check'), ('payment_type', '=', 'transfer')]}"
+                            />
+                            <!-- context="{'currency': currency_id, -->
+                                <!-- 'journal_id': journal_id}" -->
+                </field>
+            </field>
+        </record>
+
+    <!--  Checks search view -->
+        <record id="view_payment_check_search" model="ir.ui.view">
+            <field name="name">account.payment.check.search</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account.view_account_payment_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='journal_id']" position="before">
+                    <field name="check_number"/>
+                    <field name="check_state"/>
+                    <field name="check_owner_name"/>
+                </xpath>
+                <!-- <xpath expr="//filter[@name='state_sent']" position="before">
+                </xpath> -->
+                <search>
+                    <filter string="Check Issue Date" context="{'group_by':'check_issue_date'}"/>
+                    <filter string="Check State" context="{'group_by':'check_state'}"/>
+                    <filter string="Check Payment Date" context="{'group_by':'check_payment_date'}"/>                        
+                </search>
+                    <!-- <filter string="Deposit Date" context="{'group_by':'deposit_date:day'}"/>                         -->
+                    <!-- <filter string="Journal" context="{'group_by':'journal_id'}"/> -->
+                    <!-- <filter string="Source Partner" context="{'group_by':'source_partner_id'}"/> -->
+                    <!-- <filter string="Destiny Partner" context="{'group_by':'destiny_partner_id'}"/> -->
+            </field>
+        </record>
+
+    <!--  Checks tree view -->
+        <record model="ir.ui.view" id="view_account_payment_third_check_tree">
+            <field name="name">account.third.check.tree</field>
+            <field name="model">account.payment</field>
+            <field name="priority">100</field>
+            <field name="arch" type="xml">
+                <tree colors="blue:check_state == 'draft';black:check_state in ('handed');red:check_state == 'hrejected';gray:check_state == 'cancel'" create="false" string="Checks">
+                    <!-- <field name="checkbook_id" invisible="context.get('default_type',False) != 'issue_check'"/> -->
+                    <!-- <field name="journal_id"/> -->
+                    <!-- <field name="name" string="Number"/> -->
+                    <field name="check_issue_date"/>
+                    <field name="check_payment_date"/>
+                    <field name="partner_id" string="Source Partner"/>
+                    <!-- <field name="source_partner_id" invisible="context.get('default_type',False) != 'third_check'" string="Source Partner"/> -->
+                    <!-- <field name="destiny_partner_id" string="Destiny Partner"/> -->
+                    <!-- <field name="bank_id" invisible="context.get('default_type',False) != 'third_check'"/> -->
+                    <field name="amount" sum="Total Amount"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="check_state"/>
+                    <field name="check_owner_name"/>
+                    <field name="state" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_account_payment_issue_check_tree">
+            <field name="name">account.issue.check.tree</field>
+            <field name="model">account.payment</field>
+            <field name="priority">100</field>
+            <field name="arch" type="xml">
+                <tree colors="blue:check_state == 'draft';black:check_state in ('handed');red:check_state == 'hrejected';gray:check_state == 'cancel'" create="false" string="Checks">
+                    <field name="checkbook_id"/>
+                    <!-- <field name="journal_id"/> -->
+                    <!-- <field name="name" string="Number"/> -->
+                    <field name="check_issue_date"/>
+                    <field name="check_payment_date"/>
+                    <field name="partner_id" string="Destiny Partner"/>
+                    <!-- <field name="bank_id" invisible="context.get('default_type',False) != 'third_check'"/> -->
+                    <field name="amount" sum="Total Amount"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="check_state"/>
+                    <field name="state" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+
+        <!-- Third Check Menu -->
+        <record model="ir.actions.act_window" id="action_payment_third_check">
+            <field name="name">Third Checks</field>
+            <field name="res_model">account.payment</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,calendar</field>
+            <field name="search_view_id" ref=""/>
+            <field name="view_id" ref="view_account_third_check_tree"/>
+            <field name="domain">[('payment_method_code','=','received_third_check')]</field>
+            <field name="context">{'search_default_check_state':'holding'}</field>
+        </record>
+        
+<!--         <menuitem
+            action="action_third_check"
+            id="menu_third_check"
+            sequence="30"
+            parent="account.menu_finance_bank_and_cash"/>  -->
+        
+        <!-- Issued Check Menu -->
+        <record model="ir.actions.act_window" id="action_payment_issue_check">
+            <field name="name">Issue Checks</field>
+            <field name="res_model">account.payment</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,calendar</field>
+            <field name="search_view_id" ref=""/>
+            <field name="view_id" ref="view_account_issue_check_tree"/>
+            <field name="domain">[('payment_method_code','=','issue_check')]</field>
+            <field name="context">{'search_default_check_state':'handed'}</field>
+        </record>
+        
+<!--         <menuitem
+            action="action_issue_check"
+            id="menu_issue_check"
+            sequence="40"
+            parent="account.menu_finance_bank_and_cash"/>   
+ -->
+    </data>
+</openerp>

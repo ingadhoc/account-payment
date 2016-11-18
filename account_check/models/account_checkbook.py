@@ -13,7 +13,7 @@ class account_checkbook(models.Model):
 
     _name = 'account.checkbook'
     _description = 'Account Checkbook'
-    _inherit = ['mail.thread']
+    # _inherit = ['mail.thread']
 
     @api.one
     def _get_next_check_number(self):
@@ -73,7 +73,11 @@ class account_checkbook(models.Model):
         requirde=True, readonly=True,
         string='Company', store=True)
     issue_check_ids = fields.One2many(
-        'account.check', 'checkbook_id', string='Issue Checks', readonly=True,)
+        'account.payment',
+        'checkbook_id',
+        string='Issue Checks',
+        readonly=True,
+    )
     state = fields.Selection(
         [('draft', 'Draft'), ('active', 'In Use'), ('used', 'Used')],
         string='State', readonly=True, default='draft', copy=False)

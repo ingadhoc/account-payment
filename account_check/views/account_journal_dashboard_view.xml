@@ -1,0 +1,38 @@
+<openerp>
+    <data>
+        <record id="account_journal_dashboard_kanban_view_inherited" model="ir.ui.view">
+            <field name="name">account.journal.dashboard.kanban.inherited</field>
+            <field name="model">account.journal</field>
+            <field name="inherit_id" ref="account.account_journal_dashboard_kanban_view" />
+            <field name="arch" type="xml">
+                <xpath expr="//t[@t-name='JournalBodyBankCash']//div[contains(@class, 'o_kanban_primary_right')]" position="inside">
+                    <div t-if="dashboard.show_third_checks">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <a type="action" name="%(action_third_check)d">
+                                    <t t-esc="dashboard.num_holding_third_checks"/>
+                                    <t>Third Check(s) on hand</t>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <a type="object" name="open_transfer_money">Checks Deposits</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div t-if="dashboard.show_issue_checks">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <a type="action" name="%(action_issue_check)d">
+                                    <t t-esc="dashboard.num_handed_issue_checks"/>
+                                    <t>Issue Check(s) handed</t>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</openerp>
