@@ -104,7 +104,8 @@
                         <field name="communication" attrs="{'invisible': [('state', '!=', 'draft'), ('communication', '=', False)], 'readonly': [('state', '!=', 'draft')]}"/>
                     </group>
                     <group>
-                        <field name="reconcile" widget="radio"/>
+                        <!-- TODO enable invoices functionality -->
+                        <field name="reconcile" widget="radio" invisible="1"/>
                         <field name="reconciled_amount" options="{'currency_field': 'currency_id'}"/>
                         <field name="unreconciled_amount" options="{'currency_field': 'currency_id'}"/>
                         <field name="to_pay_amount" options="{'currency_field': 'currency_id'}"/>

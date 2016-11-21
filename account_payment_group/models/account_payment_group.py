@@ -67,7 +67,8 @@ class AccountPaymentGroup(models.Model):
         ('invoices', 'Invoices'),
         ('move_lines', 'Entry Lines')],
         required=True,
-        default='invoices',
+        default='move_lines',
+        # default='invoices',
     )
     unreconciled_amount = fields.Monetary(
     )
