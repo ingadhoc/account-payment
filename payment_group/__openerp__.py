@@ -19,21 +19,19 @@
 #
 ##############################################################################
 {
+    'name': 'Payment Acquirer Groups',
+    'version': '9.0.1.0.0',
     'author': 'ADHOC SA',
     'website': 'www.adhoc.com.ar',
     'license': 'AGPL-3',
     'category': 'Accounting & Finance',
+    'depends': [
+        'payment'
+    ],
     'data': [
         'views/payment_acquirer_view.xml',
     ],
     'demo': [],
-    'depends': [
-        'payment'
-    ],
-    'installable': False,
-    'name': 'Payment Acquirer Groups',
-    'description': 'Allow to set groups on payment acquires, only users of '
-    'that groups will be able to use them',
     'test': [],
-    'version': '9.0.1.0.0',
+    'installable': True,
 }
