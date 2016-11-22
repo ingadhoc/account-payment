@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- © 2016 ADHOC SA
+     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
+
+<openerp>
+<data>
+
+<record id="view_account_payment_form" model="ir.ui.view">
+    <field name="name">account.payment.form</field>
+    <field name="model">account.payment</field>
+    <field name="inherit_id" ref="account_document.view_account_payment_form"/>
+    <field name="arch" type="xml">
+        <!-- we make title invisible TODO check if without docs we need it visible-->
+        <div class="oe_title" position="attributes">
+            <attribute name="invisible">context.get('payment_group')</attribute>
+        </div>
+        <field name="receiptbook_id" position="attributes">
+            <attribute name="invisible">context.get('payment_group')</attribute>
+        </field>
+    </field>
+</record>
+
+</data>
+</openerp>

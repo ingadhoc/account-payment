@@ -11,6 +11,7 @@
     ],
     "data": [
         'view/account_payment_group_view.xml',
+        'view/account_payment_view.xml',
     ],
     "demo": [
     ],
