@@ -382,18 +382,15 @@ class AccountPaymentGroup(models.Model):
                 x.account_id.internal_type in ('receivable', 'payable')))
         if to_pay_move_lines:
             partner = to_pay_move_lines.mapped('partner_id')
-            print 'to_pay_move_lines', to_pay_move_lines
             if len(partner) != 1:
                 raise ValidationError(_(
                     'You can not send to pay lines from different partners'))
 
-            print 'partner', partner
             internal_type = to_pay_move_lines.mapped(
                 'account_id.internal_type')
             if len(internal_type) != 1:
                 raise ValidationError(_(
                     'You can not send to pay lines from different partners'))
-            print 'partner', partner
             rec['partner_id'] = partner[0].id
             rec['partner_type'] = MAP_ACCOUNT_TYPE_PARTNER_TYPE[
                 internal_type[0]]
