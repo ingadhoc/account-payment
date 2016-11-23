@@ -10,7 +10,9 @@ class AccountPayment(models.Model):
     _inherit = "account.payment"
 
     payment_group_id = fields.Many2one(
-        'account.payment.group', 'Payment Multi', ondelete='cascade')
+        'account.payment.group', 'Payment Group', ondelete='cascade')
+    payment_group_company_id = fields.Many2one(
+        related='payment_group_id.company_id')
     # we make a copy without transfer option, we try with related but it
     # does not works
     payment_type_copy = fields.Selection(
@@ -45,8 +47,10 @@ class AccountPayment(models.Model):
             if not res.get('domain', {}):
                 res['domain'] = {}
             res['domain']['journal_id'] = self.payment_type == 'inbound' and [
-                ('at_least_one_inbound', '=', True)] or [
-                ('at_least_one_outbound', '=', True)]
+                ('at_least_one_inbound', '=', True),
+                ('company_id', '=', self.payment_group_company_id.id)] or [
+                ('at_least_one_outbound', '=', True),
+                ('company_id', '=', self.payment_group_company_id.id)]
             res['domain']['journal_id'].append(
                 ('type', 'in', ('bank', 'cash')))
             return res

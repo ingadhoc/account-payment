@@ -62,10 +62,14 @@ class AccountPaymentGroup(models.Model):
         string='Payment Date',
         default=fields.Date.context_today,
         required=True,
-        copy=False
+        copy=False,
+        readonly=True,
+        states={'draft': [('readonly', False)]},
     )
     communication = fields.Char(
-        string='Memo'
+        string='Memo',
+        readonly=True,
+        states={'draft': [('readonly', False)]},
     )
     notes = fields.Text(
         string='Notes'
@@ -105,6 +109,7 @@ class AccountPaymentGroup(models.Model):
         readonly=True,
         # string='To Pay lines Amount',
         string='Selected Debt',
+        compute='_compute_selected_debt',
     )
     unreconciled_amount = fields.Monetary(
         string='Adjusment / Advance',
@@ -144,24 +149,24 @@ class AccountPaymentGroup(models.Model):
         "('account_id.internal_type', '=', account_internal_type),"
         "('account_id.reconcile', '=', True),"
         "('reconciled', '=', False),"
+        "('company_id', '=', company_id),"
         # '|',
         # ('amount_residual', '!=', False),
         # ('amount_residual_currency', '!=', False),
         "]")
     debt_move_line_ids = fields.Many2many(
-        # 'account.move.line',
-        # 'account_move_line_payment_group_debt_rel',
-        # 'payment_group_id',
-        # 'debt_line_id',
-        related='to_pay_move_line_ids',
+        'account.move.line',
+        # por alguna razon el related no funciona bien ni con states ni
+        # actualiza bien con el onchange, hacemos computado mejor
+        compute='_compute_debt_move_line_ids',
+        inverse='_inverse_debt_move_line_ids',
         string="Debt Lines",
         # no podemos ordenar por due date porque esta hardecodeado en
         # funcion _get_pair_to_reconcile
         help="Payment will be automatically matched with the oldest lines of "
         "this list (by date, no by maturity date). You can remove any line you"
         " dont want to be matched.",
-        # copy=False,
-        # domain=move_lines_domain,
+        domain=move_lines_domain,
         readonly=True,
         states={'draft': [('readonly', False)]},
     )
@@ -174,6 +179,8 @@ class AccountPaymentGroup(models.Model):
         help='This lines are the ones the user has selected to be paid.',
         copy=False,
         domain=move_lines_domain,
+        # lo hacemos readonly por vista y no por aca porque el relatd si no
+        # no funcionaba bien
         readonly=True,
         states={'draft': [('readonly', False)]},
     )
@@ -186,6 +193,18 @@ class AccountPaymentGroup(models.Model):
     payment_subtype = fields.Char(
         compute='_compute_payment_subtype'
     )
+
+    @api.multi
+    @api.depends('to_pay_move_line_ids')
+    def _compute_debt_move_line_ids(self):
+        for rec in self:
+            rec.debt_move_line_ids = rec.to_pay_move_line_ids
+
+    @api.multi
+    @api.onchange('debt_move_line_ids')
+    def _inverse_debt_move_line_ids(self):
+        for rec in self:
+            rec.to_pay_move_line_ids = rec.debt_move_line_ids
 
     @api.multi
     @api.depends('company_id.double_validation', 'partner_type')
@@ -201,6 +220,8 @@ class AccountPaymentGroup(models.Model):
     @api.one
     def _compute_matched_move_line_ids(self):
         # code taken from odoo core
+        # TODO mejorar esta funcion buscando directamente en las partial
+        # reconcile
         ids = []
         for aml in self.payment_ids.mapped('move_line_ids'):
             if aml.account_id.reconcile:
@@ -210,7 +231,8 @@ class AccountPaymentGroup(models.Model):
                         r.credit_move_id.id for r in aml.matched_credit_ids])
                 # this is the payment line, we dont want it
                 # ids.append(aml.id)
-        self.matched_move_line_ids = self.env['account.move.line'].browse(ids)
+        self.matched_move_line_ids = self.env['account.move.line'].browse(
+            list(set(ids)))
 
     payment_difference = fields.Monetary(
         compute='_compute_payment_difference',
@@ -281,17 +303,22 @@ class AccountPaymentGroup(models.Model):
                 -payments_amount or payments_amount)
 
     @api.one
-    @api.onchange(
-        'to_pay_move_line_ids',
+    # @api.onchange(
+    @api.depends(
+        # 'to_pay_move_line_ids',
+        'to_pay_move_line_ids.amount_residual',
+        'to_pay_move_line_ids.amount_residual_currency',
+        'to_pay_move_line_ids.currency_id',
         'payment_date',
         'currency_id',
     )
-    @api.constrains(
-        'to_pay_move_line_ids',
-        'payment_date',
-        'currency_id',
-    )
-    def set_selected_debt(self):
+    # @api.constrains(
+    #     'to_pay_move_line_ids',
+    #     'payment_date',
+    #     'currency_id',
+    # )
+    # def set_selected_debt(self):
+    def _compute_selected_debt(self):
         # we dont make it computed because we want to store value.
         # TODO check if odoo implement this kind of hybrid field
         payment_currency = self.currency_id or self.company_id.currency_id
@@ -330,7 +357,7 @@ class AccountPaymentGroup(models.Model):
         for rec in self:
             rec.unreconciled_amount = rec.to_pay_amount - rec.selected_debt
 
-    @api.onchange('partner_id', 'partner_type')
+    @api.onchange('partner_id', 'partner_type', 'company_id')
     def _refresh_payments_and_move_lines(self):
         # clean actual invoice and payments
         # no hace falta
@@ -360,6 +387,7 @@ class AccountPaymentGroup(models.Model):
                     rec.account_internal_type),
                 ('account_id.reconcile', '=', True),
                 ('reconciled', '=', False),
+                ('company_id', '=', rec.company_id.id),
                 # '|',
                 # ('amount_residual', '!=', False),
                 # ('amount_residual_currency', '!=', False),
@@ -487,3 +515,43 @@ class AccountPaymentGroup(models.Model):
             (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile(
                 writeoff_acc_id, writeoff_journal_id)
             rec.state = 'posted'
+
+    # @api.multi
+    # def action_create_debit_credit_note(self):
+    #     self.ensure_one()
+    #     if self.partner_type == 'supplier':
+    #         view_id = self.env.ref('account.invoice_supplier_form').id
+    #         invoice_type = 'in_'
+    #     else:
+    #         view_id = self.env.ref('account.invoice_form').id
+    #         invoice_type = 'out_'
+
+    #     print 'self._context', self._context
+    #     if self._context.get('refund'):
+    #         name = _('Credit Note')
+    #         invoice_type += 'refund'
+    #         # for compatibility with account_document and loc ar
+    #         internal_type = False
+    #     else:
+    #         name = _('Debit Note')
+    #         invoice_type += 'invoice'
+    #         internal_type = 'debit_note'
+
+    #     return {
+    #         'name': name,
+    #         'view_type': 'form',
+    #         'view_mode': 'form',
+    #         'res_model': 'account.invoice',
+    #         'view_id': view_id,
+    #         'type': 'ir.actions.act_window',
+    #         'context': {
+    #             'default_partner_id': self.partner_id.id,
+    #             'default_company_id': self.company_id.id,
+    #             # 'refund': True,
+    #             # 'invoice_type': True,
+    #             # 'use_domain': [('type','in',('out_refund','in_refund'))], 'invoice_type': 'refund'
+    #             'default_type': invoice_type,
+    #             'internal_type': internal_type,
+    #         },
+    #         # 'domain': [('payment_id', 'in', self.payment_ids.ids)],
+    #     }

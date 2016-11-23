@@ -19,6 +19,7 @@
         # "account",
     ],
     "data": [
+        'wizards/account_payment_group_invoice_wizard_view.xml',
         'views/account_payment_view.xml',
         'views/account_move_line_view.xml',
         'views/account_payment_group_view.xml',
