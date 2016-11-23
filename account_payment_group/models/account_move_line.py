@@ -52,5 +52,6 @@ class AccountMoveLine(models.Model):
             rec.payment_group_matched_amount = matched_amount
 
     payment_group_matched_amount = fields.Monetary(
-        compute='compute_payment_group_matched_amount'
+        compute='compute_payment_group_matched_amount',
+        currency_field='company_currency_id',
     )
