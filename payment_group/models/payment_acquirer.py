@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+##############################################################################
+# For copyright and license notices, see __openerp__.py file in module root
+# directory
+##############################################################################
 from openerp import models, fields
 
 
@@ -16,9 +20,8 @@ class PaymentAcquirer(models.Model):
 
     # no pudimos hacerlo andar con la nueva api!
     def render(
-            self, cr, uid, id, reference, amount, currency_id, tx_id=None,
-            partner_id=False, partner_values=None, tx_values=None,
-            context=None):
+        self, cr, uid, id, reference, amount, currency_id,
+            partner_id=False, values=None, context=None):
         """
         We can not use security because the render of button in website is
         called with superuser
@@ -51,6 +54,5 @@ class PaymentAcquirer(models.Model):
             if not groups_ids:
                 return False
         return super(PaymentAcquirer, self).render(
-            cr, uid, id, reference, amount, currency_id, tx_id=tx_id,
-            partner_id=partner_id, partner_values=partner_values,
-            tx_values=tx_values, context=context)
+            cr, uid, id, reference, amount, currency_id, partner_id=partner_id,
+            values=values, context=context)

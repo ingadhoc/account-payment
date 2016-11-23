@@ -4,4 +4,3 @@
 # directory
 ##############################################################################
 from . import payment_acquirer
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
