@@ -1,3 +1,30 @@
+
+MEJORAS
+    agregar pra generar notas de credito desde cobro 
+
+TODO
+
+Ver proble ade redonde con match y unmath, ejemplo http://localhost:9069/web?debug#id=35&view_type=form&model=account.payment.group&menu_id=174&action=231
+Con double validation, en pago de factura de proveedores, ocultar pestana y ver que quede bien lo de notes
+Al generar un pago a proveedor, poner foco en pestana To Pay Lines, en lugar de Notes
+NTH Boton para ir a facturas pagada en Pagos
+
+ver como hcacemos pagos de deuda de otra moneda y motnos fincnaiceros y demas
+eliminar menu de acion mas de registrar pago individual
+Corregir talonarios de recibo que no dependen del payment type si no de si es proveedor o cliente
+arreglar transferencias internas que exigen recibo
+300
+500
+
+Mejorar debt management que no haga falta mostrar campo currency al usar widget y ver si hay que filtrar cosas conciliadas
+
+
+que debt managemnt no active por defecto importes financiaeros
+
+NOTAS
+    cliente o provedeor define la cuenta que va ausar (ds o prov) y el dominio de partners a mostrar
+
+
 TODO
 Decidir nombre de módulo
 Decidir nombre de clase

@@ -71,7 +71,12 @@ class AccountPaymentGroup(models.Model):
     display_name = fields.Char(
         compute='_get_display_name',
         string='Document Reference',
+        store=True,
     )
+
+    _sql_constraints = [
+        ('document_number_uniq', 'unique(document_number, receiptbook_id)',
+            'Document number must be unique per receiptbook!')]
 
     @api.multi
     @api.depends(
@@ -102,6 +107,7 @@ class AccountPaymentGroup(models.Model):
     @api.one
     @api.depends(
         # 'move_name',
+        'state',
         'document_number',
         'document_type_id.doc_code_prefix'
     )
@@ -117,7 +123,7 @@ class AccountPaymentGroup(models.Model):
                 self.document_type_id.doc_code_prefix or '',
                 self.document_number))
         else:
-            display_name = self.name
+            display_name = _('Draft Payment')
         self.display_name = display_name
 
     _sql_constraints = [
@@ -125,24 +131,24 @@ class AccountPaymentGroup(models.Model):
             'Document number must be unique per receiptbook!')]
 
     @api.one
-    @api.constrains('company_id', 'payment_type')
+    @api.constrains('company_id', 'partner_type')
     def _force_receiptbook(self):
         # we add cosntrins to fix odoo tests and also help in inmpo of data
         if not self.receiptbook_id:
             self.receiptbook_id = self._get_receiptbook()
 
-    @api.onchange('company_id', 'payment_type')
+    @api.onchange('company_id', 'partner_type')
     def get_receiptbook(self):
         self.receiptbook_id = self._get_receiptbook()
 
     @api.multi
     def _get_receiptbook(self):
         self.ensure_one()
-        payment_type = self.payment_type or self._context.get(
-            'payment_type', self._context.get('default_payment_type', False))
+        partner_type = self.partner_type or self._context.get(
+            'partner_type', self._context.get('default_partner_type', False))
         receiptbook = self.env[
             'account.payment.receiptbook'].search([
-                ('payment_type', '=', payment_type),
+                ('partner_type', '=', partner_type),
                 ('company_id', '=', self.company_id.id),
             ], limit=1)
         return receiptbook
@@ -151,7 +157,7 @@ class AccountPaymentGroup(models.Model):
     def post(self):
         for rec in self:
             # TODO ver si lo agregamos a las transfers o no
-            if rec.localization and rec.payment_type != 'transfer':
+            if rec.localization:
                 if not rec.document_number:
                     if not rec.receiptbook_id.sequence_id:
                         raise UserError(_(
@@ -160,6 +166,10 @@ class AccountPaymentGroup(models.Model):
                             'document number.'))
                     rec.document_number = (
                         rec.receiptbook_id.sequence_id.next_by_id())
+                rec.payment_ids.write({
+                    'document_number': rec.document_number,
+                    'receiptbook_id': rec.receiptbook_id.id,
+                })
         return super(AccountPaymentGroup, self).post()
 
     @api.one
