@@ -33,9 +33,9 @@
     'data': [
         'data/account_payment_method_data.xml',
         'data/account_journal_data.xml',
-        'data/account_deposit_sequence.xml',
-        'views/account_move_line_view.xml',
+        # 'views/account_move_line_view.xml',
         'views/account_payment_view.xml',
+        'views/account_check_view.xml',
         'views/account_journal_dashboard_view.xml',
         # 'views/account_check_deposit_view.xml',
         # 'wizard/check_action_view.xml',
@@ -44,7 +44,6 @@
         # 'views/account_checkbook_view.xml',
         # 'views/account_view.xml',
         # 'views/account_voucher_view.xml',
-        # 'views/account_check_view.xml',
         # 'workflow/account_check_workflow.xml',
         # 'security/ir.model.access.csv',
         # 'security/account_check_security.xml',
@@ -54,7 +53,7 @@
     ],
     'test': [
     ],
-    'installable': False,
+    'installable': True,
     'auto_install': False,
     'application': True,
 }

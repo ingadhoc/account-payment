@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from openerp import models, fields, api, _
 ##############################################################################
 # For copyright and license notices, see __openerp__.py file in module root
 # directory
 ##############################################################################
+from openerp import models, fields, api, _
 
 
 class AccountJournal(models.Model):
@@ -14,24 +14,6 @@ class AccountJournal(models.Model):
         'journal_id',
         'Checkbooks',
     )
-
-    # @api.model
-    # def create(self, vals):
-    #     journal = super(AccountJournal, self.with_context(vals=vals)).create(vals)
-    #     default_account = vals.get('default_debit_account_id') or vals.get('default_credit_account_id')
-    #     if not default_account and 
-    #     return journal
-
-    # @api.constrains('')
-    # def create(self, vals):
-    #     if '' in 
-
-    @api.one
-    # @api.constrains()
-    def check_checks_journal(self):
-        # TODO add constrains
-        # if self.default_debit_account_id
-        return True
 
     @api.model
     def _prepare_liquidity_account(self, name, company, currency_id, type):

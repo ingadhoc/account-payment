@@ -10,22 +10,22 @@
             <field name="arch" type="xml">
                 <tree colors="blue:state == 'draft';black:state in ('handed');red:state == 'hrejected';gray:state == 'cancel'" create="false" string="Checks">
                     <field name="checkbook_id" invisible="context.get('default_type',False) != 'issue_check'"/>
-                    <field name="journal_id"/>
-                    <field name="name" string="Number"/>
+                    <!-- <field name="journal_id"/> -->
+                    <!-- <field name="name" string="Number"/> -->
                     <field name="issue_date"/>
-                    <field name="payment_date"/>
-                    <field name="source_partner_id" invisible="context.get('default_type',False) != 'third_check'" string="Source Partner"/>
-                    <field name="destiny_partner_id" string="Destiny Partner"/>
+                    <!-- <field name="payment_date"/> -->
+                    <!-- <field name="source_partner_id" invisible="context.get('default_type',False) != 'third_check'" string="Source Partner"/> -->
+                    <!-- <field name="destiny_partner_id" string="Destiny Partner"/> -->
                     <field name="bank_id" invisible="context.get('default_type',False) != 'third_check'"/>
-                    <field name="amount" sum="Total Amount"/>
-                    <field name="company_id" groups="base.group_multi_company"/>
+                    <!-- <field name="amount" sum="Total Amount"/> -->
+                    <!-- <field name="company_id" groups="base.group_multi_company"/> -->
                     <field name="state"/>
                     <field name="owner_name" invisible="context.get('default_type',False) != 'third_check'"/>
                 </tree>
             </field>
         </record>
 
-        <record model="ir.ui.view" id="view_account_check_create_tree">
+<!--         <record model="ir.ui.view" id="view_account_check_create_tree">
             <field name="name">account.check.tree</field>
             <field name="model">account.check</field>
             <field name="arch" type="xml">
@@ -41,34 +41,24 @@
                     <field name="state"/>
                 </tree>
             </field>
-        </record>
+        </record> -->
                   
         <record model="ir.ui.view" id="view_account_check_form">
             <field name="name">account.check.form</field>
             <field name="model">account.check</field>
             <field name="arch" type="xml">
                 <form string="Checks" create="false">
-                    <field name="type" invisible="1"/>
-                    <field name="issue_check_subtype" invisible="1"/>
+                    <field name="type" invisible="0"/>
+                    <!-- <field name="issue_check_subtype" invisible="1"/> -->
                     <field name="journal_id" invisible="1"/>
                     <field name="currency_id" invisible="1"/>
+                    <field name="company_currency_id" invisible="1"/>
                 <header>
-                    <button name="%(action_check_deposit)d" type="action" string="Deposited" states="holding" class="oe_highlight"/>
-                    <!-- change state for issue handed and third holding -->
-                    <button name="%(action_account_change_check)d" type="action" string="Change" attrs="{'invisible':['|', ('type', '!=', 'third_check'), ('state', '!=', 'holding'), '|', ('type', '!=', 'issue_check'), ('state', '!=', 'handed')]}" class="oe_highlight"/>
-                    <button name="%(action_check_debit)d" type="action" string="Debit" attrs="{'invisible':['|',('type','!=','issue_check'),('state','!=','handed')]}" class="oe_highlight"/>
-                    <button name="%(action_check_rejected)d" type="action" string="Reject" states="handed,deposited" context="{'default_state':state,'default_type':type}"/>
-                    <button name="%(action_check_return)d" type="action" string="Return" states="holding" context="{'default_state':state,'default_type':type}"/>
-                    <button name="action_cancel_debit" type="object" string="Cancel Debit" states="debited" context="{'default_state':state,'default_type':type}"/>
-                    <button name="action_cancel_rejection" type="object" string="Cancel Rejection" states="rejected" context="{'default_state':state,'default_type':type}"/>
-                    <button name="action_cancel_deposit" type="object" string="Cancel Deposit" states="deposited" context="{'default_state':state,'default_type':type}"/>
-                    <button name="action_cancel_return" type="object" string="Cancel Return" states="returned" context="{'default_state':state,'default_type':type}"/>
-                    <!-- cancel change not implemente correctly -->
-                    <!-- <button name="action_cancel_change" type="object" string="Cancel Change" states="changed" context="{'default_state':state,'default_type':type}"/> -->
+                    <!-- TODO agregar botones -->
                     <field name="state" widget="statusbar" statusbar_colors='{"hrejected":"red"}'/>
                 </header>
                 <sheet string="Checks">
-                    <h1 attrs="{'invisible': [('name','=',False)]}">
+                    <h1>
                         <field name="name"/>
                     </h1>
                     <group>  
@@ -76,34 +66,21 @@
                             <field name="checkbook_id" widget="selection" domain="[('journal_id','=',journal_id),('state','=','active')]" attrs="{'invisible':[('type','!=','issue_check')],'required':[('type','=','issue_check')]}"/>
                             <field name="bank_id" attrs="{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}"/>
                             <field name="number"/>
-                            <field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                            <field name="company_currency_amount" attrs="{'invisible':[('company_currency_amount','=', 0)]}" /> <!-- groups="base.group_no_one" -->
+                            <field name="amount"/>
+                            <field name="amount_currency" attrs="{'invisible': [('amount_currency', '=', False)]}"/>
                         </group>
                         <group>    
                             <field name="owner_name" attrs="{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}"/>
-                            <field name="vat" attrs="{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}"/>
+                            <field name="owner_vat" attrs="{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}"/>
                             <field name="issue_date"/>
-                            <field name="payment_date" attrs="{'invisible':[('type','=','issue_check'),('issue_check_subtype','=','currents')],'required':[('type','=','issue_check'),('issue_check_subtype','=','deferred')]}"/>
-                            <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                            <field name="payment_date"/>
+                            <!-- <field name="payment_date" attrs="{'invisible':[('type','=','issue_check'),('issue_check_subtype','=','currents')],'required':[('type','=','issue_check'),('issue_check_subtype','=','deferred')]}"/> -->
+                            <!-- <field name="company_id" groups="base.group_multi_company" widget="selection"/> -->
                         </group>
                     </group>
                     <group string="Related Documents">
-                        <group>
-                            <field name="voucher_id" invisible="'from_voucher' in context" required="'from_voucher' not in context" readonly="1" context="{'form_view_ref':'account_voucher.view_vendor_receipt_form'}"/>
-                            <field name="third_handed_voucher_id" invisible="'from_voucher' in context"  context="{'form_view_ref':'account_voucher.view_vendor_payment_form'}" attrs="{'invisible':[('third_handed_voucher_id','=',False)]}"/>
-                            <field name="source_partner_id" invisible="'from_voucher' in context" attrs="{'invisible':[('source_partner_id','=',False)]}"/>
-                            <field name="destiny_partner_id" invisible="'from_voucher' in context" attrs="{'invisible':[('destiny_partner_id','=',False)]}"/>
-                        </group>
-                        <group>
-                            <field name="replacing_check_id" attrs="{'invisible':[('replacing_check_id','=',False)]}"/>
-                            <field name="debit_account_move_id" attrs="{'invisible':[('debit_account_move_id','=',False)]}"/>
-                            <field name="deposit_account_move_id" attrs="{'invisible':[('deposit_account_move_id','=',False)]}"/>
-                            <field name="deposit_date" attrs="{'invisible':[('deposit_date','=',False)]}"/>
-                            <field name="customer_reject_debit_note_id" attrs="{'invisible':[('customer_reject_debit_note_id','=',False)]}"/>
-                            <field name="rejection_account_move_id" attrs="{'invisible':[('rejection_account_move_id','=',False)]}"/>
-                            <field name="supplier_reject_debit_note_id" attrs="{'invisible':[('supplier_reject_debit_note_id','=',False)]}"/>
-                            <field name="return_account_move_id" attrs="{'invisible':[('return_account_move_id','=',False)]}"/>
-                        </group>
+                        <!-- TODO add this -->
+                        <field name="move_line_id"/>
                     </group>
                 </sheet>    
                 <div class="oe_chatter">
@@ -114,7 +91,7 @@
             </field>
         </record> 
 
-        <record model="ir.ui.view" id="view_checks_search">
+<!--         <record model="ir.ui.view" id="view_checks_search">
             <field name="name">check.search</field>
             <field name="model">account.check</field>
             <field name="arch" type="xml">
@@ -140,10 +117,10 @@
                     </group>
                 </search>
             </field>
-        </record> 
+        </record>  -->
 
         <!-- mode="month" --> 
-        <record model="ir.ui.view" id="view_account_check_calendar">
+<!--         <record model="ir.ui.view" id="view_account_check_calendar">
             <field name="name">account.check.calendar</field>
             <field name="model">account.check</field>
             <field name="arch" type="xml">
@@ -153,7 +130,7 @@
                     <field name="amount"/>
                 </calendar>
             </field>
-        </record>
+        </record> -->
 
         <!-- Third Check Menu -->
         <record model="ir.actions.act_window" id="action_third_check">
@@ -161,35 +138,23 @@
             <field name="res_model">account.check</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form,calendar</field>
-            <field name="search_view_id" ref=""/>
-            <field name="view_id" ref="view_account_check_tree"/>
+            <!-- <field name="search_view_id" ref=""/> -->
+            <!-- <field name="view_id" ref="view_account_check_tree"/> -->
             <field name="domain">[('type','=','third_check')]</field>
             <field name="context">{'search_default_state':'holding','default_type':'third_check'}</field>
         </record>
-        
-        <menuitem
-            action="action_third_check"
-            id="menu_third_check"
-            sequence="30"
-            parent="account.menu_finance_bank_and_cash"/> 
-        
+
         <!-- Issued Check Menu -->
         <record model="ir.actions.act_window" id="action_issue_check">
             <field name="name">Issue Checks</field>
             <field name="res_model">account.check</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form,calendar</field>
-            <field name="search_view_id" ref=""/>
-            <field name="view_id" ref="view_account_check_tree"/>
+            <!-- <field name="search_view_id" ref=""/> -->
+            <!-- <field name="view_id" ref="view_account_check_tree"/> -->
             <field name="domain">[('type','=','issue_check')]</field>
             <field name="context">{'search_default_state':'handed','default_type':'issue_check'}</field>
         </record>
-        
-        <menuitem
-            action="action_issue_check"
-            id="menu_issue_check"
-            sequence="40"
-            parent="account.menu_finance_bank_and_cash"/>   
 
     </data>
 </openerp>

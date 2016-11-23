@@ -27,8 +27,19 @@ class AccountPayment(models.Model):
     #         checkbooks = self.env['account.checkbook'].search(
     #             [('state', '=', 'active'), ('journal_id', '=', journal_id)])
     #         return checkbooks and checkbooks[0] or False
-
-    # Odoo by default use communication to store check number
+    communication = fields.Char(
+        # because onchange function is not called on onchange and we want
+        # to clean check number name
+        copy=False,
+    )
+    deposited_check_ids = fields.Many2many(
+        'account.check',
+        # 'account.move.line',
+        # 'check_deposit_id',
+        string='Deposited Checks',
+        readonly=True,
+        states={'draft': [('readonly', '=', False)]}
+    )
     readonly_currency_id = fields.Many2one(
         related='currency_id',
         readonly=True,
@@ -39,23 +50,85 @@ class AccountPayment(models.Model):
         related='amount',
         readonly=True,
     )
+    check_id = fields.Many2one(
+        'account.check',
+        string='Check',
+        # string='Payment Amount',
+        # required=True
+        readonly=True,
+    )
 
+# check fields, just to make it easy to load checks without need to create
+# them by a m2o record
+    # deposited_check_ids = fields.One2many(
+    check_number = fields.Integer(
+        'Number',
+        # required=True,
+        readonly=True,
+        states={'draft': [('readonly', False)]},
+        copy=False
+    )
+    check_issue_date = fields.Date(
+        'Issue Date',
+        # required=True,
+        readonly=True,
+        states={'draft': [('readonly', False)]},
+        default=fields.Date.context_today,
+    )
+    check_payment_date = fields.Date(
+        'Payment Date',
+        readonly=True,
+        help="Only if this check is post dated",
+        states={'draft': [('readonly', False)]}
+    )
+    checkbook_id = fields.Many2one(
+        'account.checkbook',
+        'Checkbook',
+        readonly=True,
+        states={'draft': [('readonly', False)]},
+        # TODO hacer con un onchange
+        # default=_get_checkbook,
+    )
+    check_bank_id = fields.Many2one(
+        'res.bank', 'Bank',
+        readonly=True,
+        states={'draft': [('readonly', False)]}
+    )
+    check_owner_vat = fields.Char(
+        # TODO rename to Owner VAT
+        'Owner Vat',
+        readonly=True,
+        states={'draft': [('readonly', False)]}
+    )
+    check_owner_name = fields.Char(
+        'Owner Name',
+        readonly=True,
+        states={'draft': [('readonly', False)]}
+    )
+    check_type = fields.Char(
+        compute='_compute_check_type',
+        # this fields is to help with code and view
+    )
+
+    @api.multi
+    @api.depends('payment_method_code')
+    def _compute_check_type(self):
+        for rec in self:
+            if rec.payment_method_code == 'issue_check':
+                rec.check_type = 'issue_check'
+            elif rec.payment_method_code in [
+                    'received_third_check',
+                    'delivered_third_check']:
+                rec.check_type = 'third_check'
+
+
+# on change methods
+
+    # @api.constrains('deposited_check_ids')
     @api.onchange('deposited_check_ids')
     def onchange_checks(self):
-        self.amount = sum(self.deposited_check_ids.mapped('balance'))
-
-    deposited_check_ids = fields.One2many(
-        'account.move.line',
-        'check_deposit_id',
-        string='Deposited Checks',
-        readonly=True,
-        states={'draft': [('readonly', '=', False)]}
-    )
-    communication = fields.Char(
-        # because onchange function is not called on onchange and we want
-        # to clean check number name
-        copy=False,
-    )
+        # if self.deposited_check_ids:
+        self.amount = sum(self.deposited_check_ids.mapped('amount'))
 
     @api.one
     @api.onchange('check_number', 'checkbook_id')
@@ -73,6 +146,72 @@ class AccountPayment(models.Model):
                 communication = _('Check nbr %s') % (
                     '%%0%sd' % padding % self.check_number)
             self.communication = communication
+
+    @api.onchange('check_issue_date', 'check_payment_date')
+    def onchange_date(self):
+        if (
+                self.check_issue_date and self.check_payment_date and
+                self.check_issue_date > self.check_payment_date):
+            self.check_payment_date = False
+            raise UserError(
+                _('Check Payment Date must be greater than Issue Date'))
+
+    @api.one
+    @api.onchange('partner_id')
+    def onchange_partner_check(self):
+        self.check_owner_name = self.partner_id.name
+        # TODO use document number instead of vat?
+        self.check_owner_vat = self.partner_id.vat
+
+    @api.one
+    @api.onchange('checkbook_id')
+    def onchange_checkbook(self):
+        if self.checkbook_id:
+            self.check_number = self.checkbook_id.next_check_number
+
+# post methods
+    @api.multi
+    def post(self):
+        res = super(AccountPayment, self).post()
+        for rec in self:
+            if not rec.check_type:
+                continue
+            liquidity_account = (
+                self.payment_type in ('outbound', 'transfer') and
+                self.journal_id.default_debit_account_id or
+                self.journal_id.default_credit_account_id)
+            liquidity_line = self.move_line_ids.filtered(
+                lambda x: x.account_id == liquidity_account)
+            check_vals = {
+                'bank_id': rec.check_bank_id.id,
+                'owner_name': rec.check_owner_name,
+                'owner_vat': rec.check_owner_vat,
+                'number': rec.check_number,
+                'checkbook_id': rec.checkbook_id.id,
+                'issue_date': rec.check_issue_date,
+                'move_line_id': liquidity_line.id,
+                'type': rec.check_type,
+            }
+            check = rec.env['account.check'].create(check_vals)
+            rec.check_id = check.id
+        return res
+
+    def _get_liquidity_move_line_vals(self, amount):
+        vals = super(AccountPayment, self)._get_liquidity_move_line_vals(
+            amount)
+        if self.check_type:
+            vals['date_maturity'] = self.check_payment_date
+            # vals['check_bank_id'] = self.check_bank_id.id
+            # vals['check_owner_name'] = self.check_owner_name
+            # vals['check_owner_vat'] = self.check_owner_vat
+            # vals['check_number'] = self.check_number
+            # vals['checkbook_id'] = self.checkbook_id.id
+            # vals['check_issue_date'] = self.check_issue_date
+            # if self.payment_method_code == 'issue_check':
+            #     vals['check_type'] = 'issue_check'
+            # else:
+            #     vals['check_type'] = 'third_check'
+        return vals
 
     # @api.one
     # @api.depends(
@@ -106,13 +245,6 @@ class AccountPayment(models.Model):
     #     compute='_get_name',
     #     string=_('Number')
     # )
-    check_number = fields.Integer(
-        'Number',
-        # required=True,
-        readonly=True,
-        states={'draft': [('readonly', False)]},
-        copy=False
-    )
     # amount = fields.Float(
     #     'Amount',
     #     required=True,
@@ -147,19 +279,6 @@ class AccountPayment(models.Model):
     #     readonly=True,
     #     store=True
     # )
-    check_issue_date = fields.Date(
-        'Issue Date',
-        # required=True,
-        readonly=True,
-        states={'draft': [('readonly', False)]},
-        default=fields.Date.context_today,
-    )
-    check_payment_date = fields.Date(
-        'Payment Date',
-        readonly=True,
-        help="Only if this check is post dated",
-        states={'draft': [('readonly', False)]}
-    )
     # destiny_partner_id = fields.Many2one(
     #     'res.partner',
     #     compute='_get_destiny_partner',
@@ -180,34 +299,34 @@ class AccountPayment(models.Model):
     #     'Clearing',
     #     readonly=True,
     #     states={'draft': [('readonly', False)]})
-    check_state = fields.Selection([
-        ('draft', 'Draft'),
-        ('holding', 'Holding'),
-        ('deposited', 'Deposited'),
-        ('handed', 'Handed'),
-        ('rejected', 'Rejected'),
-        ('debited', 'Debited'),
-        ('returned', 'Returned'),
-        ('changed', 'Changed'),
-        ('cancel', 'Cancel'),
-    ],
-        'Check State',
-        # required=True,
-        # track_visibility='onchange',
-        default='draft',
-        compute='_compute_check_state'
-        # copy=False,
-    )
+    # check_state = fields.Selection([
+    #     ('draft', 'Draft'),
+    #     ('holding', 'Holding'),
+    #     ('deposited', 'Deposited'),
+    #     ('handed', 'Handed'),
+    #     ('rejected', 'Rejected'),
+    #     ('debited', 'Debited'),
+    #     ('returned', 'Returned'),
+    #     ('changed', 'Changed'),
+    #     ('cancel', 'Cancel'),
+    # ],
+    #     'Check State',
+    #     # required=True,
+    #     # track_visibility='onchange',
+    #     default='draft',
+    #     compute='_compute_check_state'
+    #     # copy=False,
+    # )
 
-    @api.one
-    def _compute_check_state(self):
-        state = False
-        if self.payment_method_code == 'received_third_check':
-            if self.state == 'draft':
-                state = 'draft'
-            elif self.state == 'posted':
-                state = 'holding'
-        self.check_state = state
+    # @api.one
+    # def _compute_check_state(self):
+    #     state = False
+    #     if self.payment_method_code == 'received_third_check':
+    #         if self.state == 'draft':
+    #             state = 'draft'
+    #         elif self.state == 'posted':
+    #             state = 'holding'
+    #     self.check_state = state
     # supplier_reject_debit_note_id = fields.Many2one(
     #     'account.invoice',
     #     'Supplier Reject Debit Note',
@@ -243,14 +362,6 @@ class AccountPayment(models.Model):
     #     string='Subtype',
     #     readonly=True, store=True
     # )
-    checkbook_id = fields.Many2one(
-        'account.checkbook',
-        'Checkbook',
-        readonly=True,
-        states={'draft': [('readonly', False)]},
-        # TODO hacer con un onchange
-        # default=_get_checkbook,
-    )
     # debit_account_move_id = fields.Many2one(
     #     'account.move',
     #     'Debit Account Move',
@@ -273,22 +384,6 @@ class AccountPayment(models.Model):
     #     readonly=True,
     #     copy=False
     # )
-    check_bank_id = fields.Many2one(
-        'res.bank', 'Bank',
-        readonly=True,
-        states={'draft': [('readonly', False)]}
-    )
-    check_owner_vat = fields.Char(
-        # TODO rename to Owner VAT
-        'Owner Vat',
-        readonly=True,
-        states={'draft': [('readonly', False)]}
-    )
-    check_owner_name = fields.Char(
-        'Owner Name',
-        readonly=True,
-        states={'draft': [('readonly', False)]}
-    )
     # deposit_account_move_id = fields.Many2one(
     #     'account.move',
     #     'Deposit Account Move',
@@ -307,67 +402,3 @@ class AccountPayment(models.Model):
     #     readonly=True,
     #     copy=False
     # )
-
-    @api.onchange(
-        'payment_method_code',
-        'check_number',
-    )
-    @api.constrains(
-        'payment_method_code',
-        'check_number',
-    )
-    def check_number_interval(self):
-        for rec in self:
-            if (
-                    rec.payment_method_code == 'issue_check' and
-                    rec.checkbook_id and (
-                        rec.check_number < rec.checkbook_id.range_from or
-                        rec.check_number > rec.checkbook_id.range_to)):
-                raise UserError(_(
-                    'Check number must be between %s and %s on checkbook '
-                    '%s(%s)') % (rec.checkbook_id.name, rec.checkbook_id.id))
-        return False
-
-    @api.one
-    @api.constrains('check_issue_date', 'check_payment_date')
-    @api.onchange('check_issue_date', 'check_payment_date')
-    def onchange_date(self):
-        if (
-                self.check_issue_date and self.check_payment_date and
-                self.check_issue_date > self.check_payment_date):
-            self.check_payment_date = False
-            raise UserError(
-                _('Check Payment Date must be greater than Issue Date'))
-
-    @api.one
-    @api.onchange('partner_id')
-    def onchange_partner_check(self):
-        self.check_owner_name = self.partner_id.name
-        # TODO use document number instead of vat?
-        self.check_owner_vat = self.partner_id.vat
-
-    def _get_liquidity_move_line_vals(self, amount):
-        vals = super(AccountPayment, self)._get_liquidity_move_line_vals(
-            amount)
-        if self.payment_method_code in [
-                'received_third_check',
-                'delivered_third_check',
-                'issue_check']:
-            vals['date_maturity'] = self.check_payment_date
-            vals['check_bank_id'] = self.check_bank_id.id
-            vals['check_owner_name'] = self.check_owner_name
-            vals['check_owner_vat'] = self.check_owner_vat
-            vals['check_number'] = self.check_number
-            vals['checkbook_id'] = self.checkbook_id.id
-            vals['check_issue_date'] = self.check_issue_date
-            if self.payment_method_code == 'issue_check':
-                vals['check_type'] = 'issue_check'
-            else:
-                vals['check_type'] = 'third_check'
-        return vals
-
-    @api.one
-    @api.onchange('checkbook_id')
-    def onchange_checkbook(self):
-        if self.checkbook_id:
-            self.check_number = self.checkbook_id.next_check_number
