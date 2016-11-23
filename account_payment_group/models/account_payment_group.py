@@ -547,9 +547,6 @@ class AccountPaymentGroup(models.Model):
     #         'context': {
     #             'default_partner_id': self.partner_id.id,
     #             'default_company_id': self.company_id.id,
-    #             # 'refund': True,
-    #             # 'invoice_type': True,
-    #             # 'use_domain': [('type','in',('out_refund','in_refund'))], 'invoice_type': 'refund'
     #             'default_type': invoice_type,
     #             'internal_type': internal_type,
     #         },

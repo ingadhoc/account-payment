@@ -10,6 +10,8 @@ This module extends the functionality of payments to suport paying with multiple
 
 By default payments are managed on one step, if you want, you can use two steps to confirm payments on supplier payments. This option is available per company.
 
+A new security group "See Payments Menu" is created and native odoo payments menus are assigned to that group.
+
 Installation
 ============
 

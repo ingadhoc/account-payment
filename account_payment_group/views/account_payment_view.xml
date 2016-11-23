@@ -40,6 +40,15 @@
     </field>
 </record>
 
+<!-- hide default payments menus -->
+<record id="account.menu_action_account_payments_receivable" model="ir.ui.menu">
+    <field eval="[(6, 0, [ref('account_see_payment_menu')])]" name="groups_id"/>
+</record>
+
+<record id="account.menu_action_account_payments_payable" model="ir.ui.menu">
+    <field eval="[(6, 0, [ref('account_see_payment_menu')])]" name="groups_id"/>
+</record>
+
 <record id="view_account_payment_tree" model="ir.ui.view">
     <field name="name">account.payment.tree</field>
     <field name="model">account.payment</field>
