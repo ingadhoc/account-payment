@@ -86,9 +86,11 @@ class AccountPaymentGroup(models.Model):
     # rename fields or labels
     matched_amount = fields.Monetary(
         compute='_compute_matched_amounts',
+        currency_field='currency_id',
     )
     unmatched_amount = fields.Monetary(
         compute='_compute_matched_amounts',
+        currency_field='currency_id',
     )
 
     @api.multi
