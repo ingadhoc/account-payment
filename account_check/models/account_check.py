@@ -13,13 +13,14 @@ class AccountCheckOperation(models.Model):
 
     _name = 'account.check.operation'
     _rec_name = 'operation'
-    _order = 'date desc'
+    _order = 'create_date desc'
 
-    date = fields.Datetime(
-        # default=fields.Date.context_today,
-        default=lambda self: fields.Datetime.now(),
-        required=True,
-    )
+    # we use create_date
+    # date = fields.Datetime(
+    #     # default=fields.Date.context_today,
+    #     default=lambda self: fields.Datetime.now(),
+    #     required=True,
+    # )
     check_id = fields.Many2one(
         'account.check',
         required=True,
@@ -42,6 +43,9 @@ class AccountCheckOperation(models.Model):
     move_line_id = fields.Many2one(
         'account.move.line',
         ondelete='cascade',
+    )
+    partner_id = fields.Many2one(
+        'res.partner',
     )
 
 
@@ -95,7 +99,9 @@ class AccountCheck(models.Model):
         default='draft',
         copy=False,
         compute='_compute_state',
-        # TODO enable store
+        # search='_search_state',
+        # TODO enable store, se complico, ver search o probar si un related
+        # resuelve
         # store=True,
     )
     issue_date = fields.Date(
@@ -443,24 +449,35 @@ class AccountCheck(models.Model):
         return True
 
     @api.multi
-    def _add_operation(self, operation, move_line=None):
+    def _add_operation(self, operation, move_line=None, partner=None):
         for rec in self:
             rec.operation_ids.create({
                 'operation': operation,
                 'check_id': rec.id,
                 'move_line_id': move_line and move_line.id or False,
+                'partner_id': partner and partner.id or False,
             })
+
+    # @api.model
+    # def _search_state(self, operator, value):
+        
+    #     # if operator == '=' and operand:
+    #     #     return [('needaction_partner_ids', 'in', self.env.user.partner_id.id)]
+    #     return [('needaction_partner_ids', 'not in', self.env.user.partner_id.id)]
 
     @api.multi
     @api.depends(
         'operation_ids.operation',
-        'operation_ids.date',
+        'operation_ids.create_date',
+        # 'operation_ids',
+        # 'operation_ids.date',
     )
     def _compute_state(self):
         # TODO tal ves podemos hacer que los cheques partan del "handed_move_line_id"
         # o algo por el estilo, entocnes los estados serian mas aprecidos para ambos
         # tipos de cheques
         for rec in self:
+            print 'aaaaaaa'
             rec.state = (
                 rec.operation_ids and
                 rec.operation_ids[0].operation or 'draft')

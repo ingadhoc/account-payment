@@ -78,18 +78,20 @@
                             <!-- <field name="company_id" groups="base.group_multi_company" widget="selection"/> -->
                         </group>
                     </group>
-                    <group string="Related Documents">
-                        <!-- TODO add this -->
-                        <field name="operation_ids">
+                    <group string="Operations">
+                        <field name="operation_ids" nolabel="1">
                             <tree>
-                                <field name="date"/>
+                                <field name="create_date"/>
                                 <field name="operation"/>
                                 <field name="move_line_id"/>
+                                <field name="partner_id"/>
                             </tree>
                         </field>
+                    </group>
+                    <!-- <group string="Related Documents">
                         <field name="move_line_id"/>
                         <field name="deposit_move_line_id"/>
-                    </group>
+                    </group> -->
                 </sheet>    
                 <div class="oe_chatter">
                     <field name="message_follower_ids" widget="mail_followers"/>

@@ -223,7 +223,7 @@ class AccountPayment(models.Model):
                 # rec.deposited_check_ids.write({
                 #     'deposit_move_line_id': liquidity_line.id})
                 rec.deposited_check_ids._add_operation(
-                    'deposited', liquidity_line)
+                    'deposited', liquidity_line, liquidity_line.partner_id)
             else:
                 liquidity_accounts = (
                     rec.journal_id.default_debit_account_id +
@@ -231,7 +231,6 @@ class AccountPayment(models.Model):
                     rec.company_id.deferred_check_account_id)
                 liquidity_line = rec.move_line_ids.filtered(
                     lambda x: x.account_id in liquidity_accounts)
-
                 check_vals = {
                     'bank_id': rec.check_bank_id.id,
                     'owner_name': rec.check_owner_name,
@@ -248,11 +247,11 @@ class AccountPayment(models.Model):
                     'amount': rec.amount,
                     # 'amount_currency': rec.amount,
                     'currency_id': rec.currency_id.id,
-                    'payment_date': rec.check_payment_date,
                 }
                 check = rec.env['account.check'].create(check_vals)
                 rec.check_id = check.id
-                check._add_operation('holding', liquidity_line)
+                check._add_operation(
+                    'holding', liquidity_line, liquidity_line.partner_id)
         return res
 
     def _get_liquidity_move_line_vals(self, amount):

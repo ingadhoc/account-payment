@@ -34,7 +34,7 @@
                     <!-- TODO use  -->
                 </xpath>
                 <label for="amount" position="before">
-                    <label for="readonly_amount"/>
+                    <label for="readonly_amount" attrs="{'invisible': [('payment_method_code', '!=', 'delivered_third_check')]}"/>
                     <div name="readonly_amount_div" class="o_row" attrs="{'invisible': [('payment_method_code', '!=', 'delivered_third_check')]}">
                         <field name="readonly_amount"/>
                         <field name="readonly_currency_id" groups="base.group_multi_currency"/>
