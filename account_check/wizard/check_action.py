@@ -10,71 +10,72 @@ from openerp import models, fields, api, _
 class account_check_action(models.TransientModel):
     _name = 'account.check.action'
 
-    @api.model
-    def _get_company_id(self):
-        active_ids = self._context.get('active_ids', [])
-        checks = self.env['account.check'].browse(active_ids)
-        company_ids = [x.company_id.id for x in checks]
-        if len(set(company_ids)) > 1:
-            raise Warning(_('All checks must be from the same company!'))
-        return self.env['res.company'].search(
-            [('id', 'in', company_ids)], limit=1)
+    # @api.model
+    # def _get_company_id(self):
+    #     active_ids = self._context.get('active_ids', [])
+    #     checks = self.env['account.check'].browse(active_ids)
+    #     company_ids = [x.company_id.id for x in checks]
+    #     if len(set(company_ids)) > 1:
+    #         raise Warning(_('All checks must be from the same company!'))
+    #     return self.env['res.company'].search(
+    #         [('id', 'in', company_ids)], limit=1)
 
-    journal_id = fields.Many2one(
-        'account.journal',
-        'Journal',
-        domain="[('company_id','=',company_id), "
-        "('type', 'in', ['cash', 'bank', 'general']), "
-        "('payment_subtype', 'not in', ['issue_check', 'third_check'])]"
-    )
-    account_id = fields.Many2one(
-        'account.account',
-        'Account',
-        domain="[('company_id','=',company_id), "
-        "('type', 'in', ('other', 'liquidity'))]"
-    )
+    # journal_id = fields.Many2one(
+    #     'account.journal',
+    #     'Journal',
+    #     domain="[('company_id','=',company_id), "
+    #     "('type', 'in', ['cash', 'bank', 'general']), "
+    #     "('payment_subtype', 'not in', ['issue_check', 'third_check'])]"
+    # )
+    # account_id = fields.Many2one(
+    #     'account.account',
+    #     'Account',
+    #     domain="[('company_id','=',company_id), "
+    #     "('type', 'in', ('other', 'liquidity'))]"
+    # )
     date = fields.Date(
         'Date', required=True, default=fields.Date.context_today
     )
     action_type = fields.Char(
         'Action type passed on the context', required=True
     )
-    company_id = fields.Many2one(
-        'res.company',
-        'Company',
-        required=True,
-        default=_get_company_id
-    )
+    # company_id = fields.Many2one(
+    #     'res.company',
+    #     'Company',
+    #     required=True,
+    #     default=_get_company_id
+    # )
 
-    @api.onchange('journal_id')
-    def onchange_journal_id(self):
-        self.account_id = self.journal_id.default_debit_account_id.id
+    # @api.onchange('journal_id')
+    # def onchange_journal_id(self):
+    #     self.account_id = self.journal_id.default_debit_account_id.id
 
     @api.model
     def validate_action(self, action_type, check):
         # state controls
-        if action_type == 'deposit':
-            if check.type == 'third_check':
-                if check.state != 'holding':
-                    raise Warning(
-                        _('The selected checks must be in holding state.'))
-            else:   # issue
-                raise Warning(_('You can not deposit a Issue Check.'))
-        elif action_type == 'debit':
+        # if action_type == 'deposit':
+        #     if check.type == 'third_check':
+        #         if check.state != 'holding':
+        #             raise Warning(
+        #                 _('The selected checks must be in holding state.'))
+        #     else:   # issue
+        #         raise Warning(_('You can not deposit a Issue Check.'))
+        # elif action_type == 'debit':
+        if action_type == 'debit':
             if check.type == 'issue_check':
                 if check.state != 'handed':
                     raise Warning(
                         _('The selected checks must be in handed state.'))
             else:   # third
                 raise Warning(_('You can not debit a Third Check.'))
-        elif action_type == 'return':
-            if check.type == 'third_check':
-                if check.state != 'holding':
-                    raise Warning(
-                        _('The selected checks must be in holding state.'))
-            # TODO implement return issue checs and return handed third checks
-            else:   # issue
-                raise Warning(_('You can not return a Issue Check.'))
+        # elif action_type == 'return':
+        #     if check.type == 'third_check':
+        #         if check.state != 'holding':
+        #             raise Warning(
+        #                 _('The selected checks must be in holding state.'))
+        #     # TODO implement return issue checs and return handed third checks
+        #     else:   # issue
+        #         raise Warning(_('You can not return a Issue Check.'))
         return True
 
     @api.multi
@@ -123,15 +124,16 @@ class account_check_action(models.TransientModel):
 
         vou_journal = check.voucher_id.journal_id
         # TODO improove how we get vals, get them in other functions
-        if self.action_type == 'deposit':
-            ref = _('Deposit Check Nr. ')
-            check_move_field = 'deposit_account_move_id'
-            journal = self.journal_id
-            debit_account_id = self.account_id.id
-            partner = check.source_partner_id.id,
-            credit_account_id = vou_journal.default_credit_account_id.id
-            signal = 'holding_deposited'
-        elif self.action_type == 'debit':
+        # if self.action_type == 'deposit':
+        #     ref = _('Deposit Check Nr. ')
+        #     check_move_field = 'deposit_account_move_id'
+        #     journal = self.journal_id
+        #     debit_account_id = self.account_id.id
+        #     partner = check.source_partner_id.id,
+        #     credit_account_id = vou_journal.default_credit_account_id.id
+        #     signal = 'holding_deposited'
+        # elif self.action_type == 'debit':
+        if self.action_type == 'debit':
             ref = _('Debit Check Nr. ')
             check_move_field = 'debit_account_move_id'
             journal = check.checkbook_id.debit_journal_id
@@ -139,15 +141,15 @@ class account_check_action(models.TransientModel):
             credit_account_id = journal.default_debit_account_id.id
             debit_account_id = vou_journal.default_credit_account_id.id
             signal = 'handed_debited'
-        elif self.action_type == 'return':
-            ref = _('Return Check Nr. ')
-            check_move_field = 'return_account_move_id'
-            journal = vou_journal
-            debit_account_id = (
-                check.source_partner_id.property_account_receivable.id)
-            partner = check.source_partner_id.id,
-            credit_account_id = vou_journal.default_credit_account_id.id
-            signal = 'holding_returned'
+        # elif self.action_type == 'return':
+        #     ref = _('Return Check Nr. ')
+        #     check_move_field = 'return_account_move_id'
+        #     journal = vou_journal
+        #     debit_account_id = (
+        #         check.source_partner_id.property_account_receivable.id)
+        #     partner = check.source_partner_id.id,
+        #     credit_account_id = vou_journal.default_credit_account_id.id
+        #     signal = 'holding_returned'
 
         name = self.env['ir.sequence'].next_by_id(
             journal.sequence_id.id)

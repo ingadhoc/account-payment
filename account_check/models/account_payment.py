@@ -231,6 +231,14 @@ class AccountPayment(models.Model):
                     rec.company_id.deferred_check_account_id)
                 liquidity_line = rec.move_line_ids.filtered(
                     lambda x: x.account_id in liquidity_accounts)
+                if rec.check_type == 'issue_check':
+                    # TODO tal vez si el cheques es current lo marcamos
+                    # directamente debitado?
+                    operation = 'handed'
+                else:
+                    # third check
+                    operation = 'holding'
+
                 check_vals = {
                     'bank_id': rec.check_bank_id.id,
                     'owner_name': rec.check_owner_name,
@@ -251,7 +259,7 @@ class AccountPayment(models.Model):
                 check = rec.env['account.check'].create(check_vals)
                 rec.check_id = check.id
                 check._add_operation(
-                    'holding', liquidity_line, liquidity_line.partner_id)
+                    operation, liquidity_line, liquidity_line.partner_id)
         return res
 
     def _get_liquidity_move_line_vals(self, amount):
