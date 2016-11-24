@@ -23,11 +23,12 @@ class AccountPayment(models.Model):
         # to clean check number name
         copy=False,
     )
+    # TODO tal vez renombrar a check_ids
     deposited_check_ids = fields.Many2many(
         'account.check',
         # 'account.move.line',
         # 'check_deposit_id',
-        string='Deposited Checks',
+        string='Checks',
         readonly=True,
         states={'draft': [('readonly', '=', False)]}
     )
@@ -52,22 +53,29 @@ class AccountPayment(models.Model):
 # check fields, just to make it easy to load checks without need to create
 # them by a m2o record
     # deposited_check_ids = fields.One2many(
+    check_name = fields.Char(
+        'Check Name',
+        # required=True,
+        readonly=True,
+        states={'draft': [('readonly', False)]},
+        copy=False
+    )
     check_number = fields.Integer(
-        'Number',
+        'Check Number',
         # required=True,
         readonly=True,
         states={'draft': [('readonly', False)]},
         copy=False
     )
     check_issue_date = fields.Date(
-        'Issue Date',
+        'Check Issue Date',
         # required=True,
         readonly=True,
         states={'draft': [('readonly', False)]},
         default=fields.Date.context_today,
     )
     check_payment_date = fields.Date(
-        'Payment Date',
+        'Check Payment Date',
         readonly=True,
         help="Only if this check is post dated",
         states={'draft': [('readonly', False)]}
@@ -84,18 +92,19 @@ class AccountPayment(models.Model):
         related='checkbook_id.issue_check_subtype',
     )
     check_bank_id = fields.Many2one(
-        'res.bank', 'Bank',
+        'res.bank',
+        'Check Bank',
         readonly=True,
         states={'draft': [('readonly', False)]}
     )
     check_owner_vat = fields.Char(
         # TODO rename to Owner VAT
-        'Owner Vat',
+        'Check Owner Vat',
         readonly=True,
         states={'draft': [('readonly', False)]}
     )
     check_owner_name = fields.Char(
-        'Owner Name',
+        'Check Owner Name',
         readonly=True,
         states={'draft': [('readonly', False)]}
     )
@@ -125,23 +134,23 @@ class AccountPayment(models.Model):
         self.amount = sum(self.deposited_check_ids.mapped('amount'))
 
     # TODo activar
-    # @api.one
-    # @api.onchange('check_number', 'checkbook_id')
-    # # @api.depends('check_number', 'checkbook_id', 'checkbook_id.padding')
-    # # def _get_name(self):
-    # def change_check_number(self):
-    #     # TODO make default padding a parameter
-    #     if self.payment_method_code in ['received_third_check', 'issue_check']:
-    #         if not self.check_number:
-    #             communication = False
-    #         else:
-    #             padding = self.checkbook_id and self.checkbook_id.padding or 8
-    #             if len(str(self.check_number)) > padding:
-    #                 padding = len(str(self.check_number))
-    #             # communication = _('Check nbr %s') % (
-    #             communication = (
-    #                 '%%0%sd' % padding % self.check_number)
-    #         self.communication = communication
+    @api.one
+    @api.onchange('check_number', 'checkbook_id')
+    def change_check_number(self):
+        # TODO make default padding a parameter
+        if self.payment_method_code in ['received_third_check']:
+            if not self.check_number:
+                check_name = False
+            else:
+                # TODO make optional
+                padding = 8
+                if len(str(self.check_number)) > padding:
+                    padding = len(str(self.check_number))
+                # communication = _('Check nbr %s') % (
+                check_name = ('%%0%sd' % padding % self.check_number)
+                # communication = (
+                    # '%%0%sd' % padding % self.check_number)
+            self.check_name = check_name
 
     @api.onchange('check_issue_date', 'check_payment_date')
     def onchange_date(self):
@@ -181,9 +190,13 @@ class AccountPayment(models.Model):
             'account_check.account_payment_method_issue_check')
         if vals['payment_method_id'] == issue_checks.id and vals.get(
                 'checkbook_id'):
-            sequence = self.env['account.checkbook'].browse(
-                vals['checkbook_id']).sequence_id
-            vals.update({'check_number': sequence.next_by_id()})
+            checkbook = self.env['account.checkbook'].browse(
+                vals['checkbook_id'])
+            vals.update({
+                # beacause number was readonly we write it here
+                'check_number': checkbook.next_number,
+                'check_name': checkbook.sequence_id.next_by_id(),
+                })
         return super(AccountPayment, self.sudo()).create(vals)
 
     @api.multi
@@ -191,6 +204,7 @@ class AccountPayment(models.Model):
         res = super(AccountPayment, self).cancel()
         for rec in self:
             if rec.check_id:
+                # rec.check_id._add_operation('cancel')
                 rec.check_id.unlink()
         return res
 
@@ -201,37 +215,44 @@ class AccountPayment(models.Model):
             if not rec.check_type:
                 continue
             if rec.payment_method_code == 'delivered_third_check':
-                # this is a deposit
                 if not rec.deposited_check_ids:
                     raise UserError(_('No checks configured for deposit'))
                 liquidity_account = rec.journal_id.default_debit_account_id
                 liquidity_line = rec.move_line_ids.filtered(
                     lambda x: x.account_id == liquidity_account)
-                # if rec.payment_type == 'transfer':
-                #     field = 'deposit_move_line_id'
-                # else:
-                #     field = 'deposit_move_line_id'
-                rec.deposited_check_ids.write({
-                    'deposit_move_line_id': liquidity_line.id})
+                # rec.deposited_check_ids.write({
+                #     'deposit_move_line_id': liquidity_line.id})
+                rec.deposited_check_ids._add_operation(
+                    'deposited', liquidity_line)
             else:
                 liquidity_accounts = (
                     rec.journal_id.default_debit_account_id +
                     rec.journal_id.default_credit_account_id +
                     rec.company_id.deferred_check_account_id)
                 liquidity_line = rec.move_line_ids.filtered(
-                    lambda x: x.account_id not in liquidity_accounts)
+                    lambda x: x.account_id in liquidity_accounts)
+
                 check_vals = {
                     'bank_id': rec.check_bank_id.id,
                     'owner_name': rec.check_owner_name,
                     'owner_vat': rec.check_owner_vat,
                     'number': rec.check_number,
+                    'name': rec.check_name,
                     'checkbook_id': rec.checkbook_id.id,
                     'issue_date': rec.check_issue_date,
-                    'move_line_id': liquidity_line.id,
+                    # 'move_line_id': liquidity_line.id,
                     'type': rec.check_type,
+                    # new fields because no more related ones on check
+                    'journal_id': rec.journal_id.id,
+                    # TODO arreglar que monto va de amount y cual de amount currency
+                    'amount': rec.amount,
+                    # 'amount_currency': rec.amount,
+                    'currency_id': rec.currency_id.id,
+                    'payment_date': rec.check_payment_date,
                 }
                 check = rec.env['account.check'].create(check_vals)
                 rec.check_id = check.id
+                check._add_operation('holding', liquidity_line)
         return res
 
     def _get_liquidity_move_line_vals(self, amount):

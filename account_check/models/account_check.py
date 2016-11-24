@@ -9,6 +9,42 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
+class AccountCheckOperation(models.Model):
+
+    _name = 'account.check.operation'
+    _rec_name = 'operation'
+    _order = 'date desc'
+
+    date = fields.Datetime(
+        # default=fields.Date.context_today,
+        default=lambda self: fields.Datetime.now(),
+        required=True,
+    )
+    check_id = fields.Many2one(
+        'account.check',
+        required=True,
+        ondelete='cascade'
+    )
+    operation = fields.Selection([
+        ('draft', 'Draft'),
+        ('holding', 'Holding'),
+        ('deposited', 'Deposited'),
+        ('endorsed', 'Endorsed'),
+        ('handed', 'Handed'),
+        ('rejected', 'Rejected'),
+        ('debited', 'Debited'),
+        ('returned', 'Returned'),
+        ('changed', 'Changed'),
+        ('cancel', 'Cancel'),
+    ],
+        required=True,
+    )
+    move_line_id = fields.Many2one(
+        'account.move.line',
+        ondelete='cascade',
+    )
+
+
 class AccountCheck(models.Model):
 
     _name = 'account.check'
@@ -16,8 +52,16 @@ class AccountCheck(models.Model):
     _order = "id desc"
     _inherit = ['mail.thread']
 
+    operation_ids = fields.One2many(
+        'account.check.operation',
+        'check_id',
+    )
+    name = fields.Char(
+        required=True,
+        readonly=True,
+        copy=False
+    )
     number = fields.Integer(
-        'Number',
         required=True,
         readonly=True,
         states={'draft': [('readonly', False)]},
@@ -38,6 +82,7 @@ class AccountCheck(models.Model):
         ('draft', 'Draft'),
         ('holding', 'Holding'),
         ('deposited', 'Deposited'),
+        ('endorsed', 'Endorsed'),
         ('handed', 'Handed'),
         ('rejected', 'Rejected'),
         ('debited', 'Debited'),
@@ -143,31 +188,62 @@ class AccountCheck(models.Model):
     #     help='This value is only set for those checks that has a different '
     #     'currency than the company one.'
     # )
+
+# ex campos related
     amount = fields.Monetary(
-        related='move_line_id.balance',
+        # related='move_line_id.balance',
+        currency_field='company_currency_id'
     )
     amount_currency = fields.Monetary(
-        related='move_line_id.amount_currency',
-    )
-    company_currency_id = fields.Many2one(
-        related='move_line_id.company_currency_id',
+        # related='move_line_id.amount_currency',
+        currency_field='currency_id'
     )
     currency_id = fields.Many2one(
-        related='move_line_id.currency_id',
-    )
-    name = fields.Char(
-        related='move_line_id.ref',
+        'res.currency',
+        # related='move_line_id.currency_id',
     )
     payment_date = fields.Date(
-        related='move_line_id.date_maturity',
-        store=True,
-        readonly=True,
+        # related='move_line_id.date_maturity',
+        # store=True,
+        # readonly=True,
     )
     journal_id = fields.Many2one(
-        related='move_line_id.journal_id',
-        store=True,
-        readonly=True,
+        'account.journal',
+        # related='move_line_id.journal_id',
+        # store=True,
+        # readonly=True,
     )
+    company_id = fields.Many2one(
+        related='journal_id.company_id'
+    )
+    company_currency_id = fields.Many2one(
+        related='company_id.currency_id',
+    )
+
+# TODO VER SI BORRAMOS< CAMPOS VIEJOS RELATED< AHORA LOS ESTOREAMOS
+    # amount = fields.Monetary(
+    #     related='move_line_id.balance',
+    # )
+    # amount_currency = fields.Monetary(
+    #     related='move_line_id.amount_currency',
+    # )
+    # company_currency_id = fields.Many2one(
+    #     related='move_line_id.company_currency_id',
+    # )
+    # currency_id = fields.Many2one(
+    #     related='move_line_id.currency_id',
+    # )
+    # payment_date = fields.Date(
+    #     related='move_line_id.date_maturity',
+    #     store=True,
+    #     readonly=True,
+    # )
+    # journal_id = fields.Many2one(
+    #     related='move_line_id.journal_id',
+    #     store=True,
+    #     readonly=True,
+    # )
+
     # @api.model
     # def _get_checkbook(self):
     #     journal_id = self._context.get('default_journal_id', False)
@@ -367,52 +443,79 @@ class AccountCheck(models.Model):
         return True
 
     @api.multi
+    def _add_operation(self, operation, move_line=None):
+        for rec in self:
+            rec.operation_ids.create({
+                'operation': operation,
+                'check_id': rec.id,
+                'move_line_id': move_line and move_line.id or False,
+            })
+
+    @api.multi
     @api.depends(
-        'type',
-        'move_line_id',
-        'deposit_move_line_id',
+        'operation_ids.operation',
+        'operation_ids.date',
     )
     def _compute_state(self):
         # TODO tal ves podemos hacer que los cheques partan del "handed_move_line_id"
         # o algo por el estilo, entocnes los estados serian mas aprecidos para ambos
         # tipos de cheques
         for rec in self:
-            state = 'draft'
-            if rec.type == 'third_check':
-                if rec.deposit_move_line_id:
-                    if rec.deposit_move_line_id.partner_id:
-                        state = 'handed'
-                    else:
-                        state = 'deposited'
-                elif rec.move_line_id:
-                    state = 'holding'
-            elif rec.type == 'issue_check':
-                if rec.move_line_id:
-                    state = 'handed'
-            else:
-                raise ValidationError(_(
-                    'Check %s is not implemented!') % rec.type)
-            # if rec.supplier_reject_debit_note_id:
-            #     state = 'rejected'
-            # elif rec.replacing_check_id:
-            #     state = 'replaced'
-            # elif rec.deposit_account_move_id:
-            #     state = 'debited'
-            # elif rec.replacing_check_id:
-            #     state = 'holding'
-            #     state = 'handed'
-            #     state = 'debited'
-            #     state = 'returned'
-            #     state = 'changed'
-            #     state = 'cancel'
-            # elif rec.deposit_account_move_id:
-            # elif rec.return_account_move_id:
-            rec.state = state
+            rec.state = (
+                rec.operation_ids and
+                rec.operation_ids[0].operation or 'draft')
 
+# TODO borrar, funcion vieja pa computar estado
+    # @api.multi
+    # @api.depends(
+    #     'type',
+    #     'move_line_id',
+    #     'deposit_move_line_id',
+    # )
+    # def _compute_state(self):
+    #     # TODO tal ves podemos hacer que los cheques partan del "handed_move_line_id"
+    #     # o algo por el estilo, entocnes los estados serian mas aprecidos para ambos
+    #     # tipos de cheques
+    #     for rec in self:
+    #         state = 'draft'
+    #         if rec.type == 'third_check':
+    #             if rec.deposit_move_line_id:
+    #                 if rec.deposit_move_line_id.partner_id:
+    #                     state = 'endorsed'
+    #                 else:
+    #                     state = 'deposited'
+    #             elif rec.move_line_id:
+    #                 state = 'holding'
+    #         elif rec.type == 'issue_check':
+    #             if rec.move_line_id:
+    #                 state = 'handed'
+    #         else:
+    #             raise ValidationError(_(
+    #                 'Check %s is not implemented!') % rec.type)
+    #         # if rec.supplier_reject_debit_note_id:
+    #         #     state = 'rejected'
+    #         # elif rec.replacing_check_id:
+    #         #     state = 'replaced'
+    #         # elif rec.deposit_account_move_id:
+    #         #     state = 'debited'
+    #         # elif rec.replacing_check_id:
+    #         #     state = 'holding'
+    #         #     state = 'handed'
+    #         #     state = 'debited'
+    #         #     state = 'returned'
+    #         #     state = 'changed'
+    #         #     state = 'cancel'
+    #         # elif rec.deposit_account_move_id:
+    #         # elif rec.return_account_move_id:
+    #         rec.state = state
+
+# si volvemos a activar la constraint entonces ver que cuando cancelamos pago
+# se permita borrar, podriamos generar una operacacion de cancelar que lo vuelva
+# a borrador o
     @api.multi
     def unlink(self):
         for rec in self:
-            if rec.state not in ('draft'):
+            if rec.state not in ('draft', 'cancel'):
                 raise ValidationError(
                     _('The Check must be in draft state for unlink !'))
         return super(AccountCheck, self).unlink()
