@@ -11,7 +11,6 @@ _logger = logging.getLogger(__name__)
 
 
 class AccountPayment(models.Model):
-# class account_check(models.Model):
 
     _inherit = 'account.payment'
     # _name = 'account.check'
@@ -19,14 +18,6 @@ class AccountPayment(models.Model):
     # _order = "id desc"
     # _inherit = ['mail.thread']
 
-    # @api.model
-    # def _get_checkbook(self):
-    #     journal_id = self._context.get('default_journal_id', False)
-    #     payment_subtype = self._context.get('default_type', False)
-    #     if journal_id and payment_subtype == 'issue_check':
-    #         checkbooks = self.env['account.checkbook'].search(
-    #             [('state', '=', 'active'), ('journal_id', '=', journal_id)])
-    #         return checkbooks and checkbooks[0] or False
     communication = fields.Char(
         # because onchange function is not called on onchange and we want
         # to clean check number name
@@ -89,6 +80,9 @@ class AccountPayment(models.Model):
         # TODO hacer con un onchange
         # default=_get_checkbook,
     )
+    check_subtype = fields.Selection(
+        related='checkbook_id.issue_check_subtype',
+    )
     check_bank_id = fields.Many2one(
         'res.bank', 'Bank',
         readonly=True,
@@ -130,22 +124,24 @@ class AccountPayment(models.Model):
         # if self.deposited_check_ids:
         self.amount = sum(self.deposited_check_ids.mapped('amount'))
 
-    @api.one
-    @api.onchange('check_number', 'checkbook_id')
-    # @api.depends('check_number', 'checkbook_id', 'checkbook_id.padding')
-    # def _get_name(self):
-    def change_check_number(self):
-        # TODO make default padding a parameter
-        if self.payment_method_code in ['received_third_check', 'issue_check']:
-            if not self.check_number:
-                communication = False
-            else:
-                padding = self.checkbook_id and self.checkbook_id.padding or 8
-                if len(str(self.check_number)) > padding:
-                    padding = len(str(self.check_number))
-                communication = _('Check nbr %s') % (
-                    '%%0%sd' % padding % self.check_number)
-            self.communication = communication
+    # TODo activar
+    # @api.one
+    # @api.onchange('check_number', 'checkbook_id')
+    # # @api.depends('check_number', 'checkbook_id', 'checkbook_id.padding')
+    # # def _get_name(self):
+    # def change_check_number(self):
+    #     # TODO make default padding a parameter
+    #     if self.payment_method_code in ['received_third_check', 'issue_check']:
+    #         if not self.check_number:
+    #             communication = False
+    #         else:
+    #             padding = self.checkbook_id and self.checkbook_id.padding or 8
+    #             if len(str(self.check_number)) > padding:
+    #                 padding = len(str(self.check_number))
+    #             # communication = _('Check nbr %s') % (
+    #             communication = (
+    #                 '%%0%sd' % padding % self.check_number)
+    #         self.communication = communication
 
     @api.onchange('check_issue_date', 'check_payment_date')
     def onchange_date(self):
@@ -163,37 +159,79 @@ class AccountPayment(models.Model):
         # TODO use document number instead of vat?
         self.check_owner_vat = self.partner_id.vat
 
-    @api.one
+    @api.onchange('payment_method_code')
+    def _onchange_payment_method_code(self):
+        if self.payment_method_code == 'issue_check':
+            checkbook = self.env['account.checkbook'].search([
+                ('state', '=', 'active'),
+                ('journal_id', '=', self.journal_id.id)],
+                limit=1)
+            self.checkbook_id = checkbook
+
     @api.onchange('checkbook_id')
     def onchange_checkbook(self):
         if self.checkbook_id:
-            self.check_number = self.checkbook_id.next_check_number
+            self.check_number = self.checkbook_id.next_number
+
 
 # post methods
+    @api.model
+    def create(self, vals):
+        issue_checks = self.env.ref(
+            'account_check.account_payment_method_issue_check')
+        if vals['payment_method_id'] == issue_checks.id and vals.get(
+                'checkbook_id'):
+            sequence = self.env['account.checkbook'].browse(
+                vals['checkbook_id']).sequence_id
+            vals.update({'check_number': sequence.next_by_id()})
+        return super(AccountPayment, self.sudo()).create(vals)
+
+    @api.multi
+    def cancel(self):
+        res = super(AccountPayment, self).cancel()
+        for rec in self:
+            if rec.check_id:
+                rec.check_id.unlink()
+        return res
+
     @api.multi
     def post(self):
         res = super(AccountPayment, self).post()
         for rec in self:
             if not rec.check_type:
                 continue
-            liquidity_account = (
-                self.payment_type in ('outbound', 'transfer') and
-                self.journal_id.default_debit_account_id or
-                self.journal_id.default_credit_account_id)
-            liquidity_line = self.move_line_ids.filtered(
-                lambda x: x.account_id == liquidity_account)
-            check_vals = {
-                'bank_id': rec.check_bank_id.id,
-                'owner_name': rec.check_owner_name,
-                'owner_vat': rec.check_owner_vat,
-                'number': rec.check_number,
-                'checkbook_id': rec.checkbook_id.id,
-                'issue_date': rec.check_issue_date,
-                'move_line_id': liquidity_line.id,
-                'type': rec.check_type,
-            }
-            check = rec.env['account.check'].create(check_vals)
-            rec.check_id = check.id
+            if rec.payment_method_code == 'delivered_third_check':
+                # this is a deposit
+                if not rec.deposited_check_ids:
+                    raise UserError(_('No checks configured for deposit'))
+                liquidity_account = rec.journal_id.default_debit_account_id
+                liquidity_line = rec.move_line_ids.filtered(
+                    lambda x: x.account_id == liquidity_account)
+                # if rec.payment_type == 'transfer':
+                #     field = 'deposit_move_line_id'
+                # else:
+                #     field = 'deposit_move_line_id'
+                rec.deposited_check_ids.write({
+                    'deposit_move_line_id': liquidity_line.id})
+            else:
+                liquidity_accounts = (
+                    rec.journal_id.default_debit_account_id +
+                    rec.journal_id.default_credit_account_id +
+                    rec.company_id.deferred_check_account_id)
+                liquidity_line = rec.move_line_ids.filtered(
+                    lambda x: x.account_id not in liquidity_accounts)
+                check_vals = {
+                    'bank_id': rec.check_bank_id.id,
+                    'owner_name': rec.check_owner_name,
+                    'owner_vat': rec.check_owner_vat,
+                    'number': rec.check_number,
+                    'checkbook_id': rec.checkbook_id.id,
+                    'issue_date': rec.check_issue_date,
+                    'move_line_id': liquidity_line.id,
+                    'type': rec.check_type,
+                }
+                check = rec.env['account.check'].create(check_vals)
+                rec.check_id = check.id
         return res
 
     def _get_liquidity_move_line_vals(self, amount):
@@ -201,6 +239,13 @@ class AccountPayment(models.Model):
             amount)
         if self.check_type:
             vals['date_maturity'] = self.check_payment_date
+            if self.check_subtype == 'deferred':
+                deferred_account = self.company_id.deferred_check_account_id
+                if not deferred_account:
+                    raise UserError(_(
+                        'No checks deferred account defined for company %s'
+                    ) % self.company_id.name)
+                vals['account_id'] = deferred_account.id
             # vals['check_bank_id'] = self.check_bank_id.id
             # vals['check_owner_name'] = self.check_owner_name
             # vals['check_owner_vat'] = self.check_owner_vat

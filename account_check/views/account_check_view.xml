@@ -63,8 +63,8 @@
                     </h1>
                     <group>  
                         <group>
-                            <field name="checkbook_id" widget="selection" domain="[('journal_id','=',journal_id),('state','=','active')]" attrs="{'invisible':[('type','!=','issue_check')],'required':[('type','=','issue_check')]}"/>
-                            <field name="bank_id" attrs="{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}"/>
+                            <field name="checkbook_id"/>
+                            <field name="bank_id"/>
                             <field name="number"/>
                             <field name="amount"/>
                             <field name="amount_currency" attrs="{'invisible': [('amount_currency', '=', False)]}"/>
@@ -74,13 +74,13 @@
                             <field name="owner_vat" attrs="{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}"/>
                             <field name="issue_date"/>
                             <field name="payment_date"/>
-                            <!-- <field name="payment_date" attrs="{'invisible':[('type','=','issue_check'),('issue_check_subtype','=','currents')],'required':[('type','=','issue_check'),('issue_check_subtype','=','deferred')]}"/> -->
                             <!-- <field name="company_id" groups="base.group_multi_company" widget="selection"/> -->
                         </group>
                     </group>
                     <group string="Related Documents">
                         <!-- TODO add this -->
                         <field name="move_line_id"/>
+                        <field name="deposit_move_line_id"/>
                     </group>
                 </sheet>    
                 <div class="oe_chatter">

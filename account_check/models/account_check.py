@@ -76,50 +76,57 @@ class AccountCheck(models.Model):
         states={'draft': [('readonly', False)]}
     )
 
-# other fields
+# move.line fields
     move_line_id = fields.Many2one(
         'account.move.line',
         'Check Entry Line',
+        readonly=True,
+        copy=False
+    )
+    deposit_move_line_id = fields.Many2one(
+        'account.move.line',
+        'Deposit Journal Item',
+        readonly=True,
+        copy=False
     )
 # rejection fields
-    supplier_reject_debit_note_id = fields.Many2one(
-        'account.invoice',
-        'Supplier Reject Debit Note',
-        readonly=True,
-        copy=False,
-    )
-    customer_reject_debit_note_id = fields.Many2one(
-        'account.invoice',
-        'Customer Reject Debit Note',
-        readonly=True,
-        copy=False
-    )
-    rejection_account_move_id = fields.Many2one(
-        'account.move',
-        'Rejection Account Move',
-        readonly=True,
-        oldname='expense_account_move_id',
-        copy=False,
-    )
-# replacing fields
-    replacing_check_id = fields.Many2one(
-        'account.check',
-        'Replacing Check',
-        readonly=True,
-        copy=False,
-    )
-    deposit_account_move_id = fields.Many2one(
-        'account.move',
-        'Deposit Account Move',
-        readonly=True,
-        copy=False
-    )
-    return_account_move_id = fields.Many2one(
-        'account.move',
-        'Return Account Move',
-        readonly=True,
-        copy=False
-    )
+    # supplier_reject_debit_note_id = fields.Many2one(
+    #     'account.invoice',
+    #     'Supplier Reject Debit Note',
+    #     readonly=True,
+    #     copy=False,
+    # )
+    # customer_reject_debit_note_id = fields.Many2one(
+    #     'account.invoice',
+    #     'Customer Reject Debit Note',
+    #     readonly=True,
+    #     copy=False
+    # )
+    # rejection_account_move_id = fields.Many2one(
+    #     'account.move',
+    #     'Rejection Account Move',
+    #     readonly=True,
+    #     oldname='expense_account_move_id',
+    #     copy=False,
+    # )
+    # replacing_check_id = fields.Many2one(
+    #     'account.check',
+    #     'Replacing Check',
+    #     readonly=True,
+    #     copy=False,
+    # )
+    # deposit_account_move_id = fields.Many2one(
+    #     'account.move',
+    #     'Deposit Account Move',
+    #     readonly=True,
+    #     copy=False
+    # )
+    # return_account_move_id = fields.Many2one(
+    #     'account.move',
+    #     'Return Account Move',
+    #     readonly=True,
+    #     copy=False
+    # )
 
 # Related fields
     # amount = fields.Monetary(
@@ -311,20 +318,16 @@ class AccountCheck(models.Model):
         'type',
         'number',
     )
-    @api.onchange(
-        'type',
-        'number',
-    )
     def issue_number_interval(self):
         for rec in self:
-            if (
-                    rec.type == 'issue_check' and
-                    rec.checkbook_id and (
-                        rec.number < rec.checkbook_id.range_from or
-                        rec.number > rec.checkbook_id.range_to)):
-                raise UserError(_(
-                    'Check number must be between %s and %s on checkbook '
-                    '%s(%s)') % (rec.checkbook_id.name, rec.checkbook_id.id))
+            # if not range, then we dont check it
+            if rec.type == 'issue_check' and rec.checkbook_id.range_to:
+                if rec.number > rec.checkbook_id.range_to:
+                    raise UserError(_(
+                        "Check number can't be greater than %s on checkbook %s"
+                    ) % (rec.checkbook_id.range_to, rec.checkbook_id.name))
+                elif rec.number == rec.checkbook_id.range_to:
+                    rec.checkbook_id.state = 'used'
         return False
 
     @api.multi
@@ -342,10 +345,11 @@ class AccountCheck(models.Model):
                     ('type', '=', rec.type),
                     ('number', '=', rec.number),
                 ])
+                same_checks -= self
                 if same_checks:
                     raise ValidationError(_(
                         'Check Number must be unique per Checkbook!\n'
-                        '* Same number checks move line ids: %s') % (
+                        '* Check ids: %s') % (
                         same_checks.ids))
             elif self.type == 'third_check':
                 same_checks = self.search([
@@ -354,20 +358,40 @@ class AccountCheck(models.Model):
                     ('type', '=', rec.type),
                     ('number', '=', rec.number),
                 ])
+                same_checks -= self
                 if same_checks:
                     raise ValidationError(_(
                         'Check Number must be unique per Owner and Bank!\n'
-                        '* Same number checks move line ids: %s') % (
+                        '* Check ids: %s') % (
                         same_checks.ids))
         return True
 
-    # @api.one
-    # @api.onchange('issue_date', 'payment_date')
+    @api.multi
+    @api.depends(
+        'type',
+        'move_line_id',
+        'deposit_move_line_id',
+    )
     def _compute_state(self):
+        # TODO tal ves podemos hacer que los cheques partan del "handed_move_line_id"
+        # o algo por el estilo, entocnes los estados serian mas aprecidos para ambos
+        # tipos de cheques
         for rec in self:
-            # state = 'draft'
-            if rec.move_line_id and rec.type == 'third_check':
-                state = 'holding'
+            state = 'draft'
+            if rec.type == 'third_check':
+                if rec.deposit_move_line_id:
+                    if rec.deposit_move_line_id.partner_id:
+                        state = 'handed'
+                    else:
+                        state = 'deposited'
+                elif rec.move_line_id:
+                    state = 'holding'
+            elif rec.type == 'issue_check':
+                if rec.move_line_id:
+                    state = 'handed'
+            else:
+                raise ValidationError(_(
+                    'Check %s is not implemented!') % rec.type)
             # if rec.supplier_reject_debit_note_id:
             #     state = 'rejected'
             # elif rec.replacing_check_id:
@@ -383,15 +407,14 @@ class AccountCheck(models.Model):
             #     state = 'cancel'
             # elif rec.deposit_account_move_id:
             # elif rec.return_account_move_id:
-            else:
-                state = 'draft'
             rec.state = state
 
-    @api.one
+    @api.multi
     def unlink(self):
-        if self.state not in ('draft'):
-            raise Warning(
-                _('The Check must be in draft state for unlink !'))
+        for rec in self:
+            if rec.state not in ('draft'):
+                raise ValidationError(
+                    _('The Check must be in draft state for unlink !'))
         return super(AccountCheck, self).unlink()
 
     # @api.one

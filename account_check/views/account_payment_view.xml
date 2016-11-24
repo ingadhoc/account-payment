@@ -9,6 +9,7 @@
             <field name="arch" type="xml">
                 <form>
                     <field name="check_type" invisible="1"/>
+                    <field name="check_subtype" invisible="1"/>
                 </form>
 <!--                 <field name="state" position="after">
                     <field name="check_state" widget="statusbar" statusbar_visible="holding,deposited" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])]}"/>
@@ -16,12 +17,13 @@
 
                 <!-- TODO hacer invisible si ('payment_type', '!=', 'transfer') -->
                 <xpath expr="//field[@name='communication']" position="after">
-                    <field name="check_number" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'delivered_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}"/>
-                    <field name="check_issue_date" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'delivered_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}"/>
-                    <field name="check_payment_date" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'delivered_third_check', 'issue_check'])]}"/>
-                    <field name="check_bank_id" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}"/>
-                    <field name="check_owner_vat" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}"/>
-                    <field name="check_owner_name" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}"/>
+                    <field name="checkbook_id" attrs="{'invisible': [('payment_method_code', 'not in', ['issue_check'])], 'required': [('payment_method_code', 'in', ['issue_check'])]}"/>
+                    <field name="check_number" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])],  'readonly': ['|', ('state', '!=', 'draft'), ('payment_method_code', '=', 'issue_check')]}"/>
+                    <field name="check_issue_date" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}"/>
+                    <field name="check_payment_date" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('check_subtype', '=', 'deferred')]}"/>
+                    <field name="check_bank_id" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check'])], 'required': [('payment_method_code', 'in', ['received_third_check'])]}"/>
+                    <field name="check_owner_vat" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check'])]}"/>
+                    <field name="check_owner_name" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check'])]}"/>
                     <!-- TODO add to domain? -->
                     <!-- ('currency_id', '=', currency_none_same_company_id), -->
                     <!-- ('check_deposit_id', '=', False), -->
@@ -47,9 +49,15 @@
                     <field name="deposited_check_ids"
                            widget="many2many_tags"
                            options="{'no_create': True}"
-                           domain="[('journal_id', '=', journal_id), ('check_state', '=', 'holding'), ('check_type', '=', 'third_check')]"
-                           attrs="{'invisible': ['|', ('payment_method_code', '!=', 'delivered_third_check'), ('payment_type', '!=', 'transfer')], 'required': [('payment_method_code', '=', 'delivered_third_check'), ('payment_type', '=', 'transfer')]}"
+                           domain="[('journal_id', '=', journal_id), ('state', '=', 'holding'), ('type', '=', 'third_check')]"
+                           attrs="{'invisible': ['|', ('payment_method_code', '!=', 'delivered_third_check'), ('payment_type', 'not in', ['transfer', 'outbound'])], 'required': [('payment_method_code', '=', 'delivered_third_check'), ('payment_type', 'in', ['transfer', 'outbound'])]}"
                             />
+<!--                     <field name="delivered_check_ids"
+                           widget="many2many_tags"
+                           options="{'no_create': True}"
+                           domain="[('journal_id', '=', journal_id), ('state', '=', 'holding'), ('type', '=', 'third_check')]"
+                           attrs="{'invisible': ['|', ('payment_method_code', '!=', 'delivered_third_check'), ('payment_type', '!=', 'outbound')], 'required': [('payment_method_code', '=', 'delivered_third_check'), ('payment_type', '=', 'transfer')]}"
+                            /> -->
                             <!-- context="{'currency': currency_id, -->
                                 <!-- 'journal_id': journal_id}" -->
                 </field>

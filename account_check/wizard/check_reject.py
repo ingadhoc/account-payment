@@ -7,18 +7,18 @@ from openerp.exceptions import Warning
 from openerp import models, fields, api, _
 
 
-class account_check_dreject(models.TransientModel):
+class AccountCheckDreject(models.TransientModel):
     _name = 'account.check.dreject'
 
-    @api.model
-    def _get_company_id(self):
-        active_ids = self._context.get('active_ids', [])
-        checks = self.env['account.check'].browse(active_ids)
-        company_ids = [x.company_id.id for x in checks]
-        if len(set(company_ids)) > 1:
-            raise Warning(_('All checks must be from the same company!'))
-        return self.env['res.company'].search(
-            [('id', 'in', company_ids)], limit=1)
+    # @api.model
+    # def _get_company_id(self):
+    #     active_ids = self._context.get('active_ids', [])
+    #     checks = self.env['account.check'].browse(active_ids)
+    #     company_ids = [x.company_id.id for x in checks]
+    #     if len(set(company_ids)) > 1:
+    #         raise Warning(_('All checks must be from the same company!'))
+    #     return self.env['res.company'].search(
+    #         [('id', 'in', company_ids)], limit=1)
 
     type = fields.Char(
         'Check Type')

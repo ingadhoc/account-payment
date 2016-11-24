@@ -16,6 +16,30 @@ class AccountJournal(models.Model):
     )
 
     @api.model
+    def create(self, vals):
+        rec = super(AccountJournal, self).create(vals)
+        issue_checks = self.env.ref(
+            'account_check.account_payment_method_issue_check')
+        if (issue_checks in rec.outbound_payment_method_ids and
+                not rec.checkbook_ids):
+            rec._create_checkbook()
+        return rec
+
+    @api.one
+    def _create_checkbook(self):
+        """ Create a check sequence for the journal """
+        self.checkbook_ids.create({
+            'journal_id': self.id,
+        })
+        # self.check_sequence_id = self.env['ir.sequence'].sudo().create({
+        #     'name': self.name + _(" : Check Number Sequence"),
+        #     'implementation': 'no_gap',
+        #     'padding': 5,
+        #     'number_increment': 1,
+        #     'company_id': self.company_id.id,
+        # })
+
+    @api.model
     def _prepare_liquidity_account(self, name, company, currency_id, type):
         vals = super(AccountJournal, self)._prepare_liquidity_account(
             name, company, currency_id, type)
@@ -23,6 +47,20 @@ class AccountJournal(models.Model):
         print 'name', name
         print 'type', type
         return vals
+
+    @api.model
+    def _enable_issue_check_on_bank_journals(self):
+        """ Enables issue checks payment method
+            Called upon module installation via data file.
+        """
+        issue_checks = self.env.ref(
+            'account_check.account_payment_method_issue_check')
+        bank_journals = self.search([('type', '=', 'bank')])
+        for bank_journal in bank_journals:
+            bank_journal._create_checkbook()
+            bank_journal.write({
+                'outbound_payment_method_ids': [(4, issue_checks.id, None)],
+            })
 
     # @api.model
     # def _get_payment_subtype(self):
