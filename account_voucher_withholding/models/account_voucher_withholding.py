@@ -144,7 +144,7 @@ class account_voucher_withholding(models.Model):
 
     @api.one
     def unlink(self):
-        if self.state not in ('draft'):
+        if self.state not in ('draft', 'confirmed'):
             raise Warning(_(
                 'Only withholding of vouchers on draft state can be deleted!'))
         return super(account_voucher_withholding, self).unlink()
