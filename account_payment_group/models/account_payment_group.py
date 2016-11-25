@@ -195,6 +195,12 @@ class AccountPaymentGroup(models.Model):
     payment_subtype = fields.Char(
         compute='_compute_payment_subtype'
     )
+    pop_up = fields.Boolean(
+        # campo que agregamos porque el  invisible="context.get('pop_up')"
+        # en las pages no se comportaba bien con los attrs
+        compute='_compute_payment_pop_up',
+        default=lambda x: x._context.get('pop_up', False),
+    )
 
     @api.multi
     @api.depends('to_pay_move_line_ids')
@@ -207,6 +213,12 @@ class AccountPaymentGroup(models.Model):
     def _inverse_debt_move_line_ids(self):
         for rec in self:
             rec.to_pay_move_line_ids = rec.debt_move_line_ids
+
+    @api.multi
+    def _compute_payment_pop_up(self):
+        pop_up = self._context.get('pop_up', False)
+        for rec in self:
+            rec.pop_up = pop_up
 
     @api.multi
     @api.depends('company_id.double_validation', 'partner_type')
