@@ -146,7 +146,17 @@ result = withholdable_base_amount * 0.10
                 if voucher.search(domain):
                     raise Warning(tax.user_error_message)
             vals = tax.get_withholding_vals(voucher)
-            if not vals.get('computed_withholding_amount'):
+
+            # we set computed_withholding_amount
+            period_withholding_amount = vals.get(
+                'period_withholding_amount')
+            previous_withholding_amount = vals.get(
+                'previous_withholding_amount')
+            # withholding can not be negative
+            computed_withholding_amount = max(0, (
+                period_withholding_amount - previous_withholding_amount))
+
+            if not computed_withholding_amount:
                 # if on refresh no more withholding, we delete if it exists
                 if voucher_withholding:
                     voucher_withholding.unlink()
@@ -154,7 +164,8 @@ result = withholdable_base_amount * 0.10
 
             # we copy withholdable_base_amount on base_amount
             vals['base_amount'] = vals.get('withholdable_base_amount')
-            vals['amount'] = vals.get('computed_withholding_amount')
+            vals['amount'] = computed_withholding_amount
+            vals['computed_withholding_amount'] = computed_withholding_amount
 
             # por ahora no imprimimos el comment, podemos ver de llevarlo a
             # otro campo si es de utilidad
@@ -194,6 +205,12 @@ result = withholdable_base_amount * 0.10
 
     @api.multi
     def get_withholding_vals(self, voucher):
+        """
+        If you wan to inherit and implement your own type, the most important
+        value tu return are period_withholding_amount and
+        previous_withholding_amount, with thos values the withholding amount
+        will be calculated
+        """
         self.ensure_one()
         # voucher = self.voucher_id
         withholdable_invoiced_amount = self.get_withholdable_invoiced_amount(
@@ -272,10 +289,6 @@ result = withholdable_base_amount * 0.10
                 (total_amount > non_taxable_minimum) and (
                     withholdable_base_amount * percentage + fix_amount) or 0.0)
 
-        # withholding can not be negative
-        computed_withholding_amount = max(0, (
-            period_withholding_amount - previous_withholding_amount))
-
         return {
             'withholdable_invoiced_amount': withholdable_invoiced_amount,
             'withholdable_advanced_amount': withholdable_advanced_amount,
@@ -286,7 +299,6 @@ result = withholdable_base_amount * 0.10
             'withholdable_base_amount': withholdable_base_amount,
             'period_withholding_amount': period_withholding_amount,
             'previous_withholding_amount': previous_withholding_amount,
-            'computed_withholding_amount': computed_withholding_amount,
             'base_amount': withholdable_base_amount,
             'voucher_id': voucher.id,
             'tax_withholding_id': self.id,
