@@ -5,7 +5,7 @@
         <record id="view_account_payment_form" model="ir.ui.view">
             <field name="name">account.payment.withholding.form</field>
             <field name="model">account.payment</field>
-            <field name="inherit_id" ref="account_payment_group.view_account_payment_form"/>
+            <field name="inherit_id" ref="account_withholding.view_account_payment_form"/>
             <field name="arch" type="xml"> 
                 <form>
                     <field name="automatic" invisible="1"/>
