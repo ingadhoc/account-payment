@@ -64,3 +64,34 @@ class AccountChartTemplate(models.Model):
             if account_field:
                 company.update({field: account_ref[account_field.id]})
         return account_ref, taxes_ref
+
+    @api.model
+    def _prepare_all_journals(
+            self, acc_template_ref, company, journals_dict=None):
+        """
+        Inherit this function in order to add checks to cash and bank
+        journals. This is because usually will be installed before chart loaded
+        and they will be disable by default
+        """
+        journal_data = super(
+            AccountChartTemplate, self)._prepare_all_journals(
+            acc_template_ref, company, journals_dict)
+        for vals_journal in journal_data:
+            if vals_journal['type'] == 'bank':
+                issue_checks = self.env.ref(
+                    'account_check.account_payment_method_issue_check')
+                vals_journal['outbound_payment_method_ids'] = [
+                    (4, issue_checks.id, None)],
+            elif vals_journal['type'] == 'cash':
+                received_third_check = self.env.ref(
+                    'account_check.'
+                    'account_payment_method_received_third_check')
+                delivered_third_check = self.env.ref(
+                    'account_check.'
+                    'account_payment_method_delivered_third_check')
+
+                vals_journal['inbound_payment_method_ids'] = [
+                    (4, received_third_check.id, None)]
+                vals_journal['outbound_payment_method_ids'] = [
+                    (4, delivered_third_check.id, None)]
+        return journal_data

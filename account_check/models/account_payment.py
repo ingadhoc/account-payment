@@ -117,7 +117,6 @@ class AccountPayment(models.Model):
     @api.depends('payment_method_code')
     def _compute_check_type(self):
         for rec in self:
-            print 'aaaaaaaa'
             if rec.payment_method_code == 'issue_check':
                 rec.check_type = 'issue_check'
             elif rec.payment_method_code in [
