@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from openerp import models, fields
 import openerp.addons.decimal_precision as dp
-from openerp.addons.account.account import get_precision_tax
 
 
 class AccountTaxWithholdingRule(models.Model):
@@ -20,7 +19,7 @@ class AccountTaxWithholdingRule(models.Model):
         help='Write a domain over account voucher module'
     )
     tax_withholding_id = fields.Many2one(
-        'account.tax.withholding',
+        'account.tax',
         'Tax Withholding',
         required=True,
         ondelete='cascade',

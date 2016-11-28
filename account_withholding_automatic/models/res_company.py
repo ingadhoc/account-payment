@@ -16,6 +16,7 @@ class ResCompany(models.Model):
     )
 
     @api.multi
+    @api.constrains('double_validation', 'automatic_withholdings')
     def check_double_validation(self):
         for rec in self:
             if rec.automatic_withholdings and not rec.double_validation:

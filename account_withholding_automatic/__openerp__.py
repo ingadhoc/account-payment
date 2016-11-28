@@ -24,14 +24,14 @@
     'license': 'AGPL-3',
     'category': 'Accounting & Finance',
     'data': [
-        # 'views/account_tax_withholding_view.xml',
-        # 'views/account_withholding_view.xml',
-        # 'views/account_voucher_view.xml',
-        # 'views/account_journal_view.xml',
+        'views/account_tax_view.xml',
+        'views/account_payment_group_view.xml',
+        'views/account_payment_view.xml',
+        'views/res_company_view.xml',
         'security/ir.model.access.csv',
     ],
     'demo': [
-        # 'demo/withholding_demo.xml',
+        'demo/withholding_demo.xml',
     ],
     'depends': [
         'account_payment_group',

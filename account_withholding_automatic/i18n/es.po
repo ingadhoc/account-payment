@@ -34,8 +34,8 @@ msgid "Accounting Voucher"
 msgstr "Comprobante de contabilidad"
 
 #. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding,accumulated_payments:0
-#: field:account.voucher.withholding,accumulated_payments:0
+#: field:account.tax.withholding,withholding_accumulated_payments:0
+#: field:account.voucher.withholding,withholding_accumulated_payments:0
 msgid "Accumulated Payments"
 msgstr "Pagos Acumulados"
 
@@ -45,7 +45,7 @@ msgid "Accumulated amount"
 msgstr "Importe Acumulado"
 
 #. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding,advances_are_withholdable:0
+#: field:account.tax.withholding,withholding_advances:0
 msgid "Advances are Withholdable?"
 msgstr "Adelantos sujetos a retención?"
 
@@ -55,12 +55,12 @@ msgid "Amount"
 msgstr "Importe"
 
 #. module: account_voucher_withholding_automatic
-#: help:account.tax.withholding,non_taxable_amount:0
+#: help:account.tax.withholding,withholding_non_taxable_amount:0
 msgid "Amount to be substracted before applying alicuot"
 msgstr "Importe a ser descontado antes de aplicar la alícuota"
 
 #. module: account_voucher_withholding_automatic
-#: help:account.tax.withholding,non_taxable_minimum:0
+#: help:account.tax.withholding,withholding_non_taxable_minimum:0
 msgid "Amounts lower than this wont't have any withholding"
 msgstr "Importes menores a este no van a tener retenciones"
 
@@ -70,12 +70,12 @@ msgid "Automatic withholdings"
 msgstr "Retenciones automáticas"
 
 #. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding,base_amount_type:0
+#: field:account.tax.withholding,withholding_amount_type:0
 msgid "Base Amount"
 msgstr "Importe Base"
 
 #. module: account_voucher_withholding_automatic
-#: help:account.tax.withholding,base_amount_type:0
+#: help:account.tax.withholding,withholding_amount_type:0
 msgid "Base amount used to get withholding amount"
 msgstr "Importe base usado para obtener el importe de la retención"
 
@@ -145,8 +145,8 @@ msgid "ID"
 msgstr "ID"
 
 #. module: account_voucher_withholding_automatic
-#: help:account.tax.withholding,accumulated_payments:0
-#: help:account.voucher.withholding,accumulated_payments:0
+#: help:account.tax.withholding,withholding_accumulated_payments:0
+#: help:account.voucher.withholding,withholding_accumulated_payments:0
 msgid "If none is selected, then payments are not accumulated"
 msgstr "Si ninguna se selecciona, entonces los pagos no son acumulados"
 
@@ -186,13 +186,13 @@ msgid "Make withholdings automatically on payments vouchers confirmation"
 msgstr "Hacer retenciones automáticamente en la confirmación de pagos"
 
 #. module: account_voucher_withholding_automatic
-#: selection:account.tax.withholding,accumulated_payments:0
+#: selection:account.tax.withholding,withholding_accumulated_payments:0
 msgid "Month"
 msgstr "Mes"
 
 #. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding,non_taxable_amount:0
-#: field:account.voucher.withholding,non_taxable_amount:0
+#: field:account.tax.withholding,withholding_non_taxable_amount:0
+#: field:account.voucher.withholding,withholding_non_taxable_amount:0
 msgid "Non-taxable Amount"
 msgstr "Base no Imponible"
 
@@ -203,8 +203,8 @@ msgid "Non-taxable Amount can not be greater than Non-taxable Minimum"
 msgstr "La base no Imponible no puede ser mayor que el mínimo no imponible"
 
 #. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding,non_taxable_minimum:0
-#: field:account.voucher.withholding,non_taxable_minimum:0
+#: field:account.tax.withholding,withholding_non_taxable_minimum:0
+#: field:account.voucher.withholding,withholding_non_taxable_minimum:0
 msgid "Non-taxable Minimum"
 msgstr "Mínimo no imponible"
 
@@ -229,7 +229,7 @@ msgid "Previous withholding amount"
 msgstr "Importe de retenciones anteriores"
 
 #. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding,rule_ids:0
+#: field:account.tax.withholding,withholding_rule_ids:0
 msgid "Rules"
 msgstr "Reglas"
 
@@ -254,7 +254,7 @@ msgid "The computation method for the tax amount."
 msgstr "Método de cálculo para el importe del impuesto."
 
 #. module: account_voucher_withholding_automatic
-#: selection:account.tax.withholding,base_amount_type:0
+#: selection:account.tax.withholding,withholding_amount_type:0
 msgid "Total Amount"
 msgstr "Importe total"
 
@@ -269,17 +269,17 @@ msgid "Type"
 msgstr "Tipo"
 
 #. module: account_voucher_withholding_automatic
-#: selection:account.tax.withholding,base_amount_type:0
+#: selection:account.tax.withholding,withholding_amount_type:0
 msgid "Untaxed Amount"
 msgstr "Importe sin impuestos"
 
 #. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding,user_error_domain:0
+#: field:account.tax.withholding,withholding_user_error_domain:0
 msgid "User error domain"
 msgstr "Dominio de Error de Usuario"
 
 #. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding,user_error_message:0
+#: field:account.tax.withholding,withholding_user_error_message:0
 msgid "User error message"
 msgstr "Mensaje de Error de Usuario"
 
@@ -289,12 +289,12 @@ msgid "Withholdable base amount"
 msgstr "Base Imponible"
 
 #. module: account_voucher_withholding_automatic
-#: help:account.tax.withholding,user_error_domain:0
+#: help:account.tax.withholding,withholding_user_error_domain:0
 #: help:account.tax.withholding.rule,domain:0
 msgid "Write a domain over account voucher module"
 msgstr "Escriba un dominio sobre el modelo account voucher"
 
 #. module: account_voucher_withholding_automatic
-#: selection:account.tax.withholding,accumulated_payments:0
+#: selection:account.tax.withholding,withholding_accumulated_payments:0
 msgid "Year"
 msgstr "Año"

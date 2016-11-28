@@ -15,8 +15,8 @@ class AccountPayment(models.Model):
 
     automatic = fields.Boolean(
     )
-    accumulated_payments = fields.Selection(
-        related='withholding_tax_id.accumulated_payments',
+    withholding_accumulated_payments = fields.Selection(
+        related='tax_withholding_id.withholding_accumulated_payments',
         readonly=True,
     )
     withholdable_invoiced_amount = fields.Float(
@@ -37,12 +37,12 @@ class AccountPayment(models.Model):
         # compute='get_withholding_data',
         readonly=True,
     )
-    non_taxable_minimum = fields.Float(
+    withholding_non_taxable_minimum = fields.Float(
         'Non-taxable Minimum',
         # compute='get_withholding_data',
         readonly=True,
     )
-    non_taxable_amount = fields.Float(
+    withholding_non_taxable_amount = fields.Float(
         'Non-taxable Amount',
         # compute='get_withholding_data',
         readonly=True,

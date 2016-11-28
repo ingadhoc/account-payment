@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data> 
+
+        <record id="view_account_payment_form" model="ir.ui.view">
+            <field name="name">account.payment.withholding.form</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account_payment_group.view_account_payment_form"/>
+            <field name="arch" type="xml"> 
+                <form>
+                    <field name="automatic" invisible="1"/>
+                    <field name="withholding_accumulated_payments" invisible="1"/>
+                </form>
+                <!-- <h1 position="after"> -->
+                    <!-- <group string="Calculation" attrs="{'invisible': [('automatic', '=', False)]}"> -->
+                    <field name='communication' position="after">
+                        <!-- <group> -->
+                            <field name="withholdable_invoiced_amount"/>
+                            <field name="withholdable_advanced_amount"/>
+                            <field name="accumulated_amount" attrs="{'invisible': [('withholding_accumulated_payments', '=', False)]}"/>
+                            <field name="total_amount"/>
+                            <field name="withholding_non_taxable_minimum"/>
+                            <field name="withholding_non_taxable_amount"/>
+                        <!-- </group> -->
+                        <!-- <group> -->
+                            <field name="withholdable_base_amount"/>
+                            <field name="period_withholding_amount" attrs="{'invisible': [('withholding_accumulated_payments', '=', False)]}"/>
+                            <field name="previous_withholding_amount" attrs="{'invisible': [('withholding_accumulated_payments', '=', False)]}"/>
+                            <field name="computed_withholding_amount"/>
+                        </field>
+                        <!-- </group> -->
+                    <!-- </group> -->
+                <!-- </h1> -->
+            </field>
+        </record>   
+
+    </data>
+</openerp>

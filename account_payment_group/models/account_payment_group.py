@@ -113,6 +113,13 @@ class AccountPaymentGroup(models.Model):
         string='Selected Debt',
         compute='_compute_selected_debt',
     )
+    # this field is to be used by others
+    selected_debt_untaxed = fields.Monetary(
+        readonly=True,
+        # string='To Pay lines Amount',
+        string='Selected Debt Untaxed',
+        compute='_compute_selected_debt',
+    )
     unreconciled_amount = fields.Monetary(
         string='Adjusment / Advance',
         readonly=True,
@@ -323,6 +330,7 @@ class AccountPaymentGroup(models.Model):
         'to_pay_move_line_ids.amount_residual',
         'to_pay_move_line_ids.amount_residual_currency',
         'to_pay_move_line_ids.currency_id',
+        'to_pay_move_line_ids.invoice_id',
         'payment_date',
         'currency_id',
     )
@@ -337,27 +345,35 @@ class AccountPaymentGroup(models.Model):
         # TODO check if odoo implement this kind of hybrid field
         payment_currency = self.currency_id or self.company_id.currency_id
 
-        total = 0
+        total_untaxed = total = 0
         for rml in self.to_pay_move_line_ids:
+            # factor for total_untaxed
+            invoice = rml.invoice_id
+            factor = (invoice.amount_total and (
+                invoice.amount_untaxed / invoice.amount_total) or 1.0)
+
             # si tiene moneda y es distinta convertimos el monto de moneda
             # si tiene moneda y es igual llevamos el monto de moneda
             # si no tiene moneda y es distinta convertimos el monto comun
             # si no tiene moneda y es igual llevamos el monto comun
             if rml.currency_id:
                 if rml.currency_id != payment_currency:
-                    total += rml.currency_id.with_context(
+                    line_amount = rml.currency_id.with_context(
                         date=self.payment_date).compute(
                         rml.amount_residual_currency, payment_currency)
                 else:
-                    total += rml.amount_residual_currency
+                    line_amount = rml.amount_residual_currency
             else:
                 if self.company_id.currency_id != payment_currency:
-                    total += self.company_id.currency_id.with_context(
+                    line_amount = self.company_id.currency_id.with_context(
                         date=self.payment_date).compute(
                         rml.amount_residual, payment_currency)
                 else:
-                    total += rml.amount_residual
+                    line_amount = rml.amount_residual
+            total += line_amount
+            total_untaxed += line_amount * factor
         self.selected_debt = abs(total)
+        self.selected_debt_untaxed = abs(total_untaxed)
 
     @api.multi
     @api.depends(

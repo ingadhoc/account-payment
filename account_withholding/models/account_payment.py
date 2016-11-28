@@ -10,7 +10,7 @@ from openerp.exceptions import UserError
 class AccountPayment(models.Model):
     _inherit = "account.payment"
 
-    withholding_tax_id = fields.Many2one(
+    tax_withholding_id = fields.Many2one(
         'account.tax',
         string='Withholding Tax',
         readonly=True,
@@ -30,6 +30,7 @@ class AccountPayment(models.Model):
         vals = super(AccountPayment, self)._get_liquidity_move_line_vals(
             amount)
         if self.payment_method_code == 'withholding':
+            print 'self.payment_type', self.payment_type
             if self.payment_type == 'transfer':
                 raise UserError(_(
                     'You can not use withholdings on transfers!'))
@@ -38,15 +39,15 @@ class AccountPayment(models.Model):
                         self.payment_type == 'inbound') or
                     (self.partner_type == 'supplier' and
                         self.payment_type == 'outbound')):
-                account = self.withholding_tax_id.account_id
+                account = self.tax_withholding_id.account_id
             else:
-                account = self.withholding_tax_id.refund_account_id
+                account = self.tax_withholding_id.refund_account_id
             # if not accounts on taxes then we use accounts of journal
             if account:
                 vals['account_id'] = account.id
-            vals['name'] = self.withholding_number
+            vals['name'] = self.withholding_number or '/'
             # if not account:
             #     raise UserError(_(
             #         'Accounts not configured on tax %s' % (
-            #             self.withholding_tax_id.name)))
+            #             self.tax_withholding_id.name)))
         return vals
