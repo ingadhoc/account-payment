@@ -172,7 +172,6 @@ result = withholdable_base_amount * 0.10
             # por ahora no imprimimos el comment, podemos ver de llevarlo a
             # otro campo si es de utilidad
             vals.pop('comment')
-            print 'vals', vals
             if payment_withholding:
                 payment_withholding.write(vals)
             else:

@@ -30,7 +30,6 @@ class AccountPayment(models.Model):
         vals = super(AccountPayment, self)._get_liquidity_move_line_vals(
             amount)
         if self.payment_method_code == 'withholding':
-            print 'self.payment_type', self.payment_type
             if self.payment_type == 'transfer':
                 raise UserError(_(
                     'You can not use withholdings on transfers!'))
