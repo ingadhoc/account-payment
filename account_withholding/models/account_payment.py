@@ -5,15 +5,11 @@
 ##############################################################################
 from openerp import models, fields, _
 from openerp.exceptions import UserError
-# from dateutil.relativedelta import relativedelta
-# import datetime
 
 
 class AccountPayment(models.Model):
     _inherit = "account.payment"
 
-    automatic = fields.Boolean(
-    )
     withholding_tax_id = fields.Many2one(
         'account.tax',
         string='Withholding Tax',
