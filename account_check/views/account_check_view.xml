@@ -14,6 +14,7 @@
                     <field name="name"/>
                     <field name="issue_date"/>
                     <!-- <field name="payment_date"/> -->
+                    <field name="partner_id"/>
                     <!-- <field name="source_partner_id" invisible="context.get('default_type',False) != 'third_check'" string="Source Partner"/> -->
                     <!-- <field name="destiny_partner_id" string="Destiny Partner"/> -->
                     <field name="type" invisible="1"/>
@@ -109,33 +110,31 @@
             </field>
         </record> 
 
-<!--         <record model="ir.ui.view" id="view_checks_search">
+        <record model="ir.ui.view" id="view_checks_search">
             <field name="name">check.search</field>
             <field name="model">account.check</field>
             <field name="arch" type="xml">
                 <search string="Checks">
-                    <field name="number"/>
-                    <field name="source_partner_id"/>
-                    <field name="destiny_partner_id"/>
+                    <field name="name"/>
+                    <field name="partner_id"/>
                     <field name="journal_id"/>
-                    <field name="voucher_id"/>
                     <field name="company_id" groups="base.group_multi_company"/>
                     <field name="state"/>
                     <field name="owner_name"/>
-                    <field name="vat"/>
-                    <field name="deposit_date"/>
+                    <field name="owner_vat"/>
+                    <!-- <field name="deposit_date"/> -->
                     <group expand="0" string="Group By...">
                         <filter string="Issue Date" context="{'group_by':'issue_date'}"/>
-                        <filter string="Payment Date" context="{'group_by':'payment_date'}"/>                        
-                        <filter string="Deposit Date" context="{'group_by':'deposit_date:day'}"/>                        
+                        <filter string="Payment Date" context="{'group_by':'payment_date'}"/>
+                        <!-- <filter string="Deposit Date" context="{'group_by':'deposit_date:day'}"/>                         -->
                         <filter string="Journal" context="{'group_by':'journal_id'}"/>
                         <filter string="State" context="{'group_by':'state'}"/>
-                        <filter string="Source Partner" context="{'group_by':'source_partner_id'}"/>
-                        <filter string="Destiny Partner" context="{'group_by':'destiny_partner_id'}"/>
+                        <filter string="Partner" context="{'group_by':'partner_id'}"/>
+                        <!-- <filter string="Destiny Partner" context="{'group_by':'destiny_partner_id'}"/> -->
                     </group>
                 </search>
             </field>
-        </record>  -->
+        </record> 
 
         <!-- mode="month" --> 
 <!--         <record model="ir.ui.view" id="view_account_check_calendar">

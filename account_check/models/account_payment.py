@@ -18,11 +18,11 @@ class AccountPayment(models.Model):
     # _order = "id desc"
     # _inherit = ['mail.thread']
 
-    communication = fields.Char(
-        # because onchange function is not called on onchange and we want
-        # to clean check number name
-        copy=False,
-    )
+    # communication = fields.Char(
+    #     # because onchange function is not called on onchange and we want
+    #     # to clean check number name
+    #     copy=False,
+    # )
     # TODO tal vez renombrar a check_ids
     deposited_check_ids = fields.Many2many(
         'account.check',
@@ -164,9 +164,13 @@ class AccountPayment(models.Model):
     @api.one
     @api.onchange('partner_id')
     def onchange_partner_check(self):
-        self.check_owner_name = self.partner_id.name
+        commercial_partner = self.partner_id.commercial_partner_id
+        self.check_bank_id = (
+            commercial_partner.bank_ids and
+            commercial_partner.bank_ids[0].bank_id.id or False)
+        self.check_owner_name = commercial_partner.name
         # TODO use document number instead of vat?
-        self.check_owner_vat = self.partner_id.vat
+        self.check_owner_vat = commercial_partner.vat
 
     @api.onchange('payment_method_code')
     def _onchange_payment_method_code(self):

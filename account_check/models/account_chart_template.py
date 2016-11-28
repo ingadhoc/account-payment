@@ -80,26 +80,30 @@ class WizardMultiChartsAccounts(models.TransientModel):
         res = super(
             WizardMultiChartsAccounts, self)._create_bank_journals_from_o2m(
             company, acc_template_ref)
-        journals = self.env['account.journal'].search([
-            ('company_id', '=', company.id),
-            ('type', 'in', ['bank', 'cash']),
-        ])
-        for journal in journals:
-            if journal.type == 'bank':
-                issue_checks = self.env.ref(
-                    'account_check.account_payment_method_issue_check')
-                journal.outbound_payment_method_ids = [
-                    (4, issue_checks.id, None)]
-            elif journal.type == 'cash':
-                received_third_check = self.env.ref(
-                    'account_check.'
-                    'account_payment_method_received_third_check')
-                delivered_third_check = self.env.ref(
-                    'account_check.'
-                    'account_payment_method_delivered_third_check')
+        self.env['account.journal'].with_context(
+            force_company_id=company.id)._enable_third_check_on_cash_journals()
+        self.env['account.journal'].with_context(
+            force_company_id=company.id)._enable_issue_check_on_bank_journals()
+        # journals = self.env['account.journal'].search([
+        #     ('company_id', '=', company.id),
+        #     ('type', 'in', ['bank', 'cash']),
+        # ])
+        # for journal in journals:
+        #     if journal.type == 'bank':
+        #         issue_checks = self.env.ref(
+        #             'account_check.account_payment_method_issue_check')
+        #         journal.outbound_payment_method_ids = [
+        #             (4, issue_checks.id, None)]
+        #     elif journal.type == 'cash':
+        #         received_third_check = self.env.ref(
+        #             'account_check.'
+        #             'account_payment_method_received_third_check')
+        #         delivered_third_check = self.env.ref(
+        #             'account_check.'
+        #             'account_payment_method_delivered_third_check')
 
-                journal.inbound_payment_method_ids = [
-                    (4, received_third_check.id, None)]
-                journal.outbound_payment_method_ids = [
-                    (4, delivered_third_check.id, None)]
+        #         journal.inbound_payment_method_ids = [
+        #             (4, received_third_check.id, None)]
+        #         journal.outbound_payment_method_ids = [
+        #             (4, delivered_third_check.id, None)]
         return res

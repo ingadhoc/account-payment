@@ -66,7 +66,7 @@ class AccountCheckbook(models.Model):
         [('draft', 'Draft'), ('active', 'In Use'), ('used', 'Used')],
         string='State',
         readonly=True,
-        default='active',
+        default='draft',
         copy=False
     )
 

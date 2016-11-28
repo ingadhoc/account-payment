@@ -28,9 +28,10 @@ class AccountJournal(models.Model):
     @api.one
     def _create_checkbook(self):
         """ Create a check sequence for the journal """
-        self.checkbook_ids.create({
+        checkbook = self.checkbook_ids.create({
             'journal_id': self.id,
         })
+        checkbook.state = 'active'
 
     @api.model
     def _prepare_liquidity_account(self, name, company, currency_id, type):
@@ -45,7 +46,11 @@ class AccountJournal(models.Model):
         """
         issue_checks = self.env.ref(
             'account_check.account_payment_method_issue_check')
-        bank_journals = self.search([('type', '=', 'bank')])
+        domain = [('type', '=', 'bank')]
+        force_company_id = self._context.get('force_company_id')
+        if force_company_id:
+            domain += [('company_id', '=', force_company_id)]
+        bank_journals = self.search(domain)
         for bank_journal in bank_journals:
             bank_journal._create_checkbook()
             bank_journal.write({
@@ -61,7 +66,11 @@ class AccountJournal(models.Model):
             'account_check.account_payment_method_received_third_check')
         delivered_third_check = self.env.ref(
             'account_check.account_payment_method_delivered_third_check')
-        cash_journals = self.search([('type', '=', 'cash')])
+        domain = [('type', '=', 'cash')]
+        force_company_id = self._context.get('force_company_id')
+        if force_company_id:
+            domain += [('company_id', '=', force_company_id)]
+        cash_journals = self.search(domain)
         for cash_journal in cash_journals:
             cash_journal.write({
                 'inbound_payment_method_ids': [

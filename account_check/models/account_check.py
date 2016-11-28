@@ -49,6 +49,7 @@ class AccountCheckOperation(models.Model):
         selection='_reference_models')
     partner_id = fields.Many2one(
         'res.partner',
+        string='Partner',
     )
 
     @api.model
@@ -96,6 +97,10 @@ class AccountCheck(models.Model):
     )
     type = fields.Selection(
         [('issue_check', 'Issue Check'), ('third_check', 'Third Check')],
+        readonly=True,
+    )
+    partner_id = fields.Many2one(
+        related='operation_ids.partner_id',
         readonly=True,
     )
     state = fields.Selection([
@@ -177,15 +182,19 @@ class AccountCheck(models.Model):
     )
     journal_id = fields.Many2one(
         'account.journal',
+        required=True,
         # related='move_line_id.journal_id',
         # store=True,
         # readonly=True,
     )
     company_id = fields.Many2one(
-        related='journal_id.company_id'
+        related='journal_id.company_id',
+        readonly=True,
+        store=True,
     )
     company_currency_id = fields.Many2one(
         related='company_id.currency_id',
+        readonly=True,
     )
 
     # @api.model
