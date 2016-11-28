@@ -5,8 +5,6 @@
 ##############################################################################
 from openerp import models, fields, _
 from openerp.exceptions import UserError
-# from dateutil.relativedelta import relativedelta
-# import datetime
 
 
 class AccountPayment(models.Model):
