@@ -10,8 +10,6 @@ from openerp.exceptions import UserError
 class AccountPayment(models.Model):
     _inherit = "account.payment"
 
-    automatic = fields.Boolean(
-    )
     withholding_tax_id = fields.Many2one(
         'account.tax',
         string='Withholding Tax',
