@@ -53,29 +53,29 @@ class account_check_action(models.TransientModel):
     @api.model
     def validate_action(self, action_type, check):
         # state controls
-        # if action_type == 'deposit':
-        #     if check.type == 'third_check':
-        #         if check.state != 'holding':
-        #             raise Warning(
-        #                 _('The selected checks must be in holding state.'))
-        #     else:   # issue
-        #         raise Warning(_('You can not deposit a Issue Check.'))
-        # elif action_type == 'debit':
-        if action_type == 'debit':
+        if action_type == 'deposit':
+            if check.type == 'third_check':
+                if check.state != 'holding':
+                    raise Warning(
+                        _('The selected checks must be in holding state.'))
+            else:   # issue
+                raise Warning(_('You can not deposit a Issue Check.'))
+        # if action_type == 'debit':
+        elif action_type == 'debit':
             if check.type == 'issue_check':
                 if check.state != 'handed':
                     raise Warning(
                         _('The selected checks must be in handed state.'))
             else:   # third
                 raise Warning(_('You can not debit a Third Check.'))
-        # elif action_type == 'return':
-        #     if check.type == 'third_check':
-        #         if check.state != 'holding':
-        #             raise Warning(
-        #                 _('The selected checks must be in holding state.'))
-        #     # TODO implement return issue checs and return handed third checks
-        #     else:   # issue
-        #         raise Warning(_('You can not return a Issue Check.'))
+        elif action_type == 'return':
+            if check.type == 'third_check':
+                if check.state != 'holding':
+                    raise Warning(
+                        _('The selected checks must be in holding state.'))
+            # TODO implement return issue checs and return handed third checks
+            else:   # issue
+                raise Warning(_('You can not return a Issue Check.'))
         return True
 
     @api.multi
