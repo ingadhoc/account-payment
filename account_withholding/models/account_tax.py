@@ -14,6 +14,9 @@ class AccountTaxTemplate(models.Model):
 
 
 class AccountTax(models.Model):
+    """
+    We could also use inherits but we should create methods of chart template
+    """
     _inherit = "account.tax"
 
     type_tax_use = fields.Selection(
@@ -21,4 +24,7 @@ class AccountTax(models.Model):
             ('customer', 'Customer Payment'),
             ('supplier', 'Supplier Payment'),
         ],
+    )
+    amount = fields.Float(
+        required=False
     )

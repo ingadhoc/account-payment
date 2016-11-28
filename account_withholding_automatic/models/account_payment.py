@@ -10,11 +10,13 @@ from openerp import models, fields
 # import datetime
 
 
-class account_voucher_withholding(models.Model):
-    _inherit = "account.voucher.withholding"
+class AccountPayment(models.Model):
+    _inherit = "account.payment"
 
-    accumulated_payments = fields.Selection(
-        related='tax_withholding_id.accumulated_payments',
+    automatic = fields.Boolean(
+    )
+    withholding_accumulated_payments = fields.Selection(
+        related='tax_withholding_id.withholding_accumulated_payments',
         readonly=True,
     )
     withholdable_invoiced_amount = fields.Float(
@@ -35,12 +37,12 @@ class account_voucher_withholding(models.Model):
         # compute='get_withholding_data',
         readonly=True,
     )
-    non_taxable_minimum = fields.Float(
+    withholding_non_taxable_minimum = fields.Float(
         'Non-taxable Minimum',
         # compute='get_withholding_data',
         readonly=True,
     )
-    non_taxable_amount = fields.Float(
+    withholding_non_taxable_amount = fields.Float(
         'Non-taxable Amount',
         # compute='get_withholding_data',
         readonly=True,
