@@ -150,7 +150,7 @@ class AccountPayment(models.Model):
                 # communication = _('Check nbr %s') % (
                 check_name = ('%%0%sd' % padding % self.check_number)
                 # communication = (
-                    # '%%0%sd' % padding % self.check_number)
+                #     '%%0%sd' % padding % self.check_number)
             self.check_name = check_name
 
     @api.onchange('check_issue_date', 'check_payment_date')
@@ -261,7 +261,8 @@ class AccountPayment(models.Model):
                     'type': rec.check_type,
                     # new fields because no more related ones on check
                     'journal_id': rec.journal_id.id,
-                    # TODO arreglar que monto va de amount y cual de amount currency
+                    # TODO arreglar que monto va de amount y cual de
+                    # amount currency
                     'amount': rec.amount,
                     # 'amount_currency': rec.amount,
                     'currency_id': rec.currency_id.id,
