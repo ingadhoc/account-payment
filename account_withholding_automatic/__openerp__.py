@@ -25,15 +25,20 @@
     'category': 'Accounting & Finance',
     'data': [
         'views/account_tax_view.xml',
+        'views/account_payment_group_view.xml',
         'views/account_payment_view.xml',
-        'data/account_payment_method_data.xml',
-        'data/account_journal_data.xml',
+        'views/res_company_view.xml',
+        'security/ir.model.access.csv',
+    ],
+    'demo': [
+        'demo/withholding_demo.xml',
     ],
     'depends': [
-        'account',
+        'account_payment_group',
+        'account_withholding',
     ],
     'installable': True,
-    'name': 'Withholdings on Payments',
+    'name': 'Automatic Withholdings on Payments',
     'test': [],
     'version': '9.0.1.0.0',
 }
