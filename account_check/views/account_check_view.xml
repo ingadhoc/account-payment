@@ -80,12 +80,20 @@
                     </group>
                     <group string="Operations">
                         <field name="operation_ids" nolabel="1">
-                            <tree>
+                            <tree default_order="create_date">
                                 <field name="create_date"/>
                                 <field name="operation"/>
-                                <field name="move_line_id"/>
+                                <field name="origin"/>
                                 <field name="partner_id"/>
                             </tree>
+                            <form>
+                                <group>
+                                    <!-- <field name="create_date"/> -->
+                                    <field name="operation"/>
+                                    <field name="origin"/>
+                                    <field name="partner_id"/>
+                                </group>
+                            </form>
                         </field>
                     </group>
                     <!-- <group string="Related Documents">

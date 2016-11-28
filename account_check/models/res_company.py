@@ -25,3 +25,11 @@ class ResCompany(models.Model):
         help='Deferred Checks account, for eg. "Deferred Checks"',
         # domain=[('type', 'in', ['other'])],
     )
+    holding_check_account_id = fields.Many2one(
+        'account.account',
+        'Holding Check Account',
+        # required=True,
+        help='Holding Checks account for third checks, '
+        'for eg. "Holding Checks"',
+        # domain=[('type', 'in', ['other'])],
+    )

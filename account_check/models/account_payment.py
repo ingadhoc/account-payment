@@ -117,6 +117,7 @@ class AccountPayment(models.Model):
     @api.depends('payment_method_code')
     def _compute_check_type(self):
         for rec in self:
+            print 'aaaaaaaa'
             if rec.payment_method_code == 'issue_check':
                 rec.check_type = 'issue_check'
             elif rec.payment_method_code in [
@@ -196,7 +197,7 @@ class AccountPayment(models.Model):
                 # beacause number was readonly we write it here
                 'check_number': checkbook.next_number,
                 'check_name': checkbook.sequence_id.next_by_id(),
-                })
+            })
         return super(AccountPayment, self.sudo()).create(vals)
 
     @api.multi
@@ -205,7 +206,10 @@ class AccountPayment(models.Model):
         for rec in self:
             if rec.check_id:
                 # rec.check_id._add_operation('cancel')
+                rec.check_id._del_operation()
                 rec.check_id.unlink()
+            elif rec.deposited_check_ids:
+                rec.deposited_check_ids._del_operation()
         return res
 
     @api.multi
@@ -217,20 +221,26 @@ class AccountPayment(models.Model):
             if rec.payment_method_code == 'delivered_third_check':
                 if not rec.deposited_check_ids:
                     raise UserError(_('No checks configured for deposit'))
-                liquidity_account = rec.journal_id.default_debit_account_id
-                liquidity_line = rec.move_line_ids.filtered(
-                    lambda x: x.account_id == liquidity_account)
+                # liquidity_account = rec.journal_id.default_debit_account_id
+                # liquidity_line = rec.move_line_ids.filtered(
+                #     lambda x: x.account_id == liquidity_account)
                 # rec.deposited_check_ids.write({
                 #     'deposit_move_line_id': liquidity_line.id})
+                partner = rec.partner_id.browse()
+                # if it is a transfer (Deposit) partner is not claned, so we
+                # clean it here
+                if rec.payment_type != 'transfer':
+                    partner = rec.partner_id
                 rec.deposited_check_ids._add_operation(
-                    'deposited', liquidity_line, liquidity_line.partner_id)
+                    # 'deposited', liquidity_line, liquidity_line.partner_id)
+                    'deposited', rec, partner)
             else:
-                liquidity_accounts = (
-                    rec.journal_id.default_debit_account_id +
-                    rec.journal_id.default_credit_account_id +
-                    rec.company_id.deferred_check_account_id)
-                liquidity_line = rec.move_line_ids.filtered(
-                    lambda x: x.account_id in liquidity_accounts)
+                # liquidity_accounts = (
+                #     rec.journal_id.default_debit_account_id +
+                #     rec.journal_id.default_credit_account_id +
+                #     rec.company_id.deferred_check_account_id)
+                # liquidity_line = rec.move_line_ids.filtered(
+                #     lambda x: x.account_id in liquidity_accounts)
                 if rec.check_type == 'issue_check':
                     # TODO tal vez si el cheques es current lo marcamos
                     # directamente debitado?
@@ -259,7 +269,8 @@ class AccountPayment(models.Model):
                 check = rec.env['account.check'].create(check_vals)
                 rec.check_id = check.id
                 check._add_operation(
-                    operation, liquidity_line, liquidity_line.partner_id)
+                    # operation, liquidity_line, liquidity_line.partner_id)
+                    operation, rec, rec.partner_id)
         return res
 
     def _get_liquidity_move_line_vals(self, amount):

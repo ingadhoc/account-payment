@@ -32,7 +32,10 @@
     ],
     'data': [
         'data/account_payment_method_data.xml',
-        'data/account_journal_data.xml',
+        # TODO delete or enable, we should create it on chart installation
+        # if we create it from here accounts will be created, so we let
+        # this work to chart installation
+        # 'data/account_journal_data.xml',
         # 'views/account_move_line_view.xml',
         'views/account_payment_view.xml',
         'views/account_check_view.xml',
@@ -44,10 +47,11 @@
         # 'wizard/change_check_view.xml',
         'views/account_checkbook_view.xml',
         'views/res_company_view.xml',
+        'views/account_chart_template_view.xml',
         # 'views/account_voucher_view.xml',
         # 'workflow/account_check_workflow.xml',
-        # 'security/ir.model.access.csv',
-        # 'security/account_check_security.xml',
+        'security/ir.model.access.csv',
+        'security/account_check_security.xml',
     ],
     'demo': [
         # 'data/demo_data.xml',

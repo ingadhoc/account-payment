@@ -27,26 +27,42 @@ class AccountCheckOperation(models.Model):
         ondelete='cascade'
     )
     operation = fields.Selection([
-        ('draft', 'Draft'),
-        ('holding', 'Holding'),
-        ('deposited', 'Deposited'),
-        ('endorsed', 'Endorsed'),
-        ('handed', 'Handed'),
-        ('rejected', 'Rejected'),
-        ('debited', 'Debited'),
-        ('returned', 'Returned'),
-        ('changed', 'Changed'),
-        ('cancel', 'Cancel'),
+        # ('draft', 'Draft'),
+        ('holding', 'Payment'),
+        ('deposited', 'Deposit'),
+        ('endorsed', 'Endorsement'),
+        ('handed', 'Hand'),
+        ('rejected', 'Rejection'),
+        ('debited', 'Debit'),
+        ('returned', 'Return'),
+        ('changed', 'Change'),
+        # ('cancel', 'Cancel'),
     ],
         required=True,
     )
-    move_line_id = fields.Many2one(
-        'account.move.line',
-        ondelete='cascade',
-    )
+    # move_line_id = fields.Many2one(
+    #     'account.move.line',
+    #     ondelete='cascade',
+    # )
+    origin = fields.Reference(
+        string='Origin Document',
+        selection='_reference_models')
     partner_id = fields.Many2one(
         'res.partner',
     )
+
+    @api.model
+    def _reference_models(self):
+        return [
+            ('account.check', 'Payment'),
+            ('account.invoice', 'Invoice'),
+            ('account.move', 'Journal Entry'),
+            ('account.move.line', 'Journal Item'),
+        ]
+        # models = self.env['ir.model'].search([('state', '!=', 'manual')])
+        # return [(model.model, model.name)
+        #         for model in models
+        #         if not model.model.startswith('ir.')]
 
 
 class AccountCheck(models.Model):
@@ -102,7 +118,7 @@ class AccountCheck(models.Model):
         # search='_search_state',
         # TODO enable store, se complico, ver search o probar si un related
         # resuelve
-        # store=True,
+        store=True,
     )
     issue_date = fields.Date(
         'Issue Date',
@@ -449,18 +465,24 @@ class AccountCheck(models.Model):
         return True
 
     @api.multi
-    def _add_operation(self, operation, move_line=None, partner=None):
+    def _del_operation(self):
+        for rec in self:
+            if rec.operation_ids:
+                rec.operation_ids[0].unlink()
+
+    @api.multi
+    def _add_operation(self, operation, origin, partner=None):
         for rec in self:
             rec.operation_ids.create({
                 'operation': operation,
                 'check_id': rec.id,
-                'move_line_id': move_line and move_line.id or False,
+                'origin': '%s,%i' % (origin._name, origin.id),
+                # 'move_line_id': move_line and move_line.id or False,
                 'partner_id': partner and partner.id or False,
             })
 
     # @api.model
     # def _search_state(self, operator, value):
-        
     #     # if operator == '=' and operand:
     #     #     return [('needaction_partner_ids', 'in', self.env.user.partner_id.id)]
     #     return [('needaction_partner_ids', 'not in', self.env.user.partner_id.id)]
@@ -477,7 +499,6 @@ class AccountCheck(models.Model):
         # o algo por el estilo, entocnes los estados serian mas aprecidos para ambos
         # tipos de cheques
         for rec in self:
-            print 'aaaaaaa'
             rec.state = (
                 rec.operation_ids and
                 rec.operation_ids[0].operation or 'draft')

@@ -21,6 +21,7 @@
         </record>
 
         <function model="account.journal" name="_enable_issue_check_on_bank_journals"/>
+        <function model="account.journal" name="_enable_third_check_on_cash_journals"/>
 
     </data>
 </openerp>

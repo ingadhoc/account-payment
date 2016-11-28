@@ -13,7 +13,8 @@
                 </form>
                 <!-- <h1 position="after"> -->
                     <!-- <group string="Calculation" attrs="{'invisible': [('automatic', '=', False)]}"> -->
-                    <field name='communication' position="after">
+                    <group name="withholding_data">
+                    <!-- <field name='communication' position="after"> -->
                         <!-- <group> -->
                             <field name="withholdable_invoiced_amount"/>
                             <field name="withholdable_advanced_amount"/>
@@ -27,7 +28,7 @@
                             <field name="period_withholding_amount" attrs="{'invisible': [('withholding_accumulated_payments', '=', False)]}"/>
                             <field name="previous_withholding_amount" attrs="{'invisible': [('withholding_accumulated_payments', '=', False)]}"/>
                             <field name="computed_withholding_amount"/>
-                        </field>
+                        </group>
                         <!-- </group> -->
                     <!-- </group> -->
                 <!-- </h1> -->

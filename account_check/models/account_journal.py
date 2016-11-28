@@ -62,6 +62,24 @@ class AccountJournal(models.Model):
                 'outbound_payment_method_ids': [(4, issue_checks.id, None)],
             })
 
+    @api.model
+    def _enable_third_check_on_cash_journals(self):
+        """ Enables issue checks payment method
+            Called upon module installation via data file.
+        """
+        received_third_check = self.env.ref(
+            'account_check.account_payment_method_received_third_check')
+        delivered_third_check = self.env.ref(
+            'account_check.account_payment_method_delivered_third_check')
+        cash_journals = self.search([('type', '=', 'cash')])
+        for cash_journal in cash_journals:
+            cash_journal.write({
+                'inbound_payment_method_ids': [
+                    (4, received_third_check.id, None)],
+                'outbound_payment_method_ids': [
+                    (4, delivered_third_check.id, None)],
+            })
+
     # @api.model
     # def _get_payment_subtype(self):
     #     selection = super(account_journal, self)._get_payment_subtype()
