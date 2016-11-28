@@ -5,8 +5,8 @@
 ##############################################################################
 from . import account_journal
 from . import account_checkbook
+from . import account_check
 from . import account_payment
 from . import account_journal_dashboard
-from . import account_move_line
-# from . import account_check_deposit
-# from . import account_voucher
+from . import res_company
+from . import account_chart_template

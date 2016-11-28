@@ -7,7 +7,7 @@ from openerp.exceptions import Warning
 from openerp import models, fields, api, _
 
 
-class account_check_dreject(models.TransientModel):
+class AccountCheckDreject(models.TransientModel):
     _name = 'account.check.dreject'
 
     @api.model

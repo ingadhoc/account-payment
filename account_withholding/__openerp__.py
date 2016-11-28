@@ -27,7 +27,10 @@
         'views/account_tax_view.xml',
         'views/account_payment_view.xml',
         'data/account_payment_method_data.xml',
-        'data/account_journal_data.xml',
+        # TODO delete or enable, we should create it on chart installation
+        # if we create it from here accounts will be created, so we let
+        # this work to chart installation
+        # 'data/account_journal_data.xml',
     ],
     'depends': [
         'account',

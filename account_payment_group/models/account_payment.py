@@ -10,7 +10,10 @@ class AccountPayment(models.Model):
     _inherit = "account.payment"
 
     payment_group_id = fields.Many2one(
-        'account.payment.group', 'Payment Group', ondelete='cascade')
+        'account.payment.group',
+        'Payment Group',
+        ondelete='cascade',
+    )
     payment_group_company_id = fields.Many2one(
         related='payment_group_id.company_id')
     # we make a copy without transfer option, we try with related but it
@@ -26,7 +29,9 @@ class AccountPayment(models.Model):
     @api.onchange('payment_type_copy')
     def _inverse_payment_type_copy(self):
         for rec in self:
-            rec.payment_type = rec.payment_type_copy
+            # if false, then it is a transfer
+            rec.payment_type = (
+                rec.payment_type_copy and rec.payment_type_copy or 'transfer')
 
     @api.multi
     @api.depends('payment_type')
