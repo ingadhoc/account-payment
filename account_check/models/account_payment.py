@@ -248,12 +248,14 @@ class AccountPayment(models.Model):
                     # TODO tal vez si el cheques es current lo marcamos
                     # directamente debitado?
                     operation = 'handed'
+                    bank = rec.journal_id.bank_id
                 else:
                     # third check
                     operation = 'holding'
+                    bank = rec.check_bank_id
 
                 check_vals = {
-                    'bank_id': rec.check_bank_id.id,
+                    'bank_id': bank.id,
                     'owner_name': rec.check_owner_name,
                     'owner_vat': rec.check_owner_vat,
                     'number': rec.check_number,

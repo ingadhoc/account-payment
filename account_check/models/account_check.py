@@ -51,11 +51,23 @@ class AccountCheckOperation(models.Model):
         'res.partner',
         string='Partner',
     )
+    notes = fields.Text(
+    )
+
+    @api.multi
+    def unlink(self):
+        for rec in self:
+            if rec.origin:
+                raise ValidationError(_(
+                    'You can not delete a check operation that has an origin.'
+                    '\nYou can delete the origin reference and unlink after.'))
+        return super(AccountCheckOperation, self).unlink()
 
     @api.model
     def _reference_models(self):
         return [
-            ('account.check', 'Payment'),
+            ('account.payment', 'Payment'),
+            ('account.check', 'Check'),
             ('account.invoice', 'Invoice'),
             ('account.move', 'Journal Entry'),
             ('account.move.line', 'Journal Item'),
@@ -116,7 +128,8 @@ class AccountCheck(models.Model):
         ('cancel', 'Cancel'),
     ],
         required=True,
-        track_visibility='onchange',
+        # no need, operations are the track
+        # track_visibility='onchange',
         default='draft',
         copy=False,
         compute='_compute_state',
@@ -298,6 +311,7 @@ class AccountCheck(models.Model):
     def _del_operation(self):
         for rec in self:
             if rec.operation_ids:
+                rec.operation_ids[0].origin = False
                 rec.operation_ids[0].unlink()
 
     @api.multi
