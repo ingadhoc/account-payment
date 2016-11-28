@@ -24,24 +24,21 @@
     'license': 'AGPL-3',
     'category': 'Accounting & Finance',
     'data': [
-        'views/account_tax_withholding_view.xml',
-        'views/account_tax_withholding_template_view.xml',
-        'views/account_withholding_view.xml',
-        'views/account_voucher_view.xml',
-        'data/data.xml',
-        'security/security.xml',
-        'security/ir.model.access.csv'
+        'views/account_tax_view.xml',
+        'views/account_payment_view.xml',
+        'data/account_payment_method_data.xml',
+        'data/account_journal_data.xml',
     ],
     'depends': [
-        'account_voucher_payline'
+        'account',
     ],
     'description': '''
-Account Voucher Withholding
-===========================
+Payments Withholdings
+=====================
 Add withholding management on vouchers
 ''',
-    'installable': False,
-    'name': 'Voucher Voucher Withholding',
+    'installable': True,
+    'name': 'Withholdings on Payments',
     'test': [],
     'version': '9.0.1.0.0',
 }
