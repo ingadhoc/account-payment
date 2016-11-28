@@ -6,9 +6,9 @@
 from openerp import models, api
 
 
-class AccountVoucher(models.Model):
+class AccountPaymentGroup(models.Model):
 
-    _inherit = "account.voucher"
+    _inherit = "account.payment.group"
 
     @api.multi
     def compute_withholdings(self):
@@ -20,7 +20,7 @@ class AccountVoucher(models.Model):
 
     @api.multi
     def action_confirm(self):
-        res = super(AccountVoucher, self).action_confirm()
+        res = super(AccountPaymentGroup, self).action_confirm()
         self.search([
             ('type', '=', 'payment'),
             ('journal_id.automatic_withholdings', '=', True),

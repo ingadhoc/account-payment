@@ -9,9 +9,8 @@ from dateutil.relativedelta import relativedelta
 import datetime
 
 
-class AccountTaxWithholding(models.Model):
-    _inherit = "account.tax.withholding"
-    _description = "Account Withholding Taxes"
+class AccountTax(models.Model):
+    _inherit = "account.tax"
 
     non_taxable_amount = fields.Float(
         'Non-taxable Amount',

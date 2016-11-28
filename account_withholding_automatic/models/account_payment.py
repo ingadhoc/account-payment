@@ -10,11 +10,13 @@ from openerp import models, fields
 # import datetime
 
 
-class account_voucher_withholding(models.Model):
-    _inherit = "account.voucher.withholding"
+class AccountPayment(models.Model):
+    _inherit = "account.payment"
 
+    automatic = fields.Boolean(
+    )
     accumulated_payments = fields.Selection(
-        related='tax_withholding_id.accumulated_payments',
+        related='withholding_tax_id.accumulated_payments',
         readonly=True,
     )
     withholdable_invoiced_amount = fields.Float(

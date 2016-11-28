@@ -32,11 +32,6 @@
     'depends': [
         'account',
     ],
-    'description': '''
-Payments Withholdings
-=====================
-Add withholding management on vouchers
-''',
     'installable': True,
     'name': 'Withholdings on Payments',
     'test': [],
