@@ -41,7 +41,7 @@
         'views/account_journal_dashboard_view.xml',
         'views/account_journal_view.xml',
         # 'wizard/check_action_view.xml',
-        'wizard/view_check_reject.xml',
+        # 'wizard/view_check_reject.xml',
         # 'wizard/change_check_view.xml',
         'views/account_checkbook_view.xml',
         'views/res_company_view.xml',
