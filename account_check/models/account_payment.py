@@ -236,9 +236,6 @@ class AccountPayment(models.Model):
             'currency_id': self.currency_id.id,
         }
         check = self.env['account.check'].create(check_vals)
-        print 'bbbbbbb', check.state
-        check.invalidate_cache()
-        print 'bbbbbbb', check.state
         self.check_id = check.id
         check._add_operation(operation, self, self.partner_id)
         return check
