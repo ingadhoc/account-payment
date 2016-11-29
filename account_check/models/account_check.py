@@ -27,16 +27,19 @@ class AccountCheckOperation(models.Model):
         ondelete='cascade'
     )
     operation = fields.Selection([
-        # ('draft', 'Draft'),
-        ('holding', 'Payment'),
+        # from payments
+        ('holding', 'Receive'),
         ('deposited', 'Deposit'),
-        ('endorsed', 'Endorsement'),
+        ('selled', 'Sell'),
+        ('delivered', 'Deliver'),
         ('handed', 'Hand'),
+        # from checks
+        ('reclaimed', 'Claim'),
         ('rejected', 'Rejection'),
         ('debited', 'Debit'),
         ('returned', 'Return'),
         ('changed', 'Change'),
-        # ('cancel', 'Cancel'),
+        ('cancel', 'Cancel'),
     ],
         required=True,
     )
@@ -44,6 +47,9 @@ class AccountCheckOperation(models.Model):
     #     'account.move.line',
     #     ondelete='cascade',
     # )
+    origin_name = fields.Char(
+        compute='_compute_origin_name'
+    )
     origin = fields.Reference(
         string='Origin Document',
         selection='_reference_models')
@@ -62,6 +68,28 @@ class AccountCheckOperation(models.Model):
                     'You can not delete a check operation that has an origin.'
                     '\nYou can delete the origin reference and unlink after.'))
         return super(AccountCheckOperation, self).unlink()
+
+    # no longer needed because we try to autoclean origin
+    # @api.multi
+    # def clean_origin(self):
+    #     self.origin = False
+
+    @api.multi
+    @api.depends('origin')
+    def _compute_origin_name(self):
+        for rec in self:
+            try:
+                if rec.origin:
+                    origin_name = rec.origin.display_name
+                else:
+                    origin_name = False
+            except:
+                # if we can get origin we clean it
+                rec.write({'origin': False})
+                # old code
+                # origin_name = _('Could not get name')
+                # continue
+            rec.origin_name = origin_name
 
     @api.model
     def _reference_models(self):
@@ -119,7 +147,9 @@ class AccountCheck(models.Model):
         ('draft', 'Draft'),
         ('holding', 'Holding'),
         ('deposited', 'Deposited'),
-        ('endorsed', 'Endorsed'),
+        ('selled', 'Selled'),
+        ('delivered', 'Delivered'),
+        ('reclaimed', 'Reclaimed'),
         ('handed', 'Handed'),
         ('rejected', 'Rejected'),
         ('debited', 'Debited'),
@@ -308,8 +338,21 @@ class AccountCheck(models.Model):
         return True
 
     @api.multi
-    def _del_operation(self):
+    def _del_operation(self, operation):
+        """
+        We check that the operation that is being cancel is the last operation
+        done (same as check state)
+        """
         for rec in self:
+            if operation and rec.state != operation:
+                raise ValidationError(_(
+                    'You can not cancel operation "%s" if check is in '
+                    '"%s" state') % (
+                        rec.operation_ids._fields[
+                            'operation'].convert_to_export(
+                                operation, rec.env),
+                        rec._fields['state'].convert_to_export(
+                            rec.state, rec.env)))
             if rec.operation_ids:
                 rec.operation_ids[0].origin = False
                 rec.operation_ids[0].unlink()
@@ -332,9 +375,189 @@ class AccountCheck(models.Model):
     )
     def _compute_state(self):
         for rec in self:
-            rec.state = (
-                rec.operation_ids and
-                rec.operation_ids[0].operation or 'draft')
+            if rec.operation_ids:
+                operation = rec.operation_ids[0].operation
+                # rec._check_state_change(operation)
+                rec.state = operation
+            else:
+                rec.state = 'draft'
+            # new_state = (
+            #     rec.operation_ids and
+            #     rec.operation_ids[0].operation or 'draft')
+            # rec._check_state_change(new_state)
+            # rec.state = new_state
+            # rec.state = (
+            #     rec.operation_ids and
+            #     rec.operation_ids[0].operation or 'draft')
+
+    # @api.multi
+    # @api.constrains('state')
+    # def check_state_change(self):
+    #     for rec in self:
+    #         new_state = rec.state
+    #         print 'new_state', new_state
+    #         old_state = rec.read(['state'])
+    #         print 'read', old_state
+    #         rec._check_state_change(old_state, new_state)
+
+    @api.multi
+    def check_rejection(self):
+        self.ensure_one()
+        if self.state in ['deposited', 'selled']:
+            origin = self.operation_ids[0].origin
+            if origin._name != 'account.payment':
+                raise ValidationError((
+                    'The deposit operation is not linked to a payment.'
+                    'If you want to reject you need to do it manually.'))
+            vals = self.get_bank_vals(
+                'bank_reject', origin.destination_journal_id)
+            move = self.env['account.move'].create(vals)
+            move.post()
+            # self.env['account.move'].create({
+            # })
+            self._add_operation('rejected', move)
+        elif self.state in ['delivered']:
+            self.action_create_debit()
+
+    @api.multi
+    def action_create_debit(self):
+        self.ensure_one()
+        raise ValidationError('Not implemented yet!')
+        if self.partner_type == 'supplier':
+            view_id = self.env.ref('account.invoice_supplier_form').id
+            invoice_type = 'in_'
+        else:
+            view_id = self.env.ref('account.invoice_form').id
+            invoice_type = 'out_'
+
+        print 'self._context', self._context
+        if self._context.get('refund'):
+            name = _('Credit Note')
+            invoice_type += 'refund'
+            # for compatibility with account_document and loc ar
+            internal_type = False
+        else:
+            name = _('Debit Note')
+            invoice_type += 'invoice'
+            internal_type = 'debit_note'
+
+        return {
+            'name': name,
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'account.invoice',
+            'view_id': view_id,
+            'type': 'ir.actions.act_window',
+            'context': {
+                'default_partner_id': self.partner_id.id,
+                'default_company_id': self.company_id.id,
+                'default_type': invoice_type,
+                'internal_type': internal_type,
+            },
+            # 'domain': [('payment_id', 'in', self.payment_ids.ids)],
+        }
+
+    @api.multi
+    def get_bank_vals(self, action, journal):
+        self.ensure_one()
+        # TODO improove how we get vals, get them in other functions
+        if action == 'bank_debit':
+            # ref = _('Debit Check Nr. ')
+        #     check_move_field = 'debit_account_move_id'
+        #     journal = check.checkbook_id.debit_journal_id
+        #     partner = check.destiny_partner_id.id
+            # al pagar con banco se usa esta
+            # self.journal_id.default_debit_account_id.id, al debitar
+            # tenemos que usar esa misma
+            credit_account = journal.default_debit_account_id
+            # la contrapartida es la cuenta que reemplazamos en el pago
+            debit_account = self.company_id.deferred_check_account_id
+        elif action == 'bank_reject':
+        #     ref = _('Return Check Nr. ')
+        #     check_move_field = 'return_account_move_id'
+        #     journal = vou_journal
+            # al transferir a un banco se usa esta. al volver tiene que volver
+            # por la opuesta
+            # self.destination_journal_id.default_credit_account_id
+            credit_account = journal.default_debit_account_id
+            debit_account = self.company_id.rejected_check_account_id
+        #     partner = check.source_partner_id.id,
+            # credit_account_id = vou_journal.default_credit_account_id.id
+        #     signal = 'holding_returned'
+        else:
+            raise ValidationError(_(
+                'Action %s not implemented for checks!') % action)
+
+        # name = self.env['ir.sequence'].next_by_id(
+        #     journal.sequence_id.id)
+        # ref = self.name
+        name = self.name
+
+        debit_line_vals = {
+            'name': name,
+            'account_id': debit_account.id,
+            # 'partner_id': partner,
+            'debit': self.amount,
+            'amount_currency': self.amount_currency,
+            'currency_id': self.currency_id.id,
+            # 'ref': ref,
+        }
+        credit_line_vals = {
+            'name': name,
+            'account_id': credit_account.id,
+            # 'partner_id': partner,
+            'credit': self.amount,
+            'amount_currency': self.amount_currency,
+            'currency_id': self.currency_id.id,
+            # 'ref': ref,
+        }
+        return {
+            'name': name,
+            'journal_id': journal.id,
+            'date': fields.Date.today(),
+            'line_ids': [
+                (0, False, debit_line_vals),
+                (0, False, credit_line_vals)],
+            # 'ref': ref,
+        }
+
+    @api.multi
+    def _check_state_change(self, operation):
+        self.ensure_one()
+        # key= to state
+        # value= from states
+        old_state = self.read(['state'])[0]['state']
+        print 'operation', operation
+        print 'old_state', old_state
+        operation_from_state_map = {
+            # 'draft': [False],
+            'holding': ['draft', 'deposited', 'selled', 'delivered'],
+            'delivered': ['holding'],
+            'deposited': ['holding'],
+            'selled': ['holding'],
+            'handed': ['draft'],
+            'rejected': ['delivered', 'deposited', 'selled', 'handed'],
+            'debited': ['handed'],
+            'returned': ['handed'],
+            'changed': ['handed'],
+            'cancel': ['draft'],
+            'reclaimed': ['rejected'],
+        }
+        from_states = operation_from_state_map.get(operation)
+        if not from_states:
+            raise ValidationError(_(
+                'Operation %s not implemented for checks!') % operation)
+        print 'new_state', operation
+        if old_state not in from_states:
+            raise ValidationError(_(
+                'You can not "%s" a check from state "%s"!\n'
+                'Check nbr (id): %s (%s)') % (
+                    self.operation_ids._fields[
+                        'operation'].convert_to_export(
+                            operation, self.env),
+                    self._fields['state'].convert_to_export(
+                        old_state, self.env),
+                    self.name, self.id))
 
     @api.multi
     def unlink(self):

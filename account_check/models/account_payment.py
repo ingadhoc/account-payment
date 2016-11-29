@@ -207,100 +207,175 @@ class AccountPayment(models.Model):
     def cancel(self):
         res = super(AccountPayment, self).cancel()
         for rec in self:
-            if rec.check_id:
-                # rec.check_id._add_operation('cancel')
-                rec.check_id._del_operation()
-                rec.check_id.unlink()
-            elif rec.deposited_check_ids:
-                rec.deposited_check_ids._del_operation()
+            rec.do_checks_operations(cancel=True)
+            # if rec.check_id:
+            #     # rec.check_id._add_operation('cancel')
+            #     rec.check_id._del_operation()
+            #     rec.check_id.unlink()
+            # elif rec.deposited_check_ids:
+            #     rec.deposited_check_ids._del_operation()
         return res
 
     @api.multi
-    def post(self):
-        res = super(AccountPayment, self).post()
-        for rec in self:
-            if not rec.check_type:
-                continue
-            if rec.payment_method_code == 'delivered_third_check':
-                if not rec.deposited_check_ids:
-                    raise UserError(_('No checks configured for deposit'))
-                # liquidity_account = rec.journal_id.default_debit_account_id
-                # liquidity_line = rec.move_line_ids.filtered(
-                #     lambda x: x.account_id == liquidity_account)
-                # rec.deposited_check_ids.write({
-                #     'deposit_move_line_id': liquidity_line.id})
-                partner = rec.partner_id.browse()
-                # if it is a transfer (Deposit) partner is not claned, so we
-                # clean it here
-                if rec.payment_type != 'transfer':
-                    partner = rec.partner_id
-                rec.deposited_check_ids._add_operation(
-                    # 'deposited', liquidity_line, liquidity_line.partner_id)
-                    'deposited', rec, partner)
-            else:
-                # liquidity_accounts = (
-                #     rec.journal_id.default_debit_account_id +
-                #     rec.journal_id.default_credit_account_id +
-                #     rec.company_id.deferred_check_account_id)
-                # liquidity_line = rec.move_line_ids.filtered(
-                #     lambda x: x.account_id in liquidity_accounts)
-                if rec.check_type == 'issue_check':
-                    # TODO tal vez si el cheques es current lo marcamos
-                    # directamente debitado?
-                    operation = 'handed'
-                    bank = rec.journal_id.bank_id
-                else:
-                    # third check
-                    operation = 'holding'
-                    bank = rec.check_bank_id
+    def create_check(self, check_type, operation, bank):
+        self.ensure_one()
 
-                check_vals = {
-                    'bank_id': bank.id,
-                    'owner_name': rec.check_owner_name,
-                    'owner_vat': rec.check_owner_vat,
-                    'number': rec.check_number,
-                    'name': rec.check_name,
-                    'checkbook_id': rec.checkbook_id.id,
-                    'issue_date': rec.check_issue_date,
-                    # 'move_line_id': liquidity_line.id,
-                    'type': rec.check_type,
-                    # new fields because no more related ones on check
-                    'journal_id': rec.journal_id.id,
-                    # TODO arreglar que monto va de amount y cual de
-                    # amount currency
-                    'amount': rec.amount,
-                    # 'amount_currency': rec.amount,
-                    'currency_id': rec.currency_id.id,
-                }
-                check = rec.env['account.check'].create(check_vals)
-                rec.check_id = check.id
-                check._add_operation(
-                    # operation, liquidity_line, liquidity_line.partner_id)
-                    operation, rec, rec.partner_id)
-        return res
+        check_vals = {
+            'bank_id': bank.id,
+            'owner_name': self.check_owner_name,
+            'owner_vat': self.check_owner_vat,
+            'number': self.check_number,
+            'name': self.check_name,
+            'checkbook_id': self.checkbook_id.id,
+            'issue_date': self.check_issue_date,
+            'type': self.check_type,
+            'journal_id': self.journal_id.id,
+            'amount': self.amount,
+            # TODO arreglar que monto va de amount y cual de amount currency
+            # 'amount_currency': self.amount,
+            'currency_id': self.currency_id.id,
+        }
+        check = self.env['account.check'].create(check_vals)
+        print 'bbbbbbb', check.state
+        check.invalidate_cache()
+        print 'bbbbbbb', check.state
+        self.check_id = check.id
+        check._add_operation(operation, self, self.partner_id)
+        return check
 
-    def _get_liquidity_move_line_vals(self, amount):
-        vals = super(AccountPayment, self)._get_liquidity_move_line_vals(
-            amount)
-        if self.check_type:
+    @api.multi
+    def do_checks_operations(self, vals=None, cancel=False):
+        """
+        Check attached .ods file on this module to understand checks workflows
+        """
+        self.ensure_one()
+        rec = self
+        if not rec.check_type:
+            # continue
+            return vals
+        if (
+                rec.payment_method_code == 'received_third_check' and
+                rec.payment_type == 'inbound' and
+                rec.partner_type == 'customer'):
+            operation = 'holding'
+            if cancel:
+                _logger.info('Cancel Receive Check')
+                rec.check_id._del_operation(operation)
+                rec.check_id.unlink()
+                return None
+
+            _logger.info('Receive Check')
+            self.create_check('third_check', operation, self.check_bank_id)
             vals['date_maturity'] = self.check_payment_date
+            # use company holding account instead of journal account
+            holding_account = (
+                self.company_id.holding_check_account_id)
+            if not holding_account:
+                raise UserError(_(
+                    'No checks holding account defined for company %s'
+                ) % self.company_id.name)
+            vals['account_id'] = holding_account.id
+        elif (
+                rec.payment_method_code == 'delivered_third_check' and
+                rec.payment_type == 'transfer' and
+                rec.destination_journal_id.type == 'cash'):
+            operation = 'selled'
+            if cancel:
+                _logger.info('Cancel Sell Check')
+                rec.deposited_check_ids._del_operation(operation)
+                return None
+
+            _logger.info('Sell Check')
+            rec.deposited_check_ids._add_operation(
+                operation, rec, False)
+        elif (
+                rec.payment_method_code == 'delivered_third_check' and
+                rec.payment_type == 'transfer' and
+                rec.destination_journal_id.type == 'bank'):
+            operation = 'deposited'
+            if cancel:
+                _logger.info('Cancel Deposit Check')
+                rec.deposited_check_ids._del_operation(operation)
+                return None
+
+            _logger.info('Deposit Check')
+            rec.deposited_check_ids._add_operation(
+                operation, rec, False)
+        elif (
+                rec.payment_method_code == 'delivered_third_check' and
+                rec.payment_type == 'outbound' and
+                rec.partner_type == 'supplier'):
+            operation = 'delivered'
+            if cancel:
+                _logger.info('Cancel Deliver Check')
+                rec.deposited_check_ids._del_operation(operation)
+                return None
+
+            _logger.info('Deliver Check')
+            rec.deposited_check_ids._add_operation(
+                operation, rec, rec.partner_id)
+        elif (
+                rec.payment_method_code == 'issue_check' and
+                rec.payment_type == 'outbound' and
+                rec.partner_type == 'supplier'):
+            operation = 'handed'
+            if cancel:
+                _logger.info('Cancel Hand Check')
+                rec.check_id._del_operation(operation)
+                rec.check_id.unlink()
+                return None
+
+            _logger.info('Hand Check')
+            self.create_check('issue_check', operation, self.check_bank_id)
+            vals['date_maturity'] = self.check_payment_date
+            # if check is deferred, change account
             if self.check_subtype == 'deferred':
-                deferred_account = self.company_id.deferred_check_account_id
+                deferred_account = (
+                    self.company_id.deferred_check_account_id)
                 if not deferred_account:
                     raise UserError(_(
                         'No checks deferred account defined for company %s'
                     ) % self.company_id.name)
                 vals['account_id'] = deferred_account.id
-            # vals['check_bank_id'] = self.check_bank_id.id
-            # vals['check_owner_name'] = self.check_owner_name
-            # vals['check_owner_vat'] = self.check_owner_vat
-            # vals['check_number'] = self.check_number
-            # vals['checkbook_id'] = self.checkbook_id.id
-            # vals['check_issue_date'] = self.check_issue_date
-            # if self.payment_method_code == 'issue_check':
-            #     vals['check_type'] = 'issue_check'
-            # else:
-            #     vals['check_type'] = 'third_check'
+        else:
+            raise UserError(_(
+                'This operatios is not implemented for checks:\n'
+                '* Payment type: %s\n'
+                '* Partner type: %s\n'
+                '* Payment method: %s\n' % (
+                    rec.payment_type,
+                    rec.partner_type,
+                    rec.payment_method_code)))
+        return vals
+
+    # @api.multi
+    # def post(self):
+    #     self.do_checks_operations()
+    #     return super(AccountPayment, self).post()
+
+    def _get_liquidity_move_line_vals(self, amount):
+        vals = super(AccountPayment, self)._get_liquidity_move_line_vals(
+            amount)
+        vals = self.do_checks_operations(vals=vals)
+        # if self.check_type:
+        #     vals['date_maturity'] = self.check_payment_date
+        #     if self.check_subtype == 'deferred':
+        #         deferred_account = self.company_id.deferred_check_account_id
+        #         if not deferred_account:
+        #             raise UserError(_(
+        #                 'No checks deferred account defined for company %s'
+        #             ) % self.company_id.name)
+        #         vals['account_id'] = deferred_account.id
+        #     # vals['check_bank_id'] = self.check_bank_id.id
+        #     # vals['check_owner_name'] = self.check_owner_name
+        #     # vals['check_owner_vat'] = self.check_owner_vat
+        #     # vals['check_number'] = self.check_number
+        #     # vals['checkbook_id'] = self.checkbook_id.id
+        #     # vals['check_issue_date'] = self.check_issue_date
+        #     # if self.payment_method_code == 'issue_check':
+        #     #     vals['check_type'] = 'issue_check'
+        #     # else:
+        #     #     vals['check_type'] = 'third_check'
         return vals
 
     # @api.one
@@ -492,3 +567,67 @@ class AccountPayment(models.Model):
     #     readonly=True,
     #     copy=False
     # )
+
+    # @api.multi
+    # def post(self):
+    #     res = super(AccountPayment, self).post()
+    #     for rec in self:
+    #         if not rec.check_type:
+    #             continue
+    #         if rec.payment_method_code == 'delivered_third_check':
+    #             if not rec.deposited_check_ids:
+    #                 raise UserError(_('No checks configured for deposit'))
+    #             # liquidity_account = rec.journal_id.default_debit_account_id
+    #             # liquidity_line = rec.move_line_ids.filtered(
+    #             #     lambda x: x.account_id == liquidity_account)
+    #             # rec.deposited_check_ids.write({
+    #             #     'deposit_move_line_id': liquidity_line.id})
+    #             partner = rec.partner_id.browse()
+    #             # if it is a transfer (Deposit) partner is not claned, so we
+    #             # clean it here
+    #             if rec.payment_type != 'transfer':
+    #                 partner = rec.partner_id
+    #             rec.deposited_check_ids._add_operation(
+    #                 # 'deposited', liquidity_line, liquidity_line.partner_id)
+    #                 'deposited', rec, partner)
+    #         else:
+    #             # liquidity_accounts = (
+    #             #     rec.journal_id.default_debit_account_id +
+    #             #     rec.journal_id.default_credit_account_id +
+    #             #     rec.company_id.deferred_check_account_id)
+    #             # liquidity_line = rec.move_line_ids.filtered(
+    #             #     lambda x: x.account_id in liquidity_accounts)
+    #             if rec.check_type == 'issue_check':
+    #                 # TODO tal vez si el cheques es current lo marcamos
+    #                 # directamente debitado?
+    #                 operation = 'handed'
+    #                 bank = rec.journal_id.bank_id
+    #             else:
+    #                 # third check
+    #                 operation = 'holding'
+    #                 bank = rec.check_bank_id
+
+    #             check_vals = {
+    #                 'bank_id': bank.id,
+    #                 'owner_name': rec.check_owner_name,
+    #                 'owner_vat': rec.check_owner_vat,
+    #                 'number': rec.check_number,
+    #                 'name': rec.check_name,
+    #                 'checkbook_id': rec.checkbook_id.id,
+    #                 'issue_date': rec.check_issue_date,
+    #                 # 'move_line_id': liquidity_line.id,
+    #                 'type': rec.check_type,
+    #                 # new fields because no more related ones on check
+    #                 'journal_id': rec.journal_id.id,
+    #                 # TODO arreglar que monto va de amount y cual de
+    #                 # amount currency
+    #                 'amount': rec.amount,
+    #                 # 'amount_currency': rec.amount,
+    #                 'currency_id': rec.currency_id.id,
+    #             }
+    #             check = rec.env['account.check'].create(check_vals)
+    #             rec.check_id = check.id
+    #             check._add_operation(
+    #                 # operation, liquidity_line, liquidity_line.partner_id)
+    #                 operation, rec, rec.partner_id)
+    #     return res
