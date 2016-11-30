@@ -349,8 +349,7 @@ class AccountPaymentGroup(models.Model):
         for rml in self.to_pay_move_line_ids:
             # factor for total_untaxed
             invoice = rml.invoice_id
-            factor = (invoice.amount_total and (
-                invoice.amount_untaxed / invoice.amount_total) or 1.0)
+            factor = invoice and invoice._get_tax_factor() or 1.0
 
             # si tiene moneda y es distinta convertimos el monto de moneda
             # si tiene moneda y es igual llevamos el monto de moneda

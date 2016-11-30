@@ -15,6 +15,12 @@ class AccountInvoice(models.Model):
     )
 
     @api.multi
+    def _get_tax_factor(self):
+        self.ensure_one()
+        return (self.amount_total and (
+            self.amount_untaxed / self.amount_total) or 1.0)
+
+    @api.multi
     def _compute_open_move_lines(self):
         for rec in self:
             rec.open_move_line_ids = rec.move_id.line_ids.filtered(

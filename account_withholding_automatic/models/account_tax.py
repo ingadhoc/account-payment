@@ -75,7 +75,7 @@ class AccountTax(models.Model):
         default='''
 # withholdable_base_amount
 # payment_group: account.payment.group object
-# partner: res.partner object
+# partner: res.partner object (commercial partner of payment group)
 # withholding_tax: account.tax.withholding object
 
 result = withholdable_base_amount * 0.10
@@ -244,7 +244,8 @@ result = withholdable_base_amount * 0.10
             self.withholding_accumulated_payments)
         if withholding_accumulated_payments:
             previos_payments_domain = [
-                ('partner_id', '=', payment_group.partner_id.id),
+                ('partner_id.commercial_partner_id', '=',
+                    payment_group.commercial_partner_id.id),
                 ('state', '=', 'posted'),
                 ('id', '!=', payment_group.id),
             ]
@@ -287,7 +288,7 @@ result = withholdable_base_amount * 0.10
             localdict = {
                 'withholdable_base_amount': withholdable_base_amount,
                 'payment': payment_group,
-                'partner': payment_group.partner_id,
+                'partner': payment_group.commercial_partner_id,
                 'withholding_tax': self,
             }
             eval(
