@@ -29,6 +29,7 @@ class AccountPayment(models.Model):
         # 'account.move.line',
         # 'check_deposit_id',
         string='Checks',
+        copy=False,
         readonly=True,
         states={'draft': [('readonly', '=', False)]}
     )
@@ -48,6 +49,7 @@ class AccountPayment(models.Model):
         # string='Payment Amount',
         # required=True
         readonly=True,
+        copy=False,
     )
 
 # check fields, just to make it easy to load checks without need to create
@@ -57,8 +59,8 @@ class AccountPayment(models.Model):
         'Check Name',
         # required=True,
         readonly=True,
+        copy=False,
         states={'draft': [('readonly', False)]},
-        copy=False
     )
     check_number = fields.Integer(
         'Check Number',
@@ -71,6 +73,7 @@ class AccountPayment(models.Model):
         'Check Issue Date',
         # required=True,
         readonly=True,
+        copy=False,
         states={'draft': [('readonly', False)]},
         default=fields.Date.context_today,
     )
@@ -95,17 +98,20 @@ class AccountPayment(models.Model):
         'res.bank',
         'Check Bank',
         readonly=True,
+        copy=False,
         states={'draft': [('readonly', False)]}
     )
     check_owner_vat = fields.Char(
         # TODO rename to Owner VAT
         'Check Owner Vat',
         readonly=True,
+        copy=False,
         states={'draft': [('readonly', False)]}
     )
     check_owner_name = fields.Char(
         'Check Owner Name',
         readonly=True,
+        copy=False,
         states={'draft': [('readonly', False)]}
     )
     check_type = fields.Char(
@@ -244,6 +250,11 @@ class AccountPayment(models.Model):
     def do_checks_operations(self, vals=None, cancel=False):
         """
         Check attached .ods file on this module to understand checks workflows
+        This method is called from:
+        * cancellation of payment to execute delete the right operation and
+            unlink check if needed
+        * from _get_liquidity_move_line_vals to add check operation and, if
+            needded, change payment vals and/or create check and
         """
         self.ensure_one()
         rec = self
@@ -264,14 +275,8 @@ class AccountPayment(models.Model):
             _logger.info('Receive Check')
             self.create_check('third_check', operation, self.check_bank_id)
             vals['date_maturity'] = self.check_payment_date
-            # use company holding account instead of journal account
-            holding_account = (
-                self.company_id.holding_check_account_id)
-            if not holding_account:
-                raise UserError(_(
-                    'No checks holding account defined for company %s'
-                ) % self.company_id.name)
-            vals['account_id'] = holding_account.id
+            vals['account_id'] = self.company_id._get_check_account(
+                'holding').id
         elif (
                 rec.payment_method_code == 'delivered_third_check' and
                 rec.payment_type == 'transfer' and
@@ -285,6 +290,8 @@ class AccountPayment(models.Model):
             _logger.info('Sell Check')
             rec.deposited_check_ids._add_operation(
                 operation, rec, False)
+            vals['account_id'] = self.company_id._get_check_account(
+                'holding').id
         elif (
                 rec.payment_method_code == 'delivered_third_check' and
                 rec.payment_type == 'transfer' and
@@ -298,6 +305,8 @@ class AccountPayment(models.Model):
             _logger.info('Deposit Check')
             rec.deposited_check_ids._add_operation(
                 operation, rec, False)
+            vals['account_id'] = self.company_id._get_check_account(
+                'holding').id
         elif (
                 rec.payment_method_code == 'delivered_third_check' and
                 rec.payment_type == 'outbound' and
@@ -311,6 +320,8 @@ class AccountPayment(models.Model):
             _logger.info('Deliver Check')
             rec.deposited_check_ids._add_operation(
                 operation, rec, rec.partner_id)
+            vals['account_id'] = self.company_id._get_check_account(
+                'holding').id
         elif (
                 rec.payment_method_code == 'issue_check' and
                 rec.payment_type == 'outbound' and
@@ -327,22 +338,38 @@ class AccountPayment(models.Model):
             vals['date_maturity'] = self.check_payment_date
             # if check is deferred, change account
             if self.check_subtype == 'deferred':
-                deferred_account = (
-                    self.company_id.deferred_check_account_id)
-                if not deferred_account:
-                    raise UserError(_(
-                        'No checks deferred account defined for company %s'
-                    ) % self.company_id.name)
-                vals['account_id'] = deferred_account.id
+                vals['account_id'] = self.company_id._get_check_account(
+                    'deferred').id
+        elif (
+                rec.payment_method_code == 'issue_check' and
+                rec.payment_type == 'transfer' and
+                rec.destination_journal_id.type == 'cash'):
+            operation = 'withdrawed'
+            if cancel:
+                _logger.info('Cancel Withdrawal Check')
+                rec.check_id._del_operation(operation)
+                rec.check_id.unlink()
+                return None
+
+            _logger.info('Hand Check')
+            self.create_check('issue_check', operation, self.check_bank_id)
+            vals['date_maturity'] = self.check_payment_date
+            # if check is deferred, change account
+            # si retiramos por caja directamente lo sacamos de banco
+            # if self.check_subtype == 'deferred':
+            #     vals['account_id'] = self.company_id._get_check_account(
+            #         'deferred').id
         else:
             raise UserError(_(
                 'This operatios is not implemented for checks:\n'
                 '* Payment type: %s\n'
                 '* Partner type: %s\n'
-                '* Payment method: %s\n' % (
+                '* Payment method: %s\n'
+                '* Destination journal: %s\n' % (
                     rec.payment_type,
                     rec.partner_type,
-                    rec.payment_method_code)))
+                    rec.payment_method_code,
+                    rec.destination_journal_id.type)))
         return vals
 
     # @api.multi

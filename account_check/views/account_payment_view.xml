@@ -18,9 +18,22 @@
                 <!-- TODO hacer invisible si ('payment_type', '!=', 'transfer') -->
                 <field name='communication' position="after">
                     <div colspan="2">
-                        <group string="Check data" name="check_data" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])]}">
+                        <group string="Checks" name="check_data" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'delivered_third_check', 'issue_check'])]}">
                             <!-- TODO podriamos simplificar los attrs invisibles ahora que tenemos el group -->
-                <!-- <xpath expr="//field[@name='communication']" position="after"> -->
+                            <field name="check_id" attrs="{'invisible': [('check_id', '=', False)]}"/>
+                            <!-- no usamos el widget many2many_tags porque les interesa filtrar y buscar por montos y demas -->
+                            <field name="deposited_check_ids"
+                                options="{'no_create': True}"
+                                nolabel="1"
+                                domain="[('journal_id', '=', journal_id), ('state', '=', 'holding'), ('type', '=', 'third_check')]"
+                                attrs="{'invisible': ['|', ('payment_method_code', '!=', 'delivered_third_check'), ('payment_type', 'not in', ['transfer', 'outbound'])], 'required': [('payment_method_code', '=', 'delivered_third_check'), ('payment_type', 'in', ['transfer', 'outbound'])]}">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="payment_date"/>
+                                    <field name="amount" sum="Total"/>
+                                </tree>
+                            </field>
+                            <newline/>
                             <field name="checkbook_id" attrs="{'invisible': [('payment_method_code', 'not in', ['issue_check'])], 'required': [('payment_method_code', 'in', ['issue_check'])]}"/>
                             <field name="check_number" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])],  'readonly': ['|', ('state', '!=', 'draft'), ('payment_method_code', '=', 'issue_check')]}"/>
                             <field name="check_name" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])], 'required': [('payment_method_code', 'in', ['received_third_check'])]}"/>
@@ -53,12 +66,12 @@
                     <attribute name="attrs">{'invisible': [('payment_method_code', '=', 'delivered_third_check')]}</attribute>
                 </div>
                 <field name="payment_method_code" position="after">
-                    <field name="deposited_check_ids"
+<!--                     <field name="deposited_check_ids"
                            widget="many2many_tags"
                            options="{'no_create': True}"
                            domain="[('journal_id', '=', journal_id), ('state', '=', 'holding'), ('type', '=', 'third_check')]"
                            attrs="{'invisible': ['|', ('payment_method_code', '!=', 'delivered_third_check'), ('payment_type', 'not in', ['transfer', 'outbound'])], 'required': [('payment_method_code', '=', 'delivered_third_check'), ('payment_type', 'in', ['transfer', 'outbound'])]}"
-                            />
+                            /> -->
 <!--                     <field name="delivered_check_ids"
                            widget="many2many_tags"
                            options="{'no_create': True}"
@@ -72,23 +85,16 @@
         </record>
 
     <!--  Checks search view -->
-<!--         <record id="view_payment_check_search" model="ir.ui.view">
+        <record id="view_account_payment_search" model="ir.ui.view">
             <field name="name">account.payment.check.search</field>
             <field name="model">account.payment</field>
             <field name="inherit_id" ref="account.view_account_payment_search"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='journal_id']" position="before">
-                    <field name="check_number"/>
-                    <field name="check_state"/>
-                    <field name="check_owner_name"/>
-                </xpath>
-                <search>
-                    <filter string="Check Issue Date" context="{'group_by':'check_issue_date'}"/>
-                    <filter string="Check State" context="{'group_by':'check_state'}"/>
-                    <filter string="Check Payment Date" context="{'group_by':'check_payment_date'}"/>                        
-                </search>
+                <field name="name" position="after">
+                    <field name="check_id" filter_domain="['|', ('check_id','ilike',self), ('deposited_check_ids','ilike',self)]"/>
+                </field>
             </field>
-        </record> -->
+        </record>
 
 
         <!-- Third Check Menu -->

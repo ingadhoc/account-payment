@@ -3,7 +3,8 @@
 # For copyright and license notices, see __openerp__.py file in module root
 # directory
 ##############################################################################
-from openerp import fields, models
+from openerp import fields, models, api, _
+from openerp.exceptions import UserError
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -33,3 +34,20 @@ class ResCompany(models.Model):
         'for eg. "Holding Checks"',
         # domain=[('type', 'in', ['other'])],
     )
+
+    @api.multi
+    def _get_check_account(self, type):
+        self.ensure_one()
+        if type == 'holding':
+            account = self.holding_check_account_id
+        elif type == 'rejected':
+            account = self.rejected_check_account_id
+        elif type == 'deferred':
+            account = self.deferred_check_account_id
+        else:
+            raise UserError(_("Type %s not implemented!"))
+        if not account:
+            raise UserError(_(
+                'No checks %s account defined for company %s'
+            ) % self.name)
+        return account

@@ -3,13 +3,13 @@
     <data noupdate="1">
 
         <record id="account_payment_method_received_third_check" model="account.payment.method">
-            <field name="name">Third Check</field>
+            <field name="name">Received Third Check</field>
             <field name="code">received_third_check</field>
             <field name="payment_type">inbound</field>
         </record>
 
         <record id="account_payment_method_delivered_third_check" model="account.payment.method">
-            <field name="name">Third Check</field>
+            <field name="name">Delivered Third Check</field>
             <field name="code">delivered_third_check</field>
             <field name="payment_type">outbound</field>
         </record>
