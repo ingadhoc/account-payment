@@ -80,7 +80,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
             'journal_id': self.journal_id.id,
             'partner_id': payment_group.partner_id.id,
             'type': invoice_type,
-            'invoice_line_ids': [('invoice_type')],
+            # 'invoice_line_ids': [('invoice_type')],
         }
         invoice = self.env['account.invoice'].create(inv_vals)
 

@@ -57,7 +57,12 @@
                     <field name="company_currency_id" invisible="1"/>
                 <header>
                     <!-- TODO agregar botones -->
-                    <field name="state" widget="statusbar" statusbar_colors='{"hrejected":"red"}'/>
+                    <button name="claim" type="object" string="Claim to Customer" states="rejected" help="It will create a draft debit note to customerand change check state"/>
+                    <button name="bank_debit" type="object" string="Bank Debit" states="handed" help="It will create a journal entry from Deferred Check Account to bank account and change check state"/>
+                    <button name="reject" type="object" string="Supplier Rejection" states="delivered,handed" help="It will create a debit note from supplier in draft state and change check state"/>
+                    <button name="reject" type="object" string="Bank Rejection" states="deposited" help="It will create an account entry from bank account to company rejection account and change check state"/>
+                    <button name="reject" type="object" string="Sell Rejection" states="selled" help="It will create an account entry from cash account to company rejection account and change check state"/>
+                    <!-- <field name="state" widget="statusbar"/> -->
                 </header>
                 <sheet string="Checks">
                     <h1>
@@ -65,13 +70,15 @@
                     </h1>
                     <group>  
                         <group>
+                            <field name="journal_id"/>
                             <field name="checkbook_id" attrs="{'invisible':[('type','!=','issue_check')],'required':[('type','=','issue_check')]}"/>
                             <field name="bank_id"/>
                             <field name="number"/>
                             <field name="amount"/>
-                            <field name="amount_currency" attrs="{'invisible': [('amount_currency', '=', False)]}"/>
+                            <field name="amount_currency" attrs="{'invisible': [('amount_currency', '=', 0.0)]}"/>
                         </group>
                         <group>    
+                            <field name="state"/>
                             <field name="owner_name" attrs="{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}"/>
                             <field name="owner_vat" attrs="{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}"/>
                             <field name="issue_date"/>
@@ -84,7 +91,7 @@
                             <tree default_order="create_date">
                                 <field name="create_date"/>
                                 <field name="operation"/>
-                                <field name="origin"/>
+                                <field name="origin_name" string="Origin"/>
                                 <field name="partner_id"/>
                             </tree>
                             <form>
@@ -93,6 +100,7 @@
                                     <field name="operation"/>
                                     <field name="origin"/>
                                     <field name="partner_id"/>
+                                    <field name="notes"/>
                                 </group>
                             </form>
                         </field>

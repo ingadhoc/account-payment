@@ -33,6 +33,11 @@ class account_check_action(models.TransientModel):
     #     domain="[('company_id','=',company_id), "
     #     "('type', 'in', ('other', 'liquidity'))]"
     # )
+    reject_with = fields.Selection(
+        [('debit_note', 'Debit Note'), ('account.move', 'Journal Entry')],
+        'Reject With',
+        required=True,
+    )
     date = fields.Date(
         'Date', required=True, default=fields.Date.context_today
     )
