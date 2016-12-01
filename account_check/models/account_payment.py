@@ -134,10 +134,11 @@ class AccountPayment(models.Model):
 # on change methods
 
     # @api.constrains('deposited_check_ids')
-    @api.onchange('deposited_check_ids')
+    @api.onchange('deposited_check_ids', 'payment_method_code')
     def onchange_checks(self):
-        # if self.deposited_check_ids:
-        self.amount = sum(self.deposited_check_ids.mapped('amount'))
+        # we only overwrite if payment method is delivered
+        if self.payment_method_code == 'delivered_third_check':
+            self.amount = sum(self.deposited_check_ids.mapped('amount'))
 
     # TODo activar
     @api.one
