@@ -209,7 +209,7 @@ result = withholdable_base_amount * 0.10
         If you wan to inherit and implement your own type, the most important
         value tu return are period_withholding_amount and
         previous_withholding_amount, with thos values the withholding amount
-        will be calculated
+        will be calculated.
         """
         self.ensure_one()
         # voucher = self.voucher_id

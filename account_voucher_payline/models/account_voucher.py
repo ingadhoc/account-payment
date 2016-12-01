@@ -68,6 +68,9 @@ class account_voucher(models.Model):
         'paylines_amount',
     )
     def _get_amount(self):
+        # por un error al generar las retenciones automaticamente, cuando hay
+        # mas de una
+        self.invalidate_cache(['paylines_amount'])
         amount = self.paylines_amount + self.net_amount
         self.amount = amount
 
