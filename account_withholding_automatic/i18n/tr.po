@@ -1,112 +1,97 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# * account_voucher_withholding_automatic
+# * account_withholding_automatic
 # 
 # Translators:
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
 msgid ""
 msgstr ""
-"Project-Id-Version: account-payment (8.0)\n"
+"Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-24 13:23+0000\n"
-"PO-Revision-Date: 2016-05-24 13:24+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>\n"
-"Language-Team: Turkish (http://www.transifex.com/adhoc/ingadhoc-account-payment-8-0/language/tr/)\n"
+"POT-Creation-Date: 2016-11-30 17:08+0000\n"
+"PO-Revision-Date: 2016-11-30 17:08+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
+"Language-Team: Turkish (https://www.transifex.com/adhoc/teams/46451/tr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Language: tr\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#. module: account_voucher_withholding_automatic
-#: model:ir.model,name:account_voucher_withholding_automatic.model_account_tax_withholding
-msgid "Account Withholding Taxes"
-msgstr ""
-
-#. module: account_voucher_withholding_automatic
-#: model:ir.model,name:account_voucher_withholding_automatic.model_account_voucher_withholding
-msgid "Account Withholding Voucher"
-msgstr ""
-
-#. module: account_voucher_withholding_automatic
-#: model:ir.model,name:account_voucher_withholding_automatic.model_account_voucher
-msgid "Accounting Voucher"
-msgstr "Muhasebe Fişi"
-
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding,withholding_accumulated_payments:0
-#: field:account.voucher.withholding,withholding_accumulated_payments:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_withholding_accumulated_payments
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_accumulated_payments
 msgid "Accumulated Payments"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.voucher.withholding,accumulated_amount:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_accumulated_amount
 msgid "Accumulated amount"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding,withholding_advances:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_advances
 msgid "Advances are Withholdable?"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding.rule,fix_amount:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule_fix_amount
 msgid "Amount"
 msgstr "Tutar"
 
-#. module: account_voucher_withholding_automatic
-#: help:account.tax.withholding,withholding_non_taxable_amount:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,help:account_withholding_automatic.field_account_tax_withholding_non_taxable_amount
 msgid "Amount to be substracted before applying alicuot"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: help:account.tax.withholding,withholding_non_taxable_minimum:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,help:account_withholding_automatic.field_account_tax_withholding_non_taxable_minimum
 msgid "Amounts lower than this wont't have any withholding"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.journal,automatic_withholdings:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_automatic
+msgid "Automatic"
+msgstr ""
+
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_res_company_automatic_withholdings
 msgid "Automatic withholdings"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding,withholding_amount_type:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_amount_type
 msgid "Base Amount"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: code:addons/account_voucher_withholding_automatic/models/account_tax_withholding.py:170
-#, python-format
-msgid "Base Amount Percentage can not be greater than 1"
-msgstr ""
-
-#. module: account_voucher_withholding_automatic
-#: help:account.tax.withholding,withholding_amount_type:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,help:account_withholding_automatic.field_account_tax_withholding_amount_type
 msgid "Base amount used to get withholding amount"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: selection:account.tax.withholding,type:0
+#. module: account_withholding_automatic
+#: selection:account.tax,withholding_type:0
 msgid "Based On Rule"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: view:account.voucher.withholding:account_voucher_withholding_automatic.account_voucher_withholding_form_view
-msgid "Calculation"
+#. module: account_withholding_automatic
+#: model:ir.model,name:account_withholding_automatic.model_res_company
+msgid "Companies"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: view:account.voucher:account_voucher_withholding_automatic.view_vendor_payment_form
+#. module: account_withholding_automatic
+#: model:ir.ui.view,arch_db:account_withholding_automatic.view_account_payment_group_form
 msgid "Compute Withholdings"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.voucher.withholding,computed_withholding_amount:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_computed_withholding_amount
 msgid "Computed withholding amount"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: code:addons/account_voucher_withholding_automatic/models/account_tax_withholding.py:103
-#: code:addons/account_voucher_withholding_automatic/models/account_tax_withholding.py:128
+#. module: account_withholding_automatic
+#: code:addons/account_withholding_automatic/models/account_tax.py:120
+#: code:addons/account_withholding_automatic/models/account_tax.py:144
 #, python-format
 msgid ""
 "Could not eval rule domain \"%s\".\n"
@@ -114,192 +99,250 @@ msgid ""
 "%s"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding.rule,create_uid:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule_create_uid
 msgid "Created by"
 msgstr "Tarafından Oluşturuldu"
 
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding.rule,create_date:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule_create_date
 msgid "Created on"
 msgstr "Tarihinde Oluşturuldu"
 
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding.rule,display_name:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule_display_name
 msgid "Display Name"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding.rule,domain:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule_domain
 msgid "Domain"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: help:account.tax.withholding.rule,percentage:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,help:account_withholding_automatic.field_account_tax_withholding_rule_percentage
 msgid "Enter % ratio between 0-1."
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: help:account.tax.withholding.rule,fix_amount:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,help:account_withholding_automatic.field_account_tax_withholding_rule_fix_amount
 msgid "Fixed Amount after percentaje"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding.rule,id:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule_id
 msgid "ID"
 msgstr "ID"
 
-#. module: account_voucher_withholding_automatic
-#: help:account.tax.withholding,withholding_accumulated_payments:0
-#: help:account.voucher.withholding,withholding_accumulated_payments:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,help:account_withholding_automatic.field_account_payment_withholding_accumulated_payments
+#: model:ir.model.fields,help:account_withholding_automatic.field_account_tax_withholding_accumulated_payments
 msgid "If none is selected, then payments are not accumulated"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.voucher.withholding,withholdable_advanced_amount:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_withholdable_advanced_amount
 msgid "Importe a cuenta sujeto a retención"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.voucher.withholding,withholdable_invoiced_amount:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_withholdable_invoiced_amount
 msgid "Importe imputado sujeto a retención"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: model:ir.model,name:account_voucher_withholding_automatic.model_account_journal
-msgid "Journal"
-msgstr "Yevmiye"
-
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding.rule,__last_update:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule___last_update
 msgid "Last Modified on"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding.rule,write_uid:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule_write_uid
 msgid "Last Updated by"
 msgstr "Tarafından Güncellendi"
 
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding.rule,write_date:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule_write_date
 msgid "Last Updated on"
 msgstr "Tarihinde Güncellendi"
 
-#. module: account_voucher_withholding_automatic
-#: help:account.journal,automatic_withholdings:0
-msgid "Make withholdings automatically on payments vouchers confirmation"
+#. module: account_withholding_automatic
+#: model:ir.model.fields,help:account_withholding_automatic.field_res_company_automatic_withholdings
+msgid "Make withholdings automatically on payments confirmation"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: selection:account.tax.withholding,withholding_accumulated_payments:0
+#. module: account_withholding_automatic
+#: selection:account.tax,withholding_accumulated_payments:0
 msgid "Month"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding,withholding_non_taxable_amount:0
-#: field:account.voucher.withholding,withholding_non_taxable_amount:0
+#. module: account_withholding_automatic
+#: code:addons/account_withholding_automatic/models/account_tax.py:187
+#, python-format
+msgid "No journal for withholdings found on company %s"
+msgstr ""
+
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_withholding_non_taxable_amount
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_non_taxable_amount
 msgid "Non-taxable Amount"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: code:addons/account_voucher_withholding_automatic/models/account_tax_withholding.py:90
+#. module: account_withholding_automatic
+#: code:addons/account_withholding_automatic/models/account_tax.py:104
 #, python-format
 msgid "Non-taxable Amount can not be greater than Non-taxable Minimum"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding,withholding_non_taxable_minimum:0
-#: field:account.voucher.withholding,withholding_non_taxable_minimum:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_withholding_non_taxable_minimum
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_non_taxable_minimum
 msgid "Non-taxable Minimum"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: selection:account.tax.withholding,type:0
+#. module: account_withholding_automatic
+#: selection:account.tax,withholding_type:0
 msgid "None"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding.rule,percentage:0
+#. module: account_withholding_automatic
+#: model:ir.model,name:account_withholding_automatic.model_account_payment_group
+msgid "Payment Group"
+msgstr ""
+
+#. module: account_withholding_automatic
+#: model:ir.model,name:account_withholding_automatic.model_account_payment
+msgid "Payments"
+msgstr ""
+
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule_percentage
 msgid "Percentage"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.voucher.withholding,period_withholding_amount:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_period_withholding_amount
 msgid "Period withholding amount"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.voucher.withholding,previous_withholding_amount:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_previous_withholding_amount
 msgid "Previous withholding amount"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding,withholding_rule_ids:0
+#. module: account_withholding_automatic
+#: selection:account.tax,withholding_type:0
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_python_compute
+msgid "Python Code"
+msgstr ""
+
+#. module: account_withholding_automatic
+#: model:account.tax,description:account_withholding_automatic.with_monthly
+msgid "Ret acum mensual"
+msgstr ""
+
+#. module: account_withholding_automatic
+#: model:account.tax,description:account_withholding_automatic.with_no_acum
+msgid "Ret no acum"
+msgstr ""
+
+#. module: account_withholding_automatic
+#: model:account.tax,description:account_withholding_automatic.with_no_auto
+msgid "Ret no auto"
+msgstr ""
+
+#. module: account_withholding_automatic
+#: model:account.tax,name:account_withholding_automatic.with_monthly
+msgid "Retención 10% acumulada mensual"
+msgstr ""
+
+#. module: account_withholding_automatic
+#: model:account.tax,name:account_withholding_automatic.with_no_acum
+msgid "Retención 15% no acumulada"
+msgstr ""
+
+#. module: account_withholding_automatic
+#: model:account.tax,name:account_withholding_automatic.with_no_auto
+msgid "Retención no automatica"
+msgstr ""
+
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule_ids
 msgid "Rules"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding.rule,sequence:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule_sequence
 msgid "Sequence"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: view:account.tax.withholding:account_voucher_withholding_automatic.account_tax_withholding_form_view
-msgid "Tax Computation (Only on payments)"
+#. module: account_withholding_automatic
+#: model:ir.model,name:account_withholding_automatic.model_account_tax
+msgid "Tax"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding.rule,tax_withholding_id:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule_tax_withholding_id
 msgid "Tax Withholding"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: help:account.tax.withholding,type:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,help:account_withholding_automatic.field_account_tax_withholding_type
 msgid "The computation method for the tax amount."
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: selection:account.tax.withholding,withholding_amount_type:0
+#. module: account_withholding_automatic
+#: code:addons/account_withholding_automatic/models/res_company.py:23
+#, python-format
+msgid "To use automatic withholdings double validation is required"
+msgstr ""
+
+#. module: account_withholding_automatic
+#: selection:account.tax,withholding_amount_type:0
 msgid "Total Amount"
 msgstr "Toplam Tutar"
 
-#. module: account_voucher_withholding_automatic
-#: field:account.voucher.withholding,total_amount:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_total_amount
 msgid "Total amount"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding,type:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_type
 msgid "Type"
 msgstr "Tür"
 
-#. module: account_voucher_withholding_automatic
-#: selection:account.tax.withholding,withholding_amount_type:0
+#. module: account_withholding_automatic
+#: selection:account.tax,withholding_amount_type:0
 msgid "Untaxed Amount"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding,withholding_user_error_domain:0
-msgid "User error domain"
-msgstr ""
-
-#. module: account_voucher_withholding_automatic
-#: field:account.tax.withholding,withholding_user_error_message:0
-msgid "User error message"
-msgstr ""
-
-#. module: account_voucher_withholding_automatic
-#: field:account.voucher.withholding,withholdable_base_amount:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_withholdable_base_amount
 msgid "Withholdable base amount"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: help:account.tax.withholding,withholding_user_error_domain:0
-#: help:account.tax.withholding.rule,domain:0
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_user_error_domain
+msgid "Withholding user error domain"
+msgstr ""
+
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_user_error_message
+msgid "Withholding user error message"
+msgstr ""
+
+#. module: account_withholding_automatic
+#: model:ir.model.fields,help:account_withholding_automatic.field_account_tax_withholding_rule_domain
+#: model:ir.model.fields,help:account_withholding_automatic.field_account_tax_withholding_user_error_domain
 msgid "Write a domain over account voucher module"
 msgstr ""
 
-#. module: account_voucher_withholding_automatic
-#: selection:account.tax.withholding,withholding_accumulated_payments:0
+#. module: account_withholding_automatic
+#: selection:account.tax,withholding_accumulated_payments:0
 msgid "Year"
+msgstr ""
+
+#. module: account_withholding_automatic
+#: model:ir.model,name:account_withholding_automatic.model_account_tax_withholding_rule
+msgid "account.tax.withholding.rule"
 msgstr ""
