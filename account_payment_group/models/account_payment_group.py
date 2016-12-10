@@ -20,6 +20,7 @@ class AccountPaymentGroup(models.Model):
     _name = "account.payment.group"
     _description = "Payment Group"
     _order = "payment_date desc"
+    _inherit = 'mail.thread'
 
     # campos copiados de payment
     # payment_type = fields.Selection(

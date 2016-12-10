@@ -20,7 +20,7 @@
             <attribute name="invisible">context.get('payment_group')</attribute>
         </button>
         <field name="payment_type" position="after">
-            <field name="payment_type_copy" widget="radio" attrs="{'readonly': [('state', '!=', 'draft')]}" invisible="not context.get('payment_group')"/>
+            <field name="payment_type_copy" widget="radio" attrs="{'readonly': [('state', '!=', 'draft')]}" invisible="not context.get('payment_group')" groups="account_payment_group.group_choose_payment_type"/>
         </field>
         <field name="payment_type" position="attributes">
             <attribute name="invisible">context.get('payment_group')</attribute>
@@ -31,9 +31,9 @@
         <field name="partner_id" position="attributes">
             <attribute name="invisible">context.get('payment_group')</attribute>
         </field>
-        <field name="payment_date" position="attributes">
+        <!-- <field name="payment_date" position="attributes">
             <attribute name="invisible">context.get('payment_group')</attribute>
-        </field>
+        </field> -->
         <field name="state" position="attributes">
             <attribute name="invisible">context.get('payment_group')</attribute>
         </field>

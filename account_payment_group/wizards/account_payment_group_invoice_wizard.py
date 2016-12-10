@@ -53,13 +53,16 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
         journal_type = 'sale'
         if self.payment_group_id.partner_type == 'purchase':
             journal_type = 'purchase'
-        return {'domain': {'journal_id': [
+        journal_domain = [
             ('type', '=', journal_type),
             ('company_id', '=', self.payment_group_id.company_id.id),
-        ]}}
+        ]
+        self.journal_id = self.env['account.journal'].search(
+            journal_domain, limit=1)
+        return {'domain': {'journal_id': journal_domain}}
 
     @api.multi
-    def confirm(self):
+    def get_invoice_vals(self):
         self.ensure_one()
         payment_group = self.payment_group_id
         if payment_group.partner_type == 'supplier':
@@ -72,7 +75,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
         else:
             invoice_type += 'invoice'
 
-        inv_vals = {
+        return {
             'name': self.description,
             'date': self.date,
             'date_invoice': self.date_invoice,
@@ -82,7 +85,12 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
             'type': invoice_type,
             # 'invoice_line_ids': [('invoice_type')],
         }
-        invoice = self.env['account.invoice'].create(inv_vals)
+
+    @api.multi
+    def confirm(self):
+        self.ensure_one()
+
+        invoice = self.env['account.invoice'].create(self.get_invoice_vals())
 
         inv_line_vals = {
             'product_id': self.product_id.id,
@@ -96,4 +104,5 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
         line_values['price_unit'] = self.amount
         invoice.write({'invoice_line_ids': [(0, 0, line_values)]})
         invoice.signal_workflow('invoice_open')
-        payment_group.to_pay_move_line_ids += invoice.open_move_line_ids
+        self.payment_group_id.to_pay_move_line_ids += (
+            invoice.open_move_line_ids)
