@@ -31,9 +31,9 @@
         <field name="partner_id" position="attributes">
             <attribute name="invisible">context.get('payment_group')</attribute>
         </field>
-        <field name="payment_date" position="attributes">
+        <!-- <field name="payment_date" position="attributes">
             <attribute name="invisible">context.get('payment_group')</attribute>
-        </field>
+        </field> -->
         <field name="state" position="attributes">
             <attribute name="invisible">context.get('payment_group')</attribute>
         </field>
