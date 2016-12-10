@@ -12,6 +12,7 @@
     "data": [
         'view/account_payment_group_view.xml',
         'view/account_payment_view.xml',
+        'wizards/account_payment_group_invoice_wizard_view.xml',
     ],
     "demo": [
     ],
