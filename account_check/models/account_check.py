@@ -13,14 +13,15 @@ class AccountCheckOperation(models.Model):
 
     _name = 'account.check.operation'
     _rec_name = 'operation'
-    _order = 'create_date desc'
+    _order = 'date desc, id desc'
+    # _order = 'create_date desc'
 
     # we use create_date
-    # date = fields.Datetime(
-    #     # default=fields.Date.context_today,
-    #     default=lambda self: fields.Datetime.now(),
-    #     required=True,
-    # )
+    date = fields.Datetime(
+        # default=fields.Date.context_today,
+        default=lambda self: fields.Datetime.now(),
+        required=True,
+    )
     check_id = fields.Many2one(
         'account.check',
         required=True,
@@ -202,18 +203,18 @@ class AccountCheck(models.Model):
     )
 
 # move.line fields
-    move_line_id = fields.Many2one(
-        'account.move.line',
-        'Check Entry Line',
-        readonly=True,
-        copy=False
-    )
-    deposit_move_line_id = fields.Many2one(
-        'account.move.line',
-        'Deposit Journal Item',
-        readonly=True,
-        copy=False
-    )
+    # move_line_id = fields.Many2one(
+    #     'account.move.line',
+    #     'Check Entry Line',
+    #     readonly=True,
+    #     copy=False
+    # )
+    # deposit_move_line_id = fields.Many2one(
+    #     'account.move.line',
+    #     'Deposit Journal Item',
+    #     readonly=True,
+    #     copy=False
+    # )
 
 # ex campos related
     amount = fields.Monetary(
@@ -368,20 +369,24 @@ class AccountCheck(models.Model):
                 rec.operation_ids[0].unlink()
 
     @api.multi
-    def _add_operation(self, operation, origin, partner=None):
+    def _add_operation(
+            self, operation, origin, partner=None, date=False):
         for rec in self:
-            rec.operation_ids.create({
+            vals = {
                 'operation': operation,
                 'check_id': rec.id,
                 'origin': '%s,%i' % (origin._name, origin.id),
                 # 'move_line_id': move_line and move_line.id or False,
                 'partner_id': partner and partner.id or False,
-            })
+            }
+            if date:
+                vals['date'] = date
+            rec.operation_ids.create(vals)
 
     @api.multi
     @api.depends(
         'operation_ids.operation',
-        'operation_ids.create_date',
+        'operation_ids.date',
     )
     def _compute_state(self):
         for rec in self:

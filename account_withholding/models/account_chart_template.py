@@ -22,20 +22,6 @@ class WizardMultiChartsAccounts(models.TransientModel):
         res = super(
             WizardMultiChartsAccounts, self)._create_bank_journals_from_o2m(
             company, acc_template_ref)
-        journals = self.env['account.journal'].search([
-            ('company_id', '=', company.id),
-            ('type', '=', 'cash'),
-        ])
-        withholding_method_in = self.env.ref(
-            'account_withholding.'
-            'account_payment_method_in_withholding')
-        withholding_method_out = self.env.ref(
-            'account_withholding.'
-            'account_payment_method_out_withholding')
-        journals.write({
-            'inbound_payment_method_ids': [
-                (4, withholding_method_in.id, None)],
-            'outbound_payment_method_ids': [
-                (4, withholding_method_out.id, None)],
-        })
+        self.env['account.journal'].with_context(
+            force_company_id=company.id)._enable_withholding_on_cash_journals()
         return res
