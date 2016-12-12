@@ -19,6 +19,7 @@ def migrate_tax_withholding(env):
         account_id,
         ref_account_id,
         ref_account_analytic_id,
+        company_id,
         type_tax_use,
         tax_code_id
     FROM
