@@ -13,7 +13,6 @@ class AccountCheckbook(models.Model):
 
     _name = 'account.checkbook'
     _description = 'Account Checkbook'
-    _inherit = ['mail.thread']
 
     name = fields.Char(
         compute='_compute_name',
