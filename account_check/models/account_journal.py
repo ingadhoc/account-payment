@@ -34,12 +34,6 @@ class AccountJournal(models.Model):
         checkbook.state = 'active'
 
     @api.model
-    def _prepare_liquidity_account(self, name, company, currency_id, type):
-        vals = super(AccountJournal, self)._prepare_liquidity_account(
-            name, company, currency_id, type)
-        return vals
-
-    @api.model
     def _enable_issue_check_on_bank_journals(self):
         """ Enables issue checks payment method
             Called upon module installation via data file.
@@ -52,7 +46,8 @@ class AccountJournal(models.Model):
             domain += [('company_id', '=', force_company_id)]
         bank_journals = self.search(domain)
         for bank_journal in bank_journals:
-            bank_journal._create_checkbook()
+            if not bank_journal.checkbook_ids:
+                bank_journal._create_checkbook()
             bank_journal.write({
                 'outbound_payment_method_ids': [(4, issue_checks.id, None)],
             })

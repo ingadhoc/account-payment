@@ -270,7 +270,7 @@ class AccountPayment(models.Model):
             if cancel:
                 _logger.info('Cancel Receive Check')
                 rec.check_id._del_operation(operation)
-                rec.check_id.unlink()
+                # rec.check_id.unlink()
                 return None
 
             _logger.info('Receive Check')
@@ -331,7 +331,7 @@ class AccountPayment(models.Model):
             if cancel:
                 _logger.info('Cancel Hand Check')
                 rec.check_id._del_operation(operation)
-                rec.check_id.unlink()
+                # rec.check_id.unlink()
                 return None
 
             _logger.info('Hand Check')

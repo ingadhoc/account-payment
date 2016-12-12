@@ -88,15 +88,15 @@
                     </group>
                     <group string="Operations">
                         <field name="operation_ids" nolabel="1">
-                            <tree default_order="create_date">
-                                <field name="create_date"/>
+                            <tree default_order="date">
+                                <field name="date"/>
                                 <field name="operation"/>
                                 <field name="origin_name" string="Origin"/>
                                 <field name="partner_id"/>
                             </tree>
                             <form>
                                 <group>
-                                    <!-- <field name="create_date"/> -->
+                                    <!-- <field name="date"/> -->
                                     <field name="operation"/>
                                     <field name="origin"/>
                                     <field name="partner_id"/>
@@ -169,6 +169,12 @@
             <field name="context">{'search_default_state':'holding','default_type':'third_check'}</field>
         </record>
 
+        <menuitem
+            action="action_third_check"
+            id="menu_third_check"
+            sequence="6"
+            parent="account.menu_finance_entries"/> 
+
         <!-- Issued Check Menu -->
         <record model="ir.actions.act_window" id="action_issue_check">
             <field name="name">Issue Checks</field>
@@ -180,6 +186,12 @@
             <field name="domain">[('type','=','issue_check')]</field>
             <field name="context">{'search_default_state':'handed','default_type':'issue_check'}</field>
         </record>
+
+        <menuitem
+            action="action_issue_check"
+            id="menu_issue_check"
+            sequence="7"
+            parent="account.menu_finance_entries"/>   
 
     </data>
 </openerp>
