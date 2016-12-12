@@ -90,21 +90,6 @@ def change_third_journals(env):
     return old_journal_ids
 
 
-    # openupgrade.logged_query(cr, """
-    #     SELECT
-    #         id
-    #     FROM account_journal
-    #     WHERE payment_subtype in ('issue_check', 'third_check') AND
-    #         type in ('cash', 'bank')
-    #     """,)
-    # journals_read = cr.fetchall()
-    # print ' journals_read', journals_read
-    # if journals_read:
-    #     journals = env['account.journal'].search([('id', 'in', journals_read)])
-    #     journals.unlink()
-    # env['account.journal'].search()
-
-
 def add_operations(env):
     cr = env.cr
     for check in env['account.check'].search([]):
@@ -231,32 +216,3 @@ def add_operations(env):
                 'On check %s (id: %s) check state (%s) differs from original '
                 'check state (%s)' % (
                     check.name, check.id, check.state, original_state))
-
-# def update_receiptbook_type(env):
-#     cr = env.cr
-#     openupgrade.map_values(
-#         cr,
-#         'type', 'partner_type',
-#         # openupgrade.get_legacy_name('type'), 'partner_type',
-#         [('receipt', 'customer'), ('payment', 'supplier')],
-#         table='account_payment_receiptbook', write='sql')
-
-
-# def install_original_modules(env):
-#     cr = env.cr
-#     openupgrade.logged_query(cr, """
-#         UPDATE ir_module_module
-#         SET state = 'to install'
-#         WHERE name in ('l10n_ar_account')
-#         """)
-
-
-# def set_company_loc_ar(env):
-#     cr = env.cr
-#     openupgrade.map_values(
-#         cr,
-#         # openupgrade.get_legacy_name('type_tax_use'), 'localization',
-#         'use_argentinian_localization', 'localization',
-#         # [('all', 'none')],
-#         [(True, 'argentina')],
-#         table='res_company', write='sql')
