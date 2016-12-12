@@ -64,7 +64,9 @@ class account_check(models.Model):
 
     name = fields.Char(
         compute='_get_name',
-        string=_('Number')
+        string=_('Number'),
+        # we store it to make migration easier
+        store=True,
     )
     number = fields.Integer(
         _('Number'),
@@ -232,9 +234,14 @@ class account_check(models.Model):
         readonly=True,
         related='voucher_id.journal_id.currency',
     )
+    # to make migration easier
     vat = fields.Char(
+        related='owner_vat',
+    )
+    owner_vat = fields.Char(
         # TODO rename to Owner VAT
         'Owner Vat',
+        oldname='vat',
         readonly=True,
         states={'draft': [('readonly', False)]}
     )

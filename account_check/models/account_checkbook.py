@@ -16,6 +16,7 @@ class account_checkbook(models.Model):
     _inherit = ['mail.thread']
 
     @api.one
+    @api.depends('issue_check_ids.number', 'range_from')
     def _get_next_check_number(self):
         next_number = self.range_from
         check_numbers = [
@@ -58,7 +59,9 @@ class account_checkbook(models.Model):
         states={'draft': [('readonly', False)]})
     next_check_number = fields.Char(
         compute='_get_next_check_number',
-        string=_('Next Check Number'),)
+        string=_('Next Check Number'),
+        # we store it to make upgrade to v9 easier
+        store=True,)
     padding = fields.Integer(
         'Number Padding',
         default=8,
