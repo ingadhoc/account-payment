@@ -24,6 +24,7 @@ class AccountCheckOperation(models.Model):
     )
     check_id = fields.Many2one(
         'account.check',
+        'Check',
         required=True,
         ondelete='cascade'
     )
@@ -236,6 +237,7 @@ class AccountCheck(models.Model):
     )
     journal_id = fields.Many2one(
         'account.journal',
+        string='Journal',
         required=True,
         # related='move_line_id.journal_id',
         # store=True,
