@@ -13,6 +13,64 @@ class AccountPayment(models.Model):
         'account.payment.method',
         compute='_compute_payment_methods'
     )
+    journal_ids = fields.Many2many(
+        'account.journal',
+        compute='_compute_journals'
+    )
+    # journal_at_least_type = fields.Char(
+    #     compute='_compute_journal_at_least_type'
+    # )
+    destination_journal_ids = fields.Many2many(
+        'account.journal',
+        compute='_compute_destination_journals'
+    )
+
+    @api.multi
+    @api.depends(
+        # 'payment_type',
+        'journal_id',
+    )
+    def _compute_destination_journals(self):
+        for rec in self:
+            domain = [
+                ('type', 'in', ('bank', 'cash')),
+                ('at_least_one_inbound', '=', True),
+                ('company_id', '=', rec.journal_id.company_id.id),
+            ]
+            rec.destination_journal_ids = rec.journal_ids.search(domain)
+
+    # @api.multi
+    # @api.depends(
+    #     'payment_type',
+    # )
+    # def _compute_journal_at_least_type(self):
+    #     for rec in self:
+    #         if rec.payment_type == 'inbound':
+    #             journal_at_least_type = 'at_least_one_inbound'
+    #         else:
+    #             journal_at_least_type = 'at_least_one_outbound'
+    #         rec.journal_at_least_type = journal_at_least_type
+
+    @api.multi
+    def get_journals_domain(self):
+        """
+        We get domain here so it can be inherited
+        """
+        self.ensure_one()
+        domain = [('type', 'in', ('bank', 'cash'))]
+        if self.payment_type == 'inbound':
+            domain.append(('at_least_one_inbound', '=', True))
+        else:
+            domain.append(('at_least_one_outbound', '=', True))
+        return domain
+
+    @api.multi
+    @api.depends(
+        'payment_type',
+    )
+    def _compute_journals(self):
+        for rec in self:
+            rec.journal_ids = rec.journal_ids.search(rec.get_journals_domain())
 
     @api.multi
     @api.depends(
@@ -75,14 +133,14 @@ class AccountPayment(models.Model):
                 self.journal_id.outbound_payment_method_ids)
             self.payment_method_id = (
                 payment_methods and payment_methods[0] or False)
-            # Set payment method domain
-            # (restrict to methods enabled for the journal and to selected
-            # payment type)
-            # payment_type = self.payment_type in (
-            #     'outbound', 'transfer') and 'outbound' or 'inbound'
-            # return {
-            #     'domain': {
-            #         'payment_method_id': [
-            #             ('payment_type', '=', payment_type),
-            #             ('id', 'in', payment_methods.ids)]}}
-        return {}
+        #     # Set payment method domain
+        #     # (restrict to methods enabled for the journal and to selected
+        #     # payment type)
+        #     payment_type = self.payment_type in (
+        #         'outbound', 'transfer') and 'outbound' or 'inbound'
+        #     return {
+        #         'domain': {
+        #             'payment_method_id': [
+        #                 ('payment_type', '=', payment_type),
+        #                 ('id', 'in', payment_methods.ids)]}}
+        # return {}

@@ -14,6 +14,8 @@ class AccountPayment(models.Model):
         'Payment Group',
         ondelete='cascade',
     )
+    # we add this field so company can be send in context when adding payments
+    # before payment group is saved
     payment_group_company_id = fields.Many2one(
         related='payment_group_id.company_id')
     # we make a copy without transfer option, we try with related but it
@@ -41,22 +43,19 @@ class AccountPayment(models.Model):
                 continue
             rec.payment_type_copy = rec.payment_type
 
+    @api.multi
+    def get_journals_domain(self):
+        domain = super(AccountPayment, self).get_journals_domain()
+        # if self._context.get('payment_group'):
+        if self.payment_group_company_id:
+            domain.append(
+                ('company_id', '=', self.payment_group_company_id.id))
+        return domain
+
     @api.onchange('payment_type')
     def _onchange_payment_type(self):
         """
         we disable change of partner_type if we came from a payment_group
         """
-        if self._context.get('payment_group'):
-            # Set payment method domain
-            res = self._onchange_journal()
-            if not res.get('domain', {}):
-                res['domain'] = {}
-            res['domain']['journal_id'] = self.payment_type == 'inbound' and [
-                ('at_least_one_inbound', '=', True),
-                ('company_id', '=', self.payment_group_company_id.id)] or [
-                ('at_least_one_outbound', '=', True),
-                ('company_id', '=', self.payment_group_company_id.id)]
-            res['domain']['journal_id'].append(
-                ('type', 'in', ('bank', 'cash')))
-            return res
-        return super(AccountPayment, self)._onchange_payment_type()
+        if not self._context.get('payment_group'):
+            return super(AccountPayment, self)._onchange_payment_type()

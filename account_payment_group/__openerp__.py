@@ -16,6 +16,7 @@
     },
     "depends": [
         "account_cancel",
+        "account_payment_fix",  # for fixes related to domains on payments
         # "account",
     ],
     "data": [

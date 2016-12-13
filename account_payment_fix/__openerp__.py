@@ -14,9 +14,10 @@
     'description': '''
 Account Payment Fix
 ===================
-Fix domains for payment method and partner on payment view so that is not
-loosed when you enter an already created payment.
+Fix domains for payment method, journal and partner on payment view so that is
+not loosed when you enter an already created payment.
 It also fix available payment methods when you change several times the journal
+It also restrict destination journal selection if available inbound methods
 ''',
     'installable': True,
     'name': 'Account Payment Fix',

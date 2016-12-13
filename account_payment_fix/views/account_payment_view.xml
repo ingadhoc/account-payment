@@ -8,7 +8,16 @@
             <field name="arch" type="xml">
                 <form>
                     <field name="payment_method_ids"/>
+                    <field name="journal_ids"/>
+                    <field name="destination_journal_ids"/>
+                    <!-- <field name="payment_method_ids" invisible="1"/> -->
                 </form>
+                <field name="journal_id" position="attributes">
+                    <attribute name="domain">[('id', 'in', journal_ids and journal_ids[0][2] or [])]</attribute>
+                </field>
+                <field name="destination_journal_id" position="attributes">
+                    <attribute name="domain">[('id', 'in', destination_journal_ids and destination_journal_ids[0][2] or [])]</attribute>
+                </field>
                 <field name="payment_method_id" position="attributes">
                     <attribute name="domain">[('id', 'in', payment_method_ids and payment_method_ids[0][2] or [])]</attribute>
                 </field>
