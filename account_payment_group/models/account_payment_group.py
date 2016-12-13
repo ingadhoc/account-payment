@@ -393,6 +393,9 @@ class AccountPaymentGroup(models.Model):
         # no hace falta
         if self._context.get('pop_up'):
             return
+        # not sure why but state field is false on payments so they can
+        # not be unliked, this fix that
+        self.invalidate_cache(['payment_ids'])
         self.payment_ids.unlink()
         self.add_all()
         # if self.payment_subtype == 'double_validation':
