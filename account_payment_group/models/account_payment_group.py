@@ -110,15 +110,17 @@ class AccountPaymentGroup(models.Model):
                     'payment_group_matched_amount'))
             rec.unmatched_amount = rec.payments_amount - rec.matched_amount
 
+    selected_finacial_debt = fields.Monetary(
+        string='Selected Financial Debt',
+        compute='_compute_selected_debt',
+    )
     selected_debt = fields.Monetary(
-        readonly=True,
         # string='To Pay lines Amount',
         string='Selected Debt',
         compute='_compute_selected_debt',
     )
     # this field is to be used by others
     selected_debt_untaxed = fields.Monetary(
-        readonly=True,
         # string='To Pay lines Amount',
         string='Selected Debt Untaxed',
         compute='_compute_selected_debt',
@@ -316,15 +318,18 @@ class AccountPaymentGroup(models.Model):
             rec.payment_difference = rec.to_pay_amount - rec.payments_amount
 
     @api.multi
-    @api.depends('payment_ids')
+    @api.depends('payment_ids.amount_company_currency')
     def _compute_payments_amount(self):
         for rec in self:
-            payments_amount = sum([
-                x.payment_type == 'inbound' and x.amount or -x.amount for
-                x in rec.payment_ids])
-            rec.payments_amount = (
-                rec.partner_type == 'supplier' and
-                -payments_amount or payments_amount)
+            rec.payments_amount = sum(rec.payment_ids.mapped(
+                'amount_company_currency'))
+            # payments_amount = sum([
+            #     x.payment_type == 'inbound' and
+            #     x.amount_company_currency or -x.amount_company_currency for
+            #     x in rec.payment_ids])
+            # rec.payments_amount = (
+            #     rec.partner_type == 'supplier' and
+            #     -payments_amount or payments_amount)
 
     @api.one
     # @api.onchange(
@@ -344,38 +349,52 @@ class AccountPaymentGroup(models.Model):
     # )
     # def set_selected_debt(self):
     def _compute_selected_debt(self):
-        # we dont make it computed because we want to store value.
-        # TODO check if odoo implement this kind of hybrid field
-        payment_currency = self.currency_id or self.company_id.currency_id
+        # # we dont make it computed because we want to store value.
+        # # TODO check if odoo implement this kind of hybrid field
+        # payment_currency = self.currency_id or self.company_id.currency_id
 
-        total_untaxed = total = 0
-        for rml in self.to_pay_move_line_ids:
+        # total_untaxed = total = 0
+        # for rml in self.to_pay_move_line_ids:
+        #     # factor for total_untaxed
+        #     invoice = rml.invoice_id
+        #     factor = invoice and invoice._get_tax_factor() or 1.0
+
+        #     # si tiene moneda y es distinta convertimos el monto de moneda
+        #     # si tiene moneda y es igual llevamos el monto de moneda
+        #     # si no tiene moneda y es distinta convertimos el monto comun
+        #     # si no tiene moneda y es igual llevamos el monto comun
+        #     if rml.currency_id:
+        #         if rml.currency_id != payment_currency:
+        #             line_amount = rml.currency_id.with_context(
+        #                 date=self.payment_date).compute(
+        #                 rml.amount_residual_currency, payment_currency)
+        #         else:
+        #             line_amount = rml.amount_residual_currency
+        #     else:
+        #         if self.company_id.currency_id != payment_currency:
+        #             line_amount = self.company_id.currency_id.with_context(
+        #                 date=self.payment_date).compute(
+        #                 rml.amount_residual, payment_currency)
+        #         else:
+        #             line_amount = rml.amount_residual
+        #     total += line_amount
+        #     total_untaxed += line_amount * factor
+        # self.selected_debt = abs(total)
+        # self.selected_debt_untaxed = abs(total_untaxed)
+        selected_finacial_debt = 0.0
+        selected_debt = 0.0
+        selected_debt_untaxed = 0.0
+        for line in self.to_pay_move_line_ids:
+            selected_finacial_debt += line.financial_amount_residual
+            selected_debt += line.amount_residual
             # factor for total_untaxed
-            invoice = rml.invoice_id
+            invoice = line.invoice_id
             factor = invoice and invoice._get_tax_factor() or 1.0
-
-            # si tiene moneda y es distinta convertimos el monto de moneda
-            # si tiene moneda y es igual llevamos el monto de moneda
-            # si no tiene moneda y es distinta convertimos el monto comun
-            # si no tiene moneda y es igual llevamos el monto comun
-            if rml.currency_id:
-                if rml.currency_id != payment_currency:
-                    line_amount = rml.currency_id.with_context(
-                        date=self.payment_date).compute(
-                        rml.amount_residual_currency, payment_currency)
-                else:
-                    line_amount = rml.amount_residual_currency
-            else:
-                if self.company_id.currency_id != payment_currency:
-                    line_amount = self.company_id.currency_id.with_context(
-                        date=self.payment_date).compute(
-                        rml.amount_residual, payment_currency)
-                else:
-                    line_amount = rml.amount_residual
-            total += line_amount
-            total_untaxed += line_amount * factor
-        self.selected_debt = abs(total)
-        self.selected_debt_untaxed = abs(total_untaxed)
+            selected_debt_untaxed += line.amount_residual * factor
+        sign = self.partner_type == 'supplier' and -1.0 or 1.0
+        self.selected_finacial_debt = selected_finacial_debt * sign
+        self.selected_debt = selected_debt * sign
+        self.selected_debt_untaxed = selected_debt_untaxed * sign
 
     @api.multi
     @api.depends(

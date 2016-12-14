@@ -37,7 +37,9 @@
             <field name="name"/>
             <field name="journal_id"/>
             <field name="payment_method_id"/>
-            <field name="amount" sum="Total"/>
+            <!-- sum de este amount no tiene sentido por que puede ser distintas monedas -->
+            <field name="amount"/>
+            <field name="amount_company_currency" sum="Total"/>
             <field name="state"/>
             <field name="currency_id" invisible="1"/>
             <field name="partner_type" invisible="1"/>
@@ -78,9 +80,9 @@
                 <attribute name="invisible">1</attribute>
             </button>
 
-            <!-- <field name="payment_type" position="after">
-                <field name="payment_type_copy" widget="radio" attrs="{'readonly': [('state', '!=', 'draft')]}" invisible="not context.get('payment_group')" groups="account_payment_group.group_choose_payment_type"/>
-            </field> -->
+            <field name="payment_type" position="after">
+                <field name="payment_type_copy" widget="radio" attrs="{'readonly': [('state', '!=', 'draft')]}" groups="account_payment_group.group_choose_payment_type"/>
+            </field>
 
             <field name="payment_type" position="attributes">
                 <!-- comes from payment_group and from context on transfers -->

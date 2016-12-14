@@ -23,11 +23,13 @@
             <field name="amount_residual" sum="Total" invisible="context.get('matched_lines')"/>
             <field name="payment_group_matched_amount" string="Paid Amount" sum="Total" invisible="not context.get('matched_lines')"/>
             <!-- TODO si activamos este monto ver si queremos poner la currency, probamos el widget pero no anduvo -->
-            <!-- <field name="amount_residual_currency" groups="base.group_multi_currency"/> -->
+            <field name="amount_currency" groups="base.group_multi_currency"/>
+            <field name="amount_residual_currency" groups="base.group_multi_currency" invisible="context.get('matched_lines')"/>
+            <field name="financial_amount_residual" sum="Total" groups="account_debt_management.account_use_financial_amounts" invisible="context.get('matched_lines')"/>
             <!-- <field name="debit" sum="Total Debit"/> -->
             <!-- <field name="credit" sum="Total Credit"/> -->
             <!-- <field name="amount_currency" readonly="True" groups="base.group_multi_currency"/> -->
-            <field name="currency_id" readonly="True" invisible="1" />
+            <field name="currency_id" invisible="1"/>
             <field name="company_currency_id" invisible="1"/>
             <field name="company_id" invisible="1"/>
             <field name="invoice_id" invisible="1"/>

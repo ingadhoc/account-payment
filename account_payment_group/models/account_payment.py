@@ -26,6 +26,30 @@ class AccountPayment(models.Model):
         inverse='_inverse_payment_type_copy',
         string='Payment Type'
     )
+    amount_company_currency = fields.Monetary(
+        string='Payment Amount on Company Currency',
+        compute='_compute_amount_company_currency',
+    )
+
+    @api.one
+    @api.depends('amount', 'currency_id', 'company_id.currency_id')
+    def _compute_amount_company_currency(self):
+        payment_currency = self.currency_id
+        company_currency = self.company_id.currency_id
+        if payment_currency and payment_currency != company_currency:
+            amount_company_currency = self.currency_id.with_context(
+                date=self.payment_date).compute(
+                    self.amount, self.company_id.currency_id)
+        else:
+            amount_company_currency = self.amount
+        sign = 1.0
+        if (
+                (self.partner_type == 'supplier' and
+                    self.payment_type == self.payment_type == 'inbound') or
+                (self.partner_type == 'customer' and
+                    self.payment_type == self.payment_type == 'outbound')):
+            sign = -1.0
+        self.amount_company_currency = amount_company_currency * sign
 
     @api.multi
     @api.onchange('payment_type_copy')
