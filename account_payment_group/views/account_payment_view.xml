@@ -24,6 +24,27 @@
     <field name="view_id" ref="account.view_account_payment_tree"/>
 </record>
 
+<!--  -->
+
+<!-- view for payments from payment group, we need edit = true and create = true, we also clean some fields, we could also make and inherited view -->
+<record id="view_account_payment_from_group_tree" model="ir.ui.view">
+    <field name="name">account.payment.tree</field>
+    <field name="model">account.payment</field>
+    <field name="arch" type="xml">
+        <tree>
+        <!-- <tree decoration-info="state=='draft'" decoration-muted="state=='reconciled'"> -->
+            <!-- <field name="payment_date"/> -->
+            <field name="name"/>
+            <field name="journal_id"/>
+            <field name="payment_method_id"/>
+            <field name="amount" sum="Total"/>
+            <field name="state"/>
+            <field name="currency_id" invisible="1"/>
+            <field name="partner_type" invisible="1"/>
+        </tree>
+    </field>
+</record>
+
 <!-- default payment views (we disable creation and are not used for transfers) -->
     <record id="view_account_payment_form" model="ir.ui.view">
         <field name="name">account.payment.form</field>
@@ -48,6 +69,10 @@
             <button name="post" position="attributes">
                 <!-- <attribute name="attrs">{'invisible': [('state', '!=', 'draft'), ('payment_type', '!=', 'transfer')]}</attribute> -->
                 <!-- <attribute name="states"></attribute> -->
+                <attribute name="invisible">1</attribute>
+            </button>
+             
+            <button name="cancel" position="attributes">
                 <attribute name="invisible">1</attribute>
             </button>
 
@@ -78,29 +103,6 @@
         </field>
     </record>
 
-    <!-- view for payments from payment group (TODO 
-    BORRRRRRRRRRRRRRRRRR
-    aaaaaaaaaaaaaaaaaaa) -->
-    <record id="view_account_payment_from_group_tree" model="ir.ui.view">
-        <field name="name">account.payment.tree</field>
-        <field name="model">account.payment</field>
-        <field name="arch" type="xml">
-            <!-- la modificamos para que sea editable y menos campos -->
-            <tree decoration-info="state=='draft'" decoration-muted="state=='reconciled'">
-                <!-- <field name="payment_date"/> -->
-                <field name="name"/>
-                <field name="journal_id"/>
-                <field name="payment_method_id"/>
-                <!-- <field name="partner_id" string="Customer"/> -->
-                <field name="amount" sum="Total"/>
-                <field name="state"/>
-                <!-- <field name="company_id" groups="base.group_multi_company"/> -->
-                <field name="currency_id" invisible="1"/>
-                <field name="partner_type" invisible="1"/>
-            </tree>
-        </field>
-    </record>
-
     <!-- disable create on paymen tree view -->
     <record id="view_account_payment_tree" model="ir.ui.view">
         <field name="name">account.payment.transfer.tree</field>
@@ -127,9 +129,14 @@
                 <attribute name="create">true</attribute>
                 <attribute name="edit">true</attribute>
             </form>
-            <field name="payment_type" position="attributes">
-                <attribute name="invisible">1</attribute>
-            </field>
+
+            <button name="post" position="attributes">
+                <attribute name="invisible">0</attribute>
+            </button>
+             
+            <button name="cancel" position="attributes">
+                <attribute name="invisible">0</attribute>
+            </button>
         </field>
     </record>
 

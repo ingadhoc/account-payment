@@ -144,7 +144,7 @@
                         <button name="remove_all" string="Remove All" states="draft" type="object"/>
                         <button name="%(action_account_payment_group_invoice_wizard)d" string="+ Debit Note" states="draft" type="action"/>
                         <button name="%(action_account_payment_group_invoice_wizard)d" string="+ Credit Note" states="draft" context="{'refund': True}" type="action"/>
-                        <field name="to_pay_move_line_ids" context="{'tree_view_ref': 'account_payment_group.view_account_payment_from_group_tree'}"/>
+                        <field name="to_pay_move_line_ids" context="{'tree_view_ref': 'account_payment_group.view_move_line_tree'}"/>
                     </page>
                     <!-- no las pudimos hacer invisibles porque nos da error al venir de una factura y querer hacer las to pay lines tmb invisibles. lo bueno de hacerlas invisibles era que al confirmar se pasaba a las payment lines automaticamente -->
                     <page string="Payment Lines" attrs="{'invisible': [('payment_subtype', '=', 'double_validation'), ('state', '=', 'draft')]}">
@@ -162,10 +162,10 @@
                         <button name="remove_all" string="Remove All" states="draft" type="object"/>
                         <button name="%(action_account_payment_group_invoice_wizard)d" string="+ Debit Note" states="draft" type="action" context="{'internal_type': 'debit_note'}"/>
                         <button name="%(action_account_payment_group_invoice_wizard)d" string="+ Credit Note" states="draft" context="{'refund': True}" type="action"/>
-                        <field name="debt_move_line_ids" context="{'tree_view_ref': 'account_payment_group.view_account_payment_from_group_tree'}"/>
+                        <field name="debt_move_line_ids" context="{'tree_view_ref': 'account_payment_group.view_move_line_tree'}"/>
                     </page>
                     <page string="Paid" states="posted">
-                        <field name="matched_move_line_ids" context="{'payment_group_id': id, 'matched_lines': True, 'tree_view_ref': 'account_payment_group.view_account_payment_from_group_tree'}"/>
+                        <field name="matched_move_line_ids" context="{'payment_group_id': id, 'matched_lines': True, 'tree_view_ref': 'account_payment_group.view_move_line_tree'}"/>
                     </page>
                     <page string="Notes">
                         <field name="notes"/>
