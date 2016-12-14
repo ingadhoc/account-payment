@@ -124,8 +124,7 @@
     <record id="view_account_payment_transfer_form" model="ir.ui.view">
         <field name="name">account.payment.transfer.form</field>
         <field name="model">account.payment</field>
-        <!-- because of cancel button -->
-        <field name="inherit_id" ref="account_cancel.payment_cancel_form_inherit"/>
+        <field name="inherit_id" ref="view_account_payment_form"/>
         <!-- <field name="inherit_id" ref="account.view_account_payment_form"/> -->
         <field name="priority">90</field>
         <field name="mode">primary</field>
@@ -135,6 +134,8 @@
                 <attribute name="create">true</attribute>
                 <attribute name="edit">true</attribute>
             </form>
+
+            <field name="payment_type_copy" position="replace"/>
 
             <button name="post" position="attributes">
                 <attribute name="invisible">0</attribute>
