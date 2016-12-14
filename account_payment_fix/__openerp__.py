@@ -18,6 +18,7 @@ Fix domains for payment method, journal and partner on payment view so that is
 not loosed when you enter an already created payment.
 It also fix available payment methods when you change several times the journal
 It also restrict destination journal selection if available inbound methods
+We also recreate the menu "Bank and Cash"
 ''',
     'installable': True,
     'name': 'Account Payment Fix',

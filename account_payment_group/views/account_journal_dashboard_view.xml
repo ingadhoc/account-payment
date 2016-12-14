@@ -1,0 +1,16 @@
+<odoo>
+    <record id="account_journal_dashboard_kanban_view" model="ir.ui.view">
+        <field name="name">account.journal.dashboard.kanban</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.account_journal_dashboard_kanban_view"/>
+        <field name="arch" type="xml">
+            <!-- we change labels beacause now shou can send or receive from here, you need to create a payment group -->
+            <a name="open_spend_money" position="replace">
+                <a type="object" name="open_spend_money">Sended Money</a>
+            </a>
+            <a name="open_collect_money" position="replace">
+                <a type="object" name="open_collect_money">Received Money</a>
+            </a>
+        </field>
+    </record>
+</odoo>

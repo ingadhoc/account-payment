@@ -29,6 +29,7 @@
         'views/account_payment_group_view.xml',
         'views/account_invoice_view.xml',
         'views/res_company_view.xml',
+        'views/account_journal_dashboard_view.xml',
         # "views/assets.xml",
         # "views/report_name.xml",
         # "views/res_partner_view.xml",

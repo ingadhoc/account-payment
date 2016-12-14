@@ -25,5 +25,14 @@
                 </field>
             </field>
         </record>
+
+<record id="account.menu_finance_entries" model="ir.ui.menu">
+    <field name="sequence" eval="5"/>
+</record>
+<record id="account.menu_finance_reports" model="ir.ui.menu">
+    <field name="sequence" eval="6"/>
+</record>
+<menuitem id="account.menu_finance_bank_and_cash" parent="account.menu_finance" sequence="4" groups="account.group_account_user" name="Bank and Cash"/>
+
     </data>
 </openerp>

@@ -2,8 +2,8 @@
 # © 2016 ADHOC SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from openerp import models, fields, api
-# from openerp.exceptions import UserError, ValidationError
+from openerp import models, fields, api, _
+from openerp.exceptions import ValidationError
 
 
 class AccountPayment(models.Model):
@@ -59,3 +59,16 @@ class AccountPayment(models.Model):
         """
         if not self._context.get('payment_group'):
             return super(AccountPayment, self)._onchange_payment_type()
+
+    @api.multi
+    @api.constrains('payment_group_id', 'payment_type')
+    def check_payment_group(self):
+        for rec in self:
+            if rec.payment_type == 'transfer':
+                if rec.payment_group_id:
+                    raise ValidationError(_(
+                        'Payments must be created from payments groups'))
+            else:
+                if not rec.payment_group_id:
+                    raise ValidationError(_(
+                        'Payments must be created from payments groups'))
