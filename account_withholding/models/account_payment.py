@@ -45,6 +45,7 @@ class AccountPayment(models.Model):
             if account:
                 vals['account_id'] = account.id
             vals['name'] = self.withholding_number or '/'
+            vals['tax_line_id'] = self.tax_withholding_id.id
             # if not account:
             #     raise UserError(_(
             #         'Accounts not configured on tax %s' % (
