@@ -49,7 +49,9 @@
     <record id="view_account_payment_form" model="ir.ui.view">
         <field name="name">account.payment.form</field>
         <field name="model">account.payment</field>
-        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <!-- because of cancel button -->
+        <field name="inherit_id" ref="account_cancel.payment_cancel_form_inherit"/>
+        <!-- <field name="inherit_id" ref="account.view_account_payment_form"/> -->
         <field name="arch" type="xml">
             <form position="attributes">
                 <attribute name="create">false</attribute>
@@ -120,7 +122,9 @@
     <record id="view_account_payment_transfer_form" model="ir.ui.view">
         <field name="name">account.payment.transfer.form</field>
         <field name="model">account.payment</field>
-        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <!-- because of cancel button -->
+        <field name="inherit_id" ref="account_cancel.payment_cancel_form_inherit"/>
+        <!-- <field name="inherit_id" ref="account.view_account_payment_form"/> -->
         <field name="priority">90</field>
         <field name="mode">primary</field>
         <field name="arch" type="xml">
