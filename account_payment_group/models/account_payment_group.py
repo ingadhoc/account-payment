@@ -58,6 +58,8 @@ class AccountPaymentGroup(models.Model):
         string='Currency',
         required=True,
         default=lambda self: self.env.user.company_id.currency_id,
+        readonly=True,
+        states={'draft': [('readonly', False)]},
     )
     payment_date = fields.Date(
         string='Payment Date',

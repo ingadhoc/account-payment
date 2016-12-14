@@ -5,41 +5,6 @@
 <openerp>
 <data>
 
-<record id="view_account_payment_form" model="ir.ui.view">
-    <field name="name">account.payment.form</field>
-    <field name="model">account.payment</field>
-    <field name="inherit_id" ref="account.view_account_payment_form"/>
-    <field name="arch" type="xml">
-        <form>
-            <field name="payment_group_company_id" invisible="1"/>
-        </form>
-        <field name="journal_id" position="attributes">
-            <attribute name="domain">[('company_id', '=', payment_group_company_id)]</attribute>
-        </field>
-        <button name="post" position="attributes">
-            <attribute name="invisible">context.get('payment_group')</attribute>
-        </button>
-        <field name="payment_type" position="after">
-            <field name="payment_type_copy" widget="radio" attrs="{'readonly': [('state', '!=', 'draft')]}" invisible="not context.get('payment_group')" groups="account_payment_group.group_choose_payment_type"/>
-        </field>
-        <field name="payment_type" position="attributes">
-            <attribute name="invisible">context.get('payment_group')</attribute>
-        </field>
-        <field name="partner_type" position="attributes">
-            <attribute name="invisible">context.get('payment_group')</attribute>
-        </field>
-        <field name="partner_id" position="attributes">
-            <attribute name="invisible">context.get('payment_group')</attribute>
-        </field>
-        <!-- <field name="payment_date" position="attributes">
-            <attribute name="invisible">context.get('payment_group')</attribute>
-        </field> -->
-        <field name="state" position="attributes">
-            <attribute name="invisible">context.get('payment_group')</attribute>
-        </field>
-    </field>
-</record>
-
 <!-- hide default payments menus -->
 <record id="account.menu_action_account_payments_receivable" model="ir.ui.menu">
     <field eval="[(6, 0, [ref('account_see_payment_menu')])]" name="groups_id"/>
@@ -49,25 +14,199 @@
     <field eval="[(6, 0, [ref('account_see_payment_menu')])]" name="groups_id"/>
 </record>
 
-<record id="view_account_payment_tree" model="ir.ui.view">
+<!-- we dont want to use supplier tree view because is the same as default tree view -->
+<record id="account.view_account_supplier_payment_tree" model="ir.ui.view">
+    <field name="priority">90</field>
+</record>
+
+<!-- change tree view of supplier action -->
+<record id="account.action_account_payments_payable" model="ir.actions.act_window">
+    <field name="view_id" ref="account.view_account_payment_tree"/>
+</record>
+
+<!--  -->
+
+<!-- view for payments from payment group, we need edit = true and create = true, we also clean some fields, we could also make and inherited view -->
+<record id="view_account_payment_from_group_tree" model="ir.ui.view">
     <field name="name">account.payment.tree</field>
     <field name="model">account.payment</field>
     <field name="arch" type="xml">
-        <!-- la modificamos para que sea editable y menos campos -->
-        <tree decoration-info="state=='draft'" decoration-muted="state=='reconciled'">
+        <tree>
+        <!-- <tree decoration-info="state=='draft'" decoration-muted="state=='reconciled'"> -->
             <!-- <field name="payment_date"/> -->
             <field name="name"/>
             <field name="journal_id"/>
             <field name="payment_method_id"/>
-            <!-- <field name="partner_id" string="Customer"/> -->
             <field name="amount" sum="Total"/>
             <field name="state"/>
-            <!-- <field name="company_id" groups="base.group_multi_company"/> -->
             <field name="currency_id" invisible="1"/>
             <field name="partner_type" invisible="1"/>
         </tree>
     </field>
 </record>
 
+<!-- default payment views (we disable creation and are not used for transfers) -->
+    <record id="view_account_payment_form" model="ir.ui.view">
+        <field name="name">account.payment.form</field>
+        <field name="model">account.payment</field>
+        <!-- because of cancel button -->
+        <field name="inherit_id" ref="account_cancel.payment_cancel_form_inherit"/>
+        <!-- <field name="inherit_id" ref="account.view_account_payment_form"/> -->
+        <field name="arch" type="xml">
+            <form position="attributes">
+                <attribute name="create">false</attribute>
+                <attribute name="edit">false</attribute>
+            </form>
+            <form>
+                <field name="payment_group_company_id" invisible="1"/>
+            </form>
+            <!-- ahora lo hicimos con el fix -->
+            <!-- <field name="journal_id" position="attributes">
+                <attribute name="domain">[('company_id', '=', payment_group_company_id)]</attribute>
+            </field> -->
+
+            <!-- <button name="post" position="attributes">
+                <attribute name="invisible">context.get('payment_group')</attribute>
+            </button> -->
+            <button name="post" position="attributes">
+                <!-- <attribute name="attrs">{'invisible': [('state', '!=', 'draft'), ('payment_type', '!=', 'transfer')]}</attribute> -->
+                <!-- <attribute name="states"></attribute> -->
+                <attribute name="invisible">1</attribute>
+            </button>
+             
+            <button name="cancel" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </button>
+
+            <!-- <field name="payment_type" position="after">
+                <field name="payment_type_copy" widget="radio" attrs="{'readonly': [('state', '!=', 'draft')]}" invisible="not context.get('payment_group')" groups="account_payment_group.group_choose_payment_type"/>
+            </field> -->
+
+            <field name="payment_type" position="attributes">
+                <!-- comes from payment_group and from context on transfers -->
+                <attribute name="invisible">1</attribute>
+                <!-- <attribute name="invisible">context.get('payment_group')</attribute> -->
+            </field>
+
+            <field name="partner_type" position="attributes">
+                <!-- comes from payment_group and is not used on transfers -->
+                <attribute name="invisible">1</attribute>
+                <!-- <attribute name="invisible">context.get('payment_group')</attribute> -->
+            </field>
+            <field name="partner_id" position="attributes">
+                <!-- comes from payment_group and is not used on transfers -->
+                <attribute name="invisible">1</attribute>
+                <!-- <attribute name="invisible">context.get('payment_group')</attribute> -->
+            </field>
+
+            <!-- <field name="state" position="attributes">
+                <attribute name="invisible">context.get('payment_group')</attribute>
+            </field> -->
+        </field>
+    </record>
+
+    <!-- disable create on paymen tree view -->
+    <record id="view_account_payment_tree" model="ir.ui.view">
+        <field name="name">account.payment.transfer.tree</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_tree"/>
+        <field name="arch" type="xml">
+            <tree position="attributes">
+                <attribute name="create">false</attribute>
+            </tree>
+        </field>
+    </record>
+
+<!-- Transfers views -->
+
+    <record id="view_account_payment_transfer_form" model="ir.ui.view">
+        <field name="name">account.payment.transfer.form</field>
+        <field name="model">account.payment</field>
+        <!-- because of cancel button -->
+        <field name="inherit_id" ref="account_cancel.payment_cancel_form_inherit"/>
+        <!-- <field name="inherit_id" ref="account.view_account_payment_form"/> -->
+        <field name="priority">90</field>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <!-- we need to re enable this, we could not achive to inherit later than the modification for no transfers -->
+            <form position="attributes">
+                <attribute name="create">true</attribute>
+                <attribute name="edit">true</attribute>
+            </form>
+
+            <button name="post" position="attributes">
+                <attribute name="invisible">0</attribute>
+            </button>
+             
+            <button name="cancel" position="attributes">
+                <attribute name="invisible">0</attribute>
+            </button>
+        </field>
+    </record>
+
+    <record id="view_account_payment_transfer_tree" model="ir.ui.view">
+        <field name="name">account.payment.transfer.tree</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_tree"/>
+        <field name="priority">90</field>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <!-- we need to re enable this, we could not achive to inherit later than the modification for no transfers -->
+            <tree position="attributes">
+                <attribute name="create">true</attribute>
+            </tree>
+            <field name="partner_id" position="replace">
+                <field name="destination_journal_id"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_account_payment_transfer_search" model="ir.ui.view">
+        <field name="name">account.payment.transfer.search</field>
+        <field name="model">account.payment</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <search string="Transfers">
+                <field name="name" filter_domain="['|', ('name','ilike',self), ('communication','ilike',self)]" string="Description"/>
+                <separator/>
+                <field name="journal_id" />
+                <field name="destination_journal_id"/>
+                <field name="company_id" groups="base.group_multi_company" />
+                <separator/>
+                <filter string="Draft" domain="[('state','=','draft')]" name='state_draft'/>
+                <filter string="Posted" domain="[('state','=','posted')]" name='state_posted'/>
+                <filter string="Sent" domain="[('state','=','sent')]" name='state_sent'/>
+                <filter string="Reconciled" domain="[('state','=','reconciled')]"/>
+                <separator/>
+                <filter string="Journal" domain="[]" context="{'group_by': 'journal_id'}"/>
+                <filter string="Transfer To" domain="[]" context="{'group_by': 'destination_journal_id'}"/>
+                <filter string="Payment Method" domain="[]" context="{'group_by': 'payment_method_id'}"/>
+                <filter string="State" domain="[]" context="{'group_by': 'state'}"/>
+                <filter string="Currency" domain="[]" context="{'group_by': 'currency_id'}" groups="base.group_multi_currency"/>
+                <filter string="Company" domain="[]" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_account_payments_transfer" model="ir.actions.act_window">
+        <field name="name">Transfers</field>
+        <field name="res_model">account.payment</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form,graph</field>
+        <field name="context">{'default_payment_type': 'transfer'}</field>
+        <field name="domain">[('payment_type', '=', 'transfer')]</field>
+        <!-- <field name="view_id" ref="view_account_payment_transfer_tree"/> -->
+        <field name="search_view_id" ref="view_account_payment_transfer_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_account_payment_transfer_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_account_payment_transfer_form')})]"/>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+              Click to register a transfer between liquidity journals
+            </p>
+        </field>
+    </record>
+
+    <menuitem action="action_account_payments_transfer" id="menu_action_account_payments_transfer" parent="account.menu_finance_bank_and_cash" sequence="30" groups="account.group_account_user"/>
 </data>
 </openerp>

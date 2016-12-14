@@ -172,8 +172,8 @@
         <menuitem
             action="action_third_check"
             id="menu_third_check"
-            sequence="6"
-            parent="account.menu_finance_entries"/> 
+            sequence="40"
+            parent="account.menu_finance_bank_and_cash"/> 
 
         <!-- Issued Check Menu -->
         <record model="ir.actions.act_window" id="action_issue_check">
@@ -190,8 +190,8 @@
         <menuitem
             action="action_issue_check"
             id="menu_issue_check"
-            sequence="7"
-            parent="account.menu_finance_entries"/>   
+            sequence="50"
+            parent="account.menu_finance_bank_and_cash"/>   
 
     </data>
 </openerp>

@@ -28,7 +28,9 @@
     'images': [
     ],
     'depends': [
-        'account',
+        # 'account',
+        # for bank and cash menu and also for better usability
+        'account_payment_fix',
     ],
     'data': [
         'data/account_payment_method_data.xml',
