@@ -24,7 +24,7 @@ class AccountPayment(models.Model):
     #     copy=False,
     # )
     # TODO tal vez renombrar a check_ids
-    deposited_check_ids = fields.Many2many(
+    check_ids = fields.Many2many(
         'account.check',
         # 'account.move.line',
         # 'check_deposit_id',
@@ -43,18 +43,30 @@ class AccountPayment(models.Model):
         related='amount',
         readonly=True,
     )
+    # we add this field for better usability on issue checks and received
+    # checks. We keep m2m field for backward compatibility where we allow to
+    # use more than one check per payment
     check_id = fields.Many2one(
         'account.check',
+        compute='_compute_check',
         string='Check',
         # string='Payment Amount',
         # required=True
-        readonly=True,
-        copy=False,
     )
+
+    @api.multi
+    @api.depends('check_ids')
+    def _compute_check(self):
+        for rec in self:
+            # we only show checks for issue checks or received thid checks
+            # if len of checks is 1
+            if rec.payment_method_code in (
+                    'received_third_check',
+                    'issue_check',) and len(rec.check_ids) == 1:
+                rec.check_id = rec.check_ids[0].id
 
 # check fields, just to make it easy to load checks without need to create
 # them by a m2o record
-    # deposited_check_ids = fields.One2many(
     check_name = fields.Char(
         'Check Name',
         # required=True,
@@ -133,12 +145,12 @@ class AccountPayment(models.Model):
 
 # on change methods
 
-    # @api.constrains('deposited_check_ids')
-    @api.onchange('deposited_check_ids', 'payment_method_code')
+    # @api.constrains('check_ids')
+    @api.onchange('check_ids', 'payment_method_code')
     def onchange_checks(self):
         # we only overwrite if payment method is delivered
         if self.payment_method_code == 'delivered_third_check':
-            self.amount = sum(self.deposited_check_ids.mapped('amount'))
+            self.amount = sum(self.check_ids.mapped('amount'))
 
     # TODo activar
     @api.one
@@ -219,8 +231,8 @@ class AccountPayment(models.Model):
             #     # rec.check_id._add_operation('cancel')
             #     rec.check_id._del_operation()
             #     rec.check_id.unlink()
-            # elif rec.deposited_check_ids:
-            #     rec.deposited_check_ids._del_operation()
+            # elif rec.check_ids:
+            #     rec.check_ids._del_operation()
         return res
 
     @api.multi
@@ -243,7 +255,7 @@ class AccountPayment(models.Model):
             'currency_id': self.currency_id.id,
         }
         check = self.env['account.check'].create(check_vals)
-        self.check_id = check.id
+        self.check_ids = [(4, check.id, False)]
         check._add_operation(operation, self, self.partner_id)
         return check
 
@@ -269,7 +281,7 @@ class AccountPayment(models.Model):
             operation = 'holding'
             if cancel:
                 _logger.info('Cancel Receive Check')
-                rec.check_id._del_operation(operation)
+                rec.check_ids._del_operation(operation)
                 # rec.check_id.unlink()
                 return None
 
@@ -285,11 +297,11 @@ class AccountPayment(models.Model):
             operation = 'selled'
             if cancel:
                 _logger.info('Cancel Sell Check')
-                rec.deposited_check_ids._del_operation(operation)
+                rec.check_ids._del_operation(operation)
                 return None
 
             _logger.info('Sell Check')
-            rec.deposited_check_ids._add_operation(
+            rec.check_ids._add_operation(
                 operation, rec, False)
             vals['account_id'] = self.company_id._get_check_account(
                 'holding').id
@@ -300,11 +312,11 @@ class AccountPayment(models.Model):
             operation = 'deposited'
             if cancel:
                 _logger.info('Cancel Deposit Check')
-                rec.deposited_check_ids._del_operation(operation)
+                rec.check_ids._del_operation(operation)
                 return None
 
             _logger.info('Deposit Check')
-            rec.deposited_check_ids._add_operation(
+            rec.check_ids._add_operation(
                 operation, rec, False)
             vals['account_id'] = self.company_id._get_check_account(
                 'holding').id
@@ -315,11 +327,11 @@ class AccountPayment(models.Model):
             operation = 'delivered'
             if cancel:
                 _logger.info('Cancel Deliver Check')
-                rec.deposited_check_ids._del_operation(operation)
+                rec.check_ids._del_operation(operation)
                 return None
 
             _logger.info('Deliver Check')
-            rec.deposited_check_ids._add_operation(
+            rec.check_ids._add_operation(
                 operation, rec, rec.partner_id)
             vals['account_id'] = self.company_id._get_check_account(
                 'holding').id
@@ -330,7 +342,7 @@ class AccountPayment(models.Model):
             operation = 'handed'
             if cancel:
                 _logger.info('Cancel Hand Check')
-                rec.check_id._del_operation(operation)
+                rec.check_ids._del_operation(operation)
                 # rec.check_id.unlink()
                 return None
 
@@ -348,8 +360,8 @@ class AccountPayment(models.Model):
             operation = 'withdrawed'
             if cancel:
                 _logger.info('Cancel Withdrawal Check')
-                rec.check_id._del_operation(operation)
-                rec.check_id.unlink()
+                rec.check_ids._del_operation(operation)
+                rec.check_ids.unlink()
                 return None
 
             _logger.info('Hand Check')
@@ -600,19 +612,19 @@ class AccountPayment(models.Model):
     #         if not rec.check_type:
     #             continue
     #         if rec.payment_method_code == 'delivered_third_check':
-    #             if not rec.deposited_check_ids:
+    #             if not rec.check_ids:
     #                 raise UserError(_('No checks configured for deposit'))
     #             # liquidity_account = rec.journal_id.default_debit_account_id
     #             # liquidity_line = rec.move_line_ids.filtered(
     #             #     lambda x: x.account_id == liquidity_account)
-    #             # rec.deposited_check_ids.write({
+    #             # rec.check_ids.write({
     #             #     'deposit_move_line_id': liquidity_line.id})
     #             partner = rec.partner_id.browse()
     #             # if it is a transfer (Deposit) partner is not claned, so we
     #             # clean it here
     #             if rec.payment_type != 'transfer':
     #                 partner = rec.partner_id
-    #             rec.deposited_check_ids._add_operation(
+    #             rec.check_ids._add_operation(
     #                 # 'deposited', liquidity_line, liquidity_line.partner_id)
     #                 'deposited', rec, partner)
     #         else:

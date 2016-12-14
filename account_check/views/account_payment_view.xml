@@ -17,22 +17,22 @@
 
                 <!-- TODO hacer invisible si ('payment_type', '!=', 'transfer') -->
                 <field name='communication' position="after">
-                    <div colspan="2">
-                        <group string="Checks" name="check_data" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'delivered_third_check', 'issue_check'])]}">
-                            <!-- TODO podriamos simplificar los attrs invisibles ahora que tenemos el group -->
+                    <div colspan="2" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'delivered_third_check', 'issue_check'])]}">
+                        <group name="checks">
                             <field name="check_id" attrs="{'invisible': [('check_id', '=', False)]}"/>
                             <!-- no usamos el widget many2many_tags porque les interesa filtrar y buscar por montos y demas -->
-                            <field name="deposited_check_ids"
+                            <field name="check_ids"
                                 options="{'no_create': True}"
-                                nolabel="1"
                                 domain="[('journal_id', '=', journal_id), ('state', '=', 'holding'), ('type', '=', 'third_check')]"
-                                attrs="{'invisible': ['|', ('payment_method_code', '!=', 'delivered_third_check'), ('payment_type', 'not in', ['transfer', 'outbound'])], 'required': [('payment_method_code', '=', 'delivered_third_check'), ('payment_type', 'in', ['transfer', 'outbound'])]}">
-                                <tree>
+                                attrs="{'invisible': [('check_ids', '=', [(6, False, [])]), '|', ('payment_method_code', '!=', 'delivered_third_check'), ('payment_type', 'not in', ['transfer', 'outbound'])], 'required': [('payment_method_code', '=', 'delivered_third_check'), ('payment_type', 'in', ['transfer', 'outbound'])]}">
+                                <tree edit="false" create="false">
                                     <field name="name"/>
                                     <field name="payment_date"/>
                                     <field name="amount" sum="Total"/>
                                 </tree>
                             </field>
+                        </group>
+                        <group name="check_data" states='draft'>
                             <newline/>
                             <field name="checkbook_id" attrs="{'invisible': [('payment_method_code', 'not in', ['issue_check'])], 'required': [('payment_method_code', 'in', ['issue_check'])]}"/>
                             <field name="check_number" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])],  'readonly': ['|', ('state', '!=', 'draft'), ('payment_method_code', '=', 'issue_check')]}"/>
@@ -65,22 +65,6 @@
                 <div name="amount_div" position="attributes">
                     <attribute name="attrs">{'invisible': [('payment_method_code', '=', 'delivered_third_check')]}</attribute>
                 </div>
-                <field name="payment_method_code" position="after">
-<!--                     <field name="deposited_check_ids"
-                           widget="many2many_tags"
-                           options="{'no_create': True}"
-                           domain="[('journal_id', '=', journal_id), ('state', '=', 'holding'), ('type', '=', 'third_check')]"
-                           attrs="{'invisible': ['|', ('payment_method_code', '!=', 'delivered_third_check'), ('payment_type', 'not in', ['transfer', 'outbound'])], 'required': [('payment_method_code', '=', 'delivered_third_check'), ('payment_type', 'in', ['transfer', 'outbound'])]}"
-                            /> -->
-<!--                     <field name="delivered_check_ids"
-                           widget="many2many_tags"
-                           options="{'no_create': True}"
-                           domain="[('journal_id', '=', journal_id), ('state', '=', 'holding'), ('type', '=', 'third_check')]"
-                           attrs="{'invisible': ['|', ('payment_method_code', '!=', 'delivered_third_check'), ('payment_type', '!=', 'outbound')], 'required': [('payment_method_code', '=', 'delivered_third_check'), ('payment_type', '=', 'transfer')]}"
-                            /> -->
-                            <!-- context="{'currency': currency_id, -->
-                                <!-- 'journal_id': journal_id}" -->
-                </field>
             </field>
         </record>
 
@@ -91,7 +75,8 @@
             <field name="inherit_id" ref="account.view_account_payment_search"/>
             <field name="arch" type="xml">
                 <field name="name" position="after">
-                    <field name="check_id" filter_domain="['|', ('check_id','ilike',self), ('deposited_check_ids','ilike',self)]"/>
+                    <field name="check_ids"/>
+                    <!-- <field name="check_id" filter_domain="['|', ('check_id','ilike',self), ('check_ids','ilike',self)]"/> -->
                 </field>
             </field>
         </record>

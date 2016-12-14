@@ -210,7 +210,7 @@ msgid "Checkbooks"
 msgstr ""
 
 #. module: account_check
-#: model:ir.model.fields,field_description:account_check.field_account_payment_deposited_check_ids
+#: model:ir.model.fields,field_description:account_check.field_account_payment_check_ids
 #: model:ir.ui.view,arch_db:account_check.view_account_check_form
 #: model:ir.ui.view,arch_db:account_check.view_account_check_tree
 #: model:ir.ui.view,arch_db:account_check.view_account_payment_form_inherited
