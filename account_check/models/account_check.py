@@ -233,6 +233,8 @@ class account_check(models.Model):
         string='Currency',
         readonly=True,
         related='voucher_id.journal_id.currency',
+        # we store it for making migration easier
+        store=True,
     )
     # to make migration easier
     vat = fields.Char(
