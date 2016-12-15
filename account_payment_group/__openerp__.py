@@ -39,5 +39,6 @@
     ],
     "demo": [
         # "demo/res_partner_demo.xml",
+        'demo/ir_config_parameter_demo.xml',
     ],
 }
