@@ -308,8 +308,13 @@ class AccountCheck(models.Model):
             if rec.type == 'issue_check' and rec.checkbook_id.range_to:
                 if rec.number > rec.checkbook_id.range_to:
                     raise UserError(_(
-                        "Check number can't be greater than %s on checkbook %s"
-                    ) % (rec.checkbook_id.range_to, rec.checkbook_id.name))
+                        "Check number (%s) can't be greater than %s on "
+                        "checkbook %s (%s)") % (
+                        rec.number,
+                        rec.checkbook_id.range_to,
+                        rec.checkbook_id.name,
+                        rec.checkbook_id.id,
+                    ))
                 elif rec.number == rec.checkbook_id.range_to:
                     rec.checkbook_id.state = 'used'
         return False
