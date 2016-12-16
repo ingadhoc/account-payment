@@ -21,6 +21,14 @@
                         <group name="checks">
                             <field name="check_id" attrs="{'invisible': [('check_id', '=', False)]}"/>
                             <!-- no usamos el widget many2many_tags porque les interesa filtrar y buscar por montos y demas -->
+                            <!-- creamos un campo copy por compatibilidad con mig de v8 donde se podia mas de un cheque por payment, igualmente se podria unir todo en chekc_ids pero era medio complicada la consulta -->
+                            <field name="check_ids_copy" attrs="{'invisible': ['|', ('check_id', '!=', False), ('payment_method_code', 'not in', ['received_third_check', 'issue_check'])]}">
+                                <tree edit="false" create="false">
+                                    <field name="name"/>
+                                    <field name="payment_date"/>
+                                    <field name="amount" sum="Total"/>
+                                </tree>
+                            </field>
                             <field name="check_ids"
                                 options="{'no_create': True}"
                                 domain="[('journal_id', '=', journal_id), ('state', '=', 'holding'), ('type', '=', 'third_check')]"

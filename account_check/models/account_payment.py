@@ -33,6 +33,12 @@ class AccountPayment(models.Model):
         readonly=True,
         states={'draft': [('readonly', '=', False)]}
     )
+    # only for v8 comatibility where more than one check could be received
+    # or issued
+    check_ids_copy = fields.Many2many(
+        related='check_ids',
+        readonly=True,
+    )
     readonly_currency_id = fields.Many2one(
         related='currency_id',
         readonly=True,

@@ -68,8 +68,8 @@ class AccountPaymentGroup(models.Model):
         compute='_get_next_number',
         string='Next Number',
     )
-    display_name = fields.Char(
-        compute='_get_display_name',
+    name = fields.Char(
+        compute='_compute_name',
         string='Document Reference',
         store=True,
     )
@@ -111,20 +111,23 @@ class AccountPaymentGroup(models.Model):
         'document_number',
         'document_type_id.doc_code_prefix'
     )
-    def _get_display_name(self):
+    def _compute_name(self):
         """
         * If document number and document type, we show them
         * Else, we show name
         """
-        if (
-                self.state == 'posted' and self.document_number and
-                self.document_type_id):
-            display_name = ("%s%s" % (
-                self.document_type_id.doc_code_prefix or '',
-                self.document_number))
+        if self.state == 'posted':
+            if self.document_number and self.document_type_id:
+                name = ("%s%s" % (
+                    self.document_type_id.doc_code_prefix or '',
+                    self.document_number))
+            # for compatibility with v8 migration because receipbook
+            # was not required and we dont have a name
+            else:
+                name = ', '.join(self.payment_ids.mapped('name'))
         else:
-            display_name = _('Draft Payment')
-        self.display_name = display_name
+            name = _('Draft Payment')
+        self.name = name
 
     _sql_constraints = [
         ('name_uniq', 'unique(document_number, receiptbook_id)',

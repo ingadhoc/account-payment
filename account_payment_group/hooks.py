@@ -5,6 +5,8 @@ try:
     from openupgradelib.openupgrade_tools import table_exists
 except ImportError:
     table_exists = None
+import logging
+_logger = logging.getLogger(__name__)
 
 
 def post_init_hook(cr, registry):
@@ -15,9 +17,11 @@ def post_init_hook(cr, registry):
     :param openerp.modules.registry.RegistryManager registry:
         Database registry, using v7 api.
     """
+    _logger.info('running payment')
     payment_ids = registry['account.payment'].search(
         cr, 1, [('payment_type', '!=', 'transfer')])
     for payment in registry['account.payment'].browse(cr, 1, payment_ids):
+        _logger.info('creating payment group for payment %s' % payment.id)
         registry['account.payment.group'].create(cr, 1, {
             'company_id': payment.company_id.id,
             'partner_type': payment.partner_type,
