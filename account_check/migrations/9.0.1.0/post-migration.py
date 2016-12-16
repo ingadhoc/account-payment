@@ -204,6 +204,12 @@ def add_operations(env):
             payment = get_payment(env, voucher_id)
             if payment:
                 # payment = env['account.payment'].browse(voucher_id)
+                payment.write({
+                    'check_ids': [(4, check.id, False)],
+                    'payment_method_id': env.ref(
+                        'account_check.'
+                        'account_payment_method_received_third_check').id,
+                })
                 check._add_operation(
                     'holding', payment,
                     partner=payment.partner_id, date=payment.payment_date)
@@ -213,6 +219,12 @@ def add_operations(env):
             #     delivery_payment = env['account.payment'].browse(
             #         third_handed_voucher_id)
             if delivery_payment:
+                payment.write({
+                    'check_ids': [(4, check.id, False)],
+                    'payment_method_id': env.ref(
+                        'account_check.'
+                        'account_payment_method_delivered_third_check').id,
+                })
                 check._add_operation(
                     'delivered', delivery_payment,
                     partner=delivery_payment.partner_id,
@@ -227,6 +239,12 @@ def add_operations(env):
         elif check.type == 'issue_check':
             payment = get_payment(env, voucher_id)
             if payment:
+                payment.write({
+                    'check_ids': [(4, check.id, False)],
+                    'payment_method_id': env.ref(
+                        'account_check.'
+                        'account_payment_method_issue_check').id,
+                })
                 check._add_operation(
                     'handed', payment,
                     partner=payment.partner_id, date=payment.payment_date)
