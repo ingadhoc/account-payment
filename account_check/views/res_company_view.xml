@@ -7,9 +7,9 @@
             <field name="inherit_id" ref="base.view_company_form"/>
             <field name="arch" type="xml">
                 <group name="account_grp">
-                    <field name="rejected_check_account_id"/>
-                    <field name="deferred_check_account_id"/>
-                    <field name="holding_check_account_id"/>
+                    <field name="rejected_check_account_id" domain="[('company_id', '=', id)]"/>
+                    <field name="deferred_check_account_id" domain="[('company_id', '=', id)]"/>
+                    <field name="holding_check_account_id" domain="[('company_id', '=', id)]"/>
                 </group>
             </field>
         </record>

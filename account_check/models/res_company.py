@@ -49,5 +49,5 @@ class ResCompany(models.Model):
         if not account:
             raise UserError(_(
                 'No checks %s account defined for company %s'
-            ) % self.name)
+            ) % (type, self.name))
         return account

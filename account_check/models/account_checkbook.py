@@ -96,6 +96,8 @@ class AccountCheckbook(models.Model):
                 name = _('Deferred Checks')
             else:
                 name = _('Currents Checks')
+            if rec.range_to:
+                name += _(' up to %s') % rec.range_to
             rec.name = name
 
     @api.one

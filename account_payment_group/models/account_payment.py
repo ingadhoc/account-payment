@@ -14,6 +14,7 @@ class AccountPayment(models.Model):
         'account.payment.group',
         'Payment Group',
         ondelete='cascade',
+        readonly=True,
     )
     # we add this field so company can be send in context when adding payments
     # before payment group is saved
