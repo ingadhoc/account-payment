@@ -17,6 +17,8 @@ def post_init_hook(cr, registry):
     """
     payment_ids = registry['account.payment'].search(
         cr, 1, [('payment_type', '!=', 'transfer')])
+    # TODO improove this because it is too slow, perhups because of name
+    # computation
     for payment in registry['account.payment'].browse(cr, 1, payment_ids):
         payment.payment_group_id.write({
             'document_number': payment.document_number,

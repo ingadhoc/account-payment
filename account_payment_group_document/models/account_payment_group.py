@@ -104,7 +104,7 @@ class AccountPaymentGroup(models.Model):
                     seq_date = sequence._create_date_range_seq(dt)
                 payment.next_number = seq_date.number_next_actual
 
-    @api.one
+    @api.multi
     @api.depends(
         # 'move_name',
         'state',
@@ -116,29 +116,32 @@ class AccountPaymentGroup(models.Model):
         * If document number and document type, we show them
         * Else, we show name
         """
-        if self.state == 'posted':
-            if self.document_number and self.document_type_id:
-                name = ("%s%s" % (
-                    self.document_type_id.doc_code_prefix or '',
-                    self.document_number))
-            # for compatibility with v8 migration because receipbook
-            # was not required and we dont have a name
+        for rec in self:
+            _logger.info('Getting name for payment group %s' % rec.id)
+            if rec.state == 'posted':
+                if rec.document_number and rec.document_type_id:
+                    name = ("%s%s" % (
+                        rec.document_type_id.doc_code_prefix or '',
+                        rec.document_number))
+                # for compatibility with v8 migration because receipbook
+                # was not required and we dont have a name
+                else:
+                    name = ', '.join(rec.payment_ids.mapped('name'))
             else:
-                name = ', '.join(self.payment_ids.mapped('name'))
-        else:
-            name = _('Draft Payment')
-        self.name = name
+                name = _('Draft Payment')
+            rec.name = name
 
     _sql_constraints = [
         ('name_uniq', 'unique(document_number, receiptbook_id)',
             'Document number must be unique per receiptbook!')]
 
-    @api.one
+    @api.multi
     @api.constrains('company_id', 'partner_type')
     def _force_receiptbook(self):
         # we add cosntrins to fix odoo tests and also help in inmpo of data
-        if not self.receiptbook_id:
-            self.receiptbook_id = self._get_receiptbook()
+        for rec in self:
+            if not rec.receiptbook_id:
+                rec.receiptbook_id = rec._get_receiptbook()
 
     @api.onchange('company_id', 'partner_type')
     def get_receiptbook(self):

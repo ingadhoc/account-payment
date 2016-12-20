@@ -144,3 +144,23 @@ class AccountPayment(models.Model):
         #                 ('payment_type', '=', payment_type),
         #                 ('id', 'in', payment_methods.ids)]}}
         # return {}
+
+    @api.one
+    @api.depends('invoice_ids', 'payment_type', 'partner_type', 'partner_id')
+    def _compute_destination_account_id(self):
+        """
+        We send force_company on context so payments can be created from parent
+        companies. We try to send force_company on self but it doesnt works, it
+        only works sending it on partner
+        """
+        res = super(AccountPayment, self)._compute_destination_account_id()
+        if not self.invoice_ids and self.payment_type != 'transfer':
+            partner = self.partner_id.with_context(
+                force_company=self.company_id.id)
+            if self.partner_type == 'customer':
+                self.destination_account_id = (
+                    partner.property_account_receivable_id.id)
+            else:
+                self.destination_account_id = (
+                    partner.property_account_payable_id.id)
+        return res

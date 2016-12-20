@@ -21,18 +21,33 @@ def migrate(env, version):
     add_operations(env)
     old_journal_ids = change_issue_journals(env)
     old_journal_ids += change_third_journals(env)
+    # TODO. Improove this. if this gives an error you can comment it and
+    # later delete de journals by fixing manually related remaining move and
+    # move lines
     env['account.journal'].browse(old_journal_ids).unlink()
 
     # first unlink then add third issue types because if not a checkbook
     # is created for old journals and we cant unlink them
     env['account.journal']._enable_third_check_on_cash_journals()
     env['account.journal']._enable_issue_check_on_bank_journals()
+    delete_old_ir_rule(env)
+
+
+def delete_old_ir_rule(env):
+    # this was a rule for multicompany on checkbooks but we dont use it now
+    openupgrade.logged_query(env.cr, """
+        DELETE from ir_rule rr
+        USING ir_model_data d where rr.id=d.res_id
+        and d.model = 'ir.rule' and d.module = 'account_check'
+        and d.name = 'account_checkbook_rule'
+        """,)
 
 
 def _change_journal(cr, old_journal_id, new_journal_id):
-    for table in [
-            'account_move', 'account_move_line', 'account_check',
-            'account_payment', 'account_checkbook', 'account_voucher']:
+    tables = [
+        'account_move', 'account_move_line', 'account_check',
+        'account_payment']
+    for table in tables:
         openupgrade.logged_query(cr, """
             UPDATE
                 %s
@@ -40,6 +55,86 @@ def _change_journal(cr, old_journal_id, new_journal_id):
                 journal_id=%s
             WHERE journal_id = %s
             """ % (table, new_journal_id, old_journal_id),)
+
+
+def _change_journal_issue(env, checkbook_id, new_journal_id):
+    cr = env.cr
+    # openupgrade.logged_query(cr, """
+    #     UPDATE account_move_line aml SET journal_id = %s
+    #     USING account_payment ap
+    #     WHERE aml.payment_id = ap.id AND ap.checkbook_id = %s
+    #     """ (new_journal_id, checkbook_id),
+    # )
+    openupgrade.logged_query(cr, """
+        SELECT aml.id FROM account_move_line aml
+        INNER JOIN account_payment as ap on aml.payment_id = ap.id
+        WHERE ap.checkbook_id = %s
+        """ % (checkbook_id),
+    )
+    move_line_ids = [i for i, in cr.fetchall()]
+
+    # agregamos asientos de debito
+    openupgrade.logged_query(cr, """
+        SELECT aml.id FROM account_move_line aml
+        INNER JOIN account_move as am on am.id = aml.move_id
+        INNER JOIN account_check_copy as ap on am.id = ap.debit_account_move_id
+        WHERE ap.checkbook_id = %s
+        """ % (checkbook_id),
+    )
+    move_line_ids += [i for i, in cr.fetchall()]
+
+    # agregamos asientos de rechazo
+    openupgrade.logged_query(cr, """
+        SELECT aml.id FROM account_move_line aml
+        INNER JOIN account_move as am on am.id = aml.move_id
+        INNER JOIN account_check_copy as ap
+        on am.id = ap.rejection_account_move_id
+        WHERE ap.checkbook_id = %s
+        """ % (checkbook_id),
+    )
+    move_line_ids += [i for i, in cr.fetchall()]
+
+    # agregamos asientos de cambio
+    openupgrade.logged_query(cr, """
+        SELECT aml.id FROM account_move_line aml
+        INNER JOIN account_move as am on am.id = aml.move_id
+        INNER JOIN account_check_copy as ap
+            on am.id = ap.return_account_move_id
+        WHERE ap.checkbook_id = %s
+        """ % (checkbook_id),
+    )
+    move_line_ids += [i for i, in cr.fetchall()]
+
+    # if move_line_ids:
+    if move_line_ids:
+        openupgrade.logged_query(cr, """
+            UPDATE account_move_line aml SET journal_id = %s
+            WHERE id in %s
+            """ % (new_journal_id, tuple(move_line_ids)),
+        )
+        openupgrade.logged_query(cr, """
+            UPDATE account_move am SET journal_id = %s
+            WHERE am.id in (SELECT move_id FROM account_move_line aml
+                WHERE aml.id in %s)
+            """ % (new_journal_id, tuple(move_line_ids)),
+        )
+    tables = ['account_check', 'account_payment']
+    # 'account_voucher' no tiene checkbook_id
+    for table in tables:
+        openupgrade.logged_query(cr, """
+            UPDATE
+                %s
+            SET
+                journal_id=%s
+            WHERE checkbook_id = %s
+            """ % (table, new_journal_id, checkbook_id),)
+    openupgrade.logged_query(cr, """
+        UPDATE
+            account_checkbook
+        SET
+            journal_id=%s
+        WHERE id = %s
+        """ % (new_journal_id, checkbook_id),)
 
 
 def change_issue_journals(env):
@@ -66,7 +161,8 @@ def change_issue_journals(env):
         checkbook.sequence_id.number_next_actual = next_check_number
 
         old_journal_id = checkbook.journal_id.id
-        _change_journal(cr, old_journal_id, new_journal_id)
+        _change_journal_issue(
+            env, checkbook.id, new_journal_id)
         old_journal_ids.append(old_journal_id)
     return old_journal_ids
 
@@ -89,9 +185,14 @@ def change_third_journals(env):
             """, (company.id,))
         old_third_journals_read = cr.fetchall()
         if old_third_journals_read:
+            # default order is sequence so you should order first the journal
+            # you want to use
             new_third_journal = env['account.journal'].search([
                 ('company_id', '=', company.id),
                 ('type', '=', 'cash'),
+                '|',
+                ('currency_id', '=', company.currency_id.id),
+                ('currency_id', '=', False),
             ], limit=1)
             if not new_third_journal:
                 raise ValidationError(
@@ -205,6 +306,14 @@ def add_operations(env):
             if payment:
                 # payment = env['account.payment'].browse(voucher_id)
                 payment.write({
+                    'check_number': check.number,
+                    'check_name': check.name,
+                    'check_issue_date': check.issue_date,
+                    'check_payment_date': check.payment_date,
+                    'check_bank_id': check.bank_id.id,
+                    'check_owner_vat': check.owner_vat,
+                    'check_owner_name': check.owner_name,
+                    'checkbook_id': check.checkbook_id.id,
                     'check_ids': [(4, check.id, False)],
                     'payment_method_id': env.ref(
                         'account_check.'
@@ -219,7 +328,7 @@ def add_operations(env):
             #     delivery_payment = env['account.payment'].browse(
             #         third_handed_voucher_id)
             if delivery_payment:
-                payment.write({
+                delivery_payment.write({
                     'check_ids': [(4, check.id, False)],
                     'payment_method_id': env.ref(
                         'account_check.'
@@ -240,6 +349,15 @@ def add_operations(env):
             payment = get_payment(env, voucher_id)
             if payment:
                 payment.write({
+                    # we only store info of last check
+                    'check_number': check.number,
+                    'check_name': check.name,
+                    'check_issue_date': check.issue_date,
+                    'check_payment_date': check.payment_date,
+                    'check_bank_id': check.bank_id.id,
+                    'check_owner_vat': check.owner_vat,
+                    'check_owner_name': check.owner_name,
+                    'checkbook_id': check.checkbook_id.id,
                     'check_ids': [(4, check.id, False)],
                     'payment_method_id': env.ref(
                         'account_check.'
