@@ -49,5 +49,6 @@ class AccountInvoice(models.Model):
             'context': {
                 'to_pay_move_line_ids': self.open_move_line_ids.ids,
                 'pop_up': True,
+                'default_company_id': self.company_id.id,
             },
         }
