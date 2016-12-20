@@ -563,7 +563,7 @@ class AccountCheck(models.Model):
         # we send internal_type for compatibility with account_document
         invoice = self.env['account.invoice'].with_context(
             internal_type='debit_note').create(inv_vals)
-        # raise Warning('sadas')
+        # raise ValidationError('sadas')
 
         # invoice_line = self.env['account.invoice.line'].new(inv_line_vals)
         # invoice_line._onchange_product_id()

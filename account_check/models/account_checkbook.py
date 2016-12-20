@@ -5,7 +5,7 @@
 ##############################################################################
 from openerp import fields, models, api, _
 import logging
-from openerp.exceptions import Warning
+from openerp.exceptions import ValidationError
 _logger = logging.getLogger(__name__)
 
 
@@ -103,6 +103,6 @@ class AccountCheckbook(models.Model):
     @api.one
     def unlink(self):
         if self.issue_check_ids:
-            raise Warning(
+            raise ValidationError(
                 _('You can drop a checkbook if it has been used on checks!'))
         return super(AccountCheckbook, self).unlink()

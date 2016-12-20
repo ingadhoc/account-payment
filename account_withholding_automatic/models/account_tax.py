@@ -101,7 +101,7 @@ result = withholdable_base_amount * 0.10
         if (
                 self.withholding_non_taxable_amount >
                 self.withholding_non_taxable_minimum):
-            raise Warning(_(
+            raise ValidationError(_(
                 'Non-taxable Amount can not be greater than Non-taxable '
                 'Minimum'))
 
@@ -115,7 +115,7 @@ result = withholdable_base_amount * 0.10
             try:
                 domain = literal_eval(rule.domain)
             except Exception, e:
-                raise Warning(_(
+                raise ValidationError(_(
                     'Could not eval rule domain "%s".\n'
                     'This is what we get:\n%s' % (rule.domain, e)))
             domain.append(('id', '=', voucher.id))
@@ -139,13 +139,13 @@ result = withholdable_base_amount * 0.10
                 try:
                     domain = literal_eval(tax.withholding_user_error_domain)
                 except Exception, e:
-                    raise Warning(_(
+                    raise ValidationError(_(
                         'Could not eval rule domain "%s".\n'
                         'This is what we get:\n%s' % (
                             tax.withholding_user_error_domain, e)))
                 domain.append(('id', '=', payment_group.id))
                 if payment_group.search(domain):
-                    raise Warning(tax.withholding_user_error_message)
+                    raise ValidationError(tax.withholding_user_error_message)
             vals = tax.get_withholding_vals(payment_group)
 
             # we set computed_withholding_amount

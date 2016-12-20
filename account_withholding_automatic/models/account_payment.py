@@ -5,7 +5,7 @@
 ##############################################################################
 from openerp import models, fields
 # import openerp.addons.decimal_precision as dp
-# from openerp.exceptions import Warning
+# from openerp.exceptions import ValidationError
 # from dateutil.relativedelta import relativedelta
 # import datetime
 

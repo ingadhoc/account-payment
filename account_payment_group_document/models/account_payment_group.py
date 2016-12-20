@@ -186,6 +186,6 @@ class AccountPaymentGroup(models.Model):
         """
         if (self.receiptbook_id and
                 self.receiptbook_id.company_id != self.company_id):
-            raise Warning(_(
+            raise ValidationError(_(
                 'The company of the receiptbook and of the '
                 'payment must be the same!'))
