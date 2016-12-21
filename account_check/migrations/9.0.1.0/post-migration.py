@@ -46,7 +46,7 @@ def delete_old_ir_rule(env):
 def _change_journal(cr, old_journal_id, new_journal_id):
     tables = [
         'account_move', 'account_move_line', 'account_check',
-        'account_payment']
+        'account_payment', 'account_bank_statement']
     for table in tables:
         openupgrade.logged_query(cr, """
             UPDATE
@@ -118,6 +118,7 @@ def _change_journal_issue(env, checkbook_id, new_journal_id):
                 WHERE aml.id in %s)
             """ % (new_journal_id, tuple(move_line_ids)),
         )
+
     tables = ['account_check', 'account_payment']
     # 'account_voucher' no tiene checkbook_id
     for table in tables:
@@ -163,6 +164,13 @@ def change_issue_journals(env):
         old_journal_id = checkbook.journal_id.id
         _change_journal_issue(
             env, checkbook.id, new_journal_id)
+
+        # no sabemos a que diario mandar si existe 'account_bank_statement'
+        # no deberia haber statements para diario de cheques, los borramos
+        openupgrade.logged_query(cr, """
+            DELETE FROM account_bank_statement WHERE journal_id = %s
+            """, (old_journal_id,))
+
         old_journal_ids.append(old_journal_id)
     return old_journal_ids
 
