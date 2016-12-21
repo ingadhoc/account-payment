@@ -536,13 +536,17 @@ class AccountPaymentGroup(models.Model):
     @api.multi
     def unlink(self):
         if any(rec.state != 'draft' for rec in self):
-            raise UserError(_(
+            raise ValidationError(_(
                 "You can not delete a payment that is already posted"))
         return super(AccountPaymentGroup, self).unlink()
 
     @api.multi
     def confirm(self):
         for rec in self:
+            accounts = rec.to_pay_move_line_ids.mapped('account_id')
+            if len(accounts) > 1:
+                raise ValidationError(_(
+                    'To Pay Lines must be of the same account!'))
             rec.state = 'confirmed'
 
     @api.multi

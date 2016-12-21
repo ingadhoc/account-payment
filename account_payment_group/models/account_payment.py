@@ -106,3 +106,22 @@ class AccountPayment(models.Model):
                 if not rec.payment_group_id:
                     raise ValidationError(_(
                         'Payments must be created from payments groups'))
+
+    @api.one
+    @api.depends('invoice_ids', 'payment_type', 'partner_type', 'partner_id')
+    def _compute_destination_account_id(self):
+        """
+        If we are paying a payment gorup with paylines, we use account
+        of lines that are going to be paid
+        """
+        to_pay_account = self.payment_group_id.to_pay_move_line_ids.mapped(
+            'account_id')
+        if len(to_pay_account) > 1:
+            raise ValidationError(_(
+                'To Pay Lines must be of the same account!'))
+        elif len(to_pay_account) == 1:
+            print 'to_pay_account', to_pay_account
+            self.destination_account_id = to_pay_account[0]
+        else:
+            return super(
+                AccountPayment, self)._compute_destination_account_id()
