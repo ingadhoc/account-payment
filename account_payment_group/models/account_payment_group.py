@@ -3,7 +3,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from openerp import models, api, fields, _
-from openerp.exceptions import UserError, ValidationError
+from openerp.exceptions import ValidationError
 
 
 MAP_PARTNER_TYPE_ACCOUNT_TYPE = {
