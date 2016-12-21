@@ -120,7 +120,6 @@ class AccountPayment(models.Model):
             raise ValidationError(_(
                 'To Pay Lines must be of the same account!'))
         elif len(to_pay_account) == 1:
-            print 'to_pay_account', to_pay_account
             self.destination_account_id = to_pay_account[0]
         else:
             return super(
