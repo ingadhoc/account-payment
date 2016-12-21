@@ -58,7 +58,7 @@
             <!-- we make title invisible and we add a new one -->
             <div class="oe_title" position="attributes">
                 <!-- <attribute name="invisible">1</attribute> -->
-                <attribute name="attrs">{'invisible': ['|', ('payment_type', '=', 'transfer'), ('state', '=', 'draft')]}</attribute>
+                <attribute name="attrs">{'invisible': ['|', ('payment_type', '!=', 'transfer'), ('state', '=', 'draft')]}</attribute>
             </div>
             <div class="oe_title" position="after">
                 <!-- only show this field if we are not on a payment group -->

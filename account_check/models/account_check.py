@@ -502,12 +502,17 @@ class AccountCheck(models.Model):
         self.ensure_one()
         if self.state in ['deposited', 'selled']:
             operation = self._get_operation(self.state)
-            if operation.origin._name != 'account.payment':
+            if operation.origin._name == 'account.payment':
+                journal = operation.origin.destination_journal_id
+            # for compatibility with migration from v8
+            elif operation.origin._name == 'account.move':
+                journal = operation.origin.journal_id
+            else:
                 raise ValidationError((
                     'The deposit operation is not linked to a payment.'
                     'If you want to reject you need to do it manually.'))
             vals = self.get_bank_vals(
-                'bank_reject', operation.origin.destination_journal_id)
+                'bank_reject', journal)
             move = self.env['account.move'].create(vals)
             move.post()
             self._add_operation('rejected', move)
@@ -602,13 +607,13 @@ class AccountCheck(models.Model):
             # tenemos que usar esa misma
             credit_account = journal.default_debit_account_id
             # la contrapartida es la cuenta que reemplazamos en el pago
-            debit_account = self.company_id.deferred_check_account_id
+            debit_account = self.company_id._get_check_account('deferred')
         elif action == 'bank_reject':
             # al transferir a un banco se usa esta. al volver tiene que volver
             # por la opuesta
             # self.destination_journal_id.default_credit_account_id
             credit_account = journal.default_debit_account_id
-            debit_account = self.company_id.rejected_check_account_id
+            debit_account = self.company_id._get_check_account('rejected')
             # credit_account_id = vou_journal.default_credit_account_id.id
         else:
             raise ValidationError(_(
