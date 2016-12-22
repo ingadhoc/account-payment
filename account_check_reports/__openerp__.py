@@ -38,14 +38,13 @@ Account Check Reports
     'external_dependencies': {
     },
     'data': [
-        'views/account_check_view.xml',
         'report/account_check_deposit_report.xml',
     ],
     'demo': [
     ],
     'test': [
     ],
-    'installable': False,
+    'installable': True,
     'auto_install': False,
     'application': False,
 }
