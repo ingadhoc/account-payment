@@ -3,15 +3,15 @@
 # * account_payment_group
 # 
 # Translators:
-# Javier Diez <jd@adhoc.com.ar>, 2016
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
+# Javier Diez <jd@adhoc.com.ar>, 2016
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-30 17:08+0000\n"
-"PO-Revision-Date: 2016-11-30 17:08+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
+"POT-Creation-Date: 2016-12-23 23:20+0000\n"
+"PO-Revision-Date: 2016-12-23 23:20+0000\n"
+"Last-Translator: Javier Diez <jd@adhoc.com.ar>, 2016\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -20,55 +20,528 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
-msgid "+ Credit Note"
-msgstr "+ Nota de Crédito"
+#: model:ir.ui.view,arch_db:account_payment_group.invoice_form
+#: model:ir.ui.view,arch_db:account_payment_group.invoice_supplier_form
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<button name=\"136\" position=\"attributes\">\n"
+"            <attribute name=\"name\">action_account_invoice_payment_group</attribute>\n"
+"            <attribute name=\"type\">object</attribute>\n"
+"        </button>\n"
+"    "
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.account_journal_dashboard_kanban_view
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<data><!-- we change labels beacause now shou can send or receive from here, you need to create a payment group -->\n"
+"            <a name=\"open_spend_money\" position=\"replace\">\n"
+"                <a type=\"object\" name=\"open_spend_money\">Sended Money</a>\n"
+"            </a>\n"
+"            <a name=\"open_collect_money\" position=\"replace\">\n"
+"                <a type=\"object\" name=\"open_collect_money\">Received Money</a>\n"
+"            </a>\n"
+"        </data>"
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_form
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<data><!-- we make title invisible and we add a new one -->\n"
+"            <div class=\"oe_title\" position=\"attributes\">\n"
+"                <!-- <attribute name=\"invisible\">1</attribute> -->\n"
+"                <attribute name=\"attrs\">{'invisible': ['|', ('payment_type', '!=', 'transfer'), ('state', '=', 'draft')]}</attribute>\n"
+"            </div>\n"
+"            <div class=\"oe_title\" position=\"after\">\n"
+"                <!-- only show this field if we are not on a payment group -->\n"
+"                <div class=\"oe_title\" name=\"payment_group_id\" invisible=\"context.get('payment_group')\">\n"
+"                    <h1><field name=\"payment_group_id\"/></h1>\n"
+"                </div>\n"
+"            </div>\n"
+"\n"
+"            <form position=\"attributes\">\n"
+"                <attribute name=\"create\">false</attribute>\n"
+"                <attribute name=\"edit\">false</attribute>\n"
+"            </form>\n"
+"            <form>\n"
+"                <field name=\"payment_group_company_id\" invisible=\"1\"/>\n"
+"            </form>\n"
+"            <!-- ahora lo hicimos con el fix -->\n"
+"            <!-- <field name=\"journal_id\" position=\"attributes\">\n"
+"                <attribute name=\"domain\">[('company_id', '=', payment_group_company_id)]</attribute>\n"
+"            </field> -->\n"
+"\n"
+"            <!-- <button name=\"post\" position=\"attributes\">\n"
+"                <attribute name=\"invisible\">context.get('payment_group')</attribute>\n"
+"            </button> -->\n"
+"            <button name=\"post\" position=\"attributes\">\n"
+"                <!-- <attribute name=\"attrs\">{'invisible': [('state', '!=', 'draft'), ('payment_type', '!=', 'transfer')]}</attribute> -->\n"
+"                <!-- <attribute name=\"states\"></attribute> -->\n"
+"                <attribute name=\"invisible\">1</attribute>\n"
+"            </button>\n"
+"             \n"
+"            <button name=\"cancel\" position=\"attributes\">\n"
+"                <attribute name=\"invisible\">1</attribute>\n"
+"            </button>\n"
+"\n"
+"            <field name=\"payment_type\" position=\"after\">\n"
+"                <field name=\"payment_type_copy\" widget=\"radio\" attrs=\"{'readonly': [('state', '!=', 'draft')]}\" groups=\"account_payment_group.group_choose_payment_type\"/>\n"
+"            </field>\n"
+"\n"
+"            <field name=\"payment_type\" position=\"attributes\">\n"
+"                <!-- comes from payment_group and from context on transfers -->\n"
+"                <attribute name=\"invisible\">1</attribute>\n"
+"                <!-- <attribute name=\"invisible\">context.get('payment_group')</attribute> -->\n"
+"            </field>\n"
+"\n"
+"            <field name=\"partner_type\" position=\"attributes\">\n"
+"                <!-- comes from payment_group and is not used on transfers -->\n"
+"                <attribute name=\"invisible\">1</attribute>\n"
+"                <!-- <attribute name=\"invisible\">context.get('payment_group')</attribute> -->\n"
+"            </field>\n"
+"            <field name=\"partner_id\" position=\"attributes\">\n"
+"                <!-- comes from payment_group and is not used on transfers -->\n"
+"                <attribute name=\"invisible\">1</attribute>\n"
+"                <!-- <attribute name=\"invisible\">context.get('payment_group')</attribute> -->\n"
+"            </field>\n"
+"\n"
+"            <!-- <field name=\"state\" position=\"attributes\">\n"
+"                <attribute name=\"invisible\">context.get('payment_group')</attribute>\n"
+"            </field> -->\n"
+"        </data>"
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_form
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<data><!-- we need to re enable this, we could not achive to inherit later than the modification for no transfers -->\n"
+"            <form position=\"attributes\">\n"
+"                <attribute name=\"create\">true</attribute>\n"
+"                <attribute name=\"edit\">true</attribute>\n"
+"            </form>\n"
+"\n"
+"            <field name=\"payment_type_copy\" position=\"replace\"/>\n"
+"\n"
+"            <button name=\"post\" position=\"attributes\">\n"
+"                <attribute name=\"invisible\">0</attribute>\n"
+"            </button>\n"
+"             \n"
+"            <button name=\"cancel\" position=\"attributes\">\n"
+"                <attribute name=\"invisible\">0</attribute>\n"
+"            </button>\n"
+"        </data>"
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_tree
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<data><!-- we need to re enable this, we could not achive to inherit later than the modification for no transfers -->\n"
+"            <tree position=\"attributes\">\n"
+"                <attribute name=\"create\">true</attribute>\n"
+"            </tree>\n"
+"            <field name=\"partner_id\" position=\"replace\">\n"
+"                <field name=\"destination_journal_id\"/>\n"
+"            </field>\n"
+"        </data>"
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_invoice_wizard
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<form string=\"Credit Note\">\n"
+"                    <field name=\"currency_id\" invisible=\"1\"/>\n"
+"                    <field name=\"payment_group_id\" invisible=\"1\"/>\n"
+"                    <group>\n"
+"                         <group>\n"
+"                            <field name=\"product_id\"/>\n"
+"                            <field name=\"amount\"/>\n"
+"                            <field name=\"description\"/>\n"
+"                         </group>\n"
+"                         <group>\n"
+"                            <field name=\"journal_id\"/>\n"
+"                            <field name=\"date_invoice\"/>\n"
+"                            <field name=\"date\" groups=\"base.group_no_one\"/>\n"
+"                         </group>\n"
+"                    </group>\n"
+"                    <footer>\n"
+"                        <button string=\"Confirm\" name=\"confirm\" type=\"object\" class=\"btn-primary\"/>\n"
+"                        <button string=\"Cancel\" class=\"btn-default\" special=\"cancel\"/>\n"
+"                    </footer>\n"
+"               </form>\n"
+"            "
+msgstr ""
 
 #. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
-msgid "+ Debit Note"
-msgstr "+ Nota de Débito"
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<form string=\"Register Payment\">\n"
+"            <field name=\"account_internal_type\" invisible=\"1\"/>\n"
+"            <field name=\"id\" invisible=\"1\"/>\n"
+"            <field name=\"commercial_partner_id\" invisible=\"1\"/>\n"
+"            <field name=\"partner_type\" invisible=\"1\"/>\n"
+"            <field name=\"payment_subtype\" invisible=\"1\"/>\n"
+"            <field name=\"pop_up\" invisible=\"1\"/>\n"
+"            <header>\n"
+"                <button name=\"post\" class=\"oe_highlight\" string=\"Validate\" type=\"object\" attrs=\"{'invisible': ['|', '&amp;', ('payment_subtype', '=', 'simple'), ('state', '!=', 'draft'), '&amp;', ('payment_subtype', '=', 'double_validation'), ('state', '!=', 'confirmed')]}\"/>\n"
+"                <!-- <button name=\"post\" class=\"oe_highlight\" states=\"draft\" string=\"Validate\" type=\"object\"/> -->\n"
+"                <button name=\"confirm\" class=\"oe_highlight\" string=\"Confirm\" type=\"object\" attrs=\"{'invisible': ['|', ('payment_subtype', '!=', 'double_validation'), ('state', '!=', 'draft')]}\"/>\n"
+"                <button name=\"cancel\" attrs=\"{'invisible': [('state', '=', 'draft')]}\" string=\"Cancel\" type=\"object\"/>\n"
+"                <field name=\"state\" widget=\"statusbar\" statusbar_visible=\"posted\"/>\n"
+"            </header>\n"
+"            <sheet>\n"
+"                <div class=\"oe_button_box\" name=\"button_box\">\n"
+"                    <button class=\"oe_stat_button\" name=\"button_journal_entries\" string=\"Journal Items\" type=\"object\" groups=\"account.group_account_manager\" attrs=\"{'invisible':[('move_line_ids','=',[])]}\" icon=\"fa-bars\"/>\n"
+"                    <field name=\"move_line_ids\" invisible=\"1\"/>\n"
+"                </div>\n"
+"                <field name=\"id\" invisible=\"1\"/>\n"
+"                <div class=\"oe_title\">\n"
+"                    <h1/>\n"
+"                    <!-- <h1><field name=\"name\"/></h1> -->\n"
+"                </div>\n"
+"                <group>\n"
+"                    <group>\n"
+"                        <field name=\"company_id\" options=\"{'no_create': True, 'no_open': True}\" groups=\"base.group_multi_company\" invisible=\"context.get('pop_up')\"/>\n"
+"                        <field name=\"currency_id\" invisible=\"1\"/>\n"
+"                        <!-- <field name=\"payment_type\" widget=\"radio\"/> -->\n"
+"                        <!-- <b><field name=\"partner_type\" nolabel=\"1\" widget=\"selection\" string=\"\" attrs=\"{'required': [('payment_type', 'in', ('inbound', 'outbound'))], 'readonly': [('state', '!=', 'draft')]}\"/></b> -->\n"
+"                        <field name=\"partner_id\" context=\"{'default_is_company': True,}\" domain=\"[(partner_type, '=', True)]\" invisible=\"context.get('pop_up')\"/>\n"
+"                        <!-- <field name=\"partner_id\" attrs=\"{'required': [('payment_type', 'in', ('inbound', 'outbound'))]}\" context=\"{'default_is_company': True, 'default_supplier': payment_type == 'outbound', 'default_customer': payment_type == 'inbound'}\" domain=\"[(partner_type, '=', True)]\"/> -->\n"
+"                        <!-- <field name=\"partner_id\" nolabel=\"1\" attrs=\"{'required': [('payment_type', 'in', ('inbound', 'outbound'))], 'invisible': [('payment_type', 'not in', ('inbound', 'outbound'))], 'readonly': [('state', '!=', 'draft')]}\" context=\"{'default_is_company': True, 'default_supplier': payment_type == 'outbound', 'default_customer': payment_type == 'inbound'}\"/> -->\n"
+"                        <!-- <label for=\"amount\"/>\n"
+"                        <div name=\"amount_div\" class=\"o_row\">\n"
+"                            <field name=\"amount\" attrs=\"{'readonly': [('state', '!=', 'draft')]}\"/>\n"
+"                            <field name=\"currency_id\" options=\"{'no_create': True, 'no_open': True}\" groups=\"base.group_multi_currency\" attrs=\"{'readonly': [('state', '!=', 'draft')]}\"/>\n"
+"                        </div> -->\n"
+"                    </group>\n"
+"                    <group>\n"
+"                        <field name=\"payment_date\"/>\n"
+"                        <field name=\"communication\" attrs=\"{'invisible': [('state', '!=', 'draft'), ('communication', '=', False)]}\"/>\n"
+"                    </group>\n"
+"                <!-- </group> -->\n"
+"                <!-- <group attrs=\"{'invisible': [('payment_subtype', '!=', 'double_validation')]}\"> -->\n"
+"                    <group>\n"
+"                        <field name=\"selected_debt\" options=\"{'currency_field': 'currency_id'}\" states=\"draft,confirmed\"/>\n"
+"                        <field name=\"selected_finacial_debt\" options=\"{'currency_field': 'currency_id'}\" states=\"draft,confirmed\" groups=\"account_debt_management.account_use_financial_amounts\"/>\n"
+"                        <field name=\"matched_amount\" options=\"{'currency_field': 'currency_id'}\" states=\"posted\"/>\n"
+"                        <field name=\"unmatched_amount\" options=\"{'currency_field': 'currency_id'}\" states=\"posted\"/>\n"
+"                        <field name=\"unreconciled_amount\" options=\"{'currency_field': 'currency_id'}\" attrs=\"{'invisible': ['|', ('payment_subtype', '!=', 'double_validation'), ('state', 'not in', ['draft', 'confirmed'])]}\"/>\n"
+"                        <field name=\"to_pay_amount\" options=\"{'currency_field': 'currency_id'}\" attrs=\"{'invisible': ['|', ('payment_subtype', '!=', 'double_validation'), ('state', 'not in', ['draft', 'confirmed'])]}\"/>\n"
+"                    </group>\n"
+"                    <group>\n"
+"                        <field name=\"payments_amount\" string=\"Payments Amount\" options=\"{'currency_field': 'currency_id'}\"/>\n"
+"                        <field name=\"payment_difference\" options=\"{'currency_field': 'currency_id'}\" attrs=\"{'invisible': ['|', ('payment_subtype', '!=', 'double_validation'), ('state', 'not in', ['draft', 'confirmed'])]}\"/>\n"
+"<!--                         <label for=\"payments_amount\" string=\"Payments Amount\"/>\n"
+"                        <div class=\"oe_inline\">\n"
+"                            <field name=\"payments_amount\" options=\"{'currency_field': 'currency_id'}\" class=\"oe_inline\"/> (<field name=\"payment_difference\" class=\"oe_inline\"/>)\n"
+"                        </div> -->\n"
+"                        <!-- <label for=\"payment_difference\" attrs=\"{'invisible': [('payment_difference', '=', 0.0)]}\"/> -->\n"
+"                        <!-- <div attrs=\"{'invisible': [('payment_difference', '=', 0.0)]}\"> -->\n"
+"                            <!-- <field name=\"payment_difference_handling\" widget=\"radio\" nolabel=\"1\"/> -->\n"
+"                        <!-- </div> -->\n"
+"                        <!-- <field name=\"writeoff_account_id\" string=\"Post Difference In\"\n"
+"                            attrs=\"{'invisible': [('payment_difference_handling','=','open')], 'required': [('payment_difference_handling', '=', 'reconcile')]}\"/> -->\n"
+"                    </group>\n"
+"                </group>\n"
+"                <notebook>\n"
+"                    <page string=\"To Pay Lines\" attrs=\"{'invisible': ['|', '|', ('pop_up', '=', True), ('payment_subtype', '!=', 'double_validation'), ('state', 'not in', ['draft', 'confirmed'])]}\">\n"
+"                        <button name=\"add_all\" string=\"Add All / Refresh\" states=\"draft\" type=\"object\"/>\n"
+"                        <button name=\"remove_all\" string=\"Remove All\" states=\"draft\" type=\"object\"/>\n"
+"                        <button name=\"244\" string=\"+ Debit Note\" states=\"draft\" type=\"action\"/>\n"
+"                        <button name=\"244\" string=\"+ Credit Note\" states=\"draft\" context=\"{'refund': True}\" type=\"action\"/>\n"
+"                        <field name=\"to_pay_move_line_ids\" context=\"{'tree_view_ref': 'account_payment_group.view_move_line_tree'}\"/>\n"
+"                    </page>\n"
+"                    <!-- no las pudimos hacer invisibles porque nos da error al venir de una factura y querer hacer las to pay lines tmb invisibles. lo bueno de hacerlas invisibles era que al confirmar se pasaba a las payment lines automaticamente -->\n"
+"                    <page string=\"Payment Lines\" attrs=\"{'invisible': [('payment_subtype', '=', 'double_validation'), ('state', '=', 'draft')]}\">\n"
+"                    <!-- <page string=\"Payment Lines\" autofocus=\"autofocus\"> -->\n"
+"                        <!-- no pudimos hacer que payment_difference se actualice cuando ponemos save and new. La unica que se me ocurre es si está guardado, podemos mandar el active_id y que sea un default en payments el que obtiene el valor -->\n"
+"                        <field name=\"payment_ids\" context=\"{'default_payment_group_company_id': company_id, 'default_payment_type': partner_type == 'supplier' and 'outbound' or 'inbound', 'default_payment_date': payment_date, 'default_partner_id': partner_id, 'default_partner_type': partner_type, 'payment_group': True, 'default_amount': payment_difference, 'tree_view_ref': 'account_payment_group.view_account_payment_from_group_tree'}\" attrs=\"{'readonly': ['|', '&amp;', ('payment_subtype', '=', 'simple'), ('state', '!=', 'draft'), '&amp;', ('payment_subtype', '=', 'double_validation'), ('state', '!=', 'confirmed')]}\"/>\n"
+"                        <!-- <field name=\"payment_ids\" context=\"{'default_payment_type': partner_type == 'supplier' and 'outbound' or 'inbound', 'default_payment_date': payment_date, 'default_partner_id': partner_id, 'default_partner_type': partner_type, 'payment_group': True, 'default_amount': payment_difference, 'tree_view_ref': 'account_payment_group.view_account_payment_tree'}\" attrs=\"{'readonly': ['|', ('state', 'not in', ['draft', 'confirmed']), ('payment_subtype', '=', 'double_validation'), ('state', '=', 'draft')]}\"/> -->\n"
+"                        <!-- <field name=\"payment_ids\" context=\"{'default_payment_type': payment_type, 'default_payment_date': payment_date, 'default_partner_id': partner_id, 'default_partner_type': partner_type, 'payment_group': True, 'default_amount': payment_difference, 'tree_view_ref': 'account_payment_group.view_account_payment_tree'}\"/> -->\n"
+"                    </page>\n"
+"                    <page string=\"Debts\" attrs=\"{'invisible': ['|', '|', ('pop_up', '=', True), ('payment_subtype', '!=', 'simple'), ('state', '!=', 'draft')]}\">\n"
+"                        <p>\n"
+"                            Payment will be automatically matched with the oldest lines of this list (by date, no by maturity date). You can remove any line you dont want to be matched.\n"
+"                        </p>\n"
+"                        <button name=\"add_all\" string=\"Add All / Refresh\" states=\"draft\" type=\"object\"/>\n"
+"                        <button name=\"remove_all\" string=\"Remove All\" states=\"draft\" type=\"object\"/>\n"
+"                        <button name=\"244\" string=\"+ Debit Note\" states=\"draft\" type=\"action\" context=\"{'internal_type': 'debit_note'}\"/>\n"
+"                        <button name=\"244\" string=\"+ Credit Note\" states=\"draft\" context=\"{'refund': True}\" type=\"action\"/>\n"
+"                        <field name=\"debt_move_line_ids\" context=\"{'tree_view_ref': 'account_payment_group.view_move_line_tree'}\"/>\n"
+"                    </page>\n"
+"                    <page string=\"Paid\" states=\"posted\">\n"
+"                        <field name=\"matched_move_line_ids\" context=\"{'payment_group_id': id, 'matched_lines': True, 'tree_view_ref': 'account_payment_group.view_move_line_tree'}\"/>\n"
+"                    </page>\n"
+"                    <page string=\"Notes\">\n"
+"                        <field name=\"notes\"/>\n"
+"                    </page>\n"
+"                </notebook>\n"
+"            </sheet>\n"
+"        <div class=\"oe_chatter\">\n"
+"            <field name=\"message_follower_ids\" widget=\"mail_followers\" groups=\"base.group_user\"/>\n"
+"            <field name=\"message_ids\" widget=\"mail_thread\"/>\n"
+"        </div>\n"
+"        </form>\n"
+"    "
+msgstr ""
 
 #. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_graph
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<graph string=\"Payments\" type=\"bar\" stacked=\"1\">\n"
+"            <!-- <field name=\"payment_type\"/> -->\n"
+"            <field name=\"partner_id\"/>\n"
+"            <field name=\"payments_amount\" type=\"measure\"/>\n"
+"        </graph>\n"
+"    "
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_company_form
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<group name=\"account_grp\">\n"
+"                    <field name=\"double_validation\"/>\n"
+"                </group>\n"
+"            "
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_config_settings
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<group name=\"bank_cash\">\n"
+"                    <field name=\"group_choose_payment_type\"/>\n"
+"                </group>\n"
+"            "
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<search string=\"Payments\">\n"
+"            <field name=\"display_name\" filter_domain=\"[('communication','ilike',self)]\" string=\"Description\"/>\n"
+"            <separator/>\n"
+"            <field name=\"partner_id\"/>\n"
+"            <field name=\"company_id\" groups=\"base.group_multi_company\"/>\n"
+"            <!-- <filter string=\"Payable\" domain=\"[('payment_type','=','outbound')]\"/> -->\n"
+"            <!-- <filter string=\"Receivable\" domain=\"[('payment_type','=','inbound')]\"/> -->\n"
+"            <separator/>\n"
+"            <filter string=\"Draft\" domain=\"[('state','=','draft')]\" name=\"state_draft\"/>\n"
+"            <filter string=\"Posted\" domain=\"[('state','=','posted')]\" name=\"state_posted\"/>\n"
+"            <filter string=\"Sent\" domain=\"[('state','=','sent')]\" name=\"state_sent\"/>\n"
+"            <filter string=\"Reconciled\" domain=\"[('state','=','reconciled')]\"/>\n"
+"            <separator/>\n"
+"            <filter string=\"Partner\" domain=\"[]\" context=\"{'group_by': 'partner_id'}\"/>\n"
+"            <filter string=\"State\" domain=\"[]\" context=\"{'group_by': 'state'}\"/>\n"
+"            <filter string=\"Currency\" domain=\"[]\" context=\"{'group_by': 'currency_id'}\" groups=\"base.group_multi_currency\"/>\n"
+"            <filter string=\"Company\" domain=\"[]\" context=\"{'group_by': 'company_id'}\" groups=\"base.group_multi_company\"/>\n"
+"        </search>\n"
+"    "
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<search string=\"Transfers\">\n"
+"                <field name=\"name\" filter_domain=\"['|', ('name','ilike',self), ('communication','ilike',self)]\" string=\"Description\"/>\n"
+"                <separator/>\n"
+"                <field name=\"journal_id\"/>\n"
+"                <field name=\"destination_journal_id\"/>\n"
+"                <field name=\"company_id\" groups=\"base.group_multi_company\"/>\n"
+"                <separator/>\n"
+"                <filter string=\"Draft\" domain=\"[('state','=','draft')]\" name=\"state_draft\"/>\n"
+"                <filter string=\"Posted\" domain=\"[('state','=','posted')]\" name=\"state_posted\"/>\n"
+"                <filter string=\"Sent\" domain=\"[('state','=','sent')]\" name=\"state_sent\"/>\n"
+"                <filter string=\"Reconciled\" domain=\"[('state','=','reconciled')]\"/>\n"
+"                <separator/>\n"
+"                <filter string=\"Journal\" domain=\"[]\" context=\"{'group_by': 'journal_id'}\"/>\n"
+"                <filter string=\"Transfer To\" domain=\"[]\" context=\"{'group_by': 'destination_journal_id'}\"/>\n"
+"                <filter string=\"Payment Method\" domain=\"[]\" context=\"{'group_by': 'payment_method_id'}\"/>\n"
+"                <filter string=\"State\" domain=\"[]\" context=\"{'group_by': 'state'}\"/>\n"
+"                <filter string=\"Currency\" domain=\"[]\" context=\"{'group_by': 'currency_id'}\" groups=\"base.group_multi_currency\"/>\n"
+"                <filter string=\"Company\" domain=\"[]\" context=\"{'group_by': 'company_id'}\" groups=\"base.group_multi_company\"/>\n"
+"            </search>\n"
+"        "
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_invoice_tree
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<tree decoration-info=\"state == 'draft'\" decoration-muted=\"state == 'cancel'\" string=\"Invoice\">\n"
+"            <!-- <field name=\"partner_id\" groups=\"base.group_user\" string=\"Customer\"/> -->\n"
+"            <field name=\"date_invoice\"/>\n"
+"            <field name=\"number\"/>\n"
+"            <field name=\"commercial_partner_id\" invisible=\"1\"/>\n"
+"            <field name=\"reference\" invisible=\"1\"/>\n"
+"            <field name=\"name\" invisible=\"1\"/>\n"
+"            <field name=\"journal_id\" invisible=\"1\"/>\n"
+"            <!-- <field name=\"company_id\" groups=\"base.group_multi_company\" options=\"{'no_create': True}\"/> -->\n"
+"            <field name=\"user_id\"/>\n"
+"            <field name=\"date_due\"/>\n"
+"            <field name=\"origin\"/>\n"
+"            <field name=\"amount_total_signed\"/>\n"
+"            <field name=\"residual_signed\"/>\n"
+"            <field name=\"currency_id\" invisible=\"1\"/>\n"
+"            <field name=\"company_currency_id\" invisible=\"1\"/>\n"
+"            <field name=\"state\"/>\n"
+"            <field name=\"type\" invisible=\"context.get('type',True)\"/>\n"
+"        </tree>\n"
+"    "
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_tree
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<tree decoration-info=\"state=='draft'\" decoration-muted=\"state=='reconciled'\" edit=\"false\">\n"
+"            <field name=\"payment_date\"/>\n"
+"            <!-- <field name=\"name\"/> -->\n"
+"            <field name=\"partner_id\" string=\"Customer\"/>\n"
+"            <field name=\"payments_amount\" sum=\"Total\"/>\n"
+"            <field name=\"state\"/>\n"
+"            <field name=\"company_id\" groups=\"base.group_multi_company\"/>\n"
+"            <field name=\"currency_id\" invisible=\"1\"/>\n"
+"            <field name=\"partner_type\" invisible=\"1\"/>\n"
+"        </tree>\n"
+"    "
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_tree
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<tree position=\"attributes\">\n"
+"                <attribute name=\"create\">false</attribute>\n"
+"            </tree>\n"
+"        "
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<tree string=\"Journal Items\">\n"
+"            <field name=\"date\"/>\n"
+"            <field name=\"date_maturity\"/>\n"
+"            <field name=\"move_id\" required=\"0\"/>\n"
+"            <field name=\"journal_id\" options=\"{&quot;no_open&quot;:True}\"/>\n"
+"            <field name=\"name\"/>\n"
+"            <field name=\"ref\"/>\n"
+"            <field name=\"statement_id\" invisible=\"1\"/>\n"
+"            <!-- <field name=\"partner_id\"/> -->\n"
+"            <field name=\"account_id\" options=\"{&quot;no_open&quot;:True}\" domain=\"[('company_id', '=', company_id)]\"/>\n"
+"            <!-- <field name=\"analytic_account_id\" groups=\"analytic.group_analytic_accounting\"/> -->\n"
+"            <!-- <field name=\"reconciled\"/> -->\n"
+"            <field name=\"balance\" string=\"Amount\"/>\n"
+"            <field name=\"amount_residual\" sum=\"Total\" invisible=\"context.get('matched_lines')\"/>\n"
+"            <field name=\"payment_group_matched_amount\" string=\"Paid Amount\" sum=\"Total\" invisible=\"not context.get('matched_lines')\"/>\n"
+"            <!-- TODO si activamos este monto ver si queremos poner la currency, probamos el widget pero no anduvo -->\n"
+"            <field name=\"amount_currency\" groups=\"base.group_multi_currency\"/>\n"
+"            <field name=\"amount_residual_currency\" groups=\"base.group_multi_currency\" invisible=\"context.get('matched_lines')\"/>\n"
+"            <field name=\"financial_amount_residual\" sum=\"Total\" groups=\"account_debt_management.account_use_financial_amounts\" invisible=\"context.get('matched_lines')\"/>\n"
+"            <!-- <field name=\"debit\" sum=\"Total Debit\"/> -->\n"
+"            <!-- <field name=\"credit\" sum=\"Total Credit\"/> -->\n"
+"            <!-- <field name=\"amount_currency\" readonly=\"True\" groups=\"base.group_multi_currency\"/> -->\n"
+"            <field name=\"currency_id\" invisible=\"1\"/>\n"
+"            <field name=\"company_currency_id\" invisible=\"1\"/>\n"
+"            <field name=\"company_id\" invisible=\"1\"/>\n"
+"            <field name=\"invoice_id\" invisible=\"1\"/>\n"
+"            <button type=\"object\" string=\"Open Invocice\" icon=\"STOCK_JUSTIFY_LEFT\" help=\"Open Related Invoice\" name=\"action_open_related_invoice\" attrs=\"{'invisible': [('invoice_id', '=', False)]}\"/>\n"
+"        </tree>\n"
+"    "
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_from_group_tree
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<tree>\n"
+"        <!-- <tree decoration-info=\"state=='draft'\" decoration-muted=\"state=='reconciled'\"> -->\n"
+"            <!-- <field name=\"payment_date\"/> -->\n"
+"            <field name=\"name\"/>\n"
+"            <field name=\"journal_id\"/>\n"
+"            <field name=\"payment_method_id\"/>\n"
+"            <!-- sum de este amount no tiene sentido por que puede ser distintas monedas -->\n"
+"            <field name=\"amount\"/>\n"
+"            <field name=\"amount_company_currency\" sum=\"Total\"/>\n"
+"            <field name=\"state\"/>\n"
+"            <field name=\"currency_id\" invisible=\"1\"/>\n"
+"            <field name=\"partner_type\" invisible=\"1\"/>\n"
+"        </tree>\n"
+"    "
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.actions.act_window,help:account_payment_group.action_account_payments_transfer
+msgid ""
+"<p class=\"oe_view_nocontent_create\">\n"
+"              Click to register a transfer between liquidity journals\n"
+"            </p>"
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.actions.act_window,help:account_payment_group.action_account_payments_group
+#: model:ir.actions.act_window,help:account_payment_group.action_account_payments_group_payable
+msgid ""
+"<p class=\"oe_view_nocontent_create\">\n"
+"          Click to register a payment\n"
+"        </p><p>\n"
+"          Payments are used to register liquidity movements (send or collect).\n"
+"          You can then process those payments by your own means or by using installed facilities.\n"
+"        </p>"
+msgstr ""
+
+#. module: account_payment_group
+#: field:account.payment.group,account_internal_type:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_account_internal_type
 msgid "Account internal type"
 msgstr "Tipo de Cuenta interna"
 
 #. module: account_payment_group
+#: field:account.payment.group.invoice.wizard,date:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_date
 msgid "Accounting Date"
 msgstr "Fecha Contable"
 
 #. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
-msgid "Add All / Refresh"
-msgstr "Añadir Todo / Refrescar"
+#: field:account.payment.group,message_needaction:0
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_message_needaction
+msgid "Action Needed"
+msgstr "Se necesita una acción"
 
 #. module: account_payment_group
+#: field:account.payment.group,unreconciled_amount:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_unreconciled_amount
 msgid "Adjusment / Advance"
 msgstr "Adelanto / Avance"
 
 #. module: account_payment_group
+#: field:account.payment.group,payments_amount:0
+#: field:account.payment.group.invoice.wizard,amount:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_amount
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_payments_amount
-#: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
 msgid "Amount"
 msgstr "Importe"
 
 #. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_invoice_wizard
-msgid "Cancel"
-msgstr "Cancelar"
+#: field:account.config.settings,group_choose_payment_type:0
+#: model:ir.model.fields,field_description:account_payment_group.field_account_config_settings_group_choose_payment_type
+#: model:res.groups,name:account_payment_group.group_choose_payment_type
+msgid "Choose Payment Type on Payments"
+msgstr "Elegir Tipo de Pago en Pagos"
 
 #. module: account_payment_group
-#: model:ir.actions.act_window,help:account_payment_group.action_account_payments_group
-#: model:ir.actions.act_window,help:account_payment_group.action_account_payments_group_payable
-msgid "Click to register a payment"
-msgstr "Clic para registrar un pago"
-
-#. module: account_payment_group
+#: field:account.payment.group,commercial_partner_id:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_commercial_partner_id
 msgid "Commercial Entity"
 msgstr "Entidad Comercial"
@@ -79,17 +552,12 @@ msgid "Companies"
 msgstr "Compañías"
 
 #. module: account_payment_group
+#: field:account.payment,payment_group_company_id:0
+#: field:account.payment.group,company_id:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_company_id
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_payment_group_company_id
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 msgid "Company"
 msgstr "Compañía"
-
-#. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_invoice_wizard
-msgid "Confirm"
-msgstr "Confirmar"
 
 #. module: account_payment_group
 #: selection:account.payment.group,state:0
@@ -97,12 +565,16 @@ msgid "Confirmed"
 msgstr "Confirmado"
 
 #. module: account_payment_group
+#: field:account.payment.group,create_uid:0
+#: field:account.payment.group.invoice.wizard,create_uid:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_create_uid
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_create_uid
 msgid "Created by"
 msgstr "Creado por"
 
 #. module: account_payment_group
+#: field:account.payment.group,create_date:0
+#: field:account.payment.group.invoice.wizard,create_date:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_create_date
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_create_date
 msgid "Created on"
@@ -114,20 +586,15 @@ msgid "Credit / Debit Note"
 msgstr "Nota de Débito / Crédito"
 
 #. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_invoice_wizard
-msgid "Credit Note"
-msgstr "Nota de Crédito"
-
-#. module: account_payment_group
+#: field:account.payment.group,currency_id:0
+#: field:account.payment.group.invoice.wizard,currency_id:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_currency_id
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_currency_id
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 msgid "Currency"
 msgstr "Moneda"
 
 #. module: account_payment_group
 #: selection:account.payment.group,partner_type:0
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_tree
 msgid "Customer"
 msgstr "Cliente"
 
@@ -138,54 +605,88 @@ msgid "Customer Receipts"
 msgstr "Recibos de Cliente"
 
 #. module: account_payment_group
+#: help:account.payment.group,message_last_post:0
+#: model:ir.model.fields,help:account_payment_group.field_account_payment_group_message_last_post
+msgid "Date of the last message posted on the record."
+msgstr "Fecha del última mensaje publicado en el registro."
+
+#. module: account_payment_group
+#: field:account.payment.group,debt_move_line_ids:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_debt_move_line_ids
 msgid "Debt Lines"
 msgstr "Líneas de Deuda"
 
 #. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
-msgid "Debts"
-msgstr "Deudas"
-
-#. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
-msgid "Description"
-msgstr "Descripción"
-
-#. module: account_payment_group
+#: field:account.payment.group,display_name:0
+#: field:account.payment.group.invoice.wizard,display_name:0
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_display_name
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_display_name
 msgid "Display Name"
 msgstr "Mostrar Nombre"
 
 #. module: account_payment_group
-#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_display_name
-msgid "Document Reference"
-msgstr "Referencia del Documento"
-
-#. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_res_company_double_validation
+#: field:res.company,double_validation:0
 msgid "Double Validation on Payments?"
 msgstr "¿Doble validación en los Pagos?"
 
 #. module: account_payment_group
 #: selection:account.payment.group,state:0
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 msgid "Draft"
 msgstr "Borrador"
 
 #. module: account_payment_group
+#: field:account.payment.group,message_follower_ids:0
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_message_follower_ids
+msgid "Followers"
+msgstr "Seguidores"
+
+#. module: account_payment_group
+#: field:account.payment.group,message_channel_ids:0
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_message_channel_ids
+msgid "Followers (Channels)"
+msgstr "Seguidores (Canales)"
+
+#. module: account_payment_group
+#: field:account.payment.group,message_partner_ids:0
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_message_partner_ids
+msgid "Followers (Partners)"
+msgstr "Seguidores (Partners)"
+
+#. module: account_payment_group
+#: field:account.payment.group,id:0
+#: field:account.payment.group.invoice.wizard,id:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_id
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_id
 msgid "ID"
 msgstr "ID"
 
 #. module: account_payment_group
+#: help:account.payment.group,message_unread:0
+#: model:ir.model.fields,help:account_payment_group.field_account_payment_group_message_unread
+msgid "If checked new messages require your attention."
+msgstr "Si nuevos mensajes chequeados requieren su atención."
+
+#. module: account_payment_group
+#: help:account.payment.group,message_needaction:0
+#: model:ir.model.fields,help:account_payment_group.field_account_payment_group_message_needaction
+msgid "If checked, new messages require your attention."
+msgstr "Si está marcado, los nuevos mensajes requieren de su atención."
+
+#. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_account_invoice
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_invoice_tree
 msgid "Invoice"
 msgstr "Factura"
 
 #. module: account_payment_group
+#: field:account.payment.group,message_is_follower:0
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_message_is_follower
+msgid "Is Follower"
+msgstr "Es Seguidor"
+
+#. module: account_payment_group
+#: field:account.payment.group.invoice.wizard,journal_id:0
+#: model:ir.model,name:account_payment_group.model_account_journal
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_journal_id
 msgid "Journal"
 msgstr "Diario"
@@ -196,32 +697,43 @@ msgid "Journal Item"
 msgstr "Apunte Contable"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:483
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
-#: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
+#: code:addons/account_payment_group/models/account_payment_group.py:508
 #, python-format
 msgid "Journal Items"
 msgstr "Apuntes Contables"
 
 #. module: account_payment_group
+#: field:account.payment.group,message_last_post:0
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_message_last_post
+msgid "Last Message Date"
+msgstr "Última Fecha de Mensaje"
+
+#. module: account_payment_group
+#: field:account.payment.group,__last_update:0
+#: field:account.payment.group.invoice.wizard,__last_update:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group___last_update
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard___last_update
 msgid "Last Modified on"
 msgstr "Última Modificación el"
 
 #. module: account_payment_group
+#: field:account.payment.group,write_uid:0
+#: field:account.payment.group.invoice.wizard,write_uid:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_write_uid
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_write_uid
 msgid "Last Updated by"
 msgstr "Última Actualización por"
 
 #. module: account_payment_group
+#: field:account.payment.group,write_date:0
+#: field:account.payment.group.invoice.wizard,write_date:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_write_date
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_write_date
 msgid "Last Updated on"
 msgstr "Última actualización el"
 
 #. module: account_payment_group
+#: help:account.payment.group,matched_move_line_ids:0
 #: model:ir.model.fields,help:account_payment_group.field_account_payment_group_matched_move_line_ids
 msgid ""
 "Lines that has been matched to payments, only available after payment "
@@ -231,118 +743,141 @@ msgstr ""
 "validación del pago"
 
 #. module: account_payment_group
+#: field:account.payment.group,matched_amount:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_matched_amount
 msgid "Matched amount"
 msgstr "Importe emparejado"
 
 #. module: account_payment_group
+#: field:account.payment.group,matched_move_line_ids:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_matched_move_line_ids
 msgid "Matched move line ids"
 msgstr "Ids emparejadas de las líneas del movimiento"
 
 #. module: account_payment_group
+#: field:account.payment.group,communication:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_communication
 msgid "Memo"
 msgstr "Memo"
 
 #. module: account_payment_group
+#: field:account.payment.group,message_ids:0
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_message_ids
+msgid "Messages"
+msgstr "Mensajes"
+
+#. module: account_payment_group
+#: field:account.payment.group,move_line_ids:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_move_line_ids
 msgid "Move line ids"
 msgstr "Ids de la línea del movimiento"
 
 #. module: account_payment_group
+#: field:account.payment.group,notes:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_notes
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid "Notes"
 msgstr "Notas"
 
 #. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
-msgid "Open Invocice"
-msgstr "Abrir Factura"
+#: field:account.payment.group,message_needaction_counter:0
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_message_needaction_counter
+msgid "Number of Actions"
+msgstr "Número de Acciones"
 
 #. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
-msgid "Open Related Invoice"
-msgstr "Abrir Factura Relacionada"
+#: help:account.payment.group,message_needaction_counter:0
+#: model:ir.model.fields,help:account_payment_group.field_account_payment_group_message_needaction_counter
+msgid "Number of messages which requires an action"
+msgstr "Número de mensajes que requieren una acción"
 
 #. module: account_payment_group
+#: help:account.payment.group,message_unread_counter:0
+#: model:ir.model.fields,help:account_payment_group.field_account_payment_group_message_unread_counter
+msgid "Number of unread messages"
+msgstr "Número de mensajes no léidos"
+
+#. module: account_payment_group
+#: field:account.invoice,open_move_line_ids:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_invoice_open_move_line_ids
 msgid "Open move line ids"
 msgstr "Abrir ids de la línea del movimiento"
 
 #. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
-msgid "Paid"
-msgstr "Pagado"
-
-#. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
-msgid "Paid Amount"
-msgstr "Importe pagado"
-
-#. module: account_payment_group
+#: field:account.payment.group,partner_id:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_partner_id
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 msgid "Partner"
 msgstr "Partner"
 
 #. module: account_payment_group
+#: field:account.payment.group,partner_type:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_partner_type
 msgid "Partner type"
 msgstr "Tipo de Partner"
 
 #. module: account_payment_group
+#: field:account.payment,amount_company_currency:0
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_amount_company_currency
+msgid "Payment Amount on Company Currency"
+msgstr "Importe de Pago en Moneda de Compañía"
+
+#. module: account_payment_group
+#: field:account.payment.group,payment_date:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_payment_date
 msgid "Payment Date"
 msgstr "Fecha de Pago"
 
 #. module: account_payment_group
+#: field:account.payment.group,payment_difference:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_payment_difference
 msgid "Payment Difference"
 msgstr "Diferencia de Pago"
 
 #. module: account_payment_group
+#: field:account.payment,payment_group_id:0
 #: model:ir.model,name:account_payment_group.model_account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_payment_group_id
 msgid "Payment Group"
 msgstr "Grupo de Pago"
 
 #. module: account_payment_group
+#: field:account.payment.group,payment_ids:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_payment_ids
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid "Payment Lines"
 msgstr "Líneas del Pago"
 
 #. module: account_payment_group
+#: field:account.payment,payment_type_copy:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_payment_type_copy
 msgid "Payment Type"
 msgstr "Tipo de Pago"
 
 #. module: account_payment_group
+#: field:account.payment.group.invoice.wizard,payment_group_id:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_payment_group_id
 msgid "Payment group id"
 msgstr "Id del grupo de Pago"
 
 #. module: account_payment_group
+#: field:account.move.line,payment_group_matched_amount:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_move_line_payment_group_matched_amount
 msgid "Payment group matched amount"
 msgstr "Importe emparejado del grupo de Pagos"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/wizards/account_payment_group_invoice_wizard.py:79
+#: code:addons/account_payment_group/wizards/account_payment_group_invoice_wizard.py:82
 #, python-format
 msgid "Payment id %s"
 msgstr "Id del Pago %s"
 
 #. module: account_payment_group
+#: field:account.payment.group,payment_subtype:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_payment_subtype
 msgid "Payment subtype"
 msgstr "Subtipo de Pago"
 
 #. module: account_payment_group
+#: help:account.payment.group,debt_move_line_ids:0
 #: model:ir.model.fields,help:account_payment_group.field_account_payment_group_debt_move_line_ids
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid ""
 "Payment will be automatically matched with the oldest lines of this list (by"
 " date, no by maturity date). You can remove any line you dont want to be "
@@ -354,43 +889,35 @@ msgstr ""
 
 #. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_account_payment
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_graph
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 msgid "Payments"
 msgstr "Pagos"
 
 #. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
-msgid "Payments Amount"
-msgstr "Importe de los Pagos"
+#: code:addons/account_payment_group/models/account_payment.py:103
+#: code:addons/account_payment_group/models/account_payment.py:107
+#, python-format
+msgid "Payments must be created from payments groups"
+msgstr "Los pagos deben ser creados desde grupos depago"
 
 #. module: account_payment_group
-#: model:ir.actions.act_window,help:account_payment_group.action_account_payments_group
-#: model:ir.actions.act_window,help:account_payment_group.action_account_payments_group_payable
-msgid ""
-"Payments are used to register liquidity movements (send or collect).\n"
-"          You can then process those payments by your own means or by using installed facilities."
-msgstr ""
-"Los pagos se utilizan para registrar movimientos de líquido (enviar, recibir o transferir dinero).\n"
-"Puede procesar esos pagos por sus propios medios o utilizando los servicios instalados."
-
-#. module: account_payment_group
+#: field:account.payment.group,pop_up:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_pop_up
 msgid "Pop up"
 msgstr "Pop up"
 
 #. module: account_payment_group
 #: selection:account.payment.group,state:0
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 msgid "Posted"
 msgstr "Publicado"
 
 #. module: account_payment_group
+#: field:account.payment.group.invoice.wizard,product_id:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_product_id
 msgid "Product id"
 msgstr "Id del Producto"
 
 #. module: account_payment_group
+#: field:account.payment.group.invoice.wizard,description:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_description
 msgid "Reason"
 msgstr "Razón"
@@ -401,26 +928,16 @@ msgid "Receive Money"
 msgstr "Recibir Dinero"
 
 #. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
-msgid "Reconciled"
-msgstr "Conciliado"
-
-#. module: account_payment_group
+#: field:account.payment.group.invoice.wizard,date_invoice:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_date_invoice
 msgid "Refund Date"
 msgstr "Fecha de Devolución"
 
 #. module: account_payment_group
 #: code:addons/account_payment_group/models/account_invoice.py:40
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #, python-format
 msgid "Register Payment"
 msgstr "Registrar Pago"
-
-#. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
-msgid "Remove All"
-msgstr "Eliminar Todo"
 
 #. module: account_payment_group
 #: model:res.groups,name:account_payment_group.account_see_payment_menu
@@ -428,14 +945,22 @@ msgid "See Payments Menu"
 msgstr "Ver Menú de Pagos"
 
 #. module: account_payment_group
+#: field:account.payment.group,selected_debt:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_selected_debt
 msgid "Selected Debt"
 msgstr "Seleccionar Deuda"
 
 #. module: account_payment_group
+#: field:account.payment.group,selected_debt_untaxed:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_selected_debt_untaxed
 msgid "Selected Debt Untaxed"
 msgstr "Seleccionar Deuda Sin Impuesto"
+
+#. module: account_payment_group
+#: field:account.payment.group,selected_finacial_debt:0
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_selected_finacial_debt
+msgid "Selected Financial Debt"
+msgstr "Deuda Financiera Seleccionada"
 
 #. module: account_payment_group
 #: selection:account.payment,payment_type_copy:0
@@ -443,16 +968,7 @@ msgid "Send Money"
 msgstr "Enviar Dinero"
 
 #. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
-msgid "Sent"
-msgstr "Enviado"
-
-#. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
-msgid "State"
-msgstr "Estado"
-
-#. module: account_payment_group
+#: field:account.payment.group,state:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_state
 msgid "Status"
 msgstr "Estado"
@@ -464,48 +980,75 @@ msgid "Supplier Payments"
 msgstr "Pagos de Proveedor"
 
 #. module: account_payment_group
+#: help:account.payment.group,to_pay_move_line_ids:0
 #: model:ir.model.fields,help:account_payment_group.field_account_payment_group_to_pay_move_line_ids
 msgid "This lines are the ones the user has selected to be paid."
 msgstr "Estas son las líneas que fueron seleccionadas para pagarse."
 
 #. module: account_payment_group
+#: field:account.payment.group,to_pay_amount:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_to_pay_amount
 msgid "To Pay Amount"
 msgstr "Importe a pagar"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:534
+#: code:addons/account_payment_group/models/account_payment_group.py:563
 #, python-format
 msgid "To Pay Amount and Payment Amount must be equal!"
 msgstr "¡El Importe a pagar y el Importe de Pago deben ser iguales!"
 
 #. module: account_payment_group
+#: field:account.payment.group,to_pay_move_line_ids:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_to_pay_move_line_ids
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid "To Pay Lines"
 msgstr "Líneas a Pagar"
 
 #. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_tree
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_tree
-#: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
-msgid "Total"
-msgstr "Total"
+#: code:addons/account_payment_group/models/account_payment.py:120
+#: code:addons/account_payment_group/models/account_payment_group.py:548
+#, python-format
+msgid "To Pay Lines must be of the same account!"
+msgstr "Las líneas a pagar deben ser de la misma cuenta!"
 
 #. module: account_payment_group
+#: model:ir.actions.act_window,name:account_payment_group.action_account_payments_transfer
+#: model:ir.ui.menu,name:account_payment_group.menu_action_account_payments_transfer
+msgid "Transfers"
+msgstr "Transferencias"
+
+#. module: account_payment_group
+#: field:account.payment.group,unmatched_amount:0
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_unmatched_amount
 msgid "Unmatched amount"
-msgstr "Pago no publicado"
+msgstr "Importe no emparejado"
+
+#. module: account_payment_group
+#: field:account.payment.group,message_unread:0
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_message_unread
+msgid "Unread Messages"
+msgstr "Mensajes No Leídos"
+
+#. module: account_payment_group
+#: field:account.payment.group,message_unread_counter:0
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_message_unread_counter
+msgid "Unread Messages Counter"
+msgstr "Contador de Mensajes No leídos"
 
 #. module: account_payment_group
 #: model:ir.model.fields,help:account_payment_group.field_res_company_double_validation
+#: help:res.company,double_validation:0
 msgid "Use two steps validation on payments to suppliers"
 msgstr "Usar 2 pasos de validación en pagos a proveedores"
 
 #. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
-msgid "Validate"
-msgstr "Validar"
+#: help:account.config.settings,group_choose_payment_type:0
+#: model:ir.model.fields,help:account_payment_group.field_account_config_settings_group_choose_payment_type
+msgid ""
+"Used if you want let user choose payment type (inbound or outbound) when "
+"registering a payment from a payment group"
+msgstr ""
+"Utilizado si desea permitir al usuario elegir tipo de pago (entrante o "
+"saliente) cuando este registrando un pago desde un grupo de pagos"
 
 #. module: account_payment_group
 #: selection:account.payment.group,partner_type:0
@@ -513,20 +1056,20 @@ msgid "Vendor"
 msgstr "Proveedor"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:529
+#: code:addons/account_payment_group/models/account_payment_group.py:558
 #, python-format
 msgid "You can not confirm a payment group without payment lines!"
 msgstr "¡No puede confirmar un grupo de pagos sin líneas de pago!"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:514
+#: code:addons/account_payment_group/models/account_payment_group.py:539
 #, python-format
 msgid "You can not delete a payment that is already posted"
 msgstr "No puede eliminar un pago que ya ha sido publicado"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:443
-#: code:addons/account_payment_group/models/account_payment_group.py:449
+#: code:addons/account_payment_group/models/account_payment_group.py:468
+#: code:addons/account_payment_group/models/account_payment_group.py:474
 #, python-format
 msgid "You can not send to pay lines from different partners"
 msgstr "No puede enviar a pagar líneas de diferentes partners"
@@ -536,8 +1079,3 @@ msgstr "No puede enviar a pagar líneas de diferentes partners"
 #, python-format
 msgid "You can only register payment if invoice is open"
 msgstr "Solamente puede registrar un pago si la factura está abierta"
-
-#. module: account_payment_group
-#: model:ir.model,name:account_payment_group.model_account_payment_group_invoice_wizard
-msgid "account.payment.group.invoice.wizard"
-msgstr ""
