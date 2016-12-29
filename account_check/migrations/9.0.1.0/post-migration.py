@@ -172,6 +172,17 @@ def change_issue_journals(env):
             """, (old_journal_id,))
 
         old_journal_ids.append(old_journal_id)
+
+    # if there is a default debit account we set this as deferred account
+    for company in env['res.company']:
+        issue_journal = env['account.journal'].search([
+            ('company_id', '=', company.id),
+            ('in', 'in', old_journal_ids),
+            ('default_debit_account_id', '!=', False),
+        ], limit=1)
+        if issue_journal:
+            company.deferred_check_account_id = (
+                issue_journal.default_debit_account_id.id)
     return old_journal_ids
 
 
@@ -209,6 +220,13 @@ def change_third_journals(env):
             for old_journal_id in old_third_journals_read[0]:
                 _change_journal(cr, old_journal_id, new_third_journal.id)
                 old_journal_ids.append(old_journal_id)
+                # if there is a default debit account we set this as holding
+                # account
+                old_third_journal = env[
+                    'account.journal'].browse(old_journal_id)
+                account = old_third_journal.default_debit_account_id
+                if account:
+                    company.holding_check_account_id = account.id
     return old_journal_ids
 
 

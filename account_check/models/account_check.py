@@ -559,6 +559,8 @@ class AccountCheck(models.Model):
             # 'date_invoice': self.date_invoice,
             'origin': _('Check nbr (id): %s (%s)') % (self.name, self.id),
             'journal_id': journal.id,
+            # this is done on muticompany fix
+            # 'company_id': journal.company_id.id,
             'partner_id': partner.id,
             'type': invoice_type,
             'invoice_line_ids': [(0, 0, inv_line_vals)],

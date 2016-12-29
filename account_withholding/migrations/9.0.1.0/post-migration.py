@@ -67,4 +67,10 @@ def migrate_tax_withholding(env):
             # 'tax_group_id': False,
             'amount': 0.0,
         }
-        env['account.tax'].create(tax_vals)
+        new_tax = env['account.tax'].create(tax_vals)
+        # we add tax_code_id by sql because it is a column but not a field
+        # we add this so l10n_ar_account postinstall script can map tax group
+        if tax_code_id:
+            openupgrade.logged_query(cr, """
+            UPDATE account_tax set tax_code_id = %s where id = %s
+            """ % (tax_code_id, new_tax.id))
