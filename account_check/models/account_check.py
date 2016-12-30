@@ -131,7 +131,8 @@ class AccountCheck(models.Model):
     name = fields.Char(
         required=True,
         readonly=True,
-        copy=False
+        copy=False,
+        states={'draft': [('readonly', False)]},
     )
     number = fields.Integer(
         required=True,
@@ -239,6 +240,7 @@ class AccountCheck(models.Model):
         'account.journal',
         string='Journal',
         required=True,
+        domain=[('type', 'in', ['cash', 'bank'])],
         # related='move_line_id.journal_id',
         # store=True,
         # readonly=True,

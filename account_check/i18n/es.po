@@ -640,12 +640,12 @@ msgstr "Cuenta de Cheques Diferidos, por ej: \"Cheques Diferidos\""
 #. module: account_check
 #: selection:account.check.operation,operation:0
 msgid "Deliver"
-msgstr "Entregar"
+msgstr "Endosar"
 
 #. module: account_check
 #: selection:account.check,state:0
 msgid "Delivered"
-msgstr "Entregado"
+msgstr "Endosado"
 
 #. module: account_check
 #: selection:account.check.operation,operation:0
@@ -1112,7 +1112,7 @@ msgstr ""
 #: field:account.checkbook,range_to:0
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook_range_to
 msgid "To Number"
-msgstr "Enumerar"
+msgstr "Hasta Número"
 
 #. module: account_check
 #: field:account.check,type:0
