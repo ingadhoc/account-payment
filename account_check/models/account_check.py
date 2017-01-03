@@ -466,13 +466,15 @@ class AccountCheck(models.Model):
     def bank_debit(self):
         self.ensure_one()
         if self.state in ['handed']:
-            origin = self.operation_ids[0].origin
-            if origin._name != 'account.payment':
-                raise ValidationError((
-                    'The deposit operation is not linked to a payment.'
-                    'If you want to reject you need to do it manually.'))
+            # we can use check journal directly
+            # origin = self.operation_ids[0].origin
+            # if origin._name != 'account.payment':
+            #     raise ValidationError((
+            #         'The deposit operation is not linked to a payment.'
+            #         'If you want to reject you need to do it manually.'))
             vals = self.get_bank_vals(
-                'bank_debit', origin.journal_id)
+                # 'bank_debit', origin.journal_id)
+                'bank_debit', self.journal_id)
             move = self.env['account.move'].create(vals)
             move.post()
             # self.env['account.move'].create({
