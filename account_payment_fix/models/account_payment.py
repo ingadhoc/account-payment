@@ -153,6 +153,7 @@ class AccountPayment(models.Model):
         companies. We try to send force_company on self but it doesnt works, it
         only works sending it on partner
         """
+        res = super(AccountPayment, self)._compute_destination_account_id()
         if not self.invoice_ids and self.payment_type != 'transfer':
             partner = self.partner_id.with_context(
                 force_company=self.company_id.id)
@@ -162,4 +163,4 @@ class AccountPayment(models.Model):
             else:
                 self.destination_account_id = (
                     partner.property_account_payable_id.id)
-        return super(AccountPayment, self)._compute_destination_account_id()
+        return res
