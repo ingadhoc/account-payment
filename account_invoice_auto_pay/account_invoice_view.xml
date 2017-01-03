@@ -8,7 +8,7 @@
             <field name="arch" type="xml">
                 <button name="invoice_cancel" position="after">
                     <!-- New cancel button for paid invoices with autopay (no payments related) -->
-                    <button name="invoice_cancel_paid" attrs="{'invisible':['|',('state','!=', 'paid'),('payment_ids', '!=', [(6, False, [])])]}" string="Cancel Invoice" groups="account.group_account_invoice"/>
+                    <button name="invoice_cancel_paid" attrs="{'invisible':['|',('state','!=', 'paid'),('payment_ids', '!=', [])]}" string="Cancel Invoice" groups="account.group_account_invoice"/>
                 </button>
             </field>
         </record>
