@@ -265,7 +265,9 @@ class AccountPaymentGroup(models.Model):
         # TODO rename field or remove string
         # string='Remaining Residual',
         readonly=True,
-        string="Payment Difference",
+        string="Payments Difference",
+        help="Difference between selected debt (or to pay amount) and "
+        "payments amount"
     )
     # TODO por ahora no implementamos
     # payment_difference_handling = fields.Selection(
