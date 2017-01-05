@@ -21,10 +21,17 @@ class account_voucher_withholding(models.Model):
         'account.voucher',
         'Voucher',
         required=True,
+        readonly=True,
         ondelete='cascade',
     )
     supplier_voucher_id = fields.Many2one(
-        related='voucher_id',
+        'account.voucher',
+        string='Voucher',
+        # related field raise an error when creating new withholding from a
+        # voucher, we use compute without depends so it is not computed
+        # on onchange
+        # related='voucher_id',
+        compute='_get_supplier_voucher_id',
         readonly=True
     )
     period_id = fields.Many2one(
@@ -119,6 +126,10 @@ class account_voucher_withholding(models.Model):
         ('internal_number_uniq', 'unique(internal_number, tax_withholding_id)',
             'Internal Number must be unique per Tax Withholding!'),
     ]
+
+    @api.one
+    def _get_supplier_voucher_id(self):
+        self.supplier_voucher_id = self.voucher_id
 
     @api.one
     @api.depends('name', 'internal_number')

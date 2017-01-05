@@ -63,8 +63,8 @@
                                 <field name="base_amount"/>
                                 <field name="amount"/>
                                 <field name="move_line_id"/>
-                                <field name="voucher_id" context="{'form_view_ref':'account_voucher.view_vendor_receipt_form'}" attrs="{'invisible': [('type', '=', 'receipt')]}"/>
-                                <field name="supplier_voucher_id" context="{'form_view_ref':'account_voucher.view_vendor_payment_form'}" attrs="{'invisible': [('type', '=', 'payment')]}"/>
+                                <field name="voucher_id" context="{'form_view_ref':'account_voucher.view_vendor_receipt_form'}" attrs="{'invisible': [('type', '!=', 'receipt')]}" required="False"/>
+                                <field name="supplier_voucher_id" context="{'form_view_ref':'account_voucher.view_vendor_payment_form'}" attrs="{'invisible': [('type', '!=', 'payment')]}" required="False"/>
                                 <field name="partner_id"/>
                             </group>
                             <group>
