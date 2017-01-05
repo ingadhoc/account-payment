@@ -23,6 +23,10 @@ class account_voucher_withholding(models.Model):
         required=True,
         ondelete='cascade',
     )
+    supplier_voucher_id = fields.Many2one(
+        related='voucher_id',
+        readonly=True
+    )
     period_id = fields.Many2one(
         related='voucher_id.period_id',
         store=True,
