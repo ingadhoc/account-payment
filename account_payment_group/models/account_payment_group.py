@@ -331,23 +331,25 @@ class AccountPaymentGroup(models.Model):
             #     rec.partner_type == 'supplier' and
             #     -payments_amount or payments_amount)
 
-    @api.one
+#    @api.one
     # @api.onchange(
-    @api.depends(
-        # 'to_pay_move_line_ids',
-        'to_pay_move_line_ids.amount_residual',
-        'to_pay_move_line_ids.amount_residual_currency',
-        'to_pay_move_line_ids.currency_id',
-        'to_pay_move_line_ids.invoice_id',
-        'payment_date',
-        'currency_id',
-    )
+#    @api.depends(
+#        # 'to_pay_move_line_ids',
+#        'to_pay_move_line_ids.amount_residual',
+#        'to_pay_move_line_ids.amount_residual_currency',
+#        'to_pay_move_line_ids.currency_id',
+#        'to_pay_move_line_ids.invoice_id',
+#        'payment_date',
+#        'currency_id',
+#    )
     # @api.constrains(
     #     'to_pay_move_line_ids',
     #     'payment_date',
     #     'currency_id',
     # )
     # def set_selected_debt(self):
+
+
     def _compute_selected_debt(self):
         # # we dont make it computed because we want to store value.
         # # TODO check if odoo implement this kind of hybrid field
