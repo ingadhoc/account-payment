@@ -163,7 +163,13 @@ result = withholdable_base_amount * 0.10
                 continue
 
             # we copy withholdable_base_amount on base_amount
-            vals['base_amount'] = vals.get('withholdable_base_amount')
+            # al final vimos con varios clientes que este monto base
+            # debe ser la base imponible de lo que se está pagando en este
+            # voucher
+            vals['base_amount'] = vals.get(
+                'withholdable_advanced_amount') + vals.get(
+                'withholdable_invoiced_amount')
+            # vals['base_amount'] = vals.get('withholdable_base_amount')
             vals['amount'] = computed_withholding_amount
             vals['computed_withholding_amount'] = computed_withholding_amount
 
