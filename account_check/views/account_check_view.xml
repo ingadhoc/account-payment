@@ -172,14 +172,14 @@
             </field>
         </record> 
 
-        <!-- mode="month" --> 
         <record model="ir.ui.view" id="view_account_check_calendar">
             <field name="name">account.check.calendar</field>
             <field name="model">account.check</field>
             <field name="arch" type="xml">
                 <calendar string="Checks" 
-                          date_start="payment_date" 
-                          color="partner_id">
+                        mode="month"
+                        date_start="payment_date" 
+                        color="bank_id">
                     <field name="amount"/>
                 </calendar>
             </field>
