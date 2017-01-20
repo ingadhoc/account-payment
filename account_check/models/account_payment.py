@@ -256,6 +256,7 @@ class AccountPayment(models.Model):
             'type': self.check_type,
             'journal_id': self.journal_id.id,
             'amount': self.amount,
+            'payment_date': self.check_payment_date,
             # TODO arreglar que monto va de amount y cual de amount currency
             # 'amount_currency': self.amount,
             'currency_id': self.currency_id.id,

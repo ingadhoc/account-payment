@@ -221,26 +221,36 @@ class AccountCheck(models.Model):
 # ex campos related
     amount = fields.Monetary(
         # related='move_line_id.balance',
-        currency_field='company_currency_id'
+        currency_field='company_currency_id',
+        readonly=True,
+        states={'draft': [('readonly', False)]}
     )
     amount_currency = fields.Monetary(
         # related='move_line_id.amount_currency',
-        currency_field='currency_id'
+        currency_field='currency_id',
+        readonly=True,
+        states={'draft': [('readonly', False)]},
     )
     currency_id = fields.Many2one(
         'res.currency',
+        readonly=True,
+        states={'draft': [('readonly', False)]},
         # related='move_line_id.currency_id',
     )
     payment_date = fields.Date(
         # related='move_line_id.date_maturity',
         # store=True,
         # readonly=True,
+        readonly=True,
+        states={'draft': [('readonly', False)]}
     )
     journal_id = fields.Many2one(
         'account.journal',
         string='Journal',
         required=True,
         domain=[('type', 'in', ['cash', 'bank'])],
+        readonly=True,
+        states={'draft': [('readonly', False)]}
         # related='move_line_id.journal_id',
         # store=True,
         # readonly=True,
