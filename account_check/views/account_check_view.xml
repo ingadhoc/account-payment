@@ -162,7 +162,7 @@
             <field name="name">Third Checks</field>
             <field name="res_model">account.check</field>
             <field name="view_type">form</field>
-            <field name="view_mode">tree,form,calendar</field>
+            <field name="view_mode">tree,form</field>
             <!-- <field name="search_view_id" ref=""/> -->
             <!-- <field name="view_id" ref="view_account_check_tree"/> -->
             <field name="domain">[('type','=','third_check')]</field>
@@ -180,7 +180,7 @@
             <field name="name">Issue Checks</field>
             <field name="res_model">account.check</field>
             <field name="view_type">form</field>
-            <field name="view_mode">tree,form,calendar</field>
+            <field name="view_mode">tree,form</field>
             <!-- <field name="search_view_id" ref=""/> -->
             <!-- <field name="view_id" ref="view_account_check_tree"/> -->
             <field name="domain">[('type','=','issue_check')]</field>
