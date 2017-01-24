@@ -152,15 +152,15 @@ class AccountPayment(models.Model):
 # on change methods
 
     # @api.constrains('check_ids')
-    @api.onchange('check_ids', 'payment_method_code')
+##    @api.onchange('check_ids', 'payment_method_code')
     def onchange_checks(self):
         # we only overwrite if payment method is delivered
         if self.payment_method_code == 'delivered_third_check':
             self.amount = sum(self.check_ids.mapped('amount'))
 
     # TODo activar
-    @api.one
-    @api.onchange('check_number', 'checkbook_id')
+##    @api.one
+##    @api.onchange('check_number', 'checkbook_id')
     def change_check_number(self):
         # TODO make default padding a parameter
         if self.payment_method_code in ['received_third_check']:
@@ -177,7 +177,7 @@ class AccountPayment(models.Model):
                 #     '%%0%sd' % padding % self.check_number)
             self.check_name = check_name
 
-    @api.onchange('check_issue_date', 'check_payment_date')
+##    @api.onchange('check_issue_date', 'check_payment_date')
     def onchange_date(self):
         if (
                 self.check_issue_date and self.check_payment_date and
@@ -186,8 +186,8 @@ class AccountPayment(models.Model):
             raise UserError(
                 _('Check Payment Date must be greater than Issue Date'))
 
-    @api.one
-    @api.onchange('partner_id')
+##    @api.one
+##    @api.onchange('partner_id')
     def onchange_partner_check(self):
         commercial_partner = self.partner_id.commercial_partner_id
         self.check_bank_id = (
@@ -197,7 +197,7 @@ class AccountPayment(models.Model):
         # TODO use document number instead of vat?
         self.check_owner_vat = commercial_partner.vat
 
-    @api.onchange('payment_method_code')
+##    @api.onchange('payment_method_code')
     def _onchange_payment_method_code(self):
         if self.payment_method_code == 'issue_check':
             checkbook = self.env['account.checkbook'].search([
@@ -206,7 +206,7 @@ class AccountPayment(models.Model):
                 limit=1)
             self.checkbook_id = checkbook
 
-    @api.onchange('checkbook_id')
+##    @api.onchange('checkbook_id')
     def onchange_checkbook(self):
         if self.checkbook_id:
             self.check_number = self.checkbook_id.next_number
@@ -250,7 +250,7 @@ class AccountPayment(models.Model):
             'owner_name': self.check_owner_name,
             'owner_vat': self.check_owner_vat,
             'number': self.check_number,
-            'name': self.check_name,
+            'name': 'check' #self.check_name,
             'checkbook_id': self.checkbook_id.id,
             'issue_date': self.check_issue_date,
             'type': self.check_type,
