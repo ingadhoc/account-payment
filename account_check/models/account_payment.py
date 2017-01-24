@@ -250,7 +250,7 @@ class AccountPayment(models.Model):
             'owner_name': self.check_owner_name,
             'owner_vat': self.check_owner_vat,
             'number': self.check_number,
-            'name': self.check_name,
+            'name': 'check' #self.check_name,
             'checkbook_id': self.checkbook_id.id,
             'issue_date': self.check_issue_date,
             'type': self.check_type,
