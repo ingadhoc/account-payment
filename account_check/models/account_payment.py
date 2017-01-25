@@ -410,10 +410,10 @@ class AccountPayment(models.Model):
     #     self.do_checks_operations()
     #     return super(AccountPayment, self).post()
 
-    def _get_liquidity_move_line_vals(self, amount):
-        vals = super(AccountPayment, self)._get_liquidity_move_line_vals(
-            amount)
-        vals = self.do_checks_operations(vals=vals)
+    ##def _get_liquidity_move_line_vals(self, amount):
+    ##    vals = super(AccountPayment, self)._get_liquidity_move_line_vals(
+    ##        amount)
+    ##    vals = self.do_checks_operations(vals=vals)
         # if self.check_type:
         #     vals['date_maturity'] = self.check_payment_date
         #     if self.check_subtype == 'deferred':
@@ -433,7 +433,7 @@ class AccountPayment(models.Model):
         #     #     vals['check_type'] = 'issue_check'
         #     # else:
         #     #     vals['check_type'] = 'third_check'
-        return vals
+     ##   return vals
 
     # @api.one
     # @api.depends(
