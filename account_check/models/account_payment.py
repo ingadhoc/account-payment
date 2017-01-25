@@ -197,14 +197,14 @@ class AccountPayment(models.Model):
     #    # TODO use document number instead of vat?
     #    self.check_owner_vat = commercial_partner.vat
 
-    @api.onchange('payment_method_code')
-    def _onchange_payment_method_code(self):
-        if self.payment_method_code == 'issue_check':
-            checkbook = self.env['account.checkbook'].search([
-                ('state', '=', 'active'),
-                ('journal_id', '=', self.journal_id.id)],
-                limit=1)
-            self.checkbook_id = checkbook
+    ## @api.onchange('payment_method_code')
+    ## def _onchange_payment_method_code(self):
+    ##     if self.payment_method_code == 'issue_check':
+    ##         checkbook = self.env['account.checkbook'].search([
+    ##             ('state', '=', 'active'),
+    ##             ('journal_id', '=', self.journal_id.id)],
+    ##             limit=1)
+    ##         self.checkbook_id = checkbook
 
     @api.onchange('checkbook_id')
     def onchange_checkbook(self):
