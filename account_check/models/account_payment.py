@@ -256,6 +256,7 @@ class AccountPayment(models.Model):
             'type': self.check_type,
             'journal_id': self.journal_id.id,
             'amount': self.amount,
+            'payment_date': self.check_payment_date,
             # TODO arreglar que monto va de amount y cual de amount currency
             # 'amount_currency': self.amount,
             'currency_id': self.currency_id.id,
@@ -264,6 +265,23 @@ class AccountPayment(models.Model):
         self.check_ids = [(4, check.id, False)]
         check._add_operation(operation, self, self.partner_id)
         return check
+
+    @api.multi
+    def get_third_check_account(self):
+        """
+        For third checks, if we use a journal only for third checks, we use
+        accounts on journal, if not we use company account
+        """
+        self.ensure_one()
+        if self.payment_type in ('outbound', 'transfer'):
+            account = self.journal_id.default_debit_account_id
+            methods_field = 'outbound_payment_method_ids'
+        else:
+            account = self.journal_id.default_credit_account_id
+            methods_field = 'inbound_payment_method_ids'
+        if len(self.journal_id[methods_field]) > 1 or not account:
+            account = self.company_id._get_check_account('holding')
+        return account
 
     @api.multi
     def do_checks_operations(self, vals=None, cancel=False):
@@ -294,8 +312,7 @@ class AccountPayment(models.Model):
             _logger.info('Receive Check')
             self.create_check('third_check', operation, self.check_bank_id)
             vals['date_maturity'] = self.check_payment_date
-            vals['account_id'] = self.company_id._get_check_account(
-                'holding').id
+            vals['account_id'] = self.get_third_check_account().id
         elif (
                 rec.payment_method_code == 'delivered_third_check' and
                 rec.payment_type == 'transfer' and
@@ -309,8 +326,7 @@ class AccountPayment(models.Model):
             _logger.info('Sell Check')
             rec.check_ids._add_operation(
                 operation, rec, False)
-            vals['account_id'] = self.company_id._get_check_account(
-                'holding').id
+            vals['account_id'] = self.get_third_check_account().id
         elif (
                 rec.payment_method_code == 'delivered_third_check' and
                 rec.payment_type == 'transfer' and
@@ -324,8 +340,7 @@ class AccountPayment(models.Model):
             _logger.info('Deposit Check')
             rec.check_ids._add_operation(
                 operation, rec, False)
-            vals['account_id'] = self.company_id._get_check_account(
-                'holding').id
+            vals['account_id'] = self.get_third_check_account().id
         elif (
                 rec.payment_method_code == 'delivered_third_check' and
                 rec.payment_type == 'outbound' and
@@ -339,8 +354,7 @@ class AccountPayment(models.Model):
             _logger.info('Deliver Check')
             rec.check_ids._add_operation(
                 operation, rec, rec.partner_id)
-            vals['account_id'] = self.company_id._get_check_account(
-                'holding').id
+            vals['account_id'] = self.get_third_check_account().id
         elif (
                 rec.payment_method_code == 'issue_check' and
                 rec.payment_type == 'outbound' and

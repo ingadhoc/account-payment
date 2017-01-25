@@ -20,7 +20,7 @@
 ##############################################################################
 {
     'name': 'Account Check Management',
-    'version': '10.0.1.1.0',
+    'version': '10.0.1.6.0',
     'category': 'Accounting',
     'summary': 'Accounting, Payment, Check, Third, Issue',
     'author': 'OpenERP Team de Localizacion Argentina',
@@ -43,7 +43,7 @@
         'views/account_journal_dashboard_view.xml',
         'views/account_journal_view.xml',
         'views/account_checkbook_view.xml',
-        #'views/res_company_view.xml',
+        ##'views/res_company_view.xml',
         'views/account_chart_template_view.xml',
         'security/ir.model.access.csv',
         'security/account_check_security.xml',

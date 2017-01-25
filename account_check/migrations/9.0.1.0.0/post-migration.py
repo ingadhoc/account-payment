@@ -2,6 +2,8 @@
 from openupgradelib import openupgrade
 from openerp.exceptions import ValidationError
 from openerp.addons.account_check.models.account_check import AccountCheck
+# import logging
+# _logger = logging.getLogger(__name__)
 
 
 def issue_number_interval(self):
@@ -25,6 +27,10 @@ def migrate(env, version):
     # later delete de journals by fixing manually related remaining move and
     # move lines
     env['account.journal'].browse(old_journal_ids).unlink()
+    # try:
+    #     env['account.journal'].browse(old_journal_ids).unlink()
+    # except:
+    #     _logger.warning('Could not delete checks journals')
 
     # first unlink then add third issue types because if not a checkbook
     # is created for old journals and we cant unlink them
@@ -46,7 +52,7 @@ def delete_old_ir_rule(env):
 def _change_journal(cr, old_journal_id, new_journal_id):
     tables = [
         'account_move', 'account_move_line', 'account_check',
-        'account_payment']
+        'account_payment', 'account_bank_statement']
     for table in tables:
         openupgrade.logged_query(cr, """
             UPDATE
@@ -118,6 +124,7 @@ def _change_journal_issue(env, checkbook_id, new_journal_id):
                 WHERE aml.id in %s)
             """ % (new_journal_id, tuple(move_line_ids)),
         )
+
     tables = ['account_check', 'account_payment']
     # 'account_voucher' no tiene checkbook_id
     for table in tables:
@@ -163,7 +170,26 @@ def change_issue_journals(env):
         old_journal_id = checkbook.journal_id.id
         _change_journal_issue(
             env, checkbook.id, new_journal_id)
+
+        # no sabemos a que diario mandar si existe 'account_bank_statement'
+        # no deberia haber statements para diario de cheques, los borramos
+        openupgrade.logged_query(cr, """
+            DELETE FROM account_bank_statement WHERE journal_id = %s
+            """, (old_journal_id,))
+
         old_journal_ids.append(old_journal_id)
+
+    # if there is a default debit account we set this as deferred account
+    if old_journal_ids:
+        for company in env['res.company'].search([]):
+            issue_journal = env['account.journal'].search([
+                ('company_id', '=', company.id),
+                ('id', 'in', old_journal_ids),
+                ('default_debit_account_id', '!=', False),
+            ], limit=1)
+            if issue_journal:
+                company.deferred_check_account_id = (
+                    issue_journal.default_debit_account_id.id)
     return old_journal_ids
 
 
@@ -201,6 +227,13 @@ def change_third_journals(env):
             for old_journal_id in old_third_journals_read[0]:
                 _change_journal(cr, old_journal_id, new_third_journal.id)
                 old_journal_ids.append(old_journal_id)
+                # if there is a default debit account we set this as holding
+                # account
+                old_third_journal = env[
+                    'account.journal'].browse(old_journal_id)
+                account = old_third_journal.default_debit_account_id
+                if account:
+                    company.holding_check_account_id = account.id
     return old_journal_ids
 
 
@@ -214,7 +247,7 @@ def get_payment(env, voucher_id):
     cr = env.cr
     openupgrade.logged_query(cr, """
         SELECT
-            move_id
+            move_id, amount, journal_id, state
         FROM
             account_voucher_copy
         WHERE
@@ -222,11 +255,19 @@ def get_payment(env, voucher_id):
             """, (voucher_id,))
     read = cr.fetchall()
     if read:
-        move_id = read[0]
+        (move_id, amount, journal_id, state) = read[0]
         payment = env['account.move.line'].search([
-            ('move_id', 'in', move_id), ('payment_id', '!=', False)],
+            ('move_id', '=', move_id), ('payment_id', '!=', False)],
             limit=1).payment_id
-        return payment
+        if payment:
+            return payment
+        elif state in ['draft', 'cancel']:
+            payments = env['account.payment'].search([
+                ('state', '=', 'draft'),
+                ('journal_id', '=', journal_id),
+                ('amount', '=', amount)])
+            if len(payments) == 1:
+                return payments[0]
     return False
 
 
@@ -319,9 +360,10 @@ def add_operations(env):
                         'account_check.'
                         'account_payment_method_received_third_check').id,
                 })
-                check._add_operation(
-                    'holding', payment,
-                    partner=payment.partner_id, date=payment.payment_date)
+                if payment.state != 'draft':
+                    check._add_operation(
+                        'holding', payment,
+                        partner=payment.partner_id, date=payment.payment_date)
 
             delivery_payment = get_payment(env, third_handed_voucher_id)
             # if third_handed_voucher_id:
@@ -363,9 +405,10 @@ def add_operations(env):
                         'account_check.'
                         'account_payment_method_issue_check').id,
                 })
-                check._add_operation(
-                    'handed', payment,
-                    partner=payment.partner_id, date=payment.payment_date)
+                if payment.state != 'draft':
+                    check._add_operation(
+                        'handed', payment,
+                        partner=payment.partner_id, date=payment.payment_date)
             if debit_account_move_id:
                 debit_account_move = env['account.move'].browse(
                     debit_account_move_id)
@@ -420,6 +463,14 @@ def add_operations(env):
                 continue
             # if check is delivered it was handed in old check module
             elif check.state == 'delivered' and original_state == 'handed':
+                continue
+            # if original_state == 'cancel' now it is draft because payments
+            # dont have cancel state
+            elif original_state == 'cancel' and check.state == 'draft':
+                # continue
+                # on new version checks are deleted when payment goes to draft
+                # we cant get link and data because we dont have account move
+                check.unlink()
                 continue
             raise ValidationError(
                 'On check %s (id: %s) check state (%s) differs from original '

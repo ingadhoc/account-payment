@@ -131,7 +131,8 @@ class AccountCheck(models.Model):
     name = fields.Char(
         required=True,
         readonly=True,
-        copy=False
+        copy=False,
+        states={'draft': [('readonly', False)]},
     )
     number = fields.Integer(
         required=True,
@@ -220,25 +221,36 @@ class AccountCheck(models.Model):
 # ex campos related
     amount = fields.Monetary(
         # related='move_line_id.balance',
-        currency_field='company_currency_id'
+        currency_field='company_currency_id',
+        readonly=True,
+        states={'draft': [('readonly', False)]}
     )
     amount_currency = fields.Monetary(
         # related='move_line_id.amount_currency',
-        currency_field='currency_id'
+        currency_field='currency_id',
+        readonly=True,
+        states={'draft': [('readonly', False)]},
     )
     currency_id = fields.Many2one(
         'res.currency',
+        readonly=True,
+        states={'draft': [('readonly', False)]},
         # related='move_line_id.currency_id',
     )
     payment_date = fields.Date(
         # related='move_line_id.date_maturity',
         # store=True,
         # readonly=True,
+        readonly=True,
+        states={'draft': [('readonly', False)]}
     )
     journal_id = fields.Many2one(
         'account.journal',
         string='Journal',
         required=True,
+        domain=[('type', 'in', ['cash', 'bank'])],
+        readonly=True,
+        states={'draft': [('readonly', False)]}
         # related='move_line_id.journal_id',
         # store=True,
         # readonly=True,
@@ -464,13 +476,15 @@ class AccountCheck(models.Model):
     def bank_debit(self):
         self.ensure_one()
         if self.state in ['handed']:
-            origin = self.operation_ids[0].origin
-            if origin._name != 'account.payment':
-                raise ValidationError((
-                    'The deposit operation is not linked to a payment.'
-                    'If you want to reject you need to do it manually.'))
+            # we can use check journal directly
+            # origin = self.operation_ids[0].origin
+            # if origin._name != 'account.payment':
+            #     raise ValidationError((
+            #         'The deposit operation is not linked to a payment.'
+            #         'If you want to reject you need to do it manually.'))
             vals = self.get_bank_vals(
-                'bank_debit', origin.journal_id)
+                # 'bank_debit', origin.journal_id)
+                'bank_debit', self.journal_id)
             move = self.env['account.move'].create(vals)
             move.post()
             # self.env['account.move'].create({
@@ -502,12 +516,17 @@ class AccountCheck(models.Model):
         self.ensure_one()
         if self.state in ['deposited', 'selled']:
             operation = self._get_operation(self.state)
-            if operation.origin._name != 'account.payment':
+            if operation.origin._name == 'account.payment':
+                journal = operation.origin.destination_journal_id
+            # for compatibility with migration from v8
+            elif operation.origin._name == 'account.move':
+                journal = operation.origin.journal_id
+            else:
                 raise ValidationError((
                     'The deposit operation is not linked to a payment.'
                     'If you want to reject you need to do it manually.'))
             vals = self.get_bank_vals(
-                'bank_reject', operation.origin.destination_journal_id)
+                'bank_reject', journal)
             move = self.env['account.move'].create(vals)
             move.post()
             self._add_operation('rejected', move)
@@ -554,6 +573,8 @@ class AccountCheck(models.Model):
             # 'date_invoice': self.date_invoice,
             'origin': _('Check nbr (id): %s (%s)') % (self.name, self.id),
             'journal_id': journal.id,
+            # this is done on muticompany fix
+            # 'company_id': journal.company_id.id,
             'partner_id': partner.id,
             'type': invoice_type,
             'invoice_line_ids': [(0, 0, inv_line_vals)],
@@ -602,13 +623,13 @@ class AccountCheck(models.Model):
             # tenemos que usar esa misma
             credit_account = journal.default_debit_account_id
             # la contrapartida es la cuenta que reemplazamos en el pago
-            debit_account = self.company_id.deferred_check_account_id
+            debit_account = self.company_id._get_check_account('deferred')
         elif action == 'bank_reject':
             # al transferir a un banco se usa esta. al volver tiene que volver
             # por la opuesta
             # self.destination_journal_id.default_credit_account_id
             credit_account = journal.default_debit_account_id
-            debit_account = self.company_id.rejected_check_account_id
+            debit_account = self.company_id._get_check_account('rejected')
             # credit_account_id = vou_journal.default_credit_account_id.id
         else:
             raise ValidationError(_(
