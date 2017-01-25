@@ -4,8 +4,9 @@
 try:
     from openupgradelib.openupgrade_tools import table_exists
 except ImportError:
-    table_exists = None
+    table_exists = None #SJT No tiene función
 
+# SJT Crea los grupos de pagos con la data de los pagos existentes en Odoo
 
 def post_init_hook(cr, registry):
     """Loaded after installing the module.
