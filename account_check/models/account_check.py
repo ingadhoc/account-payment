@@ -51,7 +51,7 @@ class AccountCheckOperation(models.Model):
     #     ondelete='cascade',
     # )
     origin_name = fields.Char(
-        compute='_compute_origin_name'
+#        compute='_compute_origin_name'
     )
     origin = fields.Reference(
         string='Origin Document',
