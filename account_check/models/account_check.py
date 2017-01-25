@@ -91,9 +91,9 @@ class AccountCheckOperation(models.Model):
         for rec in self:
             try:
                 if rec.origin:
-                    id, name = rec.origin.name_get()[0]
-                    origin_name = name
-                    # origin_name = rec.origin.display_name
+                    #id, name = rec.origin.name_get()[0]
+                    #origin_name = name
+                    origin_name = rec.origin.display_name
                 else:
                     origin_name = False
             except:
