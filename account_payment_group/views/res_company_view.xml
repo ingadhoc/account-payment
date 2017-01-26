@@ -6,9 +6,9 @@
             <field name="model">res.company</field>
             <field name="inherit_id" ref="base.view_company_form"/>
             <field name="arch" type="xml">
-                <group name="account_grp">
+                <field name="name" position="after">
                     <field name="double_validation"/>
-                </group>
+                </field>
             </field>
         </record>
     </data>
