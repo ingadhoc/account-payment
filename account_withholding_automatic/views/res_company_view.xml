@@ -7,7 +7,7 @@
             <field name="inherit_id" ref="account_payment_group.view_company_form"/>
             <field name="arch" type="xml">
                 <field name="double_validation" position="after">
-                    <field name="automatic_withholdings"/>
+                        <label for="automatic_withholdings" string="Automatic Withholdings"/><field name="automatic_withholdings"/>
                 </field>
             </field>
         </record>
