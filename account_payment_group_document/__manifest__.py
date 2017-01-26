@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Payment Groups with Accounting Documents",
-    "version": "9.0.1.0.0",
+    "version": "10.0.1.0.0",
     "author": "ADHOC SA",
     "license": "AGPL-3",
     "category": "Accounting",
