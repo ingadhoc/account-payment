@@ -8,9 +8,9 @@
             <field name="model">account.payment.group</field>
             <field name="inherit_id" ref="account_payment_group.view_account_payment_group_form"/>
             <field name="arch" type="xml">
-                <button position="before">
+                <header position="inside">
                     <button name="compute_withholdings" string="Compute Withholdings" type="object" states="confirmed"/>
-                </button>
+                </header>
             </field>
         </record>
           
