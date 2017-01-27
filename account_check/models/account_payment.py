@@ -178,7 +178,7 @@ class AccountPayment(models.Model):
     #        self.check_name = check_name
 
 ## SJT    @api.onchange('check_issue_date', 'check_payment_date')
-## SJT   def onchange_date(self):
+    def onchange_date(self):
         if (
                 self.check_issue_date and self.check_payment_date and
                 self.check_issue_date > self.check_payment_date):
@@ -197,14 +197,14 @@ class AccountPayment(models.Model):
     #    # TODO use document number instead of vat?
     #    self.check_owner_vat = commercial_partner.vat
 
-    ## @api.onchange('payment_method_code')
-    ## def _onchange_payment_method_code(self):
-    ##     if self.payment_method_code == 'issue_check':
-    ##         checkbook = self.env['account.checkbook'].search([
-    ##             ('state', '=', 'active'),
-    ##             ('journal_id', '=', self.journal_id.id)],
-    ##             limit=1)
-    ##         self.checkbook_id = checkbook
+    @api.onchange('payment_method_code')
+    def _onchange_payment_method_code(self):
+        if self.payment_method_code == 'issue_check':
+            checkbook = self.env['account.checkbook'].search([
+                 ('state', '=', 'active'),
+                 ('journal_id', '=', self.journal_id.id)],
+                 limit=1)
+             self.checkbook_id = checkbook
 
     @api.onchange('checkbook_id')
     def onchange_checkbook(self):
