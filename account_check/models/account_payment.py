@@ -204,7 +204,7 @@ class AccountPayment(models.Model):
                  ('state', '=', 'active'),
                  ('journal_id', '=', self.journal_id.id)],
                  limit=1)
-             self.checkbook_id = checkbook
+            self.checkbook_id = checkbook
 
     @api.onchange('checkbook_id')
     def onchange_checkbook(self):
