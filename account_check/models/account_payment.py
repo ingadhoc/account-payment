@@ -160,7 +160,7 @@ class AccountPayment(models.Model):
 
     # TODo activar
     @api.one
-## SJT    @api.onchange('check_number', 'checkbook_id')
+    @api.onchange('check_number', 'checkbook_id')
     def change_check_number(self):
         # TODO make default padding a parameter
         if self.payment_method_code in ['received_third_check']:
@@ -206,7 +206,7 @@ class AccountPayment(models.Model):
     ##             limit=1)
     ##         self.checkbook_id = checkbook
 
-## SJT    @api.onchange('checkbook_id')
+    @api.onchange('checkbook_id')
     def onchange_checkbook(self):
         if self.checkbook_id:
             self.check_number = self.checkbook_id.next_number
