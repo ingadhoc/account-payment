@@ -151,31 +151,31 @@ class AccountPayment(models.Model):
 
 # on change methods
 
-    # @api.constrains('check_ids')
-## SJT    @api.onchange('check_ids', 'payment_method_code')
-    def onchange_checks(self):
-        # we only overwrite if payment method is delivered
-        if self.payment_method_code == 'delivered_third_check':
-            self.amount = sum(self.check_ids.mapped('amount'))
+#    # @api.constrains('check_ids')
+#    @api.onchange('check_ids', 'payment_method_code')
+#    def onchange_checks(self):
+#        # we only overwrite if payment method is delivered
+#        if self.payment_method_code == 'delivered_third_check':
+#            self.amount = sum(self.check_ids.mapped('amount'))
 
-    # TODO activar
-    @api.one
-    @api.onchange('check_number', 'checkbook_id')
-    def change_check_number(self):
-        # TODO make default padding a parameter
-        if self.payment_method_code in ['received_third_check']:
-            if not self.check_number:
-                check_name = False
-            else:
-                # TODO make optional
-                padding = 8
-                if len(str(self.check_number)) > padding:
-                    padding = len(str(self.check_number))
-                # communication = _('Check nbr %s') % (
-                check_name = ('%%0%sd' % padding % self.check_number)
-                # communication = (
-                #     '%%0%sd' % padding % self.check_number)
-            self.check_name = check_name
+#SJT    # TODO activar
+    #@api.one
+    #@api.onchange('check_number', 'checkbook_id')
+    #def change_check_number(self):
+    #    # TODO make default padding a parameter
+    #    if self.payment_method_code in ['received_third_check']:
+    #        if not self.check_number:
+    #            check_name = False
+    #        else:
+    #            # TODO make optional
+    #            padding = 8
+    #            if len(str(self.check_number)) > padding:
+    #                padding = len(str(self.check_number))
+    #            # communication = _('Check nbr %s') % (
+    #            check_name = ('%%0%sd' % padding % self.check_number)
+    #            # communication = (
+    #            #     '%%0%sd' % padding % self.check_number)
+    #        self.check_name = check_name
 
 ## SJT    @api.onchange('check_issue_date', 'check_payment_date')
 ## SJT   def onchange_date(self):
