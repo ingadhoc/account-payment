@@ -158,7 +158,7 @@ class AccountPayment(models.Model):
         if self.payment_method_code == 'delivered_third_check':
             self.amount = sum(self.check_ids.mapped('amount'))
 
-    # TODo activar
+    # TODO activar
     @api.one
     @api.onchange('check_number', 'checkbook_id')
     def change_check_number(self):
