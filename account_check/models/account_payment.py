@@ -178,7 +178,7 @@ class AccountPayment(models.Model):
                 #     '%%0%sd' % padding % self.check_number)
             self.check_name = check_name
 
-## SJT    @api.onchange('check_issue_date', 'check_payment_date')
+    @api.onchange('check_issue_date', 'check_payment_date')
     def onchange_date(self):
         if (
                 self.check_issue_date and self.check_payment_date and
@@ -207,7 +207,7 @@ class AccountPayment(models.Model):
                  limit=1)
             self.checkbook_id = checkbook
 
-    @api.onchange('checkbook_id')
+    @api.onchange('checkbook_id', 'journal_id')
     def onchange_checkbook(self):
         if self.checkbook_id:
             self.check_number = self.checkbook_id.next_number
