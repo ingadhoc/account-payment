@@ -151,12 +151,12 @@ class AccountPayment(models.Model):
 
 # on change methods
 
-#    # @api.constrains('check_ids')
-#    @api.onchange('check_ids', 'payment_method_code')
-#    def onchange_checks(self):
-#        # we only overwrite if payment method is delivered
-#        if self.payment_method_code == 'delivered_third_check':
-#            self.amount = sum(self.check_ids.mapped('amount'))
+    # @api.constrains('check_ids')
+    @api.onchange('check_ids', 'payment_method_code')
+    def onchange_checks(self):
+        # we only overwrite if payment method is delivered
+        if self.payment_method_code == 'delivered_third_check':
+            self.amount = sum(self.check_ids.mapped('amount'))
 
     # TODO activar
     #@api.one
@@ -187,16 +187,16 @@ class AccountPayment(models.Model):
             raise UserError(
                 _('Check Payment Date must be greater than Issue Date'))
 
-    #@api.one
-    #@api.onchange('partner_id')
-    #def onchange_partner_check(self):
-    #    commercial_partner = self.partner_id.commercial_partner_id
-    #    self.check_bank_id = (
-    #        commercial_partner.bank_ids and
-    #        commercial_partner.bank_ids[0].bank_id.id or False)
-    #    self.check_owner_name = commercial_partner.name
-    #    # TODO use document number instead of vat?
-    #    self.check_owner_vat = commercial_partner.vat
+    @api.one
+    @api.onchange('partner_id')
+    def onchange_partner_check(self):
+        commercial_partner = self.partner_id.commercial_partner_id
+        self.check_bank_id = (
+            commercial_partner.bank_ids and
+            commercial_partner.bank_ids[0].bank_id.id or False)
+        self.check_owner_name = commercial_partner.name
+        # TODO use document number instead of vat?
+        self.check_owner_vat = commercial_partner.vat
 
     @api.onchange('payment_method_code')
     def _onchange_payment_method_code(self):
