@@ -187,8 +187,9 @@ class AccountPayment(models.Model):
             raise UserError(
                 _('Check Payment Date must be greater than Issue Date'))
 
-    @api.one
+    #@api.one
     @api.onchange('partner_id')
+    self.ensure_one()
     def onchange_partner_check(self):
         commercial_partner = self.partner_id.commercial_partner_id
         self.check_bank_id = (
