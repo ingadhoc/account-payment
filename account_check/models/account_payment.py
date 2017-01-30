@@ -207,12 +207,12 @@ class AccountPayment(models.Model):
                  limit=1)
             self.checkbook_id = checkbook
             
-    @api.onchange('journal_id')
+    #@api.onchange('journal_id')
     @api.onchange('checkbook_id')
     def onchange_checkbook(self):
         _logger.info('Entra onchange checkbook '+str(self.check_number))
         if self.checkbook_id:
-            self.check_number = 23 #self.checkbook_id.next_number
+            self.check_number = self.checkbook_id.sequence_id.number_next
         _logger.info('Sale onchange checkbook '+str(self.check_number))
 
 
@@ -229,7 +229,7 @@ class AccountPayment(models.Model):
                 vals['checkbook_id'])
             vals.update({
                 # beacause number was readonly we write it here
-                'check_number': checkbook.sequence_id.next_number,
+                'check_number': checkbook.sequence_id.number_next,
                 'check_name': checkbook.sequence_id.next_by_id(),
             })
         _logger.info('Sale create overwrite '+str(self.check_number))
