@@ -189,8 +189,8 @@ class AccountPayment(models.Model):
 
     #@api.one
     @api.onchange('partner_id')
-    self.ensure_one()
     def onchange_partner_check(self):
+        self.ensure_one()
         commercial_partner = self.partner_id.commercial_partner_id
         self.check_bank_id = (
             commercial_partner.bank_ids and
@@ -373,7 +373,7 @@ class AccountPayment(models.Model):
 
             _logger.info('Hand Check')
             self.create_check('issue_check', operation, self.check_bank_id)
-            vals['date_maturity'] = self.check_payment_date
+            ## vals['date_maturity'] = self.check_payment_date
             # if check is deferred, change account
             if self.check_subtype == 'deferred':
                 vals['account_id'] = self.company_id._get_check_account(
