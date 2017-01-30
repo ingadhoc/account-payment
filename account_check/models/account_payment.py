@@ -210,7 +210,7 @@ class AccountPayment(models.Model):
     @api.onchange('checkbook_id', 'journal_id')
     def onchange_checkbook(self):
         if self.checkbook_id:
-            self.check_number = self.checkbook_id.next_number
+            self.check_number = 23 #self.checkbook_id.next_number
 
 
 # post methods
