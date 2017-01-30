@@ -3,8 +3,8 @@
 # For copyright and license notices, see __openerp__.py file in module root
 # directory
 ##############################################################################
-from openerp import fields, models, _, api
-from openerp.exceptions import UserError
+from odoo import fields, models, _, api
+from odoo.exceptions import UserError
 import logging
 # import openerp.addons.decimal_precision as dp
 _logger = logging.getLogger(__name__)
@@ -158,24 +158,25 @@ class AccountPayment(models.Model):
 #        if self.payment_method_code == 'delivered_third_check':
 #            self.amount = sum(self.check_ids.mapped('amount'))
 
-#SJT    # TODO activar
+    # TODO activar
     #@api.one
-    #@api.onchange('check_number', 'checkbook_id')
-    #def change_check_number(self):
-    #    # TODO make default padding a parameter
-    #    if self.payment_method_code in ['received_third_check']:
-    #        if not self.check_number:
-    #            check_name = False
-    #        else:
-    #            # TODO make optional
-    #            padding = 8
-    #            if len(str(self.check_number)) > padding:
-    #                padding = len(str(self.check_number))
-    #            # communication = _('Check nbr %s') % (
-    #            check_name = ('%%0%sd' % padding % self.check_number)
-    #            # communication = (
-    #            #     '%%0%sd' % padding % self.check_number)
-    #        self.check_name = check_name
+    @api.onchange('check_number', 'checkbook_id')
+    def change_check_number(self):
+        self.ensure_one()
+        # TODO make default padding a parameter
+        if self.payment_method_code in ['received_third_check']:
+            if not self.check_number:
+                check_name = False
+            else:
+                # TODO make optional
+                padding = 8
+                if len(str(self.check_number)) > padding:
+                    padding = len(str(self.check_number))
+                # communication = _('Check nbr %s') % (
+                check_name = ('%%0%sd' % padding % self.check_number)
+                # communication = (
+                #     '%%0%sd' % padding % self.check_number)
+            self.check_name = check_name
 
 ## SJT    @api.onchange('check_issue_date', 'check_payment_date')
     def onchange_date(self):
