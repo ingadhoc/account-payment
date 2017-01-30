@@ -220,7 +220,7 @@ class AccountPayment(models.Model):
 # post methods
     @api.model
     def create(self, vals):
-        raise Warning('Something happened. '+str(self.check_number))
+        #raise Warning('Something happened. '+str(self.check_number))
         issue_checks = self.env.ref(
             'account_check.account_payment_method_issue_check')
         if vals['payment_method_id'] == issue_checks.id and vals.get(
@@ -232,7 +232,7 @@ class AccountPayment(models.Model):
                 'check_number': checkbook.sequence_id.number_next,
                 'check_name': checkbook.sequence_id.next_by_id(),
             })
-        raise Warning('Something happened. '+str(self.check_number))
+        #raise Warning('Something happened. '+str(self.check_number))
         return super(AccountPayment, self.sudo()).create(vals)
 
     @api.multi
