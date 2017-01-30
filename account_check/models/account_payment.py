@@ -210,17 +210,17 @@ class AccountPayment(models.Model):
     @api.onchange('journal_id')
     @api.onchange('checkbook_id')
     def onchange_checkbook(self):
-        _logger.info('Entra onchange checkbook')
+        _logger.info('Entra onchange checkbook '+str(self.check_number))
         if self.checkbook_id:
             self.check_number = 23 #self.checkbook_id.next_number
-        _logger.info('Sale onchange checkbook')
+        _logger.info('Sale onchange checkbook '+str(self.check_number))
 
 
 
 # post methods
     @api.model
     def create(self, vals):
-        _logger.info('Entra create overwrite')
+        _logger.info('Entra create overwrite '+str(self.check_number))
         issue_checks = self.env.ref(
             'account_check.account_payment_method_issue_check')
         if vals['payment_method_id'] == issue_checks.id and vals.get(
@@ -229,10 +229,10 @@ class AccountPayment(models.Model):
                 vals['checkbook_id'])
             vals.update({
                 # beacause number was readonly we write it here
-                'check_number': checkbook.next_number,
+                'check_number': checkbook.sequence_id.next_number,
                 'check_name': checkbook.sequence_id.next_by_id(),
             })
-        _logger.info('Sale create overwrite')
+        _logger.info('Sale create overwrite '+str(self.check_number))
         return super(AccountPayment, self.sudo()).create(vals)
 
     @api.multi
