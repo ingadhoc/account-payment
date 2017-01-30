@@ -189,8 +189,8 @@ class AccountPayment(models.Model):
 
     #@api.one
     @api.onchange('partner_id')
-    self.ensure_one()
     def onchange_partner_check(self):
+        self.ensure_one()
         commercial_partner = self.partner_id.commercial_partner_id
         self.check_bank_id = (
             commercial_partner.bank_ids and
