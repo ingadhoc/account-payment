@@ -206,16 +206,21 @@ class AccountPayment(models.Model):
                  ('journal_id', '=', self.journal_id.id)],
                  limit=1)
             self.checkbook_id = checkbook
-
-    @api.onchange('checkbook_id', 'journal_id')
+            
+    @api.onchange('journal_id')
+    @api.onchange('checkbook_id')
     def onchange_checkbook(self):
+        _logger.info('Entra onchange checkbook')
         if self.checkbook_id:
             self.check_number = 23 #self.checkbook_id.next_number
+        _logger.info('Sale onchange checkbook')
+
 
 
 # post methods
     @api.model
     def create(self, vals):
+        _logger.info('Entra create overwrite')
         issue_checks = self.env.ref(
             'account_check.account_payment_method_issue_check')
         if vals['payment_method_id'] == issue_checks.id and vals.get(
@@ -227,6 +232,7 @@ class AccountPayment(models.Model):
                 'check_number': checkbook.next_number,
                 'check_name': checkbook.sequence_id.next_by_id(),
             })
+        _logger.info('Sale create overwrite')
         return super(AccountPayment, self.sudo()).create(vals)
 
     @api.multi
