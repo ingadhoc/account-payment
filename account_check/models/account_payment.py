@@ -210,17 +210,17 @@ class AccountPayment(models.Model):
     #@api.onchange('journal_id')
     @api.onchange('checkbook_id')
     def onchange_checkbook(self):
-        _logger.info('Entra onchange checkbook '+str(self.check_number))
+        raise Warning('Something happened. '+str(self.check_number))
         if self.checkbook_id:
             self.check_number = self.checkbook_id.sequence_id.number_next
-        _logger.info('Sale onchange checkbook '+str(self.check_number))
+        raise Warning('Something happened. '+str(self.check_number))
 
 
 
 # post methods
     @api.model
     def create(self, vals):
-        _logger.info('Entra create overwrite '+str(self.check_number))
+        raise Warning('Something happened. '+str(self.check_number))
         issue_checks = self.env.ref(
             'account_check.account_payment_method_issue_check')
         if vals['payment_method_id'] == issue_checks.id and vals.get(
@@ -232,7 +232,7 @@ class AccountPayment(models.Model):
                 'check_number': checkbook.sequence_id.number_next,
                 'check_name': checkbook.sequence_id.next_by_id(),
             })
-        _logger.info('Sale create overwrite '+str(self.check_number))
+        raise Warning('Something happened. '+str(self.check_number))
         return super(AccountPayment, self.sudo()).create(vals)
 
     @api.multi
