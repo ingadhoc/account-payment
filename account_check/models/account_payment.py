@@ -210,11 +210,8 @@ class AccountPayment(models.Model):
     #@api.onchange('journal_id')
     @api.onchange('checkbook_id')
     def onchange_checkbook(self):
-        raise Warning('Something happened. '+str(self.check_number))
         if self.checkbook_id:
             self.check_number = self.checkbook_id.sequence_id.number_next
-        raise Warning('Something happened. '+str(self.check_number))
-
 
 
 # post methods
@@ -412,10 +409,10 @@ class AccountPayment(models.Model):
                     rec.destination_journal_id.type)))
         return vals
 
-    # @api.multi
-    # def post(self):
-    #     self.do_checks_operations()
-    #     return super(AccountPayment, self).post()
+    @api.multi
+    def post(self):
+        self.do_checks_operations()
+        return super(AccountPayment, self).post()
 
     ##def _get_liquidity_move_line_vals(self, amount):
     ##    vals = super(AccountPayment, self)._get_liquidity_move_line_vals(
