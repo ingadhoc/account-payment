@@ -165,6 +165,7 @@ class account_check_action(models.TransientModel):
             'name': name,
             'account_id': debit_account_id,
             'partner_id': partner,
+            'credit': 0.0,
             'debit': check.company_currency_amount or check.amount,
             'amount_currency': (
                 check.company_currency_amount and check.amount or False),
@@ -174,6 +175,7 @@ class account_check_action(models.TransientModel):
             'name': name,
             'account_id': credit_account_id,
             'partner_id': partner,
+            'debit': 0.0,
             'credit': check.company_currency_amount or check.amount,
             'amount_currency': (
                 check.company_currency_amount and (
