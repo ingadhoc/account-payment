@@ -298,117 +298,118 @@ class AccountPayment(models.Model):
         * from _get_liquidity_move_line_vals to add check operation and, if
             needded, change payment vals and/or create check and
         """
-        self.ensure_one()
-        rec = self
-        if not rec.check_type:
-            # continue
+        # self.ensure_one()
+        #rec = self
+        for rec in self:
+            if not rec.check_type:
+                # continue
+                return vals
+            if (
+                    rec.payment_method_code == 'received_third_check' and
+                    rec.payment_type == 'inbound' and
+                    rec.partner_type == 'customer'):
+                operation = 'holding'
+                if cancel:
+                    _logger.info('Cancel Receive Check')
+                    rec.check_ids._del_operation(operation)
+                    rec.check_ids.unlink()
+                    return None
+
+                _logger.info('Receive Check')
+                self.create_check('third_check', operation, self.check_bank_id)
+                vals['date_maturity'] = self.check_payment_date
+                vals['account_id'] = self.get_third_check_account().id
+            elif (
+                    rec.payment_method_code == 'delivered_third_check' and
+                    rec.payment_type == 'transfer' and
+                    rec.destination_journal_id.type == 'cash'):
+                operation = 'selled'
+                if cancel:
+                    _logger.info('Cancel Sell Check')
+                    rec.check_ids._del_operation(operation)
+                    return None
+
+                _logger.info('Sell Check')
+                rec.check_ids._add_operation(
+                    operation, rec, False)
+                vals['account_id'] = self.get_third_check_account().id
+            elif (
+                    rec.payment_method_code == 'delivered_third_check' and
+                    rec.payment_type == 'transfer' and
+                    rec.destination_journal_id.type == 'bank'):
+                operation = 'deposited'
+                if cancel:
+                    _logger.info('Cancel Deposit Check')
+                    rec.check_ids._del_operation(operation)
+                    return None
+
+                _logger.info('Deposit Check')
+                rec.check_ids._add_operation(
+                    operation, rec, False)
+                vals['account_id'] = self.get_third_check_account().id
+            elif (
+                    rec.payment_method_code == 'delivered_third_check' and
+                    rec.payment_type == 'outbound' and
+                    rec.partner_type == 'supplier'):
+                operation = 'delivered'
+                if cancel:
+                    _logger.info('Cancel Deliver Check')
+                    rec.check_ids._del_operation(operation)
+                    return None
+
+                _logger.info('Deliver Check')
+                rec.check_ids._add_operation(
+                    operation, rec, rec.partner_id)
+                vals['account_id'] = self.get_third_check_account().id
+            elif (
+                    rec.payment_method_code == 'issue_check' and
+                    rec.payment_type == 'outbound' and
+                    rec.partner_type == 'supplier'):
+                operation = 'handed'
+                if cancel:
+                    _logger.info('Cancel Hand Check')
+                    rec.check_ids._del_operation(operation)
+                    rec.check_ids.unlink()
+                    return None
+
+                _logger.info('Hand Check')
+                self.create_check('issue_check', operation, self.check_bank_id)
+                ## vals['date_maturity'] = self.check_payment_date
+                # if check is deferred, change account
+                if self.check_subtype == 'deferred':
+                    vals['account_id'] = self.company_id._get_check_account(
+                        'deferred')
+            elif (
+                    rec.payment_method_code == 'issue_check' and
+                    rec.payment_type == 'transfer' and
+                    rec.destination_journal_id.type == 'cash'):
+                operation = 'withdrawed'
+                if cancel:
+                    _logger.info('Cancel Withdrawal Check')
+                    rec.check_ids._del_operation(operation)
+                    rec.check_ids.unlink()
+                    return None
+
+                _logger.info('Hand Check')
+                self.create_check('issue_check', operation, self.check_bank_id)
+                vals['date_maturity'] = self.check_payment_date
+                # if check is deferred, change account
+                # si retiramos por caja directamente lo sacamos de banco
+                # if self.check_subtype == 'deferred':
+                #     vals['account_id'] = self.company_id._get_check_account(
+                #         'deferred').id
+            else:
+                raise UserError(_(
+                    'This operatios is not implemented for checks:\n'
+                    '* Payment type: %s\n'
+                    '* Partner type: %s\n'
+                    '* Payment method: %s\n'
+                    '* Destination journal: %s\n' % (
+                        rec.payment_type,
+                        rec.partner_type,
+                        rec.payment_method_code,
+                        rec.destination_journal_id.type)))
             return vals
-        if (
-                rec.payment_method_code == 'received_third_check' and
-                rec.payment_type == 'inbound' and
-                rec.partner_type == 'customer'):
-            operation = 'holding'
-            if cancel:
-                _logger.info('Cancel Receive Check')
-                rec.check_ids._del_operation(operation)
-                rec.check_ids.unlink()
-                return None
-
-            _logger.info('Receive Check')
-            self.create_check('third_check', operation, self.check_bank_id)
-            vals['date_maturity'] = self.check_payment_date
-            vals['account_id'] = self.get_third_check_account().id
-        elif (
-                rec.payment_method_code == 'delivered_third_check' and
-                rec.payment_type == 'transfer' and
-                rec.destination_journal_id.type == 'cash'):
-            operation = 'selled'
-            if cancel:
-                _logger.info('Cancel Sell Check')
-                rec.check_ids._del_operation(operation)
-                return None
-
-            _logger.info('Sell Check')
-            rec.check_ids._add_operation(
-                operation, rec, False)
-            vals['account_id'] = self.get_third_check_account().id
-        elif (
-                rec.payment_method_code == 'delivered_third_check' and
-                rec.payment_type == 'transfer' and
-                rec.destination_journal_id.type == 'bank'):
-            operation = 'deposited'
-            if cancel:
-                _logger.info('Cancel Deposit Check')
-                rec.check_ids._del_operation(operation)
-                return None
-
-            _logger.info('Deposit Check')
-            rec.check_ids._add_operation(
-                operation, rec, False)
-            vals['account_id'] = self.get_third_check_account().id
-        elif (
-                rec.payment_method_code == 'delivered_third_check' and
-                rec.payment_type == 'outbound' and
-                rec.partner_type == 'supplier'):
-            operation = 'delivered'
-            if cancel:
-                _logger.info('Cancel Deliver Check')
-                rec.check_ids._del_operation(operation)
-                return None
-
-            _logger.info('Deliver Check')
-            rec.check_ids._add_operation(
-                operation, rec, rec.partner_id)
-            vals['account_id'] = self.get_third_check_account().id
-        elif (
-                rec.payment_method_code == 'issue_check' and
-                rec.payment_type == 'outbound' and
-                rec.partner_type == 'supplier'):
-            operation = 'handed'
-            if cancel:
-                _logger.info('Cancel Hand Check')
-                rec.check_ids._del_operation(operation)
-                rec.check_ids.unlink()
-                return None
-
-            _logger.info('Hand Check')
-            self.create_check('issue_check', operation, self.check_bank_id)
-            ## vals['date_maturity'] = self.check_payment_date
-            # if check is deferred, change account
-            if self.check_subtype == 'deferred':
-                vals['account_id'] = self.company_id._get_check_account(
-                    'deferred')
-        elif (
-                rec.payment_method_code == 'issue_check' and
-                rec.payment_type == 'transfer' and
-                rec.destination_journal_id.type == 'cash'):
-            operation = 'withdrawed'
-            if cancel:
-                _logger.info('Cancel Withdrawal Check')
-                rec.check_ids._del_operation(operation)
-                rec.check_ids.unlink()
-                return None
-
-            _logger.info('Hand Check')
-            self.create_check('issue_check', operation, self.check_bank_id)
-            vals['date_maturity'] = self.check_payment_date
-            # if check is deferred, change account
-            # si retiramos por caja directamente lo sacamos de banco
-            # if self.check_subtype == 'deferred':
-            #     vals['account_id'] = self.company_id._get_check_account(
-            #         'deferred').id
-        else:
-            raise UserError(_(
-                'This operatios is not implemented for checks:\n'
-                '* Payment type: %s\n'
-                '* Partner type: %s\n'
-                '* Payment method: %s\n'
-                '* Destination journal: %s\n' % (
-                    rec.payment_type,
-                    rec.partner_type,
-                    rec.payment_method_code,
-                    rec.destination_journal_id.type)))
-        return vals
 
     @api.multi
     def post(self):
