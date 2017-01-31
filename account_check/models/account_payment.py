@@ -413,7 +413,7 @@ class AccountPayment(models.Model):
     @api.multi
     def post(self):
         for rec in self:
-            self.do_checks_operations()
+            rec.do_checks_operations()
         return super(AccountPayment, self).post()
 
     ##def _get_liquidity_move_line_vals(self, amount):
