@@ -316,9 +316,9 @@ class AccountPayment(models.Model):
                     return None
 
                 _logger.info('Receive Check')
-                self.create_check('third_check', operation, self.check_bank_id)
-                vals['date_maturity'] = self.check_payment_date
-                vals['account_id'] = self.get_third_check_account().id
+                rec.create_check('third_check', operation, rec.check_bank_id)
+                vals['date_maturity'] = rec.check_payment_date
+                vals['account_id'] = rec.get_third_check_account().id
             elif (
                     rec.payment_method_code == 'delivered_third_check' and
                     rec.payment_type == 'transfer' and
@@ -332,7 +332,7 @@ class AccountPayment(models.Model):
                 _logger.info('Sell Check')
                 rec.check_ids._add_operation(
                     operation, rec, False)
-                vals['account_id'] = self.get_third_check_account().id
+                vals['account_id'] = rec.get_third_check_account().id
             elif (
                     rec.payment_method_code == 'delivered_third_check' and
                     rec.payment_type == 'transfer' and
@@ -346,7 +346,7 @@ class AccountPayment(models.Model):
                 _logger.info('Deposit Check')
                 rec.check_ids._add_operation(
                     operation, rec, False)
-                vals['account_id'] = self.get_third_check_account().id
+                vals['account_id'] = rec.get_third_check_account().id
             elif (
                     rec.payment_method_code == 'delivered_third_check' and
                     rec.payment_type == 'outbound' and
@@ -360,7 +360,7 @@ class AccountPayment(models.Model):
                 _logger.info('Deliver Check')
                 rec.check_ids._add_operation(
                     operation, rec, rec.partner_id)
-                vals['account_id'] = self.get_third_check_account().id
+                vals['account_id'] = rec.get_third_check_account().id
             elif (
                     rec.payment_method_code == 'issue_check' and
                     rec.payment_type == 'outbound' and
@@ -373,11 +373,11 @@ class AccountPayment(models.Model):
                     return None
 
                 _logger.info('Hand Check')
-                self.create_check('issue_check', operation, self.check_bank_id)
-                ## vals['date_maturity'] = self.check_payment_date
+                rec.create_check('issue_check', operation, rec.check_bank_id)
+                ## vals['date_maturity'] = rec.check_payment_date
                 # if check is deferred, change account
-                if self.check_subtype == 'deferred':
-                    vals['account_id'] = self.company_id._get_check_account(
+                if rec.check_subtype == 'deferred':
+                    vals['account_id'] = rec.company_id._get_check_account(
                         'deferred')
             elif (
                     rec.payment_method_code == 'issue_check' and
@@ -391,12 +391,12 @@ class AccountPayment(models.Model):
                     return None
 
                 _logger.info('Hand Check')
-                self.create_check('issue_check', operation, self.check_bank_id)
-                vals['date_maturity'] = self.check_payment_date
+                rec.create_check('issue_check', operation, rec.check_bank_id)
+                vals['date_maturity'] = rec.check_payment_date
                 # if check is deferred, change account
                 # si retiramos por caja directamente lo sacamos de banco
-                # if self.check_subtype == 'deferred':
-                #     vals['account_id'] = self.company_id._get_check_account(
+                # if rec.check_subtype == 'deferred':
+                #     vals['account_id'] = rec.company_id._get_check_account(
                 #         'deferred').id
             else:
                 raise UserError(_(
