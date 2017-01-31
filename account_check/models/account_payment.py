@@ -377,7 +377,7 @@ class AccountPayment(models.Model):
             # if check is deferred, change account
             if self.check_subtype == 'deferred':
                 vals['account_id'] = self.company_id._get_check_account(
-                    'deferred')
+                    'deferred').id
         elif (
                 rec.payment_method_code == 'issue_check' and
                 rec.payment_type == 'transfer' and
@@ -412,7 +412,8 @@ class AccountPayment(models.Model):
 
     @api.multi
     def post(self):
-        self.do_checks_operations()
+        for rec in self:
+            rec.do_checks_operations()
         return super(AccountPayment, self).post()
 
     ##def _get_liquidity_move_line_vals(self, amount):
