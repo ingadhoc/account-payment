@@ -6,11 +6,16 @@
             <field name="model">res.company</field>
             <field name="inherit_id" ref="base.view_company_form"/>
             <field name="arch" type="xml">
-                <group name="account_grp">
+                <notebook position="inside">
+                    <page string="Check Accounts :)" name="checkaccounts">
+                        <group name="check_account">
                     <field name="rejected_check_account_id" domain="[('company_id', '=', id)]"/>
                     <field name="deferred_check_account_id" domain="[('company_id', '=', id)]"/>
                     <field name="holding_check_account_id" domain="[('company_id', '=', id)]"/>
-                </group>
+                        </group>
+                    </page>
+                </notebook>
+                
             </field>
         </record>
     </data>
