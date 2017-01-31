@@ -289,7 +289,7 @@ class AccountPayment(models.Model):
         return account
 
     @api.multi
-    def do_checks_operations(self, vals=None, cancel=False):
+    def do_checks_operations(self, vals={}, cancel=False):
         """
         Check attached .ods file on this module to understand checks workflows
         This method is called from:
