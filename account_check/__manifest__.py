@@ -43,7 +43,7 @@
         'views/account_journal_dashboard_view.xml',
         'views/account_journal_view.xml',
         'views/account_checkbook_view.xml',
-        ##'views/res_company_view.xml',
+        'views/res_company_view.xml',
         'views/account_chart_template_view.xml',
         'security/ir.model.access.csv',
         'security/account_check_security.xml',
