@@ -484,7 +484,7 @@ class AccountCheck(models.Model):
             #         'If you want to reject you need to do it manually.'))
             vals = self.get_bank_vals(
                 # 'bank_debit', origin.journal_id)
-                'bank_debit', self.checkbook_id.journal_id)
+                'bank_debit', self.checkbook_id.debit_journal_id)
             move = self.env['account.move'].create(vals)
             move.post()
             # self.env['account.move'].create({
