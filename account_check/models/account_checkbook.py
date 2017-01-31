@@ -52,6 +52,18 @@ class AccountCheckbook(models.Model):
         context={'default_type': 'bank'},
         states={'draft': [('readonly', False)]}
     )
+    
+    debit_journal_id = fields.Many2one(
+        'account.journal', 'Debit Journal',
+        help='Journal where it is going to be used as Bank',
+        #readonly=True,
+        #required=True,
+        domain=[('type', '=', 'bank')],
+        ondelete='cascade',
+        context={'default_type': 'bank'},
+        states={'draft': [('readonly', False)]}
+    )
+    
     range_to = fields.Integer(
         'To Number',
         readonly=True,
