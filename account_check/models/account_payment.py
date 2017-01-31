@@ -377,7 +377,7 @@ class AccountPayment(models.Model):
             # if check is deferred, change account
             if self.check_subtype == 'deferred':
                 vals['account_id'] = self.company_id._get_check_account(
-                    'deferred').id
+                    'deferred')
         elif (
                 rec.payment_method_code == 'issue_check' and
                 rec.payment_type == 'transfer' and
