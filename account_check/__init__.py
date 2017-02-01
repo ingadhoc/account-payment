@@ -4,3 +4,4 @@
 # directory
 ##############################################################################
 from . import models
+form . import wizard
