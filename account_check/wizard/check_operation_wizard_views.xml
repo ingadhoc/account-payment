@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-
+    <data>
         <record id="view_account_check_wizard" model="ir.ui.view">
             <field name="name">account.check.operation.wizard</field>
             <field name="model">account.check.operation.wizard</field>
@@ -28,4 +28,5 @@
                     res_model="account.check.operation.wizard"
                     view_mode="form"
                     target="new"/>
+</data>
 </odoo>
