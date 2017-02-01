@@ -1,40 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-        <record id="view_payslip_lines_contribution_register" model="ir.ui.view">
-            <field name="name">payslip.lines.contribution.register</field>
-            <field name="model">payslip.lines.contribution.register</field>
+        <record id="view_account_check_wizard" model="ir.ui.view">
+            <field name="name">account.check.operation.wizard</field>
+            <field name="model">account.check.operation.wizard</field>
             <field name="arch" type="xml">
-            <form string="Contribution Register's Payslip Lines">
-                <group col="4" colspan="6">
-                    <field name="date_from"/>
-                    <newline/>
-                    <field name="date_to"/>
-                </group>
-                <footer>
-                    <button name="print_report" string="Print" type="object" class="btn-primary"/>
-                    <button string="Cancel" class="btn-default" special="cancel"/>
-                </footer>
-            </form>
+                <field name="journal_id"/>
+                <field name="account_id"/>
+                <field name="date"/>
+                <field name="action_type"/>
+                <field name="company_id"/>
             </field>
         </record>
 
-        <record id="action_payslip_lines_contribution_register" model="ir.actions.act_window">
-            <field name="name">PaySlip Lines</field>
+        <!-- record id="action_account_check_wizard" model="ir.actions.act_window">
+            <field name="name">Check Operation</field>
             <field name="type">ir.actions.act_window</field>
-            <field name="res_model">payslip.lines.contribution.register</field>
+            <field name="res_model">account.check.operation.wizard</field>
             <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
-        </record>
-
-        <record model="ir.values" id="payslip_lines_contribution_register_value">
-            <field name="model_id" ref="model_hr_contribution_register" />
-            <field name="name">PaySlip Lines</field>
-            <field name="key2">client_print_multi</field>
-            <field name="value" eval="'ir.actions.act_window,' + str(ref('action_payslip_lines_contribution_register'))" />
-            <field name="key">action</field>
-            <field name="model">hr.contribution.register</field>
-        </record>
-
+        </record -->
+        
+        <act_window id="action_account_check_wizard"
+                    name="Add Check Operation"
+                    src_model="account.check"
+                    res_model="account.check.operation.wizard"
+                    view_mode="form"
+                    target="new"/>
 </odoo>
