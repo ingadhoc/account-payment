@@ -1,2 +1,2 @@
 # -*- coding: utf-8 -*-
-from . import check_operation.py
+from . import check_operation_wizard
