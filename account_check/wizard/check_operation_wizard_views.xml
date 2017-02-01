@@ -26,8 +26,8 @@
         
         <act_window id="action_account_check_wizard"
                     name="Add Check Operation"
-                    src_model="account.check"
-                    res_model="account.check.wizard"
+                    src_model="account.check.wizard"
+                    res_model="account.check"
                     view_mode="form"
                     target="new"/>
 </data>
