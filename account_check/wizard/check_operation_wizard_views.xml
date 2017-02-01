@@ -24,11 +24,21 @@
             <field name="target">new</field>
         </record -->
         
-        <act_window id="action_account_check_wizard"
+        <!-- act_window id="action_account_check_wizard"
                     name="Add Check Operation"
                     src_model="account.check.wizard"
                     res_model="account.check"
                     view_mode="form"
-                    target="new"/>
+                    target="new"/ -->
+        
+        
+    <record id="action_account_check_wizard" model="ir.actions.act_window.view">
+        <field name="sequence" eval="0"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_account_check_wizard"/>
+        <field name="act_window_id" ref="action_contacts"/>
+    </record>
+        
+        
 </data>
 </odoo>
