@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <record id="view_account_check_wizard" model="ir.ui.view">
+            <field name="name">account.check.operation.wizard</field>
+            <field name="model">account.check.operation.wizard</field>
+            <field name="arch" type="xml">
+                <field name="journal_id"/>
+                <field name="account_id"/>
+                <field name="date"/>
+                <field name="action_type"/>
+                <field name="company_id"/>
+            </field>
+        </record>
+
+        <!-- record id="action_account_check_wizard" model="ir.actions.act_window">
+            <field name="name">Check Operation</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.check.operation.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record -->
+        
+        <act_window id="action_account_check_wizard"
+                    name="Add Check Operation"
+                    src_model="account.check"
+                    res_model="account.check.operation.wizard"
+                    view_mode="form"
+                    target="new"/>
+</odoo>

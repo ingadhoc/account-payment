@@ -45,6 +45,7 @@
         'views/account_checkbook_view.xml',
         'views/res_company_view.xml',
         'views/account_chart_template_view.xml',
+        'wizard/check_operation_wizard_views.xml',
         'security/ir.model.access.csv',
         'security/account_check_security.xml',
     ],
