@@ -3,8 +3,8 @@ from odoo.exceptions import Warning
 from odoo import models, fields, api, _
 
 
-class account_check_operation_wizard(models.TransientModel):
-    _name = 'account.check.operation.wizard'
+class account_check_wizard(models.TransientModel):
+    _name = 'account.check.wizard'
 
     @api.model
     def _get_company_id(self):
