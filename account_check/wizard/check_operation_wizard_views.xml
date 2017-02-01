@@ -2,8 +2,8 @@
 <odoo>
     <data>
         <record id="view_account_check_wizard" model="ir.ui.view">
-            <field name="name">account.check.operation.wizard</field>
-            <field name="model">account.check.operation.wizard</field>
+            <field name="name">account.check.wizard</field>
+            <field name="model">account.check.wizard</field>
             <field name="arch" type="xml">
                 <form string="Check Operation">
                     <field name="journal_id"/>
@@ -27,7 +27,7 @@
         <act_window id="action_account_check_wizard"
                     name="Add Check Operation"
                     src_model="account.check"
-                    res_model="account.check.operation.wizard"
+                    res_model="account.check.wizard"
                     view_mode="form"
                     target="new"/>
 </data>
