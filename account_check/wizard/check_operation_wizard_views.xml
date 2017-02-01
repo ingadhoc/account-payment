@@ -5,11 +5,13 @@
             <field name="name">account.check.operation.wizard</field>
             <field name="model">account.check.operation.wizard</field>
             <field name="arch" type="xml">
-                <field name="journal_id"/>
-                <field name="account_id"/>
-                <field name="date"/>
-                <field name="action_type"/>
-                <field name="company_id"/>
+                <form string="Check Operation">
+                    <field name="journal_id"/>
+                    <field name="account_id"/>
+                    <field name="date"/>
+                    <field name="action_type"/>
+                    <field name="company_id"/>
+                </form>
             </field>
         </record>
 
