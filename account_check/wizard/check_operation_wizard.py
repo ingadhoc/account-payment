@@ -18,9 +18,9 @@ class account_check_wizard(models.TransientModel):
 
     journal_id = fields.Many2one(
         'account.journal',
-        'Journal',
-        domain="[('company_id','=',company_id), "
-        "('type', 'in', ['cash', 'bank', 'general'])",
+        'Journal'
+#        domain="[('company_id','=',company_id), "
+#        "('type', 'in', ['cash', 'bank', 'general'])"
         #"('payment_subtype', 'not in', ['issue_check', 'third_check'])]",
     )
     account_id = fields.Many2one(
