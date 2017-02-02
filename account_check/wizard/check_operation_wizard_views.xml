@@ -32,12 +32,12 @@
                     target="new"/ -->
         
         
-    <record id="action_account_check_wizard" model="ir.actions.act_window.view">
+    <!-- record id="action_account_check_wizard" model="ir.actions.act_window.view">
         <field name="sequence" eval="0"/>
         <field name="view_mode">form</field>
         <field name="view_id" ref="view_account_check_wizard"/>
         <field name="act_window_id" ref="action_contacts"/>
-    </record>
+    </record -->
         
         
 </data>
