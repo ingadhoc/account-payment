@@ -10,7 +10,7 @@
                     <field name="account_id"/>
                     <field name="date"/>
                     <field name="action_type"/>
-                    <field name="company_id"/>
+                    <!-- field name="company_id"/ -->
                 </form>
             </field>
         </record>
