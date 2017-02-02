@@ -20,8 +20,8 @@ class account_check_wizard(models.TransientModel):
         'account.journal',
         'Journal',
         domain="[('company_id','=',company_id), "
-        "('type', 'in', ['cash', 'bank', 'general']), "
-        "('payment_subtype', 'not in', ['issue_check', 'third_check'])]",
+        "('type', 'in', ['cash', 'bank', 'general'])",
+        #"('payment_subtype', 'not in', ['issue_check', 'third_check'])]",
     )
     account_id = fields.Many2one(
         'account.account',
