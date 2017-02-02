@@ -11,6 +11,12 @@
                     <field name="date"/>
                     <field name="action_type"/>
                     <!-- field name="company_id"/ -->
+                    
+                     <footer>
+                        <button string="Confirm" name="confirm" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>    
                 </form>
             </field>
         </record>
