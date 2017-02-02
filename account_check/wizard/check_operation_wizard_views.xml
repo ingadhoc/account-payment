@@ -9,7 +9,7 @@
                     <field name="journal_id"/>
                     <field name="account_id"/>
                     <field name="date"/>
-                    <field name="action_type"/>
+                    <field name="action_type" invisible="1"/>
                     <!-- field name="company_id"/ -->
                      <footer>
                         <button string="Confirm" name="confirm" type="object" class="oe_highlight"/>
