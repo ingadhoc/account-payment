@@ -5,28 +5,32 @@
             <field name="name">account.check.wizard</field>
             <field name="model">account.check.wizard</field>
             <field name="arch" type="xml">
-                <form string="Check Operation">
-                    <field name="journal_id"/>
-                    <field name="account_id"/>
-                    <field name="date"/>
+                <form string="Check Action">
                     <field name="action_type" invisible="1"/>
-                    <!-- field name="company_id"/ -->
-                     <footer>
-                        <button string="Confirm" name="confirm" type="object" class="oe_highlight"/>
+                    <field name="company_id" invisible="1"/>
+                    <group >
+                        <field name="date"/>
+                        <field name="journal_id" attrs="{'invisible':[('action_type','!=','deposit')],'required':[('action_type','=','deposit')]}"/>
+                        <field name="account_id" attrs="{'invisible':[('action_type','!=','deposit')],'readonly':[('action_type','=','deposit')]}"/>
+                    </group>
+                    <footer>
+                        <button string="Confirm" name="action_confirm" type="object" class="oe_highlight"/>
                         or
                         <button string="Cancel" class="oe_link" special="cancel"/>
-                    </footer>    
+                    </footer>     
                 </form>
             </field>
         </record>
 
-        <record id="action_account_check_wizard" model="ir.actions.act_window">
+        <record id="action_account_check_deposit_wizard" model="ir.actions.act_window">
             <field name="name">Check Operation</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">account.check.wizard</field>
             <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
+            <field name="context">{'default_action_type':'deposit'}</field>
+            <field name="key2">client_action_multi</field>
         </record>
         
         <!-- act_window id="action_account_check_wizard"
