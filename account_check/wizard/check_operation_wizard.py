@@ -54,5 +54,5 @@ class account_check_wizard(models.TransientModel):
 #            'account_check.account_payment_method_issue_check')
 #                if (issue_checks in self.outbound_payment_method_ids):
 #                    self.env['account.journal'].search(('state', '=', 'active'))
-        _logger.info('Entro issue '+str(issue_checks))
+#        _logger.info('Entro issue '+str(issue_checks))
 
