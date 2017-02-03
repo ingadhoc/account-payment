@@ -26,6 +26,7 @@ class account_check_wizard(models.TransientModel):
         "('outbound_payment_method_ids', 'not in', [2, 5, 7, 8]), "
         "('inbound_payment_method_ids', 'not in', [1, 3, 4, 6])]"
 
+
         #"('payment_subtype', 'not in', ['issue_check', 'third_check'])]",
     )
     account_id = fields.Many2one(

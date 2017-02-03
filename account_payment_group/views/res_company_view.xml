@@ -6,12 +6,13 @@
             <field name="model">res.company</field>
             <field name="inherit_id" ref="base.view_company_form"/>
             <field name="arch" type="xml">
-                <field name="name" position="after">
-                    <div class="oe_title">
-                        <label for="double_validation" string="Double Validation"/>
-                        <field name="double_validation"/>
-                    </div>
-                </field>
+                <notebook position="inside">
+                    <page string="Payment Group Validations" name="paymentsgroupvalidations">
+                        <group name="account_grp">
+                            <field name="double_validation"/>
+                        </group>
+                    </page>
+                </notebook>
             </field>
         </record>
     </data>
