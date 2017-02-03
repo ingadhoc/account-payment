@@ -19,16 +19,18 @@ class account_check_wizard(models.TransientModel):
     journal_id = fields.Many2one(
         'account.journal',
         'Journal'
-#        domain="[('company_id','=',company_id), "
-#        "('type', 'in', ['cash', 'bank', 'general'])"
+        domain="[('company_id','=',company_id), "
+        "('type', 'in', ['cash', 'bank', 'general'])"
         #"('payment_subtype', 'not in', ['issue_check', 'third_check'])]",
     )
     account_id = fields.Many2one(
         'account.account',
         'Account',
-        domain="[('company_id','=',company_id), "
-        "('type', 'in', ('other', 'liquidity'))]",
-        readonly=True
+        related='journal_id.default_debit_account_id',
+        store=True,
+#        domain="[('company_id','=',company_id), "
+#        "('type', 'in', ('other', 'liquidity'))]",
+#        readonly=True
     )
     date = fields.Date(
         'Date', required=True, default=fields.Date.context_today
