@@ -9,4 +9,5 @@ from . import account_check
 from . import account_payment
 from . import account_journal_dashboard
 from . import res_company
+from . import res_config
 from . import account_chart_template
