@@ -9,9 +9,9 @@ from odoo import fields, models
 class AccountConfigSettings(models.TransientModel):
     _inherit = 'account.config.settings'
     
-    rejected_check_account_id = fields.Boolean(related='company_id.rejected_check_account_id')
-    deferred_check_account_id = fields.Boolean(related='company_id.deferred_check_account_id')
-    holding_check_account_id = fields.Boolean(related='company_id.holding_check_account_id')
+    rejected_check_account_id = fields.Many2one(related='company_id.rejected_check_account_id')
+    deferred_check_account_id = fields.Many2one(related='company_id.deferred_check_account_id')
+    holding_check_account_id = fields.Many2one(related='company_id.holding_check_account_id')
 
     
     
