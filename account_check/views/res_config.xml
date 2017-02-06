@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_account_config_settings" model="ir.ui.view">
+            <field name="name">account.config.settings.form.inherit</field>
+            <field name="model">account.config.settings</field>
+            <field name="inherit_id" ref="account.view_account_config_settings"/>
+            <field name="arch" type="xml">
+                <group name="bank_cash" position="after">
+                    <group name="checkaccounts" string="Check Accounts">
+                        <label for="id" string="Check Accounts"/>
+                        <div>
+                            <div>
+                                <field name="rejected_check_account_id" domain="[('company_id', '=', company)]"/>
+                            </div>
+                            <div>
+                                <field name="deferred_check_account_id" domain="[('company_id', '=', company)]"/>
+                            </div>
+                            <div>
+                                <field name="holding_check_account_id" domain="[('company_id', '=', company)]"/>
+                            </div>
+                        </div>
+                    </group>
+                </group>
+            </field>
+        </record>
+
+    </data>
+</odoo>
