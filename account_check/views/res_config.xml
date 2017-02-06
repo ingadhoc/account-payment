@@ -12,13 +12,13 @@
                         <label for="id" string="Check Accounts"/>
                         <div>
                             <div>
-                                <field name="rejected_check_account_id" domain="[('company_id', '=', company)]"/>
+                            <label for="rejected_check_account_id" string="Rejected Check Account"/><field name="rejected_check_account_id"/>
                             </div>
                             <div>
-                                <field name="deferred_check_account_id" domain="[('company_id', '=', company)]"/>
+                                <label for="deferred_check_account_id" string="Deferred Check Account"/><field name="deferred_check_account_id"/>
                             </div>
                             <div>
-                                <field name="holding_check_account_id" domain="[('company_id', '=', company)]"/>
+                                <label for="holding_check_account_id" string="Holding Check Account"/><field name="holding_check_account_id"/>
                             </div>
                         </div>
                     </group>
@@ -28,3 +28,4 @@
 
     </data>
 </odoo>
+
