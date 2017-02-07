@@ -52,7 +52,7 @@ class account_check_wizard(models.TransientModel):
     )
     
     def action_confirm(self):
-        raise Warning('Ejecuta!')
+        raise Warning('Estás a punto de crear un asiento contable con '+str(self.journal_id)+'!')
 
         
         
