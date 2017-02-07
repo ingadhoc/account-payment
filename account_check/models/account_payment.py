@@ -111,6 +111,7 @@ class AccountPayment(models.Model):
     )
     check_subtype = fields.Selection(
         related='checkbook_id.issue_check_subtype',
+        readonly=True,
     )
     check_bank_id = fields.Many2one(
         'res.bank',
