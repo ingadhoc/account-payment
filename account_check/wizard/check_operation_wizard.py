@@ -51,10 +51,10 @@ class account_check_wizard(models.TransientModel):
         default=_get_company_id
     )
     
-#    def _get_journal_domain(self):
-#        issue_checks = self.env.ref(
-#            'account_check.account_payment_method_issue_check')
-#                if (issue_checks in self.outbound_payment_method_ids):
-#                    self.env['account.journal'].search(('state', '=', 'active'))
-#        _logger.info('Entro issue '+str(issue_checks))
+    def action_confirm(self):
+        raise Warning('Ejecuta!')
+
+        
+        
+        
 
