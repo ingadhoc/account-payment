@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo.exceptions import Warning
 from odoo import models, fields, api, _
-from . import account_check
-
 import logging
 _logger = logging.getLogger(__name__)
 
