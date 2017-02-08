@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from odoo.exceptions import Warning
 from odoo import models, fields, api, _
+from . import account_check
+
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -50,9 +52,20 @@ class account_check_wizard(models.TransientModel):
         required=True,
         default=_get_company_id
     )
-    
+            
+    @api.multi
     def action_confirm(self):
-        Warning('Estás a punto de crear un asiento contable con '+str(self.journal_id.name)+'!')
+        self.ensure_one()
+
+        for check in self.env['account.check'].browse(
+                self._context.get('active_ids', [])):
+            check.bank_deposit()
+    
+    
+    
+    
+    
+    
 
         
         
