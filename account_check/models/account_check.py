@@ -614,6 +614,9 @@ class AccountCheck(models.Model):
 
     @api.multi
     def get_bank_vals(self, action, journal, date=None):
+        if date == None:
+            date = fields.Date.today()
+            
         self.ensure_one()
         # TODO improove how we get vals, get them in other functions
         if action == 'bank_debit':
@@ -668,7 +671,7 @@ class AccountCheck(models.Model):
         return {
             'ref': name,
             'journal_id': journal.id,
-            'date': fields.Date.today(),
+            'date': date,
             'line_ids': [
                 (0, False, debit_line_vals),
                 (0, False, credit_line_vals)],
