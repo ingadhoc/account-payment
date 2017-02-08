@@ -5,7 +5,6 @@
             <field name="name">account.change.check.wizard</field>
             <field name="model">account.change.check.wizard</field>
             <field name="arch" type="xml">
-                <form string="Change Check Action">
                 <form string="Change Check">
                     <field name="original_check_id" invisible="1"/>
                     <field name="journal_id" invisible="1"/>
