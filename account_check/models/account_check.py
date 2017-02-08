@@ -613,7 +613,7 @@ class AccountCheck(models.Model):
         }
 
     @api.multi
-    def get_bank_vals(self, action, journal):
+    def get_bank_vals(self, action, journal, date=None):
         self.ensure_one()
         # TODO improove how we get vals, get them in other functions
         if action == 'bank_debit':
