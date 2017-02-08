@@ -76,7 +76,7 @@
                     <button name="reject" type="object" string="Sell Rejection" states="selled" help="It will create an account entry from cash account to company rejection account and change check state"/>
                     <!-- odoo8 port thridparty -->
                     <button name="account_check.action_account_check_deposit_wizard" type="action" string="Deposited" states="holding"/>
-                    <button name="change" type="object" string="Change" attrs="{'invisible':['|', ('type', '!=', 'third_check'), ('state', '!=', 'holding'), '|', ('type', '!=', 'issue_check'), ('state', '!=', 'handed')]}"/>
+                    <button name="account_check.action_account_change_check_wizard" type="action" string="Change" attrs="{'invisible':['|', ('type', '!=', 'third_check'), ('state', '!=', 'holding'), '|', ('type', '!=', 'issue_check'), ('state', '!=', 'handed')]}"/>
                     <button name="debit" type="object" string="Debit" attrs="{'invisible':['|',('type','!=','issue_check'),('state','!=','handed')]}"/>
                     <button name="return" type="object" string="Return" states="holding" context="{'default_state':state,'default_type':type}"/>
                     <button name="action_cancel_debit" type="object" string="Cancel Debit" states="debited" context="{'default_state':state,'default_type':type}"/>
