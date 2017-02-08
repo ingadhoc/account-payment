@@ -70,7 +70,7 @@ class account_change_check_wizard(models.TransientModel):
         self.bank_id = self.original_check_id.bank_id
 
     @api.multi
-    def confirm(self):
+    def change(self):
         self.ensure_one()
         vals = {
             'vat': self.vat,
