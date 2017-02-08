@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_account_change_check_wizard" model="ir.ui.view">
+            <field name="name">account.change.check.wizard</field>
+            <field name="model">account.change.check.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Change Check Action">
+                <form string="Change Check">
+                    <field name="original_check_id" invisible="1"/>
+                    <field name="journal_id" invisible="1"/>
+                    <field name="issue_check_subtype" invisible="1"/>
+                    <field name="type" invisible="1"/>
+                    <group>
+                        <group>
+                            <field name="checkbook_id" widget="selection" domain="[('journal_id', '=', journal_id), ('state', '=', 'active')]" attrs="{'invisible':[('type','!=','issue_check')], 'required':[('type','=','issue_check')]}"/>
+                            <field name="number"/>
+                            <field name="bank_id" attrs="{'invisible': [('type', '!=', 'third_check')], 'required': [('type', '=', 'third_check')]}"/>
+                        </group>
+                        <group>
+                            <field name="issue_date"/>
+                            <field name="payment_date" attrs="{'invisible':[('type', '=', 'issue_check'), ('issue_check_subtype', '=', 'currents')], 'required': [('type', '=', 'issue_check'), ('issue_check_subtype', '=', 'deferred')]}"/>
+                            <field name="owner_name" attrs="{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}"/>
+                            <field name="vat" attrs="{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button string="Confirm" name="confirm" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>       
+                </form>
+            </field>
+        </record>
+
+        <record id="action_account_change_check_wizard" model="ir.actions.act_window">
+            <field name="name">Change Check Operation</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.change.check.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="context">{'default_action_type':'changed'}</field>
+            <field name="key2">client_action_multi</field>
+        </record>
+        
+</data>
+</odoo>
