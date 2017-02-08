@@ -57,11 +57,11 @@ class account_check_wizard(models.TransientModel):
 
         for check in self.env['account.check'].browse(
                 self._context.get('active_ids', [])):
-            self.bank_deposited(check, self.journal_id)
+            self.bank_deposited(check, self.journal_id, self.date)
             
             
     @api.multi
-    def bank_deposited(self, check, journal_id):
+    def bank_deposited(self, check, journal_id, date):
         self.ensure_one()
         if check.state in ['holding']:
             # we can use check journal directly
@@ -72,20 +72,9 @@ class account_check_wizard(models.TransientModel):
             #         'If you want to reject you need to do it manually.'))
             vals = check.get_bank_vals(
                 # 'bank_debit', origin.journal_id)
-                'bank_deposited', journal_id)
+                'bank_deposited', journal_id, date)
             move = self.env['account.move'].create(vals)
             move.post()
             # self.env['account.move'].create({
             # })
             check._add_operation('deposited', move)
-    
-    
-    
-    
-    
-    
-
-        
-        
-        
-
