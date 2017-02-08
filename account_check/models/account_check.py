@@ -634,9 +634,9 @@ class AccountCheck(models.Model):
             name = _('Check "%s" rejected') % (self.name)
             # credit_account_id = vou_journal.default_credit_account_id.id
         if action == 'bank_deposited':
-            credit_account = journal.default_credit_account_id
+            credit_account = self.company_id._get_check_account('holding')
             # la contrapartida es la cuenta que reemplazamos en el pago
-            debit_account = self.company_id._get_check_account('holding')
+            debit_account = journal.default_credit_account_id
             name = _('Check "%s" deposited') % (self.name)
         else:
             raise ValidationError(_(
