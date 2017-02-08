@@ -6,8 +6,8 @@
 from odoo import models, fields, api
 
 
-class account_change_check(models.TransientModel):
-    _name = 'account.change.check'
+class account_change_check_wizard(models.TransientModel):
+    _name = 'account.change.check.wizard'
 
     @api.model
     def get_original_check(self):
