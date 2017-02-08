@@ -72,12 +72,12 @@ class account_check_wizard(models.TransientModel):
             #         'If you want to reject you need to do it manually.'))
             vals = check.get_bank_vals(
                 # 'bank_debit', origin.journal_id)
-                'bank_debit', journal_id)
+                'bank_deposit', journal_id)
             move = self.env['account.move'].create(vals)
             move.post()
             # self.env['account.move'].create({
             # })
-            check._add_operation('debited', move)
+            check._add_operation('deposit', move)
     
     
     
