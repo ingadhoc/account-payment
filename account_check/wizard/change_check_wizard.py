@@ -54,8 +54,7 @@ class account_change_check_wizard(models.TransientModel):
     bank_id = fields.Many2one(
         'res.bank', 'Bank',
     )
-    vat = fields.Char(
-        # TODO rename to Owner VAT
+    owner_vat = fields.Char(
         'Owner Vat',
     )
     owner_name = fields.Char(
@@ -65,7 +64,7 @@ class account_change_check_wizard(models.TransientModel):
     @api.onchange('original_check_id')
     def change_original_check(self):
         self.checkbook_id = self.original_check_id.checkbook_id
-        self.vat = self.original_check_id.vat
+        self.owner_vat = self.original_check_id.owner_vat
         self.owner_name = self.original_check_id.owner_name
         self.bank_id = self.original_check_id.bank_id
 
@@ -73,7 +72,7 @@ class account_change_check_wizard(models.TransientModel):
     def change(self):
         self.ensure_one()
         vals = {
-            'vat': self.vat,
+            'owner_vat': self.owner_vat,
             'owner_name': self.owner_name,
             'checkbook_id': self.checkbook_id.id,
             'payment_date': self.payment_date,
