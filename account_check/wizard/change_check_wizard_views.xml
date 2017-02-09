@@ -24,7 +24,7 @@
                         </group>
                     </group>
                     <footer>
-                        <button string="Confirm" name="confirm" type="object" class="oe_highlight"/>
+                        <button string="Confirm" name="change" type="object" class="oe_highlight"/>
                         or
                         <button string="Cancel" class="oe_link" special="cancel"/>
                     </footer>       
