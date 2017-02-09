@@ -14,7 +14,7 @@
             <field name="payment_type">outbound</field>
         </record>
 
-        <function model="account.journal" name="_enable_withholding_on_cash_journals"/>
+        <!-- <function model="account.journal" name="_enable_withholding_on_cash_journals"/> -->
 
     </data>
 </openerp>
