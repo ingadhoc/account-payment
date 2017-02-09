@@ -22,6 +22,7 @@ def migrate(env, version):
     # TODO copy checks and enable
     add_operations(env)
     old_journal_ids = change_issue_journals(env)
+    # al final no mergeamos los third checks journals
     old_journal_ids += change_third_journals(env)
     # TODO. Improove this. if this gives an error you can comment it and
     # later delete de journals by fixing manually related remaining move and
@@ -34,7 +35,9 @@ def migrate(env, version):
 
     # first unlink then add third issue types because if not a checkbook
     # is created for old journals and we cant unlink them
-    env['account.journal']._enable_third_check_on_cash_journals()
+
+    # al final no mergeamos los third checks journals
+    # env['account.journal']._enable_third_check_on_cash_journals()
     env['account.journal']._enable_issue_check_on_bank_journals()
     delete_old_ir_rule(env)
 

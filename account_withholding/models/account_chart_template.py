@@ -22,6 +22,23 @@ class WizardMultiChartsAccounts(models.TransientModel):
         res = super(
             WizardMultiChartsAccounts, self)._create_bank_journals_from_o2m(
             company, acc_template_ref)
-        self.env['account.journal'].with_context(
-            force_company_id=company.id)._enable_withholding_on_cash_journals()
+
+        # creamos diario para retenciones
+        inbound_withholding = self.env.ref(
+            'account_withholding.account_payment_method_in_withholding')
+        outbound_withholding = self.env.ref(
+            'account_withholding.account_payment_method_out_withholding')
+        journal = self.env['account.journal'].create({
+            'name': 'Retenciones',
+            'type': 'cash',
+            'company_id': company.id,
+            'inbound_payment_method_ids': [
+                (4, inbound_withholding.id, None)],
+            'outbound_payment_method_ids': [
+                (4, outbound_withholding.id, None)],
+        })
+        # we dont want this journal to have accounts and we can not inherit
+        # to avoid creation, so we delete it
+        journal.default_credit_account_id.unlink()
+
         return res

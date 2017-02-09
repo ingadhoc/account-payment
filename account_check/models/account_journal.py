@@ -52,24 +52,26 @@ class AccountJournal(models.Model):
                 'outbound_payment_method_ids': [(4, issue_checks.id, None)],
             })
 
-    @api.model
-    def _enable_third_check_on_cash_journals(self):
-        """ Enables issue checks payment method
-            Called upon module installation via data file.
-        """
-        received_third_check = self.env.ref(
-            'account_check.account_payment_method_received_third_check')
-        delivered_third_check = self.env.ref(
-            'account_check.account_payment_method_delivered_third_check')
-        domain = [('type', '=', 'cash')]
-        force_company_id = self._context.get('force_company_id')
-        if force_company_id:
-            domain += [('company_id', '=', force_company_id)]
-        cash_journals = self.search(domain)
-        for cash_journal in cash_journals:
-            cash_journal.write({
-                'inbound_payment_method_ids': [
-                    (4, received_third_check.id, None)],
-                'outbound_payment_method_ids': [
-                    (4, delivered_third_check.id, None)],
-            })
+    # al final la logica es crear diarios nuevos para cheques, lo hacemos
+    # al instalar plan de cuentas
+    # @api.model
+    # def _enable_third_check_on_cash_journals(self):
+    #     """ Enables third checks payment method
+    #         Called upon module installation via data file.
+    #     """
+    #     received_third_check = self.env.ref(
+    #         'account_check.account_payment_method_received_third_check')
+    #     delivered_third_check = self.env.ref(
+    #         'account_check.account_payment_method_delivered_third_check')
+    #     domain = [('type', '=', 'cash')]
+    #     force_company_id = self._context.get('force_company_id')
+    #     if force_company_id:
+    #         domain += [('company_id', '=', force_company_id)]
+    #     cash_journals = self.search(domain)
+    #     for cash_journal in cash_journals:
+    #         cash_journal.write({
+    #             'inbound_payment_method_ids': [
+    #                 (4, received_third_check.id, None)],
+    #             'outbound_payment_method_ids': [
+    #                 (4, delivered_third_check.id, None)],
+    #         })

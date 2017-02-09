@@ -77,11 +77,29 @@ class WizardMultiChartsAccounts(models.TransientModel):
         journals. This is because usually will be installed before chart loaded
         and they will be disable by default
         """
+
         res = super(
             WizardMultiChartsAccounts, self)._create_bank_journals_from_o2m(
             company, acc_template_ref)
-        self.env['account.journal'].with_context(
-            force_company_id=company.id)._enable_third_check_on_cash_journals()
+
+        # creamos diario para cheques de terceros
+        received_third_check = self.env.ref(
+            'account_check.account_payment_method_received_third_check')
+        delivered_third_check = self.env.ref(
+            'account_check.account_payment_method_delivered_third_check')
+        self.env['account.journal'].create({
+            'name': 'Cheques de Terceros',
+            'type': 'cash',
+            'company_id': company.id,
+            'inbound_payment_method_ids': [
+                (4, received_third_check.id, None)],
+            'outbound_payment_method_ids': [
+                (4, delivered_third_check.id, None)],
+        })
+
+        # al final creamos diario a parte para esto
+        # self.env['account.journal'].with_context(
+        #     force_company_id=company.id)._enable_third_check_on_cash_journals()
         self.env['account.journal'].with_context(
             force_company_id=company.id)._enable_issue_check_on_bank_journals()
         # journals = self.env['account.journal'].search([
