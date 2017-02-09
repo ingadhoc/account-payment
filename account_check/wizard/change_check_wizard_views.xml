@@ -20,7 +20,7 @@
                             <field name="issue_date"/>
                             <field name="payment_date" attrs="{'invisible':[('type', '=', 'issue_check'), ('issue_check_subtype', '=', 'currents')], 'required': [('type', '=', 'issue_check'), ('issue_check_subtype', '=', 'deferred')]}"/>
                             <field name="owner_name" attrs="{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}"/>
-                            <field name="vat" attrs="{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}"/>
+                            <field name="owner_vat" attrs="{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}"/>
                         </group>
                     </group>
                     <footer>
