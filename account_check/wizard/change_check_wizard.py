@@ -85,6 +85,6 @@ class account_change_check_wizard(models.TransientModel):
             'amount': 0.0,
             'company_currency_amount': 0.0,
         })
-        self.original_check_id.signal_workflow('change_check')
-        new_check.signal_workflow('draft_router')
+        #self.original_check_id.signal_workflow('change_check')
+        #new_check.signal_workflow('draft_router')
         return new_check
