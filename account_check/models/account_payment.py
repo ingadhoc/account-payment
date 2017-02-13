@@ -169,7 +169,7 @@ class AccountPayment(models.Model):
                 check_name = False
             else:
                 # TODO make optional
-                padding = 8
+                padding = 0
                 if len(str(self.check_number)) > padding:
                     padding = len(str(self.check_number))
                 # communication = _('Check nbr %s') % (
