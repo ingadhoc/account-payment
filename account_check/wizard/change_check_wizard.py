@@ -61,6 +61,7 @@ class account_change_check_wizard(models.TransientModel):
         'Owner Name',
     )
 
+        
     @api.onchange('original_check_id')
     def change_original_check(self):
         self.checkbook_id = self.original_check_id.checkbook_id
@@ -87,6 +88,7 @@ class account_change_check_wizard(models.TransientModel):
             'amount': 0.0,
             'company_currency_amount': 0.0,
         })
-        #self.original_check_id.signal_workflow('change_check')
-        #new_check.signal_workflow('draft_router')
+        
+        self.original_check_id._add_operation('changed', self.original_check_id)
+            
         return new_check
