@@ -91,9 +91,9 @@ class account_change_check_wizard(models.TransientModel):
         })
         
         self.original_check_id._add_operation('changed', new_check)
-        new_check.write({
-            'journal_id': self.journal_id.id,
-        })
+        #new_check.write({
+        #    'journal_id': self.journal_id.id,
+        #})
         new_check._add_operation('holding', self.original_check_id)
             
         return new_check
