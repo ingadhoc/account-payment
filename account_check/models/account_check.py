@@ -641,6 +641,8 @@ class AccountCheck(models.Model):
             # la contrapartida es la cuenta que reemplazamos en el pago
             debit_account = journal.default_credit_account_id
             name = _('Check "%s" deposited') % (self.name)
+        elif action == 'changed':
+            name = _('Check "%s" changed') % (self.name)
         else:
             raise ValidationError(_(
                 'Action %s not implemented for checks!') % action)
