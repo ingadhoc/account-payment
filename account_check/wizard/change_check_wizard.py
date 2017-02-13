@@ -81,6 +81,7 @@ class account_change_check_wizard(models.TransientModel):
             'payment_date': self.payment_date,
             'issue_date': self.issue_date,
             'number': self.number,
+            'journal_id': self.journal_id,
         }
         new_check = self.original_check_id.sudo().copy(vals)
         self.original_check_id.sudo().write({
@@ -89,7 +90,7 @@ class account_change_check_wizard(models.TransientModel):
             'company_currency_amount': 0.0,
         })
         
-        self.original_check_id._add_operation('changed', self.original_check_id)
+        self.original_check_id._add_operation('changed', new_check)
         new_check._add_operation('holding', self.original_check_id)
             
         return new_check
