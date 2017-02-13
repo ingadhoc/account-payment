@@ -90,6 +90,6 @@ class account_change_check_wizard(models.TransientModel):
         })
         
         self.original_check_id._add_operation('changed', self.original_check_id)
-        new_check.._add_operation('holding', self.original_check_id)
+        new_check._add_operation('holding', self.original_check_id)
             
         return new_check
