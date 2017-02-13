@@ -81,7 +81,7 @@ class account_change_check_wizard(models.TransientModel):
             'payment_date': self.payment_date,
             'issue_date': self.issue_date,
             'number': self.number,
-            'journal_id': self.journal_id,
+            'journal_id': self.journal_id.id,
         }
         new_check = self.original_check_id.sudo().copy(vals)
         self.original_check_id.sudo().write({
