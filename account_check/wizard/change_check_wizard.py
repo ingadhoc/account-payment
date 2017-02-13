@@ -82,7 +82,7 @@ class account_change_check_wizard(models.TransientModel):
         }
         new_check = self.original_check_id.sudo().copy(vals)
         self.original_check_id.sudo().write({
-            'name':str(new_check.number),
+            'name': str(new_check.number),
             'replacing_check_id': new_check.id,
             'amount': 0.0,
             'company_currency_amount': 0.0,
