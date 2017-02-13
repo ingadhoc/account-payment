@@ -79,8 +79,8 @@ class account_change_check_wizard(models.TransientModel):
             'issue_date': self.issue_date,
             'number': self.number,
         }
-        new_check = self.original_check_id.copy(vals)
-        self.original_check_id.write({
+        new_check = self.original_check_id.sudo().copy(vals)
+        self.original_check_id.sudo().write({
             'replacing_check_id': new_check.id,
             'amount': 0.0,
             'company_currency_amount': 0.0,
