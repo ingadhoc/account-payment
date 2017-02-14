@@ -67,7 +67,7 @@ class account_change_check_wizard(models.TransientModel):
         self.checkbook_id = self.original_check_id.checkbook_id
         self.owner_vat = self.original_check_id.owner_vat
         self.owner_name = self.original_check_id.owner_name
-        self.bank_id = self.original_check_id.bank_id
+        self.bank_id = self.journal_id.bank_id
 
     @api.multi
     def change(self):
