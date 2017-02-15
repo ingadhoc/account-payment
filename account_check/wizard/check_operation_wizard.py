@@ -22,9 +22,9 @@ class account_check_wizard(models.TransientModel):
         'account.journal',
         'Journal',
         domain="[('company_id','=',company_id), "
-        "('type', 'in', ['cash', 'bank']), "
-        "('outbound_payment_method_ids', 'not in', [2, 5, 7, 8]), "
-        "('inbound_payment_method_ids', 'not in', [1, 3, 4, 6])]"
+        "('type', 'in', ['cash', 'bank'])], "
+        #"('outbound_payment_method_ids', 'not in', [2, 5, 7, 8]), "
+        #"('inbound_payment_method_ids', 'not in', [1, 3, 4, 6])]"
 
 
         #"('payment_subtype', 'not in', ['issue_check', 'third_check'])]",
