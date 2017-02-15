@@ -329,7 +329,7 @@ class account_check(models.Model):
     @api.onchange('voucher_id')
     def onchange_voucher(self):
         self.owner_name = self.voucher_id.partner_id.name
-        self.vat = self.voucher_id.partner_id.vat
+        self.owner_vat = self.voucher_id.partner_id.vat
 
     @api.one
     def unlink(self):
