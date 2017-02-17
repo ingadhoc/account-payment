@@ -11,7 +11,8 @@
                     <group name="checkaccounts" string="Check Accounts">
                         <label for="id" string="Check Accounts"/>
                         <div>
-                            <group col="4">
+                            <group col="1">
+                                <h1>Own Check Accounts Configuration</h1>
                             <!-- Own -->
                             <div>
                                 <label for="own_check_rejected_account_id" string="Own Check Rejected Account"/><field name="own_check_rejected_account_id"/>
@@ -23,7 +24,8 @@
                                 <label for="deferred_check_account_id" string="Own Deferred Check Account"/><field name="deferred_check_account_id"/>
                             </div>
                             </group>
-                            <group col="4">
+                            <group col="1">
+                                <h1>Third Party Check Accounts Configuration</h1>
                             <!-- Third Party -->
                             <div>
                                 <label for="third_party_checks_cancelled_account_id " string="Third Party Rejected Check Account"/><field name="third_party_checks_cancelled_account_id"/>
