@@ -9,9 +9,17 @@ from odoo import fields, models
 class AccountConfigSettings(models.TransientModel):
     _inherit = 'account.config.settings'
     
-    rejected_check_account_id = fields.Many2one(related='company_id.rejected_check_account_id')
+    #Own
+    
+    own_check_rejected_account_id = fields.Many2one(related='company_id.rejected_check_account_id')
+    own_check_cancelled_account_id = fields.Many2one(related='company_id.rejected_check_account_id')
     deferred_check_account_id = fields.Many2one(related='company_id.deferred_check_account_id')
+        
+    #Third Party
+    
+    third_party_checks_cancelled_account_id = fields.Many2one(related='company_id.rejected_check_account_id')
+    third_party_checks_bounced_endorsed_account_id  = fields.Many2one(related='company_id.rejected_check_account_id')
+    rejected_check_account_id = fields.Many2one(related='company_id.rejected_check_account_id')
     holding_check_account_id = fields.Many2one(related='company_id.holding_check_account_id')
 
-    
-    
+

@@ -11,29 +11,47 @@ _logger = logging.getLogger(__name__)
 
 class ResCompany(models.Model):
     _inherit = 'res.company'
-
-    rejected_check_account_id = fields.Many2one(
+    
+    #Own
+    
+    own_check_rejected_account_id = fields.Many2one(
         'account.account',
-        'Rejected Check Account',
-        # required=True,
-        help='Rejection Checks account, for eg. "Rejected Checks"',
-        # domain=[('type', 'in', ['other'])],
+        'Own Checks Rejected Account',
+        help='Own Checks Rejected Account, for eg. "Own Rejected Checks"',
+    )
+    own_check_cancelled_account_id = fields.Many2one(
+        'account.account',
+        'Own Check Cancelled Account',
+        help='Own Check Cancelled Account, for eg. "Own Cancelled Checks"',
     )
     deferred_check_account_id = fields.Many2one(
         'account.account',
         'Deferred Check Account',
-        # required=True,
         help='Deferred Checks account, for eg. "Deferred Checks"',
-        # domain=[('type', 'in', ['other'])],
+    )
+
+    #Third Party
+    
+    third_party_checks_cancelled_account_id = fields.Many2one(
+        'account.account',
+        'Third Party Cancelled Check Account',
+        help='Third Party Cancelled Account, for eg. "Third Party Cancelled Checks"',
+    )
+    third_party_checks_bounced_endorsed_account_id  = fields.Many2one(
+        'account.account',
+        'Third Party Bounced Check Account',
+        help='Third Party Bounced Check Account, for eg. "Third Party Bounced Checks"',
+    )
+    rejected_check_account_id = fields.Many2one(
+        'account.account',
+        'Third Party Rejected Check Account',
+        help='Third Party Rejected Check Account, for eg. "Third Party Rejected Checks"',
     )
     holding_check_account_id = fields.Many2one(
         'account.account',
-        'Holding Check Account',
-        # required=True,
-        help='Holding Checks account for third checks, '
-        'for eg. "Holding Checks"',
-        # domain=[('type', 'in', ['other'])],
-    )
+        'Third Party Holding Check Account',
+        help='Third Party Holding Checks account for third checks, for eg. "Third Party Holding Checks"',
+    )    
 
     @api.multi
     def _get_check_account(self, type):
