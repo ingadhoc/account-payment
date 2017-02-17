@@ -16,8 +16,7 @@
     },
     "depends": [
         "account_cancel",
-        "account_debt_management",  # for financial_amount_residual, we
-        # could improove this dependency chain
+        "account_financial_amount",
         "account_payment_fix",  # for fixes related to domains on payments
         # "account",
     ],
