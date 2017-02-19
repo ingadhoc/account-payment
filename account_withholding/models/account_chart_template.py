@@ -23,22 +23,25 @@ class WizardMultiChartsAccounts(models.TransientModel):
             WizardMultiChartsAccounts, self)._create_bank_journals_from_o2m(
             company, acc_template_ref)
 
-        # creamos diario para retenciones
-        inbound_withholding = self.env.ref(
-            'account_withholding.account_payment_method_in_withholding')
-        outbound_withholding = self.env.ref(
-            'account_withholding.account_payment_method_out_withholding')
-        journal = self.env['account.journal'].create({
-            'name': 'Retenciones',
-            'type': 'cash',
-            'company_id': company.id,
-            'inbound_payment_method_ids': [
-                (4, inbound_withholding.id, None)],
-            'outbound_payment_method_ids': [
-                (4, outbound_withholding.id, None)],
-        })
-        # we dont want this journal to have accounts and we can not inherit
-        # to avoid creation, so we delete it
-        journal.default_credit_account_id.unlink()
+        # each chart of account / localization should send this key if
+        # they want withholding journal to be created
+        if self._context.get('create_withholding_journal'):
+            # creamos diario para retenciones
+            inbound_withholding = self.env.ref(
+                'account_withholding.account_payment_method_in_withholding')
+            outbound_withholding = self.env.ref(
+                'account_withholding.account_payment_method_out_withholding')
+            journal = self.env['account.journal'].create({
+                'name': 'Retenciones',
+                'type': 'cash',
+                'company_id': company.id,
+                'inbound_payment_method_ids': [
+                    (4, inbound_withholding.id, None)],
+                'outbound_payment_method_ids': [
+                    (4, outbound_withholding.id, None)],
+            })
+            # we dont want this journal to have accounts and we can not inherit
+            # to avoid creation, so we delete it
+            journal.default_credit_account_id.unlink()
 
         return res
