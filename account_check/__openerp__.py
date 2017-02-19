@@ -20,7 +20,7 @@
 ##############################################################################
 {
     'name': 'Account Check Management',
-    'version': '9.0.1.6.0',
+    'version': '9.0.1.7.0',
     'category': 'Accounting',
     'summary': 'Accounting, Payment, Check, Third, Issue',
     'author': 'OpenERP Team de Localizacion Argentina',
@@ -38,6 +38,7 @@
         # if we create it from here accounts will be created, so we let
         # this work to chart installation
         # 'data/account_journal_data.xml',
+        'wizard/account_check_action_wizard_view.xml',
         'views/account_payment_view.xml',
         'views/account_check_view.xml',
         'views/account_journal_dashboard_view.xml',

@@ -391,15 +391,22 @@ class AccountCheck(models.Model):
     def _add_operation(
             self, operation, origin, partner=None, date=False):
         for rec in self:
+            # agregamos validacion de fechas
+            date = date or fields.Datetime.now()
+            if rec.operation_ids and rec.operation_ids[0].date > date:
+                raise ValidationError(_(
+                    'The date of a new operation can not be minor than last '
+                    'operation date'))
             vals = {
                 'operation': operation,
+                'date': date,
                 'check_id': rec.id,
                 'origin': '%s,%i' % (origin._name, origin.id),
                 # 'move_line_id': move_line and move_line.id or False,
                 'partner_id': partner and partner.id or False,
             }
-            if date:
-                vals['date'] = date
+            # if date:
+            #     vals['date'] = date
             rec.operation_ids.create(vals)
 
     @api.multi
@@ -485,11 +492,13 @@ class AccountCheck(models.Model):
             vals = self.get_bank_vals(
                 # 'bank_debit', origin.journal_id)
                 'bank_debit', self.journal_id)
+            action_date = self._context.get('action_date')
+            vals['date'] = action_date
             move = self.env['account.move'].create(vals)
             move.post()
             # self.env['account.move'].create({
             # })
-            self._add_operation('debited', move)
+            self._add_operation('debited', move, date=action_date)
 
     @api.multi
     def claim(self):
@@ -527,9 +536,11 @@ class AccountCheck(models.Model):
                     'If you want to reject you need to do it manually.'))
             vals = self.get_bank_vals(
                 'bank_reject', journal)
+            action_date = self._context.get('action_date')
+            vals['date'] = action_date
             move = self.env['account.move'].create(vals)
             move.post()
-            self._add_operation('rejected', move)
+            self._add_operation('rejected', move, date=action_date)
         elif self.state in ['delivered', 'handed']:
             operation = self._get_operation(self.state, True)
             return self.action_create_debit_note(
@@ -538,6 +549,7 @@ class AccountCheck(models.Model):
     @api.multi
     def action_create_debit_note(self, operation, partner_type, partner):
         self.ensure_one()
+        action_date = self._context.get('action_date')
 
         if partner_type == 'supplier':
             invoice_type = 'in_invoice'
@@ -570,7 +582,7 @@ class AccountCheck(models.Model):
             # this is the reference that goes on account.move
             'reference': name,
             # 'date': self.date,
-            # 'date_invoice': self.date_invoice,
+            'date_invoice': action_date,
             'origin': _('Check nbr (id): %s (%s)') % (self.name, self.id),
             'journal_id': journal.id,
             # this is done on muticompany fix
@@ -593,7 +605,7 @@ class AccountCheck(models.Model):
         # invoice.write({'invoice_line_ids': [(0, 0, inv_line_vals)]})
         # invoice.signal_workflow('invoice_open')
         # payment_group.to_pay_move_line_ids += invoice.open_move_line_ids
-        self._add_operation(operation, invoice, partner)
+        self._add_operation(operation, invoice, partner, date=action_date)
 
         return {
             'name': name,
