@@ -636,6 +636,7 @@ class AccountCheck(models.Model):
             credit_account = journal.default_debit_account_id
             # la contrapartida es la cuenta que reemplazamos en el pago
             debit_account = self.company_id._get_check_account('deferred')
+            name = _('Check "%s" debit') % (self.name)
         elif action == 'bank_reject':
             # al transferir a un banco se usa esta. al volver tiene que volver
             # por la opuesta
@@ -643,6 +644,7 @@ class AccountCheck(models.Model):
             credit_account = journal.default_debit_account_id
             debit_account = self.company_id._get_check_account('rejected')
             # credit_account_id = vou_journal.default_credit_account_id.id
+            name = _('Check "%s" rejection') % (self.name)
         else:
             raise ValidationError(_(
                 'Action %s not implemented for checks!') % action)
@@ -650,7 +652,6 @@ class AccountCheck(models.Model):
         # name = self.env['ir.sequence'].next_by_id(
         #     journal.sequence_id.id)
         # ref = self.name
-        name = _('Check "%s" rejection') % (self.name)
 
         debit_line_vals = {
             'name': name,
