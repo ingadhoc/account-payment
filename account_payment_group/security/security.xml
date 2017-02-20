@@ -1,5 +1,5 @@
 <openerp>
-<data noupdate="0">
+<data noupdate="1">
     <record model="ir.rule" id="account_payment_group_comp_rule">
         <field name="name">Account payment group company rule</field>
         <field name="model_id" ref="model_account_payment_group"/>
@@ -19,5 +19,13 @@
         <field name="category_id" ref="base.module_category_hidden"/>
         <field name="name">Choose Payment Type on Payments</field>
     </record>
+
+</data>
+<data noupdate="0">
+    <!-- by default we enable it -->
+    <record model="res.groups" id="base.group_user">
+        <field name="implied_ids" eval="[(4, ref('group_choose_payment_type'))]"/>
+    </record>
+
 </data>
 </openerp>
