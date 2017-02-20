@@ -108,7 +108,7 @@
                             </tree>
                             <form>
                                 <group>
-                                    <!-- <field name="date"/> -->
+                                    <field name="date"/>
                                     <field name="operation"/>
                                     <field name="origin"/>
                                     <field name="partner_id"/>
