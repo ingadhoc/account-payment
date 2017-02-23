@@ -490,6 +490,13 @@ class AccountCheck(models.Model):
             # self.env['account.move'].create({
             # })
             self._add_operation('debited', move)
+            
+
+    @api.multi
+    def return(self):
+        self.ensure_one()
+        if self.state in ['holding']:
+            self._add_operation('returned', None)
 
     @api.multi
     def claim(self):
