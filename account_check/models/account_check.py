@@ -496,7 +496,7 @@ class AccountCheck(models.Model):
     def returned(self):
         self.ensure_one()
         if self.state in ['holding']:
-            self._add_operation('returned', None)
+            self._add_operation('returned', self)
 
     @api.multi
     def claim(self):
