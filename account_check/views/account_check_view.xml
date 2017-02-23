@@ -82,7 +82,7 @@
                     <button name="action_cancel_debit" type="object" string="Cancel Debit" states="debited" context="{'default_state':state,'default_type':type}"/>
                     <button name="action_cancel_rejection" type="object" string="Cancel Rejection" states="rejected" context="{'default_state':state,'default_type':type}"/>
                     <button name="action_cancel_deposit" type="object" string="Cancel Deposit" states="deposited" context="{'default_state':state,'default_type':type}"/>
-                    <button name="action_cancel_return" type="object" string="Cancel Return" states="returned" context="{'default_state':state,'default_type':type}"/>
+                    <button name="cancel_return" type="object" string="Cancel Return" states="returned" context="{'default_state':state,'default_type':type}"/>
                     <field name="state" widget="statusbar" statusbar_colors="{&quot;hrejected&quot;:&quot;red&quot;}"/> 
                 </header>
                 <sheet string="Checks">
