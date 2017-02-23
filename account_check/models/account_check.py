@@ -495,7 +495,7 @@ class AccountCheck(models.Model):
     @api.multi
     def returned(self):
         self.ensure_one()
-        if self.state in ['holding'] or self.state in ['handled']:
+        if self.state in ['holding'] or self.state in ['handed']:
             self._add_operation('returned', self)
             
     @api.multi
@@ -504,7 +504,7 @@ class AccountCheck(models.Model):
         if self.state in ['returned']:
             if self.type == 'third_check':
                 self._add_operation('holding', self)
-            else: #if self.type == 'issue_check':
+            elif self.type == 'issue_check':
                 self._add_operation('handed', self)
 
     @api.multi
