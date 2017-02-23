@@ -1,5 +1,5 @@
 
-# ADHOC Account Invoicing
+# Account Payments Apps
 
 Odoo Invoicing Extension Addons
 
