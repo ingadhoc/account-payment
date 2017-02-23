@@ -493,7 +493,7 @@ class AccountCheck(models.Model):
             
 
     @api.multi
-    def return(self):
+    def returned(self):
         self.ensure_one()
         if self.state in ['holding']:
             self._add_operation('returned', None)
