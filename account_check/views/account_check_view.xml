@@ -110,8 +110,9 @@
                         <field name="operation_ids" nolabel="1" readonly="1">
                             <tree default_order="date">
                                 <field name="date"/>
+                                <field name="create_uid"/>	
                                 <field name="operation"/>
-                                <field name="origin_name" string="Origin"/>
+                                <field name="origin" string="Origin"/>
                                 <field name="partner_id"/>
                             </tree>
                             <form>
