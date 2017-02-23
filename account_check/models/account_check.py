@@ -3,8 +3,8 @@
 # For copyright and license notices, see __openerp__.py file in module root
 # directory
 ##############################################################################
-from openerp import fields, models, _, api
-from openerp.exceptions import UserError, ValidationError
+from odoo import fields, models, _, api
+from odoo.exceptions import UserError, ValidationError
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -497,6 +497,12 @@ class AccountCheck(models.Model):
         self.ensure_one()
         if self.state in ['holding']:
             self._add_operation('returned', self)
+            
+    @api.multi
+    def cancel_return(self):
+        self.ensure_one()
+        if self.state in ['returned']:
+            self._add_operation('holding', self)            
 
     @api.multi
     def claim(self):
