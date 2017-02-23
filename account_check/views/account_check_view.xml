@@ -77,8 +77,7 @@
                     <!-- odoo8 port thridparty -->
                     <button name="account_check.action_account_check_deposit_wizard" type="action" string="Deposited" states="holding"/>
                     <button name="account_check.action_account_change_check_wizard" type="action" string="Change" attrs="{'invisible':['|', ('type', '!=', 'third_check'), ('state', '!=', 'holding'), '|', ('type', '!=', 'issue_check'), ('state', '!=', 'handed')]}"/>
-                    <button name="debit" type="object" string="Debit" attrs="{'invisible':['|',('type','!=','issue_check'),('state','!=','handed')]}"/>
-                    <button name="returned" type="object" string="Return" states="holding" context="{'default_state':state,'default_type':type}"/>
+                    <button name="returned" type="object" string="Return" states="holding,handled" context="{'default_state':state,'default_type':type}"/>
                     <button name="action_cancel_debit" type="object" string="Cancel Debit" states="debited" context="{'default_state':state,'default_type':type}"/>
                     <button name="action_cancel_rejection" type="object" string="Cancel Rejection" states="rejected" context="{'default_state':state,'default_type':type}"/>
                     <button name="action_cancel_deposit" type="object" string="Cancel Deposit" states="deposited" context="{'default_state':state,'default_type':type}"/>
