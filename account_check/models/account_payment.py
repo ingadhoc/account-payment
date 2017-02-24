@@ -255,13 +255,13 @@ class AccountPayment(models.Model):
                 'check_name': checkbook.sequence_id.next_by_id(),
             })
             
-        valid_field_third_checks(vals)    
+        self.valid_field_third_checks(vals)    
         
         return super(AccountPayment, self.sudo()).create(vals)
 # Write
     @api.model    
     def write(self, vals):
-        valid_field_third_checks(vals)    
+        self.valid_field_third_checks(vals)    
         return super(AccountPayment, self.sudo()).write(vals)
 
     @api.multi
