@@ -499,11 +499,11 @@ class AccountCheck(models.Model):
             if single_operation.operation == 'deposited':
                 journal_id = single_operation.origin.journal_id
                 
-        self.bank_deposited_cancel(self, journal_id, date)
+        self.bank_deposited_cancel(self, journal_id)
             
             
     @api.multi
-    def bank_deposited_cancel(self, check, journal_id, date):
+    def bank_deposited_cancel(self, check, journal_id):
         self.ensure_one()
         if check.state in ['holding']:
             # we can use check journal directly
