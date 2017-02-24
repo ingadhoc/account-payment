@@ -217,7 +217,11 @@ class AccountPayment(models.Model):
     def valid_field_third_checks(self, vals):
         third_checks = self.env.ref(
             'account_check.account_payment_method_received_third_check')
+        
         msg=[]
+        
+        raise UserError(_('Debug '+str(vals)))
+        
         if vals['payment_method_id'] == third_checks.id:
             if vals['check_number'] <= 0:
                 msg.append("Check Number")
