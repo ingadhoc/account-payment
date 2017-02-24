@@ -177,6 +177,8 @@ class AccountPayment(models.Model):
                 # communication = (
                 #     '%%0%sd' % padding % self.check_number)
             self.check_name = check_name
+        if self.check_number < 0:
+            raise UserError(_('Check Number not be'+str(self.check_number)))
 
     @api.onchange('check_issue_date', 'check_payment_date')
     def onchange_date(self):
@@ -213,7 +215,7 @@ class AccountPayment(models.Model):
     def onchange_checkbook(self):
         if self.checkbook_id:
             self.check_number = self.checkbook_id.sequence_id.number_next
-
+            
     def valid_field_third_checks(self, vals):
         third_checks = self.env.ref(
             'account_check.account_payment_method_received_third_check')
@@ -259,12 +261,6 @@ class AccountPayment(models.Model):
             
         self.valid_field_third_checks(vals)    
         return super(AccountPayment, self.sudo()).create(vals)
-    
-# Valid Check Number
-    @api.depends('check_number')
-    def valid_check_number(self):
-        if self.check_number < 0:
-            raise UserError(_('Check Number not be'+str(self.check_number)))
         
     @api.multi
     def cancel(self):
