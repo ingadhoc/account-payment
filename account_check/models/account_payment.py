@@ -177,8 +177,9 @@ class AccountPayment(models.Model):
                 # communication = (
                 #     '%%0%sd' % padding % self.check_number)
             self.check_name = check_name
-        if self.check_number < 0:
+        if self.check_number <= 0:
             raise UserError(_('Check Number not be'+str(self.check_number)))
+            self.check_number = None
 
     @api.onchange('check_issue_date', 'check_payment_date')
     def onchange_date(self):
