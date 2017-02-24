@@ -236,7 +236,21 @@ class AccountPayment(models.Model):
         msg=[]
         if vals['payment_method_id'] == third_checks.id:
             if vals['check_number'] <= 0:
-                msg.append("check_number")
+                msg.append("Check Number")
+            if vals['amount'] <= 0:
+                msg.append("Amount")
+            if vals['check_issue_date']:
+                msg.append("Issue Date")
+            if vals['payment_date']:
+                msg.append("Payment Date")
+            if vals['check_bank_id']:
+                msg.append("Bank")
+            if vals['check_owner_vat']:
+                msg.append("Owner VAT")   
+            if vals['check_owner_name']:
+                msg.append("Owner Name")  
+                
+                
             if len(msg) > 0:
                 raise Warning('Por favor completar. '+str(msg))
         
