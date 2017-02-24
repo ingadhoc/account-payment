@@ -167,6 +167,10 @@ class AccountPayment(models.Model):
         if self.payment_method_code in ['received_third_check']:
             check_name = ''.join(map(str, re.findall(r'\d+',self.check_name)))
             self.check_name = check_name
+            if self.check_name == '0'
+                self.check_name = ''
+            else:
+                self.check_number = map(int, self.check_name)
             
 #        if self.check_name <= 0:
 #            self.check_number = None
