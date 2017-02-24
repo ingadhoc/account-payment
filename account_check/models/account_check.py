@@ -494,18 +494,10 @@ class AccountCheck(models.Model):
     @api.multi
     def action_deposit_cancel(self):
         self.ensure_one()
-        
-        for single_operation in self.operation_ids:
-            if single_operation.operation == 'deposited':
-                journal_id = single_operation.origin.journal_id
-                
-        self.bank_deposited_cancel(journal_id)
-            
-            
-    @api.multi
-    def bank_deposited_cancel(self, journal_id):
-        self.ensure_one()
         if self.state in ['deposited']:
+            for single_operation in self.operation_ids:
+                if single_operation.operation == 'deposited':
+                    journal_id = single_operation.origin.journal_id    
             vals = self.get_bank_vals(
                 'bank_deposited_cancel', journal_id)
             move = self.env['account.move'].create(vals)
