@@ -221,9 +221,9 @@ class AccountPayment(models.Model):
         if vals['payment_method_id'] == third_checks.id:
             if vals['check_number'] <= 0:
                 msg.append("Check Number")
-            if vals['amount'] <= 0:
+            '''if vals['amount'] <= 0:
                 msg.append("Amount")
-            ''' if vals['check_issue_date']:
+             if vals['check_issue_date']:
                 msg.append("Issue Date")
             if vals['payment_date']:
                 msg.append("Payment Date")
@@ -256,10 +256,9 @@ class AccountPayment(models.Model):
             })
             
         self.valid_field_third_checks(vals)    
-        
         return super(AccountPayment, self.sudo()).create(vals)
 # Write
-    @api.model    
+    @api.multi
     def write(self, vals):
         self.valid_field_third_checks(vals)    
         return super(AccountPayment, self.sudo()).write(vals)
