@@ -234,11 +234,12 @@ class AccountPayment(models.Model):
         third_checks = self.env.ref(
             'account_check.account_payment_method_received_third_check')
         msg=[]
-        if vals['payment_method_id'] == third_checks:
+        if vals['payment_method_id'] == third_checks.id:
             if vals['check_number'] <= 0:
-                msg.append("check_number")       
-                
-        raise Warning('Por favor completar. '+str(msg))
+                msg.append("check_number")
+            if len(msg) > 0:
+                raise Warning('Por favor completar. '+str(msg))
+        
         return super(AccountPayment, self.sudo()).create(vals)
 
     @api.multi
