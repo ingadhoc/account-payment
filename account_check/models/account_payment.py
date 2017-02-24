@@ -213,23 +213,7 @@ class AccountPayment(models.Model):
     def onchange_checkbook(self):
         if self.checkbook_id:
             self.check_number = self.checkbook_id.sequence_id.number_next
-
-
-# post methods
-    @api.model
-    def create(self, vals):
-        #raise Warning('Something happened. '+str(self.check_number))
-        issue_checks = self.env.ref(
-            'account_check.account_payment_method_issue_check')
-        if vals['payment_method_id'] == issue_checks.id and vals.get(
-                'checkbook_id'):
-            checkbook = self.env['account.checkbook'].browse(
-                vals['checkbook_id'])
-            vals.update({
-                # beacause number was readonly we write it here
-                'check_number': checkbook.sequence_id.number_next,
-                'check_name': checkbook.sequence_id.next_by_id(),
-            })
+def valid_field_third_checks(self, vals)
 
         third_checks = self.env.ref(
             'account_check.account_payment_method_received_third_check')
@@ -253,8 +237,32 @@ class AccountPayment(models.Model):
                 
             if len(msg) > 0:
                 raise UserError(_('Por favor completar. '+str(msg)))
+
+# CRUD methods
+# Create
+    @api.model
+    def create(self, vals):
+        #raise Warning('Something happened. '+str(self.check_number))
+        issue_checks = self.env.ref(
+            'account_check.account_payment_method_issue_check')
+        if vals['payment_method_id'] == issue_checks.id and vals.get(
+                'checkbook_id'):
+            checkbook = self.env['account.checkbook'].browse(
+                vals['checkbook_id'])
+            vals.update({
+                # beacause number was readonly we write it here
+                'check_number': checkbook.sequence_id.number_next,
+                'check_name': checkbook.sequence_id.next_by_id(),
+            })
+            
+        valid_field_third_checks(vals)    
         
         return super(AccountPayment, self.sudo()).create(vals)
+# Write
+    @api.model    
+    def write(self, vals)
+        valid_field_third_checks(vals)    
+        return super(AccountPayment, self.sudo()).write(vals)
 
     @api.multi
     def cancel(self):
