@@ -178,8 +178,8 @@ class AccountPayment(models.Model):
                 #     '%%0%sd' % padding % self.check_number)
             self.check_name = check_name
         if self.check_number <= 0:
-            raise UserError(_('Check Number can\'t be: '+str(self.check_number)))
             self.check_number = None
+            raise UserError(_('Check Number can\'t be: '+str(self.check_number)))
 
     @api.onchange('check_issue_date', 'check_payment_date')
     def onchange_date(self):
