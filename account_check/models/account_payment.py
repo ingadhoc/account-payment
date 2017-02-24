@@ -5,6 +5,7 @@
 ##############################################################################
 from odoo import fields, models, _, api
 from odoo.exceptions import UserError
+import re
 import logging
 # import openerp.addons.decimal_precision as dp
 _logger = logging.getLogger(__name__)
@@ -160,26 +161,16 @@ class AccountPayment(models.Model):
 
     # TODO activar
     #@api.one
-    @api.onchange('check_number', 'checkbook_id')
+    @api.onchange('check_name', 'checkbook_id')
     def change_check_number(self):
         self.ensure_one()
-        # TODO make default padding a parameter
         if self.payment_method_code in ['received_third_check']:
-            if not self.check_number:
-                check_name = False
-            else:
-                # TODO make optional
-                padding = 0
-                if len(str(self.check_number)) > padding:
-                    padding = len(str(self.check_number))
-                # communication = _('Check nbr %s') % (
-                check_name = ('%%0%sd' % padding % self.check_number)
-                # communication = (
-                #     '%%0%sd' % padding % self.check_number)
-            self.check_name = check_name
-        if self.check_number <= 0:
-            self.check_number = None
-            #raise UserError(_('Check Number can\'t be: '+str(self.check_number)))
+
+        check_name = ''.join(map(str, re.findall(r'\d+',self.check_name)))
+        self.check_name = check_name
+            
+#        if self.check_name <= 0:
+#            self.check_number = None
 
     @api.onchange('check_issue_date', 'check_payment_date')
     def onchange_date(self):
