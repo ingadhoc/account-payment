@@ -499,8 +499,7 @@ class AccountCheck(models.Model):
             if single_operation.operation == 'deposited':
                 journal_id = single_operation.origin.journal_id
                 
-        raise UserError(_(str(journal_id)))
-        #self.bank_deposited(self, self.journal_id, self.date)
+        self.bank_deposited(self, journal_id, self.date)
             
             
     @api.multi
@@ -515,12 +514,12 @@ class AccountCheck(models.Model):
             #         'If you want to reject you need to do it manually.'))
             vals = check.get_bank_vals(
                 # 'bank_debit', origin.journal_id)
-                'bank_deposited', journal_id, date)
+                'bank_deposited_cancel', journal_id, date)
             move = self.env['account.move'].create(vals)
             move.post()
             # self.env['account.move'].create({
             # })
-            check._add_operation('deposited', move)
+            check._add_operation('holding', move)
             
 
     @api.multi
