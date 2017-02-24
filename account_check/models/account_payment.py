@@ -166,14 +166,14 @@ class AccountPayment(models.Model):
         self.ensure_one()
         if self.payment_method_code in ['received_third_check']:
             check_name = ''.join(map(str, re.findall(r'\d+',self.check_name)))
-            self.check_name = check_name
-            if self.check_name == '0':
-                self.check_name = ''
+            if check_name == '':
+                pass
             else:
-                self.check_number = int(check_name)
-            
-#        if self.check_name <= 0:
-#            self.check_number = None
+                self.check_name = check_name
+                if self.check_name == '0':
+                    self.check_name = '' 
+                else:
+                    self.check_number = int(check_name)            
 
     @api.onchange('check_issue_date', 'check_payment_date')
     def onchange_date(self):
