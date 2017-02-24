@@ -170,7 +170,7 @@ class AccountPayment(models.Model):
             if self.check_name == '0':
                 self.check_name = ''
             else:
-                self.check_number = map(int, self.check_name)
+                self.check_number = int(check_name)
             
 #        if self.check_name <= 0:
 #            self.check_number = None
