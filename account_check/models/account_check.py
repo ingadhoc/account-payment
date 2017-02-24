@@ -491,6 +491,34 @@ class AccountCheck(models.Model):
             # })
             self._add_operation('debited', move)
             
+    @api.multi
+    def action_deposit_cancel(self):
+        self.ensure_one()
+        for operation in self.operation_ids:
+            if operation.operation == 'deposited':
+                raise UserError(_(str(operation.origin.name)))
+        #self.bank_deposited(self, self.journal_id, self.date)
+            
+            
+    @api.multi
+    def bank_deposited_cancel(self, check, journal_id, date):
+        self.ensure_one()
+        if check.state in ['holding']:
+            # we can use check journal directly
+            # origin = self.operation_ids[0].origin
+            # if origin._name != 'account.payment':
+            #     raise ValidationError((
+            #         'The deposit operation is not linked to a payment.'
+            #         'If you want to reject you need to do it manually.'))
+            vals = check.get_bank_vals(
+                # 'bank_debit', origin.journal_id)
+                'bank_deposited', journal_id, date)
+            move = self.env['account.move'].create(vals)
+            move.post()
+            # self.env['account.move'].create({
+            # })
+            check._add_operation('deposited', move)
+            
 
     @api.multi
     def returned(self):
@@ -651,12 +679,16 @@ class AccountCheck(models.Model):
             credit_account = journal.default_debit_account_id
             debit_account = self.company_id._get_check_account('rejected')
             name = _('Check "%s" rejected') % (self.name)
-            # credit_account_id = vou_journal.default_credit_account_id.id
+            # credit_account_id = vou_journal.default_credit_account_id.id          
         elif action == 'bank_deposited':
             credit_account = self.company_id._get_check_account('holding')
             # la contrapartida es la cuenta que reemplazamos en el pago
             debit_account = journal.default_credit_account_id
             name = _('Check "%s" deposited') % (self.name)
+        elif action == 'bank_deposited_cancel':
+            credit_account = journal.default_credit_account_id
+            debit_account = self.company_id._get_check_account('holding')
+            name = _('Check "%s" deposit reverted') % (self.name)
         elif action == 'changed':
             name = _('Check "%s" changed') % (self.name)
         else:
