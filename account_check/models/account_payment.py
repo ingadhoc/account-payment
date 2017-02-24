@@ -213,8 +213,8 @@ class AccountPayment(models.Model):
     def onchange_checkbook(self):
         if self.checkbook_id:
             self.check_number = self.checkbook_id.sequence_id.number_next
-def valid_field_third_checks(self, vals):
 
+    def valid_field_third_checks(self, vals):
         third_checks = self.env.ref(
             'account_check.account_payment_method_received_third_check')
         msg=[]
