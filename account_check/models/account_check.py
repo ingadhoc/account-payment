@@ -505,7 +505,7 @@ class AccountCheck(models.Model):
     @api.multi
     def bank_deposited_cancel(self, check, journal_id):
         self.ensure_one()
-        if check.state in ['holding']:
+        if check.state in ['deposited']:
             # we can use check journal directly
             # origin = self.operation_ids[0].origin
             # if origin._name != 'account.payment':
