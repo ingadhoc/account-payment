@@ -499,26 +499,17 @@ class AccountCheck(models.Model):
             if single_operation.operation == 'deposited':
                 journal_id = single_operation.origin.journal_id
                 
-        self.bank_deposited_cancel(self, journal_id)
+        self.bank_deposited_cancel(journal_id)
             
             
     @api.multi
     def bank_deposited_cancel(self, journal_id):
         self.ensure_one()
         if self.state in ['deposited']:
-            # we can use check journal directly
-            # origin = self.operation_ids[0].origin
-            # if origin._name != 'account.payment':
-            #     raise ValidationError((
-            #         'The deposit operation is not linked to a payment.'
-            #         'If you want to reject you need to do it manually.'))
             vals = self.get_bank_vals(
-                # 'bank_debit', origin.journal_id)
                 'bank_deposited_cancel', journal_id)
             move = self.env['account.move'].create(vals)
             move.post()
-            # self.env['account.move'].create({
-            # })
             self._add_operation('holding', move)
             
 
