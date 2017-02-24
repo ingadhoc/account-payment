@@ -499,11 +499,11 @@ class AccountCheck(models.Model):
             if single_operation.operation == 'deposited':
                 journal_id = single_operation.origin.journal_id
                 
-        self.bank_deposited_cancel(self, journal_id, self.date)
+        self.bank_deposited_cancel(self, journal_id)
             
             
     @api.multi
-    def bank_deposited_cancel(self, check, journal_id, date):
+    def bank_deposited_cancel(self, check, journal_id):
         self.ensure_one()
         if check.state in ['holding']:
             # we can use check journal directly
@@ -514,7 +514,7 @@ class AccountCheck(models.Model):
             #         'If you want to reject you need to do it manually.'))
             vals = check.get_bank_vals(
                 # 'bank_debit', origin.journal_id)
-                'bank_deposited_cancel', journal_id, date)
+                'bank_deposited_cancel', journal_id)
             move = self.env['account.move'].create(vals)
             move.post()
             # self.env['account.move'].create({
