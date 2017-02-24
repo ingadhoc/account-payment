@@ -197,7 +197,7 @@ class AccountPayment(models.Model):
             commercial_partner.bank_ids[0].bank_id.id or False)
         self.check_owner_name = commercial_partner.name
         # TODO use document number instead of vat?
-        self.check_owner_vat = commercial_partner.vat
+        self.check_owner_vat = commercial_partner.main_id_number
 
     @api.onchange('payment_method_code')
     def _onchange_payment_method_code(self):
