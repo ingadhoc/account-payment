@@ -499,7 +499,7 @@ class AccountCheck(models.Model):
             if single_operation.operation == 'deposited':
                 journal_id = single_operation.origin.journal_id
                 
-        self.bank_deposited_cancel(journal_id)
+        self.bank_deposited_cancel(self, journal_id)
             
             
     @api.multi
