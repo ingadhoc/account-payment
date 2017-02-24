@@ -494,9 +494,11 @@ class AccountCheck(models.Model):
     @api.multi
     def action_deposit_cancel(self):
         self.ensure_one()
-        for operation in self.operation_ids:
-            if operation.operation == 'deposited':
-                raise UserError(_(str(operation.origin.name)))
+        
+        for single_operation in self.operation_ids:
+            if single_operation.operation == 'deposited':
+                journal_id.single_operation.origin.journal_id
+                raise UserError(_(str(operation.origin.journal_id.name)))
         #self.bank_deposited(self, self.journal_id, self.date)
             
             
