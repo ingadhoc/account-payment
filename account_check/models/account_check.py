@@ -497,8 +497,9 @@ class AccountCheck(models.Model):
         
         for single_operation in self.operation_ids:
             if single_operation.operation == 'deposited':
-                journal_id.single_operation.origin.journal_id
-                raise UserError(_(str(operation.origin.journal_id.name)))
+                journal_id = single_operation.origin.journal_id
+                
+        raise UserError(_(str(journal_id)))
         #self.bank_deposited(self, self.journal_id, self.date)
             
             
