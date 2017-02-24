@@ -219,9 +219,7 @@ class AccountPayment(models.Model):
             'account_check.account_payment_method_received_third_check')
         
         msg=[]
-        
-        raise UserError(_('Debug '+str(vals)))
-        
+                
         if vals['payment_method_id'] == third_checks.id:
             if vals['check_number'] <= 0:
                 msg.append("Check Number")
@@ -264,6 +262,7 @@ class AccountPayment(models.Model):
 # Write
     @api.multi
     def write(self, vals):
+        raise UserError(_('Debug '+str(vals)))
         self.valid_field_third_checks(vals)    
         return super(AccountPayment, self.sudo()).write(vals)
 
