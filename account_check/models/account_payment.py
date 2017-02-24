@@ -261,7 +261,7 @@ class AccountPayment(models.Model):
         return super(AccountPayment, self.sudo()).create(vals)
     
 # Valid Check Number
-    @api.onchange('check_number')
+    @api.depends('check_number')
     def valid_check_number(self):
         if self.check_number < 0:
             raise UserError(_('Check Number not be'+str(self.check_number)))
