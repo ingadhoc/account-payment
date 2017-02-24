@@ -259,13 +259,13 @@ class AccountPayment(models.Model):
             
         self.valid_field_third_checks(vals)    
         return super(AccountPayment, self.sudo()).create(vals)
-# Write
-    @api.multi
-    def write(self, vals):
-        raise UserError(_('Debug '+str(vals)))
-        self.valid_field_third_checks(vals)    
-        return super(AccountPayment, self.sudo()).write(vals)
-
+    
+# Valid Check Number
+    @api.onchange('check_number')
+    def valid_check_number(self):
+        if self.check_number < 0:
+            raise UserError(_('Check Number not be'+str(self.check_number)))
+        
     @api.multi
     def cancel(self):
         res = super(AccountPayment, self).cancel()
