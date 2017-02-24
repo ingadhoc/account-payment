@@ -230,7 +230,11 @@ class AccountPayment(models.Model):
                 'check_number': checkbook.sequence_id.number_next,
                 'check_name': checkbook.sequence_id.next_by_id(),
             })
-        #raise Warning('Something happened. '+str(self.check_number))
+            
+        third_checks = self.env.ref(
+            'account_check.account_payment_method_received_third_check')
+        
+        raise Warning('Por favor completar. '+str(third_checks))
         return super(AccountPayment, self.sudo()).create(vals)
 
     @api.multi
