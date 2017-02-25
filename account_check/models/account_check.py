@@ -497,7 +497,7 @@ class AccountCheck(models.Model):
         #if self.state in ['deposited']:
         for single_operation in self.operation_ids:
             if single_operation.operation == 'deposited':
-                journal_id = single_operation.origin.journal_id    
+                journal_id = single_operation.origin.journal_id.id    
         vals = self.get_bank_vals(
             'bank_deposited_cancel', journal_id)
         move = self.env['account.move'].create(vals)
