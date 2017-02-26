@@ -493,17 +493,18 @@ class AccountCheck(models.Model):
             
     @api.multi
     def action_deposit_cancel(self):
-        self.ensure_one()
-        if self.state in ['deposited']:
-            for single_operation in self.operation_ids:
-                if single_operation.operation in ['deposited']:
-                    journal = single_operation.origin.journal_id
-            journal_id = self.env['account.journal'].browse(journal.id)
-            vals = self.get_bank_vals('deposited_cancel', journal_id)
-            #raise UserError(_(str(vals)))
-            move = self.env['account.move'].create(vals)
-            move.post()
-            self._add_operation('holding', self)
+        #self.ensure_one()
+        for rec in self:
+            if rec.state in ['deposited']:
+                for single_operation in rec.operation_ids:
+                    if single_operation.operation in ['deposited']:
+                        journal = single_operation.origin.journal_id
+                journal_id = rec.env['account.journal'].browse(journal.id)
+                vals = rec.get_bank_vals('deposited_cancel', journal_id)
+                #raise UserError(_(str(vals)))
+                move = rec.env['account.move'].create(vals)
+                move.post()
+                rec._add_operation('holding', self)
             
 
     @api.multi
