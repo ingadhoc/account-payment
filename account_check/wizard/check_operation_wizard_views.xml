@@ -29,7 +29,7 @@
             <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
-            <field name="context">{'default_action_type':'deposit'}</field>
+            <!-- field name="context">{'default_action_type':'deposit'}</field-->
             <field name="key2">client_action_multi</field>
         </record>
         
