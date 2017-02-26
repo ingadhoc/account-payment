@@ -29,7 +29,18 @@
             <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
-            <!-- field name="context">{'default_action_type':'deposit'}</field-->
+            <field name="context">{'default_action_type':'deposit'}</field>
+            <field name="key2">client_action_multi</field>
+        </record>
+        
+        <record id="action_account_check_bank_reject_wizard" model="ir.actions.act_window">
+            <field name="name">Check Operation</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.check.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="context">{'default_action_type':'bank_reject'}</field>
             <field name="key2">client_action_multi</field>
         </record>
         
