@@ -6,7 +6,7 @@
             <field name="model">account.check.wizard</field>
             <field name="arch" type="xml">
                 <form string="Check Action">
-                    <field name="action_type" invisible="1"/>
+                    <field name="action_type"/>
                     <field name="company_id" invisible="1"/>
                     <group >
                         <field name="date"/>
