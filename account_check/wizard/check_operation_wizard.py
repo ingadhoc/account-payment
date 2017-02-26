@@ -57,24 +57,25 @@ class account_check_wizard(models.TransientModel):
 
         for check in self.env['account.check'].browse(
                 self._context.get('active_ids', [])):
-            self.bank_deposited(check, self.journal_id, self.date)
-            
+            if self.action_type == 'deposit':
+                self.bank_deposited(check, self.journal_id, self.date)
+            elif self.action_type == 'bank_reject':
+                self.bank_rejected(check, self.date)    
             
     @api.multi
     def bank_deposited(self, check, journal_id, date):
         self.ensure_one()
         if check.state in ['holding']:
-            # we can use check journal directly
-            # origin = self.operation_ids[0].origin
-            # if origin._name != 'account.payment':
-            #     raise ValidationError((
-            #         'The deposit operation is not linked to a payment.'
-            #         'If you want to reject you need to do it manually.'))
             vals = check.get_bank_vals(
-                # 'bank_debit', origin.journal_id)
                 'bank_deposited', journal_id, date)
             move = self.env['account.move'].create(vals)
-            move.post()
-            # self.env['account.move'].create({
-            # })
             check._add_operation('deposited', move)
+            
+    @api.multi
+    def bank_rejected(self, check, journal_id, date):
+        self.ensure_one()
+        if check.state in ['deposited']:
+            vals = check.get_bank_vals(
+                'bank_rejected', date)
+            move = self.env['account.move'].create(vals)
+            check._add_operation('rejected', move)
