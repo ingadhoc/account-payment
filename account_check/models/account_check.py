@@ -483,7 +483,7 @@ class AccountCheck(models.Model):
             self._add_operation('debited', move)
             
     @api.multi
-    def action_deposit_cancel(self):
+    def deposit_cancel(self):
         self.ensure_one()
         if self.state in ['deposited']:
             operation = self._get_operation('deposited')
