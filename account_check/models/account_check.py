@@ -499,7 +499,7 @@ class AccountCheck(models.Model):
                 if single_operation.operation in ['deposited']:
                     journal = single_operation.origin.journal_id   
             vals = self.get_bank_vals('deposited_cancel', journal)
-            #raise UserError(_(str(vals)))
+            raise UserError(_(str(vals)))
             move = self.env['account.move'].create(vals)
             move.post()
             self._add_operation('holding', self)
