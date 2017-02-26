@@ -23,7 +23,7 @@
     'version': '10.0.1.6.0',
     'category': 'Accounting',
     'summary': 'Accounting, Payment, Check, Third, Issue',
-    'author': 'OpenERP Team de Localizacion Argentina',
+    'author': 'Bacgroup, OpenERP Team de Localizacion Argentina',
     'license': 'AGPL-3',
     'images': [
     ],
