@@ -507,15 +507,15 @@ class AccountCheck(models.Model):
             self._add_operation('deposited', move)
             
 
-    @api.multi
-    def returned(self):
-        self.ensure_one()
-        if self.state in ['holding'] or self.state in ['handed']:
-            vals = self.get_bank_vals(
-                'return_check', self.journal_id)
-            move = self.env['account.move'].create(vals)
-            move.post()            
-            self._add_operation('returned', move)
+#    @api.multi
+#    def returned(self):
+#        self.ensure_one()
+#        if self.state in ['holding'] or self.state in ['handed']:
+#            vals = self.get_bank_vals(
+#                'return_check', self.journal_id)
+#            move = self.env['account.move'].create(vals)
+#            move.post()            
+#            self._add_operation('returned', move)
             
     @api.multi
     def cancel_return(self):
