@@ -526,12 +526,12 @@ class AccountCheck(models.Model):
             elif self.type == 'issue_check':
                 self._add_operation('handed', self)
 
-    @api.multi
-    def claim(self):
-        if self.state in ['rejected'] and self.type == 'third_check':
-            operation = self._get_operation('holding', True)
-            return self.action_create_debit_note(
-                'reclaimed', 'customer', operation.partner_id)
+#    @api.multi
+#    def claim(self):
+#        if self.state in ['rejected'] and self.type == 'third_check':
+#            operation = self._get_operation('holding', True)
+#            return self.action_create_debit_note(
+#                'reclaimed', 'customer', operation.partner_id)
 
     @api.multi
     def _get_operation(self, operation, partner_required=False):
