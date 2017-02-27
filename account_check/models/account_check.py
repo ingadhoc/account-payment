@@ -472,15 +472,15 @@ class AccountCheck(models.Model):
 
 # checks operations from checks
 
-    @api.multi
-    def bank_debit(self):
-        self.ensure_one()
-        if self.state in ['handed']:
-            vals = self.get_bank_vals(
-                'bank_debit', self.checkbook_id.debit_journal_id)
-            move = self.env['account.move'].create(vals)
-            move.post()
-            self._add_operation('debited', move)
+#    @api.multi
+#    def bank_debit(self):
+#        self.ensure_one()
+#        if self.state in ['handed']:
+#            vals = self.get_bank_vals(
+#                'bank_debit', self.checkbook_id.debit_journal_id)
+#            move = self.env['account.move'].create(vals)
+#            move.post()
+#            self._add_operation('debited', move)
             
     @api.multi
     def deposit_cancel(self):
