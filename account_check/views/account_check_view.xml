@@ -70,7 +70,7 @@
                 <header>
                     <!-- TODO agregar botones -->
                     <button name="claim" type="object" string="Claim to Customer" attrs="{'invisible':[('type', '=', 'issue_check')]}" states="rejected" help="It will create a draft debit note to customerand change check state"/>
-                    <!-- button name="claim" type="object" string="Claim to Supplier" attrs="{'invisible':[('type', '=', 'third_check')]}" states="rejected" help="It will create a draft debit note to customerand change check state"/ -->
+                    <button name="claim" type="object" string="Claim to Supplier" attrs="{'invisible':[('type', '=', 'third_check')]}" states="rejected" help="It will create a draft debit note to customerand change check state"/>
                     <button name="bank_debit" type="object" string="Bank Debit" states="handed" help="It will create a journal entry from Deferred Check Account to bank account and change check state"/>
                     <button name="deposit_cancel" type="object" string="Cancel Deposit" states="deposited"/>
                     <button name="reject" type="object" string="Supplier Rejection" states="delivered,handed" help="It will create a debit note from supplier in draft state and change check state"/>
