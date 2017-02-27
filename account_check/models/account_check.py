@@ -504,7 +504,7 @@ class AccountCheck(models.Model):
                 'reject_cancel', journal_id)
             move = self.env['account.move'].create(vals)
             move.post()
-            self._add_operation('deposit', move)
+            self._add_operation('deposited', move)
             
 
     @api.multi
