@@ -22,6 +22,18 @@
             </field>
         </record>
 
+        
+        <record id="action_account_check_bank_debit_wizard" model="ir.actions.act_window">
+            <field name="name">Bank Debit</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.check.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="context">{'default_action_type':'bank_debit'}</field>
+            <field name="key2">client_action_multi</field>
+        </record>
+        
         <record id="action_account_check_deposit_wizard" model="ir.actions.act_window">
             <field name="name">Check Bank Deposit</field>
             <field name="type">ir.actions.act_window</field>
