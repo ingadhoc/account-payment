@@ -84,6 +84,17 @@ class account_check_wizard(models.TransientModel):
             move.post()
             check._add_operation('deposited', move)
             
+            
+    @api.multi
+    def claim(self, check, date):
+        self.ensure_one()
+        if check.state in ['rejected', 'returned'] and check.type == 'third_check':    
+            operation = check._get_operation('holding', True)
+            return check.action_create_debit_note(
+            'claim', 'customer', operation.partner_id)
+            #check._add_operation('claim', move)
+            
+            
     @api.multi
     def bank_rejected(self, check, date):
         self.ensure_one()
