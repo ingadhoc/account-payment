@@ -69,6 +69,7 @@ class account_check_wizard(models.TransientModel):
             vals = check.get_bank_vals(
                 'bank_deposited', journal_id, date)
             move = self.env['account.move'].create(vals)
+            move.post()
             check._add_operation('deposited', move)
             
     @api.multi
@@ -80,4 +81,5 @@ class account_check_wizard(models.TransientModel):
             vals = check.get_bank_vals(
                 'bank_reject', journal_id, date)
             move = self.env['account.move'].create(vals)
+            move.post()
             check._add_operation('rejected', move)

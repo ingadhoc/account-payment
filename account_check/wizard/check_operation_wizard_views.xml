@@ -6,7 +6,7 @@
             <field name="model">account.check.wizard</field>
             <field name="arch" type="xml">
                 <form string="Check Action">
-                    <field name="action_type"/>
+                    <field name="action_type" invisible="1"/>
                     <field name="company_id" invisible="1"/>
                     <group >
                         <field name="date"/>
@@ -23,7 +23,7 @@
         </record>
 
         <record id="action_account_check_deposit_wizard" model="ir.actions.act_window">
-            <field name="name">Check Operation</field>
+            <field name="name">Check Bank Deposit</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">account.check.wizard</field>
             <field name="view_type">form</field>
@@ -34,7 +34,7 @@
         </record>
         
         <record id="action_account_check_bank_reject_wizard" model="ir.actions.act_window">
-            <field name="name">Check Operation</field>
+            <field name="name">Bank Rejection</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">account.check.wizard</field>
             <field name="view_type">form</field>
@@ -43,22 +43,5 @@
             <field name="context">{'default_action_type':'bank_reject'}</field>
             <field name="key2">client_action_multi</field>
         </record>
-        
-        <!-- act_window id="action_account_check_wizard"
-                    name="Add Check Operation"
-                    src_model="account.check.wizard"
-                    res_model="account.check"
-                    view_mode="form"
-                    target="new"/ -->
-        
-        
-    <!-- record id="action_account_check_wizard" model="ir.actions.act_window.view">
-        <field name="sequence" eval="0"/>
-        <field name="view_mode">form</field>
-        <field name="view_id" ref="view_account_check_wizard"/>
-        <field name="act_window_id" ref="action_contacts"/>
-    </record -->
-        
-        
 </data>
 </odoo>
