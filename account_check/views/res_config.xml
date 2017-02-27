@@ -28,7 +28,7 @@
                                 <h3>Third Party Check Accounts Configuration</h3>
                             <!-- Third Party -->
                             <div>
-                                <label for="third_party_checks_cancelled_account_id " string="Third Party Rejected Check Account"/><field name="third_party_checks_cancelled_account_id"/>
+                                <label for="third_party_checks_cancelled_account_id " string="Third Party Cancelled Check Account"/><field name="third_party_checks_cancelled_account_id"/>
                             </div>
                             <div>
                                 <label for="third_party_checks_bounced_endorsed_account_id" string="Third Party Check Bounced from Endorsed Account"/><field name="third_party_checks_bounced_endorsed_account_id"/>
