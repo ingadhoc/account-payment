@@ -686,7 +686,7 @@ class AccountCheck(models.Model):
             name = _('Check "%s" deposit reverted') % (self.name)
         elif action == 'return_check':
             credit_account = journal.default_credit_account_id
-            debit_account = self.company_id._get_check_account('holding')
+            debit_account = self.company_id._get_check_account('third_party_cancelled')
             name = _('Check "%s" returned') % (self.name)
         elif action == 'changed':
             name = _('Check "%s" changed') % (self.name)
