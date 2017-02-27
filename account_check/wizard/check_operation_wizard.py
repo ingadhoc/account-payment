@@ -60,7 +60,19 @@ class account_check_wizard(models.TransientModel):
             if self.action_type == 'deposit':
                 self.bank_deposited(check, self.journal_id, self.date)
             elif self.action_type == 'bank_reject':
-                self.bank_rejected(check, self.date)    
+                self.bank_rejected(check, self.date)
+            elif self.action_type == 'return':
+                self.returned(check, self.date)
+                
+    @api.multi
+    def returned(self,check, date):
+        self.ensure_one()
+        if check.state in ['holding'] or check.state in ['handed']:
+            vals = check.get_bank_vals(
+                'return_check', check.journal_id)
+            move = self.env['account.move'].create(vals)
+            move.post()            
+            check._add_operation('returned', move)
             
     @api.multi
     def bank_deposited(self, check, journal_id, date):
