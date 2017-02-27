@@ -55,5 +55,16 @@
             <field name="key2">client_action_multi</field>
         </record>
         
+        <record id="action_account_check_return_wizard" model="ir.actions.act_window">
+            <field name="name">Claim</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.check.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="context">{'default_action_type':'claim'}</field>
+            <field name="key2">client_action_multi</field>
+        </record>
+        
 </data>
 </odoo>
