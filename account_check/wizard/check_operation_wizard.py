@@ -63,6 +63,8 @@ class account_check_wizard(models.TransientModel):
                 self.bank_rejected(check, self.date)
             elif self.action_type == 'return':
                 self.returned(check, self.date)
+            elif self.action_type == 'claim':
+                self.claim(check, self.date)
                 
     @api.multi
     def returned(self,check, date):
