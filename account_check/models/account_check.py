@@ -688,6 +688,10 @@ class AccountCheck(models.Model):
             credit_account = journal.default_credit_account_id
             debit_account = self.company_id._get_check_account('third_party_cancelled')
             name = _('Check "%s" returned') % (self.name)
+        elif action == 'revert_return':
+            debit_account = journal.default_credit_account_id
+            credit_account = self.company_id._get_check_account('third_party_cancelled')
+            name = _('Check "%s" revert returned') % (self.name)
         elif action == 'changed':
             name = _('Check "%s" changed') % (self.name)
         else:

@@ -63,6 +63,8 @@ class account_check_wizard(models.TransientModel):
                 self.bank_rejected(check, self.date)
             elif self.action_type == 'return':
                 self.returned(check, self.date)
+            elif self.action_type == 'revert_return':
+                self.revert_return(check, self.date)
             elif self.action_type == 'claim':
                 self.claim(check, self.date)
             elif self.action_type == 'bank_debit':
@@ -88,6 +90,17 @@ class account_check_wizard(models.TransientModel):
             move = self.env['account.move'].create(vals)
             move.post()            
             check._add_operation('returned', move)
+            
+            
+    @api.multi
+    def revert_return(self,check, date):
+        self.ensure_one()
+        if check.state in ['returned']:
+            vals = check.get_bank_vals(
+                'revert_return', check.journal_id, date)
+            move = self.env['account.move'].create(vals)
+            move.post()            
+            check._add_operation('holding', move)
             
     @api.multi
     def bank_deposited(self, check, journal_id, date):
