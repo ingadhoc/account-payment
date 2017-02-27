@@ -489,10 +489,22 @@ class AccountCheck(models.Model):
             operation = self._get_operation('deposited')
             journal_id = operation.origin.journal_id
             vals = self.get_bank_vals(
-                'bank_debit', journal_id)
+                'deposited_cancel', journal_id)
             move = self.env['account.move'].create(vals)
             move.post()
             self._add_operation('holding', move)
+            
+    @api.multi
+    def reject_cancel(self):
+        self.ensure_one()
+        if self.state in ['rejected']:
+            operation = self._get_operation('rejected')
+            journal_id = operation.origin.journal_id
+            vals = self.get_bank_vals(
+                'reject_cancel', journal_id)
+            move = self.env['account.move'].create(vals)
+            move.post()
+            self._add_operation('deposit', move)
             
 
     @api.multi
@@ -653,8 +665,12 @@ class AccountCheck(models.Model):
             # self.destination_journal_id.default_credit_account_id
             credit_account = journal.default_debit_account_id
             debit_account = self.company_id._get_check_account('rejected')
-            name = _('Check "%s" rejected') % (self.name)
-            # credit_account_id = vou_journal.default_credit_account_id.id          
+            name = _('Check "%s" rejected by bank') % (self.name)
+            # credit_account_id = vou_journal.default_credit_account_id.id 
+        elif action == 'reject_cancel':
+            name = _('Check "%s" bank rejection reverted') % (self.name)
+            debit_account = journal.default_debit_account_id
+            credit_account = self.company_id._get_check_account('rejected')
         elif action == 'bank_deposited':
             credit_account = self.company_id._get_check_account('holding')
             # la contrapartida es la cuenta que reemplazamos en el pago
