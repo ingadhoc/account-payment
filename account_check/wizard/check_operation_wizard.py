@@ -93,7 +93,7 @@ class account_check_wizard(models.TransientModel):
         if check.state in ['rejected', 'returned'] and check.type == 'third_check':    
             operation = check._get_operation('holding', True)
             return check.action_create_debit_note(
-            'reclaimed', 'customer', operation.partner_id)
+            'reclaimed', 'customer', check.partner_id)
             #check._add_operation('claim', move)
             
             
