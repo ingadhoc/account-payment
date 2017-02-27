@@ -55,7 +55,7 @@
             <field name="key2">client_action_multi</field>
         </record>
         
-        <record id="action_account_check_return_wizard" model="ir.actions.act_window">
+        <record id="action_account_check_claim_wizard" model="ir.actions.act_window">
             <field name="name">Claim</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">account.check.wizard</field>
