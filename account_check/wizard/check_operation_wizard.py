@@ -65,13 +65,26 @@ class account_check_wizard(models.TransientModel):
                 self.returned(check, self.date)
             elif self.action_type == 'claim':
                 self.claim(check, self.date)
+            elif self.action_type == 'bank_debit':
+                self.bank_debit(check, self.date)
+                
+                
+    @api.multi
+    def bank_debit(self, check, date):
+        self.ensure_one()
+        if check.state in ['handed']:
+            vals = check.get_bank_vals(
+                'bank_debit', check.checkbook_id.debit_journal_id, date)
+            move = self.env['account.move'].create(vals)
+            move.post()
+            check._add_operation('debited', move)
                 
     @api.multi
     def returned(self,check, date):
         self.ensure_one()
         if check.state in ['holding'] or check.state in ['handed']:
             vals = check.get_bank_vals(
-                'return_check', check.journal_id)
+                'return_check', check.journal_id, date)
             move = self.env['account.move'].create(vals)
             move.post()            
             check._add_operation('returned', move)
