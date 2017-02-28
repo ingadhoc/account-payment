@@ -129,7 +129,7 @@ class account_check_wizard(models.TransientModel):
             
             
     @api.multi
-    def claim(self, check, date, account=None, amount=None, exp_type):
+    def claim(self, check, date, account=None, amount=None, exp_type=None):
         self.ensure_one()
         if check.state in ['rejected', 'returned'] and check.type == 'third_check':    
             #operation = check._get_operation('holding', True)
