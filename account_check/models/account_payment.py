@@ -278,7 +278,7 @@ class AccountPayment(models.Model):
             'bank_id': bank.id,
             'owner_name': self.check_owner_name,
             'owner_vat': self.check_owner_vat,
-            'partner_id': self.partner_id,
+            'partner_id': self.partner_id.id,
             'number': self.check_number,
             'name': self.check_name,
             'checkbook_id': self.checkbook_id.id,
