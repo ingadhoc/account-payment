@@ -136,7 +136,7 @@ class account_check_wizard(models.TransientModel):
             operation.origin.action_invoice_cancel()
         except:
             pass
-        if check.state in ['rejected', 'returned'] and check.type == 'third_check':    
+        if check.state in ['rejected', 'returned', 'reclaimed'] and check.type == 'third_check':    
             #operation = check._get_operation('holding', True)
             if exp_type == '3':
                 if amount <= 0:
