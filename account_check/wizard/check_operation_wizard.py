@@ -51,20 +51,19 @@ class account_check_wizard(models.TransientModel):
         # related='move_line_id.balance',
         currency_field='company_currency_id',
     )
-    exp_type = fields.Selection(string='Type',
-        [('1', 'No Expenses'), ('2', 'Internal Expenses'), ('3', 'Expenses invoiced to Customer')]
+    exp_type = fields.Selection([('1', 'No Expenses'), ('2', 'Internal Expenses'), ('3', 'Expenses invoiced to Customer')], 'Type',
     )
     date = fields.Date(
         'Date', required=True, default=fields.Date.context_today
     )
     action_type = fields.Char(
-        'Action type passed on the context', required=True
+        'Action type passed on the context', required=True,
     )
     company_id = fields.Many2one(
         'res.company',
         'Company',
         required=True,
-        default=_get_company_id
+        default=_get_company_id,
     )
             
     @api.multi
