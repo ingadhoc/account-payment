@@ -572,7 +572,7 @@ class AccountCheck(models.Model):
                 'rejected', 'supplier', operation.partner_id)
 
     @api.multi
-    def action_create_debit_note(self, operation, partner_type, partner):
+    def action_create_debit_note(self, operation, partner_type, partner, account, amount):
         self.ensure_one()
 
         if partner_type == 'supplier':
@@ -596,8 +596,7 @@ class AccountCheck(models.Model):
             'name': name,
             'account_id': self.company_id._get_check_account('rejected').id,
             'partner_id': partner.id,
-            'price_unit': (
-                self.amount_currency and self.amount_currency or self.amount),
+            'price_unit': amount #(self.amount_currency and self.amount_currency or self.amount),
             # 'invoice_id': invoice.id,
         }
 
@@ -610,7 +609,7 @@ class AccountCheck(models.Model):
             # 'date_invoice': self.date_invoice,
             'origin': _('Check nbr (id): %s (%s)') % (self.name, self.id),
             'journal_id': journal.id,
-            'account_id':journal.default_debit_account_id.id,
+            'account_id': account.id #journal.default_debit_account_id.id,
             # this is done on muticompany fix
             # 'company_id': journal.company_id.id,
             'partner_id': partner.id,
