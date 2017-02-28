@@ -473,15 +473,15 @@ class AccountCheck(models.Model):
 
 # checks operations from checks
 
-    @api.multi
-    def bank_debit(self):
-        self.ensure_one()
-        if self.state in ['handed']:
-            vals = self.get_bank_vals(
-                'bank_debit', self.checkbook_id.debit_journal_id)
-            move = self.env['account.move'].create(vals)
-            move.post()
-            self._add_operation('debited', move)
+#    @api.multi
+#    def bank_debit(self):
+#        self.ensure_one()
+#        if self.state in ['handed']:
+#            vals = self.get_bank_vals(
+#                'bank_debit', self.checkbook_id.debit_journal_id)
+#            move = self.env['account.move'].create(vals)
+#            move.post()
+#            self._add_operation('debited', move)
             
     @api.multi
     def deposit_cancel(self):
@@ -691,6 +691,10 @@ class AccountCheck(models.Model):
             credit_account = journal.default_credit_account_id
             debit_account = self.company_id._get_check_account('third_party_cancelled')
             name = _('Check "%s" returned') % (self.name)
+        elif action == 'revert_return':
+            debit_account = journal.default_credit_account_id
+            credit_account = self.company_id._get_check_account('third_party_cancelled')
+            name = _('Check "%s" revert returned') % (self.name)
         elif action == 'changed':
             name = _('Check "%s" changed') % (self.name)
         else:
