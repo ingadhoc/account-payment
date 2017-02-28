@@ -138,7 +138,7 @@ class account_check_wizard(models.TransientModel):
                     raise UserError(_('You can\'t claim with Zero Amount!'))
                 else:
                     return check.action_create_debit_note(
-                    'reclaimed', 'customer', check.partner_id)
+                    'reclaimed', 'customer', check.partner_id, account, amount)
             else:
                 return check._add_operation('reclaimed', check)
             #check._add_operation('claim', move)
