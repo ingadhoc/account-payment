@@ -81,7 +81,7 @@ class account_check_wizard(models.TransientModel):
             elif self.action_type == 'revert_return':
                 self.revert_return(check, self.date)
             elif self.action_type == 'claim':
-                self.claim(check, self.date)
+                self.claim(check, self.date, self.exp_account_id, self.exp_amount)
             elif self.action_type == 'bank_debit':
                 self.bank_debit(check, self.date)
                 
@@ -129,12 +129,15 @@ class account_check_wizard(models.TransientModel):
             
             
     @api.multi
-    def claim(self, check, date):
+    def claim(self, check, date, account=None, amount=None ):
         self.ensure_one()
         if check.state in ['rejected', 'returned'] and check.type == 'third_check':    
             #operation = check._get_operation('holding', True)
-            return check.action_create_debit_note(
-            'reclaimed', 'customer', check.partner_id)
+            if account == None or amount <= 0:
+                return check._add_operation('reclaimed', check)
+            else:
+                return check.action_create_debit_note(
+                'reclaimed', 'customer', check.partner_id)
             #check._add_operation('claim', move)
             
             
