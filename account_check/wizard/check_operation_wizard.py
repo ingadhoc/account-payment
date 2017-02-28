@@ -17,7 +17,10 @@ class account_check_wizard(models.TransientModel):
             raise Warning(_('All checks must be from the same company!'))
         return self.env['res.company'].search(
             [('id', 'in', company_ids)], limit=1)
-
+    company_currency_id = fields.Many2one(
+        related='company_id.currency_id',
+        readonly=True,
+    )
     journal_id = fields.Many2one(
         'account.journal',
         'Journal',
@@ -25,9 +28,6 @@ class account_check_wizard(models.TransientModel):
         "('type', 'in', ['cash', 'bank']), "
         "('outbound_payment_method_ids', 'not in', [ 7, 8]), "
         "('inbound_payment_method_ids', 'not in', [3, 6])]"
-
-
-        #"('payment_subtype', 'not in', ['issue_check', 'third_check'])]",
     )
     account_id = fields.Many2one(
         'account.account',
@@ -38,6 +38,20 @@ class account_check_wizard(models.TransientModel):
 #        "('type', 'in', ('other', 'liquidity'))]",
 #        readonly=True
     )
+    exp_account_id = fields.Many2one(
+        'account.account',
+        'Account',
+        related='journal_id.default_debit_account_id',
+        store=True,
+#        domain="[('company_id','=',company_id), "
+#        "('type', 'in', ('other', 'liquidity'))]",
+#        readonly=True
+    )
+    exp_amount = fields.Monetary(
+        # related='move_line_id.balance',
+        currency_field='company_currency_id',
+    )
+    exp_type = fields.Selection([('1', 'No Expenses'), ('2', 'Internal Expenses'), ('3', 'Expenses invoiced to Customer')])
     date = fields.Date(
         'Date', required=True, default=fields.Date.context_today
     )
