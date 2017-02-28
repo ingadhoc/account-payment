@@ -594,6 +594,7 @@ class AccountCheck(models.Model):
             # 'product_id': self.product_id.id,
             'name': name,
             'account_id': self.company_id._get_check_account('rejected').id,
+            'partner_id': partner.id,
             'price_unit': (
                 self.amount_currency and self.amount_currency or self.amount),
             # 'invoice_id': invoice.id,
