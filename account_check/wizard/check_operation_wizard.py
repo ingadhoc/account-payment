@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo.exceptions import Warning
+from odoo.exceptions import Warning, UserError
 from odoo import models, fields, api, _
 import logging
 _logger = logging.getLogger(__name__)
@@ -81,7 +81,7 @@ class account_check_wizard(models.TransientModel):
             elif self.action_type == 'revert_return':
                 self.revert_return(check, self.date)
             elif self.action_type == 'claim':
-                self.claim(check, self.date, self.exp_account_id, self.exp_amount)
+                self.claim(check, self.date, self.exp_account_id, self.exp_amount, self.exp_type)
             elif self.action_type == 'bank_debit':
                 self.bank_debit(check, self.date)
                 
@@ -129,15 +129,18 @@ class account_check_wizard(models.TransientModel):
             
             
     @api.multi
-    def claim(self, check, date, account=None, amount=None ):
+    def claim(self, check, date, account=None, amount=None, exp_type):
         self.ensure_one()
         if check.state in ['rejected', 'returned'] and check.type == 'third_check':    
             #operation = check._get_operation('holding', True)
-            if account == None or amount <= 0:
-                return check._add_operation('reclaimed', check)
+            if exp_type == '3':
+                if account == None or amount <= 0:
+                    raise UserError(_('You can\'t claim with blank Account or  Zero Amount'))
+                else:
+                    return check.action_create_debit_note(
+                    'reclaimed', 'customer', check.partner_id)
             else:
-                return check.action_create_debit_note(
-                'reclaimed', 'customer', check.partner_id)
+                return check._add_operation('reclaimed', check)
             #check._add_operation('claim', move)
             
             
