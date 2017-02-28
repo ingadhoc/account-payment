@@ -133,7 +133,8 @@ class account_check_wizard(models.TransientModel):
         self.ensure_one()
         try:
             operation = _get_operation('reclaimed')
-            operation.origin.action_invoice_cancel()
+            if operation:
+                operation.origin.action_invoice_cancel()
             if check.state in ['rejected', 'returned', 'reclaimed'] and check.type == 'third_check':    
                 if exp_type == '3':
                     if amount <= 0:
