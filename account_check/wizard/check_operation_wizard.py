@@ -134,11 +134,11 @@ class account_check_wizard(models.TransientModel):
         if check.state in ['rejected', 'returned'] and check.type == 'third_check':    
             #operation = check._get_operation('holding', True)
             if exp_type == '3':
-                if account == None or amount <= 0:
-                    raise UserError(_('You can\'t claim with blank Account or  Zero Amount'))
+                if amount <= 0:
+                    raise UserError(_('You can\'t claim with Zero Amount!'))
                 else:
                     return check.action_create_debit_note(
-                    'reclaimed', 'customer', check.partner_id)
+                    'reclaimed', 'customer', check.partner_id, account, amount)
             else:
                 return check._add_operation('reclaimed', check)
             #check._add_operation('claim', move)
