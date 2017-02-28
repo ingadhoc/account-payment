@@ -131,7 +131,8 @@ class account_check_wizard(models.TransientModel):
     @api.multi
     def claim(self, check, date, account=None, amount=None, exp_type=None):
         self.ensure_one()
-        try:
+        #try:
+        if True:
             operation = _get_operation('reclaimed')
             if operation:
                 operation.origin.action_invoice_cancel()
@@ -144,8 +145,8 @@ class account_check_wizard(models.TransientModel):
                         'reclaimed', 'customer', check.partner_id, account, amount)
                 else:
                     return check._add_operation('reclaimed', check)
-        except:
-            raise UserError(_('Can\'t discard last Debit Note!'))
+        #except:
+        #    raise UserError(_('Can\'t discard last Debit Note!'))
 
             
             
