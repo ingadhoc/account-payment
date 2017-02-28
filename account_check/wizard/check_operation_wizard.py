@@ -133,9 +133,10 @@ class account_check_wizard(models.TransientModel):
         self.ensure_one()
         try:
             operation = check._get_operation('reclaimed')
-            operation.origin.action_invoice_cancel()
+            if operation.origin._name == 'invoice' and operation.origin.state == 'draft':
+                operation.origin.delete()
         except:
-            pass
+            raise UserError(_('Can\'t discard last Debit Note!'))
         if check.state in ['rejected', 'returned', 'reclaimed'] and check.type == 'third_check':    
             #operation = check._get_operation('holding', True)
             if exp_type == '3':
