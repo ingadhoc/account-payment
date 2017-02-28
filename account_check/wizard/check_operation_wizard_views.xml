@@ -56,7 +56,7 @@
         </record>
         
         <record id="action_account_check_claim_wizard" model="ir.actions.act_window">
-            <field name="name">Claim</field>
+            <field name="name">Expenses</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">account.check.wizard</field>
             <field name="view_type">form</field>
