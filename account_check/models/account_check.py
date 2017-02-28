@@ -609,7 +609,7 @@ class AccountCheck(models.Model):
             # 'date_invoice': self.date_invoice,
             'origin': _('Check nbr (id): %s (%s)') % (self.name, self.id),
             'journal_id': journal.id,
-            'account_id': account.id #journal.default_debit_account_id.id,
+            'account_id': account.id, #journal.default_debit_account_id.id,
             # this is done on muticompany fix
             # 'company_id': journal.company_id.id,
             'partner_id': partner.id,
