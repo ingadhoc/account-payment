@@ -12,6 +12,9 @@
                         <field name="date"/>
                         <field name="journal_id" attrs="{'invisible':[('action_type','!=','deposit')],'required':[('action_type','=','deposit')]}"/>
                         <field name="account_id" attrs="{'invisible':[('action_type','!=','deposit')],'readonly':[('action_type','=','deposit')]}"/>
+                        <field name="exp_account_id" attrs="{'invisible':[('action_type','!=','claim')],'required':[('exp_type','=','3')]}"/>
+                        <field name="exp_amount" attrs="{'invisible':[('action_type','!=','claim')],'required':[('exp_type','=','3')]}"/>
+                        <field name="exp_type" attrs="{'invisible':[('action_type','!=','claim')],'required':[('action_type','=','claim')]}"/>
                     </group>
                     <footer>
                         <button string="Confirm" name="action_confirm" type="object" class="oe_highlight"/>
