@@ -131,22 +131,23 @@ class account_check_wizard(models.TransientModel):
     @api.multi
     def claim(self, check, date, account=None, amount=None, exp_type=None):
         self.ensure_one()
-        #try:
-        if True:
+        try:
             operation = _get_operation('reclaimed')
             if operation:
                 operation.origin.action_invoice_cancel()
-            if check.state in ['rejected', 'returned', 'reclaimed'] and check.type == 'third_check':    
-                if exp_type == '3':
-                    if amount <= 0:
-                        raise UserError(_('You can\'t claim with Zero Amount!'))
-                    else:
-                        return check.action_create_debit_note(
-                        'reclaimed', 'customer', check.partner_id, account, amount)
+        except:
+            pass
+            #raise UserError(_('Can\'t discard last Debit Note!'))
+        if check.state in ['rejected', 'returned', 'reclaimed'] and check.type == 'third_check':    
+            if exp_type == '3':
+                if amount <= 0:
+                    raise UserError(_('You can\'t claim with Zero Amount!'))
                 else:
-                    return check._add_operation('reclaimed', check)
-        #except:
-        #    raise UserError(_('Can\'t discard last Debit Note!'))
+                    return check.action_create_debit_note(
+                    'reclaimed', 'customer', check.partner_id, account, amount)
+            else:
+                return check._add_operation('reclaimed', check)
+
 
             
             
