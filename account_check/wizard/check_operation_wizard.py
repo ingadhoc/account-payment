@@ -132,7 +132,7 @@ class account_check_wizard(models.TransientModel):
     def claim(self, check, date, account=None, amount=None, exp_type=None):
         self.ensure_one()
         try:
-            operation = _get_operation('reclaimed')
+            operation = self._get_operation('reclaimed')
             operation.origin.action_invoice_cancel()
         except:
             pass
