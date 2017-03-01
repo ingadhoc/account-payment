@@ -591,9 +591,18 @@ class AccountCheck(models.Model):
 
         name = _('Check "%s" rejection') % (self.name)
 
-        inv_line_vals = {
+        inv_line_check_vals = {
             # 'product_id': self.product_id.id,
             'name': name,
+            'account_id': self.company_id._get_check_account('rejected').id,
+            'partner_id': partner.id,
+            'price_unit': self.amount #(self.amount_currency and self.amount_currency or self.amount),
+            # 'invoice_id': invoice.id,
+        }
+        
+        inv_line_vals = {
+            # 'product_id': self.product_id.id,
+            'name': 'Gastos Financieros, '+name,
             'account_id': self.company_id._get_check_account('rejected').id,
             'partner_id': partner.id,
             'price_unit': amount #(self.amount_currency and self.amount_currency or self.amount),
@@ -614,7 +623,7 @@ class AccountCheck(models.Model):
             # 'company_id': journal.company_id.id,
             'partner_id': partner.id,
             'type': invoice_type,
-            'invoice_line_ids': [(0, 0, inv_line_vals), (0, 0, inv_line_vals)],
+            'invoice_line_ids': [(0, 0, inv_line_check_vals), (0, 0, inv_line_vals)],
 
         }
         if self.currency_id:
