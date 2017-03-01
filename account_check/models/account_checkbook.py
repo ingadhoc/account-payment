@@ -116,7 +116,6 @@ class AccountCheckbook(models.Model):
             if rec.range_to:
                 name += _(' up to %s') % rec.range_to
             rec.name = name
-	
     @api.one
     def unlink(self):
         if self.issue_check_ids:
