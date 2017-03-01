@@ -614,7 +614,7 @@ class AccountCheck(models.Model):
             # 'company_id': journal.company_id.id,
             'partner_id': partner.id,
             'type': invoice_type,
-            'invoice_line_ids': [(0, 0, inv_line_vals)],
+            'invoice_line_ids': [(0, 0, inv_line_vals), (0, 0, inv_line_vals)],
         }
         if self.currency_id:
             inv_vals['currency_id'] = self.currency_id.id
