@@ -133,8 +133,7 @@ class account_check_wizard(models.TransientModel):
         self.ensure_one()
         try:
             operation = _get_operation('reclaimed')
-            if operation:
-                operation.origin.action_invoice_cancel()
+            operation.origin.action_invoice_cancel()
         except:
             pass
             #raise UserError(_('Can\'t discard last Debit Note!'))
