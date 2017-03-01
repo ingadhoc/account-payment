@@ -591,24 +591,14 @@ class AccountCheck(models.Model):
 
         name = _('Check "%s" rejection') % (self.name)
 
-        inv_line_vals = [{
+        inv_line_vals = {
             # 'product_id': self.product_id.id,
             'name': name,
             'account_id': self.company_id._get_check_account('rejected').id,
             'partner_id': partner.id,
             'price_unit': amount #(self.amount_currency and self.amount_currency or self.amount),
             # 'invoice_id': invoice.id,
-        },
-        {
-            # 'product_id': self.product_id.id,
-            'name': name,
-            'account_id': self.company_id._get_check_account('rejected').id,
-            'partner_id': partner.id,
-            'price_unit': amount #(self.amount_currency and self.amount_currency or self.amount),
-            # 'invoice_id': invoice.id,
-        },
-        
-        ]
+        }
 
         inv_vals = {
             # this is the reference that goes on account.move.line of debt line
