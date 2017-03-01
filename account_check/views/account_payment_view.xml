@@ -25,7 +25,9 @@
                             <field name="check_ids_copy" attrs="{'invisible': ['|',  '|', ('check_ids_copy', '=', []), ('check_id', '!=', False), ('payment_method_code', 'not in', ['received_third_check', 'issue_check'])]}">
                                 <tree edit="false" create="false">
                                     <field name="name"/>
+                                    <field name="issue_date"/>
                                     <field name="payment_date"/>
+                                    <field name="partner_id"/>
                                     <field name="amount" sum="Total"/>
                                     <field name="state" invisible="1"/>
                                 </tree>
@@ -36,7 +38,9 @@
                                 attrs="{'invisible': ['|', ('payment_method_code', '!=', 'delivered_third_check'), ('payment_type', 'not in', ['transfer', 'outbound'])], 'required': [('payment_method_code', '=', 'delivered_third_check'), ('payment_type', 'in', ['transfer', 'outbound'])]}">
                                 <tree edit="false">
                                     <field name="name"/>
+                                    <field name="issue_date"/>
                                     <field name="payment_date"/>
+                                    <field name="partner_id"/>
                                     <field name="amount" sum="Total"/>
                                     <field name="state" invisible="1"/>
                                 </tree>
@@ -45,8 +49,8 @@
                         <group name="check_data" states='draft'>
                             <newline/>
                             <field name="checkbook_id" attrs="{'invisible': [('payment_method_code', 'not in', ['issue_check'])], 'required': [('payment_method_code', 'in', ['issue_check'])]}" domain="[('journal_id', '=', journal_id)]"/>
-                            <field name="check_number" invisible="1" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])],  'readonly': ['|', ('state', '!=', 'draft'), ('payment_method_code', '=', 'issue_check')]}"/>
-                            <field name="check_name" required="1"/> <!-- attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])], 'required': [('payment_method_code', 'in', ['received_third_check'])]}"/-->
+                            <field name="check_number" invisible="1" /> <!-- attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])],  'readonly': ['|', ('state', '!=', 'draft'), ('payment_method_code', '=', 'issue_check')]}"/ -->
+                            <field name="check_name" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check'])],  'readonly': ['|', ('state', '!=', 'draft'), ('payment_method_code', '=', 'issue_check')]}"/> <!-- attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])], 'required': [('payment_method_code', 'in', ['received_third_check'])]}"/-->
                             <field name="check_issue_date" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}"/>
                             <field name="check_payment_date" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('check_subtype', '=', 'deferred')]}"/>
                             <field name="check_bank_id" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check'])], 'required': [('payment_method_code', 'in', ['received_third_check'])]}"/>
