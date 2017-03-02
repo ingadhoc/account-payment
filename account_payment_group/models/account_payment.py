@@ -100,9 +100,11 @@ class AccountPayment(models.Model):
         for rec in self:
             if rec.payment_type == 'transfer':
                 if rec.payment_group_id:
-                    raise ValidationError(_(
-                        'Payments must be created from payments groups'))
+                    pass
+                    #raise ValidationError(_(
+                    #    'Payments must be created from payments groups'))
             else:
                 if not rec.payment_group_id:
-                    raise ValidationError(_(
-                        'Payments must be created from payments groups'))
+                    pass
+                    #raise ValidationError(_(
+                    #    'Payments must be created from payments groups'))
