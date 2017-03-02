@@ -603,7 +603,7 @@ class AccountCheck(models.Model):
         inv_line_vals = {
             # 'product_id': self.product_id.id,
             'name': 'Gastos Financieros, '+name,
-            'account_id': self.company_id._get_check_account('rejected').id,
+            'account_id': account.id,
             'partner_id': partner.id,
             'price_unit': amount #(self.amount_currency and self.amount_currency or self.amount),
             # 'invoice_id': invoice.id,
