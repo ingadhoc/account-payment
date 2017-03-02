@@ -69,20 +69,20 @@
                     <field name="company_currency_id" invisible="1"/>
                 <header>
                     <!-- TODO agregar botones -->
-                    <button name="claim" type="object" string="Claim to Customer" states="rejected" help="It will create a draft debit note to customerand change check state"/>
-                    <button name="bank_debit" type="object" string="Bank Debit" states="handed" help="It will create a journal entry from Deferred Check Account to bank account and change check state"/>
-                    <button name="reject" type="object" string="Supplier Rejection" states="delivered,handed" help="It will create a debit note from supplier in draft state and change check state"/>
-                    <button name="reject" type="object" string="Bank Rejection" states="deposited" help="It will create an account entry from bank account to company rejection account and change check state"/>
+                    <button name="account_check.action_account_check_claim_wizard" type="action" string="Claim to Customer" attrs="{'invisible':['|',('type', '=', 'issue_check'),('state','not in',['returned','rejected', 'reclaimed'])]}" help="It will create a draft debit note to customer and change check state"/>
+                    <button name="account_check.action_account_check_claim_wizard" type="action" string="Claim to Supplier" attrs="{'invisible':['|',('type', '=', 'third_check'),('state','not in',['returned','rejected', 'reclaimed'])]}" help="It will create a draft debit note to supplier and change check state"/>
+                    <button name="account_check.action_account_check_bank_debit_wizard" type="action" string="Bank Debit" states="handed" help="It will create a journal entry from Deferred Check Account to bank account and change check state"/>
+                    <button name="deposit_cancel" type="object" string="Cancel Deposit" states="deposited"/>
+                    <button name="account_check.action_account_check_bank_reject_wizard" type="action" string="Supplier Rejection" states="delivered,handed" help="It will create a debit note from supplier in draft state and change check state"/>
+                    <button name="account_check.action_account_check_bank_reject_wizard" type="action" string="Bank Rejection" states="deposited"/> help="It will create an account entry from bank account to company rejection account and change check state"/>
                     <button name="reject" type="object" string="Sell Rejection" states="selled" help="It will create an account entry from cash account to company rejection account and change check state"/>
                     <!-- odoo8 port thridparty -->
                     <button name="account_check.action_account_check_deposit_wizard" type="action" string="Deposited" states="holding"/>
                     <button name="account_check.action_account_change_check_wizard" type="action" string="Change" attrs="{'invisible':['|', ('type', '!=', 'third_check'), ('state', '!=', 'holding'), '|', ('type', '!=', 'issue_check'), ('state', '!=', 'handed')]}"/>
-                    <button name="debit" type="object" string="Debit" attrs="{'invisible':['|',('type','!=','issue_check'),('state','!=','handed')]}"/>
-                    <button name="returned" type="object" string="Return" states="holding" context="{'default_state':state,'default_type':type}"/>
-                    <button name="action_cancel_debit" type="object" string="Cancel Debit" states="debited" context="{'default_state':state,'default_type':type}"/>
-                    <button name="action_cancel_rejection" type="object" string="Cancel Rejection" states="rejected" context="{'default_state':state,'default_type':type}"/>
-                    <button name="action_cancel_deposit" type="object" string="Cancel Deposit" states="deposited" context="{'default_state':state,'default_type':type}"/>
-                    <button name="action_cancel_return" type="object" string="Cancel Return" states="returned" context="{'default_state':state,'default_type':type}"/>
+                    <button name="account_check.action_account_check_return_wizard" type="action" string="Return" states="holding,handed"/>
+                    <button name="action_cancel_debit" type="object" string="Cancel Debit" states="debited"/>
+                    <button name="reject_cancel" type="object" string="Cancel Rejection" states="rejected"/>
+                    <button name="account_check.action_account_revert_return_wizard" type="action" string="Cancel Return" states="returned"/>
                     <field name="state" widget="statusbar" statusbar_colors="{&quot;hrejected&quot;:&quot;red&quot;}"/> 
                 </header>
                 <sheet string="Checks">
@@ -109,10 +109,11 @@
                     </group>
                     <group string="Operations">
                         <field name="operation_ids" nolabel="1" readonly="1">
-                            <tree default_order="date">
+                            <tree default_order="date" create="false" delete="false" readonly="1">
                                 <field name="date"/>
+                                <field name="create_uid"/>	
                                 <field name="operation"/>
-                                <field name="origin_name" string="Origin"/>
+                                <field name="origin" string="Origin"/>
                                 <field name="partner_id"/>
                             </tree>
                             <form>

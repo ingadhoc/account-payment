@@ -3,8 +3,8 @@
 # For copyright and license notices, see __openerp__.py file in module root
 # directory
 ##############################################################################
-from openerp import fields, models, _, api
-from openerp.exceptions import UserError, ValidationError
+from odoo import fields, models, _, api
+from odoo.exceptions import UserError, ValidationError
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -152,7 +152,8 @@ class AccountCheck(models.Model):
         readonly=True,
     )
     partner_id = fields.Many2one(
-        related='operation_ids.partner_id',
+        'res.partner',
+        string='Partner',
         readonly=True,
     )
     state = fields.Selection([
@@ -472,38 +473,66 @@ class AccountCheck(models.Model):
 
 # checks operations from checks
 
+#    @api.multi
+#    def bank_debit(self):
+#        self.ensure_one()
+#        if self.state in ['handed']:
+#            vals = self.get_bank_vals(
+#                'bank_debit', self.checkbook_id.debit_journal_id)
+#            move = self.env['account.move'].create(vals)
+#            move.post()
+#            self._add_operation('debited', move)
+            
     @api.multi
-    def bank_debit(self):
+    def deposit_cancel(self):
         self.ensure_one()
-        if self.state in ['handed']:
-            # we can use check journal directly
-            # origin = self.operation_ids[0].origin
-            # if origin._name != 'account.payment':
-            #     raise ValidationError((
-            #         'The deposit operation is not linked to a payment.'
-            #         'If you want to reject you need to do it manually.'))
+        if self.state in ['deposited']:
+            operation = self._get_operation('deposited')
+            journal_id = operation.origin.journal_id
             vals = self.get_bank_vals(
-                # 'bank_debit', origin.journal_id)
-                'bank_debit', self.checkbook_id.debit_journal_id)
+                'deposited_cancel', journal_id)
             move = self.env['account.move'].create(vals)
             move.post()
-            # self.env['account.move'].create({
-            # })
-            self._add_operation('debited', move)
+            self._add_operation('holding', move)
+            
+    @api.multi
+    def reject_cancel(self):
+        self.ensure_one()
+        if self.state in ['rejected']:
+            operation = self._get_operation('rejected')
+            journal_id = operation.origin.journal_id
+            vals = self.get_bank_vals(
+                'reject_cancel', journal_id)
+            move = self.env['account.move'].create(vals)
+            move.post()
+            self._add_operation('deposited', move)
             
 
+#    @api.multi
+#    def returned(self):
+#        self.ensure_one()
+#        if self.state in ['holding'] or self.state in ['handed']:
+#            vals = self.get_bank_vals(
+#                'return_check', self.journal_id)
+#            move = self.env['account.move'].create(vals)
+#            move.post()            
+#            self._add_operation('returned', move)
+            
     @api.multi
-    def returned(self):
+    def cancel_return(self):
         self.ensure_one()
-        if self.state in ['holding']:
-            self._add_operation('returned', self)
+        if self.state in ['returned']:
+            if self.type == 'third_check':
+                self._add_operation('holding', self)
+            elif self.type == 'issue_check':
+                self._add_operation('handed', self)
 
-    @api.multi
-    def claim(self):
-        if self.state in ['rejected'] and self.type == 'third_check':
-            operation = self._get_operation('holding', True)
-            return self.action_create_debit_note(
-                'reclaimed', 'customer', operation.partner_id)
+#    @api.multi
+#    def claim(self):
+#        if self.state in ['rejected'] and self.type == 'third_check':
+#            operation = self._get_operation('holding', True)
+#            return self.action_create_debit_note(
+#                'reclaimed', 'customer', operation.partner_id)
 
     @api.multi
     def _get_operation(self, operation, partner_required=False):
@@ -543,7 +572,7 @@ class AccountCheck(models.Model):
                 'rejected', 'supplier', operation.partner_id)
 
     @api.multi
-    def action_create_debit_note(self, operation, partner_type, partner):
+    def action_create_debit_note(self, operation, partner_type, partner, account, amount):
         self.ensure_one()
 
         if partner_type == 'supplier':
@@ -562,12 +591,21 @@ class AccountCheck(models.Model):
 
         name = _('Check "%s" rejection') % (self.name)
 
-        inv_line_vals = {
+        inv_line_check_vals = {
             # 'product_id': self.product_id.id,
             'name': name,
             'account_id': self.company_id._get_check_account('rejected').id,
-            'price_unit': (
-                self.amount_currency and self.amount_currency or self.amount),
+            'partner_id': partner.id,
+            'price_unit': self.amount #(self.amount_currency and self.amount_currency or self.amount),
+            # 'invoice_id': invoice.id,
+        }
+        
+        inv_line_vals = {
+            # 'product_id': self.product_id.id,
+            'name': 'Gastos Financieros, '+name,
+            'account_id': account.id,
+            'partner_id': partner.id,
+            'price_unit': amount #(self.amount_currency and self.amount_currency or self.amount),
             # 'invoice_id': invoice.id,
         }
 
@@ -580,11 +618,13 @@ class AccountCheck(models.Model):
             # 'date_invoice': self.date_invoice,
             'origin': _('Check nbr (id): %s (%s)') % (self.name, self.id),
             'journal_id': journal.id,
+            'account_id': account.id, #journal.default_debit_account_id.id,
             # this is done on muticompany fix
             # 'company_id': journal.company_id.id,
             'partner_id': partner.id,
             'type': invoice_type,
-            'invoice_line_ids': [(0, 0, inv_line_vals)],
+            'invoice_line_ids': [(0, 0, inv_line_check_vals), (0, 0, inv_line_vals)],
+
         }
         if self.currency_id:
             inv_vals['currency_id'] = self.currency_id.id
@@ -641,13 +681,29 @@ class AccountCheck(models.Model):
             # self.destination_journal_id.default_credit_account_id
             credit_account = journal.default_debit_account_id
             debit_account = self.company_id._get_check_account('rejected')
-            name = _('Check "%s" rejected') % (self.name)
-            # credit_account_id = vou_journal.default_credit_account_id.id
+            name = _('Check "%s" rejected by bank') % (self.name)
+            # credit_account_id = vou_journal.default_credit_account_id.id 
+        elif action == 'reject_cancel':
+            name = _('Check "%s" bank rejection reverted') % (self.name)
+            debit_account = journal.default_debit_account_id
+            credit_account = self.company_id._get_check_account('rejected')
         elif action == 'bank_deposited':
             credit_account = self.company_id._get_check_account('holding')
             # la contrapartida es la cuenta que reemplazamos en el pago
             debit_account = journal.default_credit_account_id
             name = _('Check "%s" deposited') % (self.name)
+        elif action == 'deposited_cancel':
+            credit_account = journal.default_credit_account_id
+            debit_account = self.company_id._get_check_account('holding')
+            name = _('Check "%s" deposit reverted') % (self.name)
+        elif action == 'return_check':
+            credit_account = journal.default_credit_account_id
+            debit_account = self.company_id._get_check_account('third_party_cancelled')
+            name = _('Check "%s" returned') % (self.name)
+        elif action == 'revert_return':
+            debit_account = journal.default_credit_account_id
+            credit_account = self.company_id._get_check_account('third_party_cancelled')
+            name = _('Check "%s" revert returned') % (self.name)
         elif action == 'changed':
             name = _('Check "%s" changed') % (self.name)
         else:

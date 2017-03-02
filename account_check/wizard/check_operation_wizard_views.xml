@@ -12,6 +12,9 @@
                         <field name="date"/>
                         <field name="journal_id" attrs="{'invisible':[('action_type','!=','deposit')],'required':[('action_type','=','deposit')]}"/>
                         <field name="account_id" attrs="{'invisible':[('action_type','!=','deposit')],'readonly':[('action_type','=','deposit')]}"/>
+                        <field name="exp_account_id" attrs="{'invisible':[('action_type','!=','claim')],'required':[('exp_type','=','3')]}"/>
+                        <field name="exp_amount" attrs="{'invisible':[('action_type','!=','claim')],'required':[('exp_type','=','3')]}"/>
+                        <field name="exp_type" attrs="{'invisible':[('action_type','!=','claim')],'required':[('action_type','=','claim')]}"/>
                     </group>
                     <footer>
                         <button string="Confirm" name="action_confirm" type="object" class="oe_highlight"/>
@@ -22,8 +25,20 @@
             </field>
         </record>
 
+        
+        <record id="action_account_check_bank_debit_wizard" model="ir.actions.act_window">
+            <field name="name">Bank Debit</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.check.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="context">{'default_action_type':'bank_debit'}</field>
+            <field name="key2">client_action_multi</field>
+        </record>
+        
         <record id="action_account_check_deposit_wizard" model="ir.actions.act_window">
-            <field name="name">Check Operation</field>
+            <field name="name">Check Bank Deposit</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">account.check.wizard</field>
             <field name="view_type">form</field>
@@ -33,20 +48,50 @@
             <field name="key2">client_action_multi</field>
         </record>
         
-        <!-- act_window id="action_account_check_wizard"
-                    name="Add Check Operation"
-                    src_model="account.check.wizard"
-                    res_model="account.check"
-                    view_mode="form"
-                    target="new"/ -->
+        <record id="action_account_check_bank_reject_wizard" model="ir.actions.act_window">
+            <field name="name">Bank Rejection</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.check.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="context">{'default_action_type':'bank_reject'}</field>
+            <field name="key2">client_action_multi</field>
+        </record>
         
+        <record id="action_account_check_return_wizard" model="ir.actions.act_window">
+            <field name="name">Return Check</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.check.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="context">{'default_action_type':'return'}</field>
+            <field name="key2">client_action_multi</field>
+        </record>
         
-    <!-- record id="action_account_check_wizard" model="ir.actions.act_window.view">
-        <field name="sequence" eval="0"/>
-        <field name="view_mode">form</field>
-        <field name="view_id" ref="view_account_check_wizard"/>
-        <field name="act_window_id" ref="action_contacts"/>
-    </record -->
+        <record id="action_account_check_claim_wizard" model="ir.actions.act_window">
+            <field name="name">Expenses</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.check.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="context">{'default_action_type':'claim'}</field>
+            <field name="key2">client_action_multi</field>
+        </record>
+        
+
+        <record id="action_account_revert_return_wizard" model="ir.actions.act_window">
+            <field name="name">Revert Return</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.check.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="context">{'default_action_type':'revert_return'}</field>
+            <field name="key2">client_action_multi</field>
+        </record>
         
         
 </data>
