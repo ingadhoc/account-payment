@@ -177,3 +177,8 @@ class account_check_wizard(models.TransientModel):
             move = self.env['account.move'].create(vals)
             move.post()
             check._add_operation('rejected', move)
+            vals = check.get_bank_vals('bank_reject', journal_id, date)
+            move = self.env['account.move'].create(vals)
+            move.post()
+            check._add_operation('rejected', move)
+
