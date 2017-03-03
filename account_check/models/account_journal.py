@@ -18,7 +18,7 @@ class AccountJournal(models.Model):
 
     @api.model
     def create(self, vals):
-        if outbound_payment_method_ids and inbound_payment_method_ids:
+        if outbound_payment_method_ids.ids and inbound_payment_method_ids.ids:
             raise UserError(
                     _('A journal cannot have any of these two types at the same time, Own Check and 3rd Party Check, or Check (Own or 3rd Party) and Withholding. Please correct your selection in "Advanced Settings" tab.'))
         else:
