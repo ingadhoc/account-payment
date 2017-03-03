@@ -77,7 +77,7 @@ class account_check_wizard(models.TransientModel):
             elif self.action_type == 'bank_reject':
                 self.bank_rejected(check, self.date)
             elif self.action_type == 'supplier_reject':
-                self.supplier_rejected(check, self.date)
+                self.supplier_reject(check, self.date)
             elif self.action_type == 'return':
                 self.returned(check, self.date)
             elif self.action_type == 'revert_return':
