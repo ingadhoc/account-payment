@@ -167,7 +167,7 @@ class account_check_wizard(models.TransientModel):
             
             
     @api.multi
-    def supplier_rejected(self, check, date):
+    def supplier_reject(self, check, date):
         self.ensure_one()
         if check.state in ['delivered']:
             operation = check._get_operation('holding')
