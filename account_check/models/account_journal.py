@@ -3,7 +3,7 @@
 # For copyright and license notices, see __openerp__.py file in module root
 # directory
 ##############################################################################
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
 
@@ -22,7 +22,7 @@ class AccountJournal(models.Model):
         if (4 in payment_method and 5 in payment_method) or (6 in payment_method and 8 in payment_method):
             self.update({
                 'outbound_payment_method_ids':[],
-                'outbound_payment_method_ids': [],
+                'inbound_payment_method_ids': [],
             })
             raise UserError(_('A journal cannot have any of these two types at the same time, Own Check and 3rd Party Check, or Check (Own or 3rd Party) and Withholding. Please correct your selection in "Advanced Settings" tab.'))
     
