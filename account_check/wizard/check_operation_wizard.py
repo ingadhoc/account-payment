@@ -76,6 +76,8 @@ class account_check_wizard(models.TransientModel):
                 self.bank_deposited(check, self.journal_id, self.date)
             elif self.action_type == 'bank_reject':
                 self.bank_rejected(check, self.date)
+            elif self.action_type == 'supplier_reject':
+                self.supplier_rejected(check, self.date)
             elif self.action_type == 'return':
                 self.returned(check, self.date)
             elif self.action_type == 'revert_return':
@@ -158,6 +160,20 @@ class account_check_wizard(models.TransientModel):
             journal_id = operation.origin.journal_id
             vals = check.get_bank_vals(
                 'bank_reject', journal_id, date)
+            move = self.env['account.move'].create(vals)
+            move.post()
+            check._add_operation('rejected', move)
+
+            
+            
+    @api.multi
+    def supplier_rejected(self, check, date):
+        self.ensure_one()
+        if check.state in ['delivered']:
+            operation = check._get_operation('holding')
+            journal_id = operation.origin.journal_id 
+            vals = check.get_bank_vals(
+                'supplier_rejected', journal_id, date)
             move = self.env['account.move'].create(vals)
             move.post()
             check._add_operation('rejected', move)
