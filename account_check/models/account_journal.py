@@ -19,7 +19,7 @@ class AccountJournal(models.Model):
     @api.onchange('outbound_payment_method_ids', 'inbound_payment_method_ids')
     def change_payment_method(self):
         payment_method = self.outbound_payment_method_ids.ids + self.inbound_payment_method_ids.ids
-        if (4 in payment_method and 5 in payment_method) or if (6 in payment_method and 8 in payment_method):
+        if (4 in payment_method and 5 in payment_method) or (6 in payment_method and 8 in payment_method):
             if (4 in payment_method and 5 in payment_method):
                 for payment_method_type in self.outbound_payment_method_ids, self.inbound_payment_method_ids:
                     for line in payment_method_type:
