@@ -505,7 +505,11 @@ class AccountCheck(models.Model):
                 'reject_cancel', journal_id)
             move = self.env['account.move'].create(vals)
             move.post()
-            self._add_operation('deposited', move)
+            if self.type == 'third_check':
+                self._add_operation('holding', move)
+            elif self.type == 'issue_check':
+                self._add_operation('handed', move)
+            #self._add_operation('deposited', move)
             
 
 #    @api.multi
