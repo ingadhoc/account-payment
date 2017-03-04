@@ -32,14 +32,11 @@ class AccountJournal(models.Model):
     
     @api.model
     def create(self, vals):
-        payment_method = self.outbound_payment_method_ids.ids + self.inbound_payment_method_ids.ids
-        if (4 in payment_method and 5 in payment_method) or (6 in payment_method and 8 in payment_method):
-            raise UserError(_('A journal cannot have any of these two types at the same time, Own Check and 3rd Party Check, or Check (Own or 3rd Party) and Withholding. Please correct your selection in "Advanced Settings" tab.'))
+        self.change_payment_method()
         rec = super(AccountJournal, self).create(vals)
         issue_checks = self.env.ref(
             'account_check.account_payment_method_issue_check')
-        if (issue_checks in rec.outbound_payment_method_ids and
-                not rec.checkbook_ids):
+        if (issue_checks in rec.outbound_payment_method_ids and not rec.checkbook_ids):
             rec._create_checkbook()
         return rec
 
