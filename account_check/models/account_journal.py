@@ -27,7 +27,7 @@ class AccountJournal(models.Model):
             #    self.write({'inbound_payment_method_ids': [(5)],
             #                'outbound_payment_method_ids':[(5)]})   
                 
-            raise UserError(_('A journal cannot have any of these two types at the same time, Own Check and 3rd Party Check, or Check (Own or 3rd Party) and Withholding. Please correct your selection in "Advanced Settings" tab.'))
+            raise UserError(_('Cristian A journal cannot have any of these two types at the same time, Own Check and 3rd Party Check, or Check (Own or 3rd Party) and Withholding. Please correct your selection in "Advanced Settings" tab.'))
     
     
     @api.model
