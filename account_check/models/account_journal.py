@@ -89,5 +89,6 @@ class AccountJournal(models.Model):
             })
             
             
-            
-
+    _sql_constraints = [
+        ('Check Third-Issue', 'check(check_control!=False)', 'Error ! Ending Date cannot be set before Beginning Date.')
+    ]
