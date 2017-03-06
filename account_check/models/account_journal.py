@@ -20,6 +20,7 @@ class AccountJournal(models.Model):
     )
 
 #    @api.onchange('outbound_payment_method_ids', 'inbound_payment_method_ids')
+    @api.multi
     def change_payment_method(self):
         self.ensure_one()
         payment_method = self.outbound_payment_method_ids.ids + self.inbound_payment_method_ids.ids
