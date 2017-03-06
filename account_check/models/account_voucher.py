@@ -102,8 +102,11 @@ class account_voucher(models.Model):
         if self.state == 'posted' and self.net_amount:
             raise Warning(_(
                 'No puede usar un diario de cheques y que el importe neto sea'
-                ' distinto de cero, pruebe volver a cargar el cheque o '
-                ' modificar el importe del mismo'))
+                ' distinto de cero, puede probar: \n'
+                '1) Borrar los cheques\n'
+                '2) Cambiar a un diario sin cheques y guardar\n'
+                '3) Volver a elegir el diario de cheques, cargar el cheque, '
+                'guardar y continuar con la validacion'))
 
     @api.onchange(
         # because journal is old api change
