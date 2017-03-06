@@ -106,6 +106,7 @@ class AccountCheckbook(models.Model):
 
     @api.multi
     def _compute_name(self):
+        name = None
         for rec in self:
             if rec.debit_journal_id:
                 name = str(rec.debit_journal_id.name)
