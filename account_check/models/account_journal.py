@@ -23,7 +23,10 @@ class AccountJournal(models.Model):
     #@api.multi
     def change_payment_method(self):
         #self.ensure_one()
-        payment_method = self.outbound_payment_method_ids.ids + self.inbound_payment_method_ids.ids
+        try:
+            payment_method = self.outbound_payment_method_ids.ids + self.inbound_payment_method_ids.ids
+        except:
+            payment_method = []
         if (4 in payment_method and 5 in payment_method) or (6 in payment_method and 8 in payment_method):
             #if (4 in payment_method and 5 in payment_method):
             #    self.write({'inbound_payment_method_ids': [(5)],
