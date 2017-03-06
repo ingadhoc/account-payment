@@ -210,6 +210,28 @@ result = withholdable_base_amount * 0.10
         return factor
 
     @api.multi
+    def get_period_vouchers_domain(self, voucher):
+        to_date = fields.Date.from_string(
+            voucher.date) or datetime.date.today()
+        accumulated_payments = self.accumulated_payments
+        previos_vouchers_domain = [
+            ('partner_id', '=', voucher.partner_id.id),
+            ('state', '=', 'posted'),
+            ('id', '!=', voucher.id),
+        ]
+        if accumulated_payments == 'month':
+            from_relative_delta = relativedelta(day=1)
+        elif accumulated_payments == 'year':
+            from_relative_delta = relativedelta(day=1, month=1)
+        from_date = to_date + from_relative_delta
+        previos_vouchers_domain += [
+            ('date', '<=', to_date),
+            ('date', '>=', from_date),
+        ]
+        print 'previos_vouchers_domain', previos_vouchers_domain
+        return previos_vouchers_domain
+
+    @api.multi
     def get_withholding_vals(self, voucher):
         """
         If you wan to inherit and implement your own type, the most important
@@ -225,26 +247,10 @@ result = withholdable_base_amount * 0.10
         if self.advances_are_withholdable:
             withholdable_advanced_amount = voucher.advance_amount
 
-        to_date = fields.Date.from_string(
-            voucher.date) or datetime.date.today()
         accumulated_amount = previous_withholding_amount = 0.0
-        accumulated_payments = self.accumulated_payments
-        if accumulated_payments == 'month':
-            previos_vouchers_domain = [
-                ('partner_id', '=', voucher.partner_id.id),
-                ('state', '=', 'posted'),
-                ('id', '!=', voucher.id),
-            ]
-            if accumulated_payments == 'month':
-                from_relative_delta = relativedelta(day=1)
-            elif accumulated_payments == 'year':
-                from_relative_delta = relativedelta(day=1, month=1)
-            from_date = to_date + from_relative_delta
-            previos_vouchers_domain += [
-                ('date', '<=', to_date),
-                ('date', '>=', from_date),
-            ]
-            same_period_vouchers = voucher.search(previos_vouchers_domain)
+        if self.accumulated_payments:
+            same_period_vouchers = voucher.search(
+                self.get_period_vouchers_domain(voucher))
             for same_period_voucher in same_period_vouchers:
                 # obtenemos importe acumulado sujeto a retencion de voucher
                 # anteriores
