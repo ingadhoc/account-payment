@@ -19,14 +19,14 @@ class AccountJournal(models.Model):
         'Check Control', required=False, default=False,
     )
                 
-    @api.one
-    @api.constrains('outbound_payment_method_ids', 'inbound_payment_method_ids')
+    #@api.one
+    @api.onchange('outbound_payment_method_ids', 'inbound_payment_method_ids')
     def _check_payments_methods(self):
         payment_method = self.outbound_payment_method_ids.ids + self.inbound_payment_method_ids.ids
         if (4 in payment_method and 5 in payment_method) or (6 in payment_method and 8 in payment_method):
             UserError(_('A journal cannot have any of these two types at the same time, Own Check and 3rd Party Check, or Check (Own or 3rd Party) and Withholding. Please correct your selection in "Advanced Settings" tab.'))
         else:
-            UserError(_('2 A journal cannot have any of these two types at the same time, Own Check and 3rd Party Check, or Check (Own or 3rd Party) and Withholding. Please correct your selection in "Advanced Settings" tab.'))
+            UserError(_('A journal cannot have any of these two types at the same time, Own Check and 3rd Party Check, or Check (Own or 3rd Party) and Withholding. Please correct your selection in "Advanced Settings" tab.'))
 
                 
     
@@ -87,4 +87,7 @@ class AccountJournal(models.Model):
                 'outbound_payment_method_ids': [
                     (4, delivered_third_check.id, None)],
             })
+            
+            
+            
 
