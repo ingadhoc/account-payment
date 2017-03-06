@@ -1156,8 +1156,6 @@ msgstr "o"
 msgid "wizard.multi.charts.accounts"
 msgstr "wizard.multi.charts.accounts"
 
-msgstr "Tipo de acción pasada en el contexto"
-
 #. module: account_check
 #: code:addons/account_check/wizard/check_operation_wizard.py:17
 #, python-format
