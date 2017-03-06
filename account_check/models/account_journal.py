@@ -32,7 +32,6 @@ class AccountJournal(models.Model):
     
     @api.model
     def create(self, vals):
-        self.change_payment_method()
         rec = super(AccountJournal, self).create(vals)
         issue_checks = self.env.ref(
             'account_check.account_payment_method_issue_check')
