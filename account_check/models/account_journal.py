@@ -21,7 +21,7 @@ class AccountJournal(models.Model):
                 
     #@api.one
     @api.one
-    @api.constrains('name', 'description')
+    @api.constrains('outbound_payment_method_ids', 'inbound_payment_method_ids')
     def _check_payments_methods(self):
         payment_method = self.outbound_payment_method_ids.ids + self.inbound_payment_method_ids.ids
         if (4 in payment_method and 5 in payment_method) or (6 in payment_method and 8 in payment_method):
