@@ -99,7 +99,8 @@ class account_voucher(models.Model):
         # en algunos casos no se disparo el setear net amount igual a cero
         # por las dudas chequeamos al validar ya que se generaría un asiento
         # erroneo
-        if self.state == 'posted' and self.net_amount:
+        if self.state == 'posted' and self.journal_id.payment_subtype in (
+                'issue_check', 'third_check') and self.net_amount:
             raise Warning(_(
                 'No puede usar un diario de cheques y que el importe neto sea'
                 ' distinto de cero, puede probar: \n'
