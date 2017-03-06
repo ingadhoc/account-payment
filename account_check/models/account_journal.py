@@ -16,7 +16,7 @@ class AccountJournal(models.Model):
         'Checkbooks',
     )
     check_control = fields.Boolean(
-        'Check Control', required=False,
+        'Check Control', required=False, default=False,
     )
 
     @api.onchange('outbound_payment_method_ids', 'inbound_payment_method_ids')
