@@ -74,6 +74,11 @@ class account_voucher(models.Model):
     @api.one
     @api.constrains(
         'journal_id',
+        # en algunos casos no se disparo el setear net amount igual a cero
+        # solo con journal, chequeamos cada vez que se escriba un cheque
+        'issued_check_ids',
+        'delivered_third_check_ids',
+        'received_third_check_ids',
     )
     @api.onchange(
         # because journal is old api change
@@ -85,9 +90,20 @@ class account_voucher(models.Model):
                 'issue_check', 'third_check'):
                 # 'issue_check', 'third_check') and self.net_amount:
             self.net_amount = 0
-            # raise Warning(_(
-            #     'You can not use a check journal with Net Amount different '
-            #     ' from 0. Correct it first'))
+
+    @api.one
+    @api.constrains(
+        'state',
+    )
+    def check_net_amount_check_journal(self):
+        # en algunos casos no se disparo el setear net amount igual a cero
+        # por las dudas chequeamos al validar ya que se generaría un asiento
+        # erroneo
+        if self.state == 'posted' and self.net_amount:
+            raise Warning(_(
+                'No puede usar un diario de cheques y que el importe neto sea'
+                ' distinto de cero, pruebe volver a cargar el cheque o '
+                ' modificar el importe del mismo'))
 
     @api.onchange(
         # because journal is old api change
