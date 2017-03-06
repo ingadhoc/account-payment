@@ -16,7 +16,7 @@ class AccountJournal(models.Model):
         'Checkbooks',
     )
     check_control = fields.Boolean(
-        'Check Control', required=False, required=True,default=False,
+        'Check Control', required=True,default=False,
     )
                 
     #@api.one
