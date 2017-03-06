@@ -26,7 +26,8 @@ class AccountJournal(models.Model):
         if (4 in payment_method and 5 in payment_method) or (6 in payment_method and 8 in payment_method):
             UserError(_('A journal cannot have any of these two types at the same time, Own Check and 3rd Party Check, or Check (Own or 3rd Party) and Withholding. Please correct your selection in "Advanced Settings" tab.'))
         else:
-            pass
+            UserError(_('2 A journal cannot have any of these two types at the same time, Own Check and 3rd Party Check, or Check (Own or 3rd Party) and Withholding. Please correct your selection in "Advanced Settings" tab.'))
+
                 
     
     @api.model
