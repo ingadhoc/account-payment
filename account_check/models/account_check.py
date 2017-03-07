@@ -592,8 +592,9 @@ class AccountCheck(models.Model):
         name = _('Check "%s" rejection') % (self.name)
         if action_type == 'revert_return' and self.type == 'third_check':
             key_account = self.company_id._get_check_account('third_party_cancelled')
-        else 
+        else:
             key_account = self.company_id._get_check_account('rejected')
+            
         inv_line_vals = {
             'name': name,
             'account_id': key_account.id,
