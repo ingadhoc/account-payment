@@ -133,7 +133,7 @@ class account_check_wizard(models.TransientModel):
     @api.multi
     def claim(self, check, date, account=None, amount=None, exp_type=None):
         self.ensure_one()
-
+        raise UserError(_(str(check.operation_ids[-2].operation)))
         try:
             operation = self._get_operation('reclaimed')
             operation.origin.action_invoice_cancel()
