@@ -599,7 +599,7 @@ class AccountCheck(models.Model):
         else:
             key_account = self.company_id._get_check_account('rejected')
             
-        inv_line_vals = {
+        inv_line_check_vals = {
             'name': name,
             'account_id': key_account.id,
             'partner_id': partner.id,
