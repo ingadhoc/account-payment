@@ -576,7 +576,7 @@ class AccountCheck(models.Model):
                 'rejected', 'supplier', operation.partner_id)
 
     @api.multi
-    def action_create_debit_note(self, operation, partner_type, partner, account, amount):
+    def action_create_debit_note(self, operation, partner_type, partner, account, amount, action_type=""):
         self.ensure_one()
 
         if partner_type == 'supplier':
@@ -594,11 +594,14 @@ class AccountCheck(models.Model):
         ], limit=1)
 
         name = _('Check "%s" rejection') % (self.name)
-
-        inv_line_check_vals = {
-            # 'product_id': self.product_id.id,
+        if action_type == 'revert_return' and self.type == 'third_check':
+            key_account = self.company_id._get_check_account('third_party_cancelled')
+        else:
+            key_account = self.company_id._get_check_account('rejected')
+            
+        inv_line_vals = {
             'name': name,
-            'account_id': self.company_id._get_check_account('rejected').id,
+            'account_id': key_account.id,
             'partner_id': partner.id,
             'price_unit': self.amount #(self.amount_currency and self.amount_currency or self.amount),
             # 'invoice_id': invoice.id,
