@@ -227,6 +227,33 @@ result = withholdable_base_amount * 0.10
     #     return factor
 
     @api.multi
+    def get_period_payments_domain(self, payment_group):
+        """
+        We make this here so it can be inherited by localizations
+        """
+        to_date = fields.Date.from_string(
+            payment_group.payment_date) or datetime.date.today()
+        previos_payment_groups_domain = [
+            ('partner_id.commercial_partner_id', '=',
+                payment_group.commercial_partner_id.id),
+            ('state', '=', 'posted'),
+            ('id', '!=', payment_group.id),
+        ]
+        if self.withholding_accumulated_payments == 'month':
+            from_relative_delta = relativedelta(day=1)
+        elif self.withholding_accumulated_payments == 'year':
+            from_relative_delta = relativedelta(day=1, month=1)
+        from_date = to_date + from_relative_delta
+        previos_payment_groups_domain += [
+            ('payment_date', '<=', to_date),
+            ('payment_date', '>=', from_date),
+        ]
+        return (
+            previos_payment_groups_domain,
+            previos_payment_groups_domain + [
+                ('tax_withholding_id', '=', self.id)])
+
+    @api.multi
     def get_withholding_vals(self, payment_group):
         """
         If you wan to inherit and implement your own type, the most important
@@ -241,29 +268,12 @@ result = withholdable_base_amount * 0.10
         if self.withholding_advances:
             withholdable_advanced_amount = payment_group.unreconciled_amount
 
-        to_date = fields.Date.from_string(
-            payment_group.payment_date) or datetime.date.today()
         accumulated_amount = previous_withholding_amount = 0.0
-        withholding_accumulated_payments = (
-            self.withholding_accumulated_payments)
-        if withholding_accumulated_payments:
-            previos_payments_domain = [
-                ('partner_id.commercial_partner_id', '=',
-                    payment_group.commercial_partner_id.id),
-                ('state', '=', 'posted'),
-                ('id', '!=', payment_group.id),
-            ]
-            if withholding_accumulated_payments == 'month':
-                from_relative_delta = relativedelta(day=1)
-            elif withholding_accumulated_payments == 'year':
-                from_relative_delta = relativedelta(day=1, month=1)
-            from_date = to_date + from_relative_delta
-            previos_payments_domain += [
-                ('payment_date', '<=', to_date),
-                ('payment_date', '>=', from_date),
-            ]
+        if self.withholding_accumulated_payments:
+            previos_payment_groups_domain, previos_payments_domain = (
+                self.get_period_payments_domain(payment_group))
             same_period_payments = self.env['account.payment.group'].search(
-                previos_payments_domain)
+                previos_payment_groups_domain)
             for same_period_payment_group in same_period_payments:
                 # obtenemos importe acumulado sujeto a retencion de voucher
                 # anteriores
@@ -274,8 +284,7 @@ result = withholdable_base_amount * 0.10
                         same_period_payment_group.unmatched_amount)
             previous_withholding_amount = sum(
                 self.env['account.payment'].search(
-                    previos_payments_domain +
-                    [('tax_withholding_id', '=', self.id)]).mapped('amount'))
+                    previos_payments_domain).mapped('amount'))
 
         total_amount = (
             accumulated_amount +
