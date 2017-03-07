@@ -293,6 +293,10 @@ class AccountPayment(models.Model):
             unlink check if needed
         * from _get_liquidity_move_line_vals to add check operation and, if
             needded, change payment vals and/or create check and
+        TODO si queremos todos los del operation podriamos moverlos afuera y
+        simplificarlo ya que es el mismo en casi todos
+        Tambien podemos simplficiar las distintas opciones y como se recorren
+        los if
         """
         self.ensure_one()
         rec = self
@@ -301,12 +305,15 @@ class AccountPayment(models.Model):
             return vals
         if (
                 rec.payment_method_code == 'received_third_check' and
-                rec.payment_type == 'inbound' and
-                rec.partner_type == 'customer'):
+                rec.payment_type == 'inbound'
+                # el chequeo de partner type no seria necesario
+                # un proveedor nos podria devolver plata con un cheque
+                # and rec.partner_type == 'customer'
+        ):
             operation = 'holding'
             if cancel:
                 _logger.info('Cancel Receive Check')
-                rec.check_ids._del_operation(operation)
+                rec.check_ids._del_operation(self)
                 rec.check_ids.unlink()
                 return None
 
@@ -316,59 +323,87 @@ class AccountPayment(models.Model):
             vals['account_id'] = self.get_third_check_account().id
         elif (
                 rec.payment_method_code == 'delivered_third_check' and
-                rec.payment_type == 'transfer' and
-                rec.destination_journal_id.type == 'cash'):
-            operation = 'selled'
-            if cancel:
-                _logger.info('Cancel Sell Check')
-                rec.check_ids._del_operation(operation)
-                return None
+                rec.payment_type == 'transfer'):
+            # si el cheque es entregado en una transferencia tenemos tres
+            # opciones
+            # TODO we should make this method selectable for transfers
+            inbound_method = (
+                rec.destination_journal_id.inbound_payment_method_ids)
+            # si un solo inbound method y es received third check
+            # entonces consideramos que se esta moviendo el cheque de un diario
+            # al otro
+            if len(inbound_method) and (
+                    inbound_method.code == 'received_third_check'):
+                if cancel:
+                    _logger.info('Cancel Transfer Check')
+                    for check in rec.check_ids:
+                        check._del_operation(self)
+                        check._del_operation(self)
+                        receive_op = check._get_operation('holding')
+                        if receive_op.origin._name == 'account.payment':
+                            check.journal_id = receive_op.origin.journal_id.id
+                    return None
 
-            _logger.info('Sell Check')
-            rec.check_ids._add_operation(
-                operation, rec, False)
-            vals['account_id'] = self.get_third_check_account().id
+                _logger.info('Transfer Check')
+                rec.check_ids._add_operation(
+                    'transfered', rec, False)
+                rec.check_ids._add_operation(
+                    'holding', rec, False)
+                rec.check_ids.write({
+                    'journal_id': rec.destination_journal_id.id})
+                vals['account_id'] = self.get_third_check_account().id
+            elif rec.destination_journal_id.type == 'cash':
+                if cancel:
+                    _logger.info('Cancel Sell Check')
+                    rec.check_ids._del_operation(self)
+                    return None
+
+                _logger.info('Sell Check')
+                rec.check_ids._add_operation(
+                    'selled', rec, False)
+                vals['account_id'] = self.get_third_check_account().id
+            # bank
+            else:
+                if cancel:
+                    _logger.info('Cancel Deposit Check')
+                    rec.check_ids._del_operation(self)
+                    return None
+
+                _logger.info('Deposit Check')
+                rec.check_ids._add_operation(
+                    'deposited', rec, False)
+                vals['account_id'] = self.get_third_check_account().id
         elif (
                 rec.payment_method_code == 'delivered_third_check' and
-                rec.payment_type == 'transfer' and
-                rec.destination_journal_id.type == 'bank'):
-            operation = 'deposited'
-            if cancel:
-                _logger.info('Cancel Deposit Check')
-                rec.check_ids._del_operation(operation)
-                return None
-
-            _logger.info('Deposit Check')
-            rec.check_ids._add_operation(
-                operation, rec, False)
-            vals['account_id'] = self.get_third_check_account().id
-        elif (
-                rec.payment_method_code == 'delivered_third_check' and
-                rec.payment_type == 'outbound' and
-                rec.partner_type == 'supplier'):
-            operation = 'delivered'
+                rec.payment_type == 'outbound'
+                # el chequeo del partner type no es necesario
+                # podriamos entregarlo a un cliente
+                # and rec.partner_type == 'supplier'
+        ):
             if cancel:
                 _logger.info('Cancel Deliver Check')
-                rec.check_ids._del_operation(operation)
+                rec.check_ids._del_operation(self)
                 return None
 
             _logger.info('Deliver Check')
             rec.check_ids._add_operation(
-                operation, rec, rec.partner_id)
+                'delivered', rec, rec.partner_id)
             vals['account_id'] = self.get_third_check_account().id
         elif (
                 rec.payment_method_code == 'issue_check' and
-                rec.payment_type == 'outbound' and
-                rec.partner_type == 'supplier'):
-            operation = 'handed'
+                rec.payment_type == 'outbound'
+                # el chequeo del partner type no es necesario
+                # podriamos entregarlo a un cliente
+                # and rec.partner_type == 'supplier'
+        ):
             if cancel:
                 _logger.info('Cancel Hand Check')
-                rec.check_ids._del_operation(operation)
+                rec.check_ids._del_operation(self)
                 rec.check_ids.unlink()
                 return None
 
             _logger.info('Hand Check')
-            self.create_check('issue_check', operation, self.check_bank_id)
+            self.create_check('issue_check', 'handed', self.check_bank_id)
             vals['date_maturity'] = self.check_payment_date
             # if check is deferred, change account
             if self.check_subtype == 'deferred':
@@ -378,15 +413,14 @@ class AccountPayment(models.Model):
                 rec.payment_method_code == 'issue_check' and
                 rec.payment_type == 'transfer' and
                 rec.destination_journal_id.type == 'cash'):
-            operation = 'withdrawed'
             if cancel:
                 _logger.info('Cancel Withdrawal Check')
-                rec.check_ids._del_operation(operation)
+                rec.check_ids._del_operation(self)
                 rec.check_ids.unlink()
                 return None
 
             _logger.info('Hand Check')
-            self.create_check('issue_check', operation, self.check_bank_id)
+            self.create_check('issue_check', 'withdrawed', self.check_bank_id)
             vals['date_maturity'] = self.check_payment_date
             # if check is deferred, change account
             # si retiramos por caja directamente lo sacamos de banco

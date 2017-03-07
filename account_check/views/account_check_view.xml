@@ -100,7 +100,7 @@
                     </group>
                     <group string="Operations">
                         <field name="operation_ids" nolabel="1" readonly="1">
-                            <tree default_order="date">
+                            <tree>
                                 <field name="date"/>
                                 <field name="operation"/>
                                 <field name="origin_name" string="Origin"/>

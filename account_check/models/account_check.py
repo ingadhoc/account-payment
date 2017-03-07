@@ -34,6 +34,10 @@ class AccountCheckOperation(models.Model):
         ('deposited', 'Deposit'),
         ('selled', 'Sell'),
         ('delivered', 'Deliver'),
+        # usado para hacer transferencias internas, es lo mismo que delivered
+        # (endosado) pero no queremos confundir con terminos, a la larga lo
+        # volvemos a poner en holding
+        ('transfered', 'Transfered'),
         ('handed', 'Hand'),
         ('withdrawed', 'Withdrawal'),
         # from checks
@@ -161,6 +165,7 @@ class AccountCheck(models.Model):
         ('deposited', 'Deposited'),
         ('selled', 'Selled'),
         ('delivered', 'Delivered'),
+        ('transfered', 'Transfered'),
         ('reclaimed', 'Reclaimed'),
         ('withdrawed', 'Withdrawed'),
         ('handed', 'Handed'),
@@ -368,24 +373,19 @@ class AccountCheck(models.Model):
         return True
 
     @api.multi
-    def _del_operation(self, operation):
+    def _del_operation(self, origin):
         """
         We check that the operation that is being cancel is the last operation
         done (same as check state)
         """
         for rec in self:
-            if operation and rec.state != operation:
+            if not rec.operation_ids or rec.operation_ids[0].origin != origin:
                 raise ValidationError(_(
-                    'You can not cancel operation "%s" if check is in '
-                    '"%s" state') % (
-                        rec.operation_ids._fields[
-                            'operation'].convert_to_export(
-                                operation, rec.env),
-                        rec._fields['state'].convert_to_export(
-                            rec.state, rec.env)))
-            if rec.operation_ids:
-                rec.operation_ids[0].origin = False
-                rec.operation_ids[0].unlink()
+                    'You can not cancel this operation because this is not '
+                    'the last operation over the check. Check (id): %s (%s)'
+                ) % (rec.name, rec.id))
+            rec.operation_ids[0].origin = False
+            rec.operation_ids[0].unlink()
 
     @api.multi
     def _add_operation(
