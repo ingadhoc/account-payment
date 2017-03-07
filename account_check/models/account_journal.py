@@ -30,7 +30,7 @@ class AccountJournal(models.Model):
             if (((6 in payment_method and 7 in payment_method) and len(payment_method) == 2) or ((( 6 in payment_method) and len(payment_method) == 1) or (( 7 in payment_method) and len(payment_method) == 1))):
                 return 0
             else:
-                if ( 8 not in payment_method) and (( 7 not in payment_method) or ( 8 not in payment_method)):
+                if ( 8 not in payment_method) and (( 6 not in payment_method) or ( 7 not in payment_method)):
                     return 0
         raise ValidationError(_('A journal cannot have any of these two types at the same time, Own Check and 3rd Party Check, or Check (Own or 3rd Party) and Withholding. Please correct your selection in "Advanced Settings" tab.'))
                 
