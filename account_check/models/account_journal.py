@@ -3,7 +3,8 @@
 # For copyright and license notices, see __openerp__.py file in module root
 # directory
 ##############################################################################
-from openerp import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError, ValidationError
 
 
 class AccountJournal(models.Model):
@@ -14,14 +15,25 @@ class AccountJournal(models.Model):
         'journal_id',
         'Checkbooks',
     )
-
+    check_control = fields.Boolean(
+        'Check Control', required=True,default=False,
+    )
+                
+    #@api.one
+    @api.one
+    @api.constrains('outbound_payment_method_ids', 'inbound_payment_method_ids')
+    def _check_payments_methods(self):
+        payment_method = self.outbound_payment_method_ids.ids + self.inbound_payment_method_ids.ids
+        if (4 in payment_method and 5 in payment_method) or (6 in payment_method and 8 in payment_method):
+            raise ValidationError(_('A journal cannot have any of these two types at the same time, Own Check and 3rd Party Check, or Check (Own or 3rd Party) and Withholding. Please correct your selection in "Advanced Settings" tab.'))
+                
+    
     @api.model
     def create(self, vals):
         rec = super(AccountJournal, self).create(vals)
         issue_checks = self.env.ref(
             'account_check.account_payment_method_issue_check')
-        if (issue_checks in rec.outbound_payment_method_ids and
-                not rec.checkbook_ids):
+        if (issue_checks in rec.outbound_payment_method_ids and not rec.checkbook_ids):
             rec._create_checkbook()
         return rec
 

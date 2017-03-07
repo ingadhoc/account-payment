@@ -64,6 +64,8 @@ class ResCompany(models.Model):
             account = self.deferred_check_account_id
         elif type == 'third_party_cancelled':
             account = self.third_party_checks_cancelled_account_id
+        elif type == 'third_party_bounced_endorsed':
+            account = self.third_party_checks_bounced_endorsed_account_id
         else:
             raise UserError(_("Type %s not implemented!"))
         if not account:

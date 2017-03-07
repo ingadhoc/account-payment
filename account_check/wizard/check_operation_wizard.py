@@ -76,6 +76,8 @@ class account_check_wizard(models.TransientModel):
                 self.bank_deposited(check, self.journal_id, self.date)
             elif self.action_type == 'bank_reject':
                 self.bank_rejected(check, self.date)
+            elif self.action_type == 'supplier_reject':
+                self.supplier_reject(check, self.date)
             elif self.action_type == 'return':
                 self.returned(check, self.date)
             elif self.action_type == 'revert_return':
@@ -131,22 +133,23 @@ class account_check_wizard(models.TransientModel):
     @api.multi
     def claim(self, check, date, account=None, amount=None, exp_type=None):
         self.ensure_one()
-        #try:
-        if True:
-            operation = _get_operation('reclaimed')
-            if operation:
-                operation.origin.action_invoice_cancel()
-            if check.state in ['rejected', 'returned', 'reclaimed'] and check.type == 'third_check':    
-                if exp_type == '3':
-                    if amount <= 0:
-                        raise UserError(_('You can\'t claim with Zero Amount!'))
-                    else:
-                        return check.action_create_debit_note(
-                        'reclaimed', 'customer', check.partner_id, account, amount, action_type)
+
+        try:
+            operation = self._get_operation('reclaimed')
+            operation.origin.action_invoice_cancel()
+        except:
+            pass
+            #raise UserError(_('Can\'t discard last Debit Note!'))
+        if check.state in ['rejected', 'returned', 'reclaimed'] and check.type == 'third_check':    
+            if exp_type == '3':
+                if amount <= 0:
+                    raise UserError(_('You can\'t claim with Zero Amount!'))
                 else:
-                    return check._add_operation('reclaimed', check)
-        #except:
-        #    raise UserError(_('Can\'t discard last Debit Note!'))
+                    return check.action_create_debit_note(
+                    'reclaimed', 'customer', check.partner_id, account, amount)
+            else:
+                return check._add_operation('reclaimed', check)
+
 
             
             
@@ -161,3 +164,22 @@ class account_check_wizard(models.TransientModel):
             move = self.env['account.move'].create(vals)
             move.post()
             check._add_operation('rejected', move)
+
+            
+            
+    @api.multi
+    def supplier_reject(self, check, date):
+        self.ensure_one()
+        if check.state in ['delivered']:
+            operation = check._get_operation('holding')
+            journal_id = operation.origin.journal_id 
+            vals = check.get_bank_vals(
+                'supplier_rejected', journal_id, date)
+            move = self.env['account.move'].create(vals)
+            move.post()
+            check._add_operation('rejected', move)
+            vals = check.get_bank_vals('bank_reject', journal_id, date)
+            move = self.env['account.move'].create(vals)
+            move.post()
+            check._add_operation('rejected', move)
+
