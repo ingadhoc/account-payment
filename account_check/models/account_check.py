@@ -502,12 +502,12 @@ class AccountCheck(models.Model):
             operation = self._get_operation('deposited')
             move_reversed = operation.origin
             raise UserError(_(str(move_reversed))
-            move_reversed.post()
+            #move_reversed.post()
             #vals = self.get_bank_vals(
             #    'deposited_cancel', journal_id)
             #move = self.env['account.move'].create(vals)
             #move.post()
-            self._add_operation('handed', move_reversed)
+            #self._add_operation('handed', move_reversed)
 
             
     @api.multi
