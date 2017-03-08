@@ -712,8 +712,12 @@ class AccountCheck(models.Model):
             name = _('Check "%s" rejected by supplier') % (self.name)
         elif action == 'reject_cancel':
             name = _('Check "%s" bank rejection reverted') % (self.name)
-            debit_account = journal.default_debit_account_id
-            credit_account = self.company_id._get_check_account('rejected')
+            if self.type == 'third_check':
+                debit_account = journal.default_debit_account_id
+                credit_account = self.company_id._get_check_account('rejected')
+            else:
+                debit_account = self.company_id._get_check_account('own_check_cancelled')
+                credit_account = journal.default_debit_account_id
         elif action == 'bank_deposited':
             credit_account = self.company_id._get_check_account('holding')
             # la contrapartida es la cuenta que reemplazamos en el pago
