@@ -139,7 +139,7 @@ class account_check_wizard(models.TransientModel):
                 account_company = self.company_id._get_check_account('third_party_cancelled')
             else: 
                 account_company = self.company_id._get_check_account('rejected')
-            partner_type = 'customer'
+            partner_type = 'supplier'
         else:
             #if last_operation == 'returned':
             account_company = self.company_id._get_check_account('own_check_rejected')
