@@ -80,7 +80,7 @@
                     <button name="account_check.action_account_check_deposit_wizard" type="action" string="Deposited" states="holding"/>
                     <button name="account_check.action_account_change_check_wizard" type="action" string="Change" attrs="{'invisible':['|', ('type', '!=', 'third_check'), ('state', '!=', 'holding'), '|', ('type', '!=', 'issue_check'), ('state', '!=', 'handed')]}"/>
                     <button name="account_check.action_account_check_return_wizard" type="action" string="Return" states="holding,handed"/>
-                    <button name="action_cancel_debit" type="object" string="Cancel Debit" states="debited"/>
+                    <button name="debit_cancel" type="object" string="Cancel Debit" states="debited"/>
                     <button name="reject_cancel" type="object" string="Cancel Rejection" states="rejected"/>
                     <button name="account_check.action_account_revert_return_wizard" type="action" string="Cancel Return" states="returned"/>
                     <field name="state" widget="statusbar" statusbar_colors="{&quot;hrejected&quot;:&quot;red&quot;}"/> 
