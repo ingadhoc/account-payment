@@ -500,7 +500,7 @@ class AccountCheck(models.Model):
         self.ensure_one()
         if self.state in ['debited']:
             operation = self._get_operation('debited')
-            move_reversed = operation.origin._reverse_move()
+            move_reversed = operation.origin._reverse_move(fields.Date.today())
             #raise UserError(_(str(move_reversed)))
             move_reversed.post()
             #vals = self.get_bank_vals(
