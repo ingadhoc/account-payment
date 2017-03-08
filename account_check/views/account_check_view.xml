@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<openerp>
+<odoo>
     <data>
        
     <!--  Checks -->
@@ -73,7 +73,8 @@
                     <button name="account_check.action_account_check_claim_wizard" type="action" string="Claim to Supplier" attrs="{'invisible':['|',('type', '=', 'third_check'),('state','not in',['returned','rejected', 'reclaimed'])]}" help="It will create a draft debit note to supplier and change check state"/>
                     <button name="account_check.action_account_check_bank_debit_wizard" type="action" string="Bank Debit" states="handed" help="It will create a journal entry from Deferred Check Account to bank account and change check state"/>
                     <button name="deposit_cancel" type="object" string="Cancel Deposit" states="deposited"/>
-                    <button name="account_check.action_account_check_supplier_reject_wizard" type="action" string="Supplier Rejection" states="delivered,handed" help="It will create a debit note from supplier in draft state and change check state"/>
+                    <button name="account_check.action_account_check_bank_reject_wizard" type="action" string="Rejection" states="delivered,handed" help="It will create a debit note from supplier in draft state and change check state"/>
+                    <!-- button name="account_check.action_account_check_supplier_reject_wizard" type="action" string="Supplier Rejection" states="delivered,handed" help="It will create a debit note from supplier in draft state and change check state"/-->
                     <button name="account_check.action_account_check_bank_reject_wizard" type="action" string="Bank Rejection" states="deposited"/> help="It will create an account entry from bank account to company rejection account and change check state"/>
                     <button name="reject" type="object" string="Sell Rejection" states="selled" help="It will create an account entry from cash account to company rejection account and change check state"/>
                     <!-- odoo8 port thridparty -->
@@ -232,4 +233,4 @@
             parent="account.menu_finance_bank_and_cash"/>   
 
     </data>
-</openerp>
+</odoo>
