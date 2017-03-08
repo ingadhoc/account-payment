@@ -64,6 +64,8 @@ class ResCompany(models.Model):
             account = self.deferred_check_account_id
         elif type == 'own_check_rejected':
             account = self.own_check_rejected_account_id
+        elif type == 'own_check_cancelled':
+            account = self.own_check_cancelled_account_id
         elif type == 'third_party_cancelled':
             account = self.third_party_checks_cancelled_account_id
         elif type == 'third_party_bounced_endorsed':
