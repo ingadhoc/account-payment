@@ -21,7 +21,7 @@ class account_change_check_wizard(models.TransientModel):
         ondelete='cascade',
     )
     journal_id = fields.Many2one(
-        #related='original_check_id.journal_id',
+        related='original_check_id.journal_id',
     )
     type = fields.Selection(
         related='original_check_id.type',
@@ -29,6 +29,8 @@ class account_change_check_wizard(models.TransientModel):
     number = fields.Integer(
         'Number',
         required=True,
+        readonly=True,
+        related='checkbook_id.sequence_id.number_next_actual',
     )
     issue_date = fields.Date(
         'Issue Date',

@@ -20,8 +20,8 @@
             <!-- <field name="analytic_account_id" groups="analytic.group_analytic_accounting"/> -->
             <!-- <field name="reconciled"/> -->
             <field name="balance" string="Amount"/>
-            <field name="amount_residual" sum="Total" invisible="context.get('matched_lines')"/>
-            <field name="payment_group_matched_amount" string="Paid Amount" sum="Total" invisible="not context.get('matched_lines')"/>
+            <field name="amount_residual" sum="Total"/> <!--  invisible="context.get('matched_lines')"/ -->
+            <field name="payment_group_matched_amount" string="Paid Amount" sum="Total"/> <!-- invisible="not context.get('matched_lines')"/-->
             <!-- TODO si activamos este monto ver si queremos poner la currency, probamos el widget pero no anduvo -->
             <field name="amount_currency" groups="base.group_multi_currency"/>
             <field name="amount_residual_currency" groups="base.group_multi_currency" invisible="context.get('matched_lines')"/>
