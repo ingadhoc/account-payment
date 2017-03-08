@@ -509,7 +509,6 @@ class AccountCheck(models.Model):
             #move.post()
             #self._add_operation('handed', move_reversed)
 
-            
     @api.multi
     def reject_cancel(self):
         self.ensure_one()
@@ -565,7 +564,7 @@ class AccountCheck(models.Model):
                     'The %s operation has no partner linked.'
                     'You will need to do it manually.') % operation)
         return operation
-    
+
     @api.multi
     def _get_last_operation(self): # Get last Operation
         return self.operation_ids[-2]
