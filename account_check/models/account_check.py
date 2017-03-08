@@ -650,9 +650,11 @@ class AccountCheck(models.Model):
         }
 
     @api.multi
-    def get_bank_vals(self, action, journal, date=None):
+    def get_bank_vals(self, action, journal=None, date=None):
         if date == None:
             date = fields.Date.today()
+        if journal == None:
+            journal = self.journal_id
             
         self.ensure_one()
         # TODO improove how we get vals, get them in other functions
@@ -672,7 +674,7 @@ class AccountCheck(models.Model):
             credit_account = journal.default_debit_account_id
             debit_account = self.company_id._get_check_account('rejected')
             name = _('Check "%s" rejected by bank') % (self.name)
-            # credit_account_id = vou_journal.default_credit_account_id.id 
+            # credit_account_id = vou_journal.default_credit_account_id.id
         elif action == 'reject_cancel':
             name = _('Check "%s" bank rejection reverted') % (self.name)
             debit_account = journal.default_debit_account_id
@@ -696,6 +698,11 @@ class AccountCheck(models.Model):
             name = _('Check "%s" revert returned') % (self.name)
         elif action == 'changed':
             name = _('Check "%s" changed') % (self.name)
+        elif action == 'supplier_reject':
+            credit_account = self.company_id._get_check_account('own_check_rejected')
+            debit_account = self.company_id._get_check_account('deferred')
+            name = _('Check "%s" rejected') % (self.name)
+            # credit_account_id = vou_journal.default_credit_account_id.id 
         else:
             raise ValidationError(_(
                 'Action %s not implemented for checks!') % action)
