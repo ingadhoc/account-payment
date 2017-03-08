@@ -501,7 +501,7 @@ class AccountCheck(models.Model):
         if self.state in ['debited']:
             operation = self._get_operation('deposited')
             move_reversed = operation.origin
-            raise UserError(_(str(origin))
+            raise UserError(_(str(move_reversed))
             move_reversed.post()
             #vals = self.get_bank_vals(
             #    'deposited_cancel', journal_id)
