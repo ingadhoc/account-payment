@@ -51,7 +51,7 @@ class account_check_wizard(models.TransientModel):
         # related='move_line_id.balance',
         currency_field='company_currency_id',
     )
-    exp_type = fields.Selection([('1', 'No Expenses'), ('2', 'Internal Expenses'), ('3', 'Expenses invoiced to Customer')], 'Type',
+    exp_type = fields.Selection([('1', 'No Expenses'), ('2', 'Internal Expenses'), ('3', 'Expenses invoiced')], 'Type',
     )
     date = fields.Date(
         'Date', required=True, default=fields.Date.context_today
