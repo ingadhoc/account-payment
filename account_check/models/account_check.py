@@ -499,7 +499,7 @@ class AccountCheck(models.Model):
     def debit_cancel(self):
         self.ensure_one()
         if self.state in ['debited']:
-            operation = self._get_operation('deposited')
+            operation = self._get_operation('debited')
             move_reversed = operation.origin
             raise UserError(_(str(move_reversed)))
             #move_reversed.post()
