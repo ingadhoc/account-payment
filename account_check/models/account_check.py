@@ -552,7 +552,7 @@ class AccountCheck(models.Model):
         return operation
     
     @api.multi
-    def _get_last_operation(self) # Get last Operation
+    def _get_last_operation(self): # Get last Operation
         return self.operation_ids[-2]
 
     @api.multi
