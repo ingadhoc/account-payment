@@ -139,6 +139,8 @@ class account_check_wizard(models.TransientModel):
                 account_company = self.company_id._get_check_account('third_party_cancelled')
             else: 
                 account_company = self.company_id._get_check_account('rejected')
+        else:
+            raise UserError(_('Issue Checks Claim no Implemented'))
         try:
             operation = self._get_operation('reclaimed')
             operation.origin.action_invoice_cancel()
