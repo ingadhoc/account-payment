@@ -139,9 +139,11 @@ class account_check_wizard(models.TransientModel):
                 account_company = self.company_id._get_check_account('third_party_cancelled')
             else: 
                 account_company = self.company_id._get_check_account('rejected')
+            partner_type = 'customer'
         else:
             #if last_operation == 'returned':
-                account_company = self.company_id._get_check_account('own_check_rejected')
+            account_company = self.company_id._get_check_account('own_check_rejected')
+            partner_type = 'supplier'    
         try:
             operation = self._get_operation('reclaimed')
             operation.origin.action_invoice_cancel()
@@ -154,7 +156,7 @@ class account_check_wizard(models.TransientModel):
                     raise UserError(_('You can\'t claim with Zero Amount!'))
                 else:
                     return check.action_create_debit_note(
-                    'reclaimed', check.type, check.partner_id, account, amount, account_company)
+                    'reclaimed', partner_type, check.partner_id, account, amount, account_company)
             else:
                 return check._add_operation('reclaimed', check)
 
