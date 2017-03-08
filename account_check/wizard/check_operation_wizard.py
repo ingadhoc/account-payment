@@ -166,7 +166,7 @@ class account_check_wizard(models.TransientModel):
     @api.multi
     def bank_rejected(self, check, date):
         self.ensure_one()
-        if check.state in ['deposited']:
+        if check.state in ['deposited', 'delivered']:
             operation = check._get_operation('deposited')
             journal_id = operation.origin.journal_id
             vals = check.get_bank_vals(
