@@ -140,20 +140,21 @@ class account_check_wizard(models.TransientModel):
             else: 
                 account_company = self.company_id._get_check_account('rejected')
         else:
-            raise UserError(_('Issue Checks Claim no Implemented'))
+            #if last_operation == 'returned':
+                account_company = self.company_id._get_check_account('own_check_rejected')
         try:
             operation = self._get_operation('reclaimed')
             operation.origin.action_invoice_cancel()
         except:
             pass
             #raise UserError(_('Can\'t discard last Debit Note!'))
-        if check.state in ['rejected', 'returned', 'reclaimed'] and check.type == 'third_check':    
+        if check.state in ['rejected', 'returned', 'reclaimed']:    
             if exp_type == '3':
                 if amount <= 0:
                     raise UserError(_('You can\'t claim with Zero Amount!'))
                 else:
                     return check.action_create_debit_note(
-                    'reclaimed', 'customer', check.partner_id, account, amount, account_company)
+                    'reclaimed', check.type, check.partner_id, account, amount, account_company)
             else:
                 return check._add_operation('reclaimed', check)
 
