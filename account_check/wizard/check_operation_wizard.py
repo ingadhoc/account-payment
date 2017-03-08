@@ -135,7 +135,7 @@ class account_check_wizard(models.TransientModel):
         self.ensure_one()
         last_operation = check._get_last_operation().operation
         if check.type == 'third_check':
-            if last_operation == returned:
+            if last_operation.operation == returned:
                 account_company = self.company_id._get_check_account('third_party_cancelled')
             else: 
                 account_company = self.company_id._get_check_account('rejected')
