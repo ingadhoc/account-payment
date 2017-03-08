@@ -496,6 +496,20 @@ class AccountCheck(models.Model):
             self._add_operation('holding', move)
             
     @api.multi
+    def debit_cancel(self):
+        self.ensure_one()
+        if self.state in ['debited']:
+            operation = self._get_operation('deposited')
+            move_reversed = operation.origin._reverse_move()
+            move_reversed.post()
+            #vals = self.get_bank_vals(
+            #    'deposited_cancel', journal_id)
+            #move = self.env['account.move'].create(vals)
+            #move.post()
+            self._add_operation('handed', move_reversed)
+
+            
+    @api.multi
     def reject_cancel(self):
         self.ensure_one()
         if self.state in ['rejected']:
