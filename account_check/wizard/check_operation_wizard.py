@@ -154,13 +154,13 @@ class account_check_wizard(models.TransientModel):
             if exp_type == '3':
                 if amount <= 0:
                     raise UserError(_('You can\'t claim with Zero Amount!'))
-                else:
-                    return check.action_create_debit_note(
-                    'reclaimed', partner_type, check.partner_id, account, amount, account_company)
-            else:
-                #return check._add_operation('reclaimed', check)
+                #else:
                 return check.action_create_debit_note(
                 'reclaimed', partner_type, check.partner_id, account, amount, account_company)
+            #else:
+            #    return check._add_operation('reclaimed', check)
+                #return check.action_create_debit_note(
+                #'reclaimed', partner_type, check.partner_id, account, amount, account_company)
 
 
             
