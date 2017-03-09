@@ -623,7 +623,7 @@ class AccountCheck(models.Model):
         }
         if partner_type == 'supplier':
             partner_account_id = partner.property_account_payable_id
-        else
+        else:
             partner_account_id = partner.property_account_receivable_id
         
         
