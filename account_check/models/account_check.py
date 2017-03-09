@@ -613,7 +613,6 @@ class AccountCheck(models.Model):
         ], limit=1)
 
         name = _('Check "%s" rejection') % (self.name)
-            
         inv_line_check_vals = {
             'name': name,
             'account_id': account_company.id,
@@ -621,20 +620,23 @@ class AccountCheck(models.Model):
             'price_unit': self.amount #(self.amount_currency and self.amount_currency or self.amount),
             # 'invoice_id': invoice.id,
         }
+        
         if partner_type == 'supplier':
             partner_account_id = partner.property_account_payable_id
         else:
             partner_account_id = partner.property_account_receivable_id
         
-        
-        inv_line_vals = {
-            # 'product_id': self.product_id.id,
-            'name': 'Gastos Financieros, '+name,
-            'account_id': account.id,
-            'partner_id': partner.id,
-            'price_unit': amount #(self.amount_currency and self.amount_currency or self.amount),
-            # 'invoice_id': invoice.id,
-        }
+        if account == None or amount <= 0:
+            inv_line_vals = {
+                 # 'product_id': self.product_id.id,
+                'name': 'Gastos Financieros, '+name,
+                'account_id': account.id,
+                'partner_id': partner.id,
+                'price_unit': amount #(self.amount_currency and self.amount_currency or self.amount),
+                # 'invoice_id': invoice.id,
+            }
+        else:
+            inv_line_vals = {}
 
         inv_vals = {
             # this is the reference that goes on account.move.line of debt line
