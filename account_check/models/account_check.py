@@ -597,11 +597,12 @@ class AccountCheck(models.Model):
     def action_create_debit_note(self, operation, partner_type, partner, account, amount, account_company=None):
         self.ensure_one()
 
-        if partner_type == 'supplier':
-            invoice_type = 'in_invoice'
-            journal_type = 'purchase'
-            view_id = self.env.ref('account.invoice_supplier_form').id
-        else:
+        #if partner_type == 'supplier':
+        #    invoice_type = 'in_invoice'
+        #    journal_type = 'purchase'
+        #    view_id = self.env.ref('account.invoice_supplier_form').id
+        #else:
+        if True:
             invoice_type = 'out_invoice'
             journal_type = 'sale'
             view_id = self.env.ref('account.invoice_form').id
@@ -620,6 +621,11 @@ class AccountCheck(models.Model):
             'price_unit': self.amount #(self.amount_currency and self.amount_currency or self.amount),
             # 'invoice_id': invoice.id,
         }
+        if partner_type == 'supplier':
+            partner_account_id = partner.property_account_payable_id
+        else
+            partner_account_id = partner.property_account_receivable_id
+        
         
         inv_line_vals = {
             # 'product_id': self.product_id.id,
@@ -639,7 +645,7 @@ class AccountCheck(models.Model):
             # 'date_invoice': self.date_invoice,
             'origin': _('Check nbr (id): %s (%s)') % (self.name, self.id),
             'journal_id': journal.id,
-            'account_id': partner.property_account_receivable_id.id, #journal.default_debit_account_id.id,
+            'account_id': partner_account_id, #journal.default_debit_account_id.id,
             # this is done on muticompany fix
             # 'company_id': journal.company_id.id,
             'partner_id': partner.id,
