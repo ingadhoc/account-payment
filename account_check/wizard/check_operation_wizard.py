@@ -158,7 +158,9 @@ class account_check_wizard(models.TransientModel):
                     return check.action_create_debit_note(
                     'reclaimed', partner_type, check.partner_id, account, amount, account_company)
             else:
-                return check._add_operation('reclaimed', check)
+                #return check._add_operation('reclaimed', check)
+                return check.action_create_debit_note(
+                'reclaimed', partner_type, check.partner_id, account, amount, account_company)
 
 
             
