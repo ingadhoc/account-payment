@@ -625,7 +625,8 @@ class AccountCheck(models.Model):
             partner_account_id = partner.property_account_payable_id
         else:
             partner_account_id = partner.property_account_receivable_id
-        
+            
+        if True:
             inv_line_vals = {
                  # 'product_id': self.product_id.id,
                 'name': 'Gastos Financieros, '+name,
