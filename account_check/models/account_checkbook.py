@@ -68,9 +68,16 @@ class AccountCheckbook(models.Model):
     state = fields.Selection(
         [('draft', 'Draft'), ('active', 'In Use'), ('used', 'Used')],
         string='State',
-        readonly=True,
+        # readonly=True,
         default='draft',
         copy=False
+    )
+    block_manual_number = fields.Boolean(
+        readonly=True,
+        default=True,
+        string='Block manual number?',
+        states={'draft': [('readonly', False)]},
+        help='Block user to enter manually another number than the suggested'
     )
 
     @api.model

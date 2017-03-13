@@ -10,6 +10,7 @@
                 <form>
                     <field name="check_type" invisible="1"/>
                     <field name="check_subtype" invisible="1"/>
+                    <field name="checkbook_block_manual_number" invisible="1"/>
                 </form>
 <!--                 <field name="state" position="after">
                     <field name="check_state" widget="statusbar" statusbar_visible="holding,deposited" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])]}"/>
@@ -45,8 +46,11 @@
                         <group name="check_data" states='draft'>
                             <newline/>
                             <field name="checkbook_id" attrs="{'invisible': [('payment_method_code', 'not in', ['issue_check'])], 'required': [('payment_method_code', 'in', ['issue_check'])]}" domain="[('journal_id', '=', journal_id)]"/>
-                            <field name="check_number" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])],  'readonly': ['|', ('state', '!=', 'draft'), ('payment_method_code', '=', 'issue_check')]}"/>
-                            <field name="check_name" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])], 'required': [('payment_method_code', 'in', ['received_third_check'])]}"/>
+                            <!-- we show this field if check cant be set manually -->
+                            <field name="check_number_readonly" attrs="{'invisible': [('checkbook_block_manual_number', '!=', True)]}"/>
+                            <field name="check_number" attrs="{'invisible': ['|', ('checkbook_block_manual_number', '=', True), ('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])],  'readonly': [('state', '!=', 'draft')]}"/>
+                            <!-- 'readonly': ['|', ('state', '!=', 'draft'), ('payment_method_code', '=', 'issue_check')] -->
+                            <field name="check_name" attrs="{'invisible': ['|', ('checkbook_block_manual_number', '=', True), ('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}"/>
                             <field name="check_issue_date" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}"/>
                             <field name="check_payment_date" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('check_subtype', '=', 'deferred')]}"/>
                             <field name="check_bank_id" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check'])], 'required': [('payment_method_code', 'in', ['received_third_check'])]}"/>

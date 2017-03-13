@@ -137,6 +137,13 @@ class AccountPayment(models.Model):
         compute='_compute_check_type',
         # this fields is to help with code and view
     )
+    checkbook_block_manual_number = fields.Boolean(
+        related='checkbook_id.block_manual_number',
+    )
+    check_number_readonly = fields.Integer(
+        related='check_number',
+        readonly=True,
+    )
 
     @api.multi
     @api.depends('payment_method_code')
@@ -161,7 +168,7 @@ class AccountPayment(models.Model):
 
     # TODo activar
     @api.one
-    @api.onchange('check_number', 'checkbook_id')
+    @api.onchange('check_number')
     def change_check_number(self):
         # TODO make default padding a parameter
         if self.payment_method_code in ['received_third_check']:
@@ -176,6 +183,15 @@ class AccountPayment(models.Model):
                 check_name = ('%%0%sd' % padding % self.check_number)
                 # communication = (
                 #     '%%0%sd' % padding % self.check_number)
+            self.check_name = check_name
+        elif self.payment_method_code in ['issue_check']:
+            if not self.check_number:
+                check_name = False
+            else:
+                sequence = self.checkbook_id.sequence_id
+                if self.check_number != sequence.number_next_actual:
+                    sequence.write({'number_next_actual': self.check_number})
+                check_name = self.checkbook_id.sequence_id.next_by_id()
             self.check_name = check_name
 
     @api.onchange('check_issue_date', 'check_payment_date')
@@ -206,6 +222,9 @@ class AccountPayment(models.Model):
                 ('journal_id', '=', self.journal_id.id)],
                 limit=1)
             self.checkbook_id = checkbook
+        elif self.checkbook_id:
+            # TODO ver si interesa implementar volver atras numeracion
+            self.checkbook_id = False
 
     @api.onchange('checkbook_id')
     def onchange_checkbook(self):
@@ -216,17 +235,18 @@ class AccountPayment(models.Model):
 # post methods
     @api.model
     def create(self, vals):
-        issue_checks = self.env.ref(
-            'account_check.account_payment_method_issue_check')
-        if vals['payment_method_id'] == issue_checks.id and vals.get(
-                'checkbook_id'):
-            checkbook = self.env['account.checkbook'].browse(
-                vals['checkbook_id'])
-            vals.update({
-                # beacause number was readonly we write it here
-                'check_number': checkbook.next_number,
-                'check_name': checkbook.sequence_id.next_by_id(),
-            })
+        # TODO borrar, ahora lo implementamos en el onchange
+        # issue_checks = self.env.ref(
+        #     'account_check.account_payment_method_issue_check')
+        # if vals['payment_method_id'] == issue_checks.id and vals.get(
+        #         'checkbook_id'):
+        #     checkbook = self.env['account.checkbook'].browse(
+        #         vals['checkbook_id'])
+        #     vals.update({
+        #         # beacause number was readonly we write it here
+        #         'check_number': checkbook.next_number,
+        #         'check_name': checkbook.sequence_id.next_by_id(),
+        #     })
         return super(AccountPayment, self.sudo()).create(vals)
 
     @api.multi
