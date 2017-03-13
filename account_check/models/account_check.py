@@ -37,7 +37,7 @@ class AccountCheckOperation(models.Model):
         # usado para hacer transferencias internas, es lo mismo que delivered
         # (endosado) pero no queremos confundir con terminos, a la larga lo
         # volvemos a poner en holding
-        ('transfered', 'Transfered'),
+        ('transfered', 'Transfer'),
         ('handed', 'Hand'),
         ('withdrawed', 'Withdrawal'),
         # from checks
