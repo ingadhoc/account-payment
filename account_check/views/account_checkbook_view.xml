@@ -6,10 +6,11 @@
             <field name="name">account.checkbook.tree</field>
             <field name="model">account.checkbook</field>
             <field name="arch" type="xml">
-                <tree string="Checkbooks" colors="blue:state == 'draft';black:state in ('active');red:state == 'hrejected';gray:state == 'used'">
+                <tree string="Checkbooks" colors="blue:state == 'draft';black:state in ('active');red:state == 'hrejected';gray:state == 'used'" editable="bottom">
                     <field name="name"/>
                     <field name="next_number"/>
                     <field name="range_to"/>
+                    <field name="block_manual_number"/>
                     <!-- <field name="debit_journal_id"/> -->
                     <!-- <field name="company_id" groups="base.group_multi_company"/> -->
                     <field name="state"/>
@@ -31,6 +32,7 @@
                             <field name="issue_check_subtype"/>
                             <field name="sequence_id"/>
                             <field name="range_to"/>
+                            <field name="block_manual_number"/>
                                 <!-- <field name="debit_journal_id" domain="[('company_id', '=', company_id),('type', '=', 'bank')]" context="{'default_company_id': company_id, 'default_type': 'bank'}"/> -->
                                 <!-- <field name="company_id" groups="base.group_multi_company"/> -->
                         </group>

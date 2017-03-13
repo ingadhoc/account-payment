@@ -354,9 +354,9 @@ class AccountCheck(models.Model):
                 same_checks -= self
                 if same_checks:
                     raise ValidationError(_(
-                        'Check Number must be unique per Checkbook!\n'
+                        'Check Number (%s) must be unique per Checkbook!\n'
                         '* Check ids: %s') % (
-                        same_checks.ids))
+                        rec.name, same_checks.ids))
             elif self.type == 'third_check':
                 same_checks = self.search([
                     ('bank_id', '=', rec.bank_id.id),
@@ -367,9 +367,9 @@ class AccountCheck(models.Model):
                 same_checks -= self
                 if same_checks:
                     raise ValidationError(_(
-                        'Check Number must be unique per Owner and Bank!\n'
-                        '* Check ids: %s') % (
-                        same_checks.ids))
+                        'Check Number (%s) must be unique per Owner and Bank!'
+                        '\n* Check ids: %s') % (
+                        rec.name, same_checks.ids))
         return True
 
     @api.multi
