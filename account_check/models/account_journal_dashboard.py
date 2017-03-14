@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from openerp import models, api
 from openerp.tools.misc import formatLang
+from ast import literal_eval
 
 
 class account_journal(models.Model):
@@ -43,3 +44,19 @@ class account_journal(models.Model):
                 self.env, sum(holding_checks.mapped('amount')),
                 currency_obj=self.currency_id or self.company_id.currency_id),
         )
+
+    @api.multi
+    def open_action_checks(self):
+        check_type = self.env.context.get('check_type', False)
+        if check_type == 'third_check':
+            action_name = 'account_check.action_third_check'
+        elif check_type == 'issue_check':
+            action_name = 'account_check.action_issue_check'
+        else:
+            return False
+        actions = self.env.ref(action_name)
+        action_read = actions.read()[0]
+        context = literal_eval(action_read['context'])
+        context['search_default_journal_id'] = self.id
+        action_read['context'] = context
+        return action_read
