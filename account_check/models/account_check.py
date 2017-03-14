@@ -597,12 +597,12 @@ class AccountCheck(models.Model):
     def action_create_debit_note(self, operation, partner_type, partner, account, amount, account_company=None):
         self.ensure_one()
 
-        #if partner_type == 'supplier':
-        #    invoice_type = 'in_invoice'
-        #    journal_type = 'purchase'
-        #    view_id = self.env.ref('account.invoice_supplier_form').id
-        #else:
-        if True:
+        if partner_type == 'supplier':
+            invoice_type = 'in_invoice'
+            journal_type = 'purchase'
+            view_id = self.env.ref('account.invoice_supplier_form').id
+        else:
+        #if True:
             invoice_type = 'out_invoice'
             journal_type = 'sale'
             view_id = self.env.ref('account.invoice_form').id
