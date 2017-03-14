@@ -104,6 +104,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
         line_values = invoice_line._convert_to_write(invoice_line._cache)
         line_values['price_unit'] = self.amount
         invoice.write({'invoice_line_ids': [(0, 0, line_values)]})
+        invoice.compute_taxes()
         invoice.signal_workflow('invoice_open')
         self.payment_group_id.to_pay_move_line_ids += (
             invoice.open_move_line_ids)
