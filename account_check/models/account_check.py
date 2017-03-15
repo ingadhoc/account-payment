@@ -655,7 +655,7 @@ class AccountCheck(models.Model):
             # this is done on muticompany fix
             # 'company_id': journal.company_id.id,
             'partner_id': partner.id,
-            'journal_document_type_id': self.env['account.journal.document.type'].search([('document_type_id.internal_type','=', 'debit_note')], limit=1),
+            'journal_document_type_id': self.env['account.journal.document.type'].search([('document_type_id.internal_type','=', 'debit_note')], limit=1).id,
             'type': invoice_type,
             'invoice_line_ids': lines,
 
