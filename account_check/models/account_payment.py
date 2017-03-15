@@ -3,8 +3,9 @@
 # For copyright and license notices, see __openerp__.py file in module root
 # directory
 ##############################################################################
-from openerp import fields, models, _, api
-from openerp.exceptions import UserError
+from odoo import fields, models, _, api
+from odoo.exceptions import UserError
+import re
 import logging
 # import openerp.addons.decimal_precision as dp
 _logger = logging.getLogger(__name__)
@@ -158,24 +159,21 @@ class AccountPayment(models.Model):
         if self.payment_method_code == 'delivered_third_check':
             self.amount = sum(self.check_ids.mapped('amount'))
 
-    # TODo activar
-    @api.one
-    @api.onchange('check_number', 'checkbook_id')
+    # TODO activar
+    #@api.one
+    @api.onchange('check_name', 'checkbook_id')
     def change_check_number(self):
-        # TODO make default padding a parameter
+        self.ensure_one()
         if self.payment_method_code in ['received_third_check']:
-            if not self.check_number:
-                check_name = False
+            check_name = ''.join(map(str, re.findall(r'\d+',self.check_name)))
+            if check_name == '':
+                self.check_name = ''
             else:
-                # TODO make optional
-                padding = 8
-                if len(str(self.check_number)) > padding:
-                    padding = len(str(self.check_number))
-                # communication = _('Check nbr %s') % (
-                check_name = ('%%0%sd' % padding % self.check_number)
-                # communication = (
-                #     '%%0%sd' % padding % self.check_number)
-            self.check_name = check_name
+                self.check_name = check_name
+                if self.check_name == '0':
+                    self.check_name = '' 
+                else:
+                    self.check_number = int(check_name)            
 
     @api.onchange('check_issue_date', 'check_payment_date')
     def onchange_date(self):
@@ -187,47 +185,78 @@ class AccountPayment(models.Model):
                 _('Check Payment Date must be greater than Issue Date'))
 
     #@api.one
-    #@api.onchange('partner_id')
-    #def onchange_partner_check(self):
-    #    commercial_partner = self.partner_id.commercial_partner_id
-    #    self.check_bank_id = (
-    #        commercial_partner.bank_ids and
-    #        commercial_partner.bank_ids[0].bank_id.id or False)
-    #    self.check_owner_name = commercial_partner.name
-    #    # TODO use document number instead of vat?
-    #    self.check_owner_vat = commercial_partner.vat
+    @api.onchange('partner_id')
+    def onchange_partner_check(self):
+        self.ensure_one()
+        commercial_partner = self.partner_id.commercial_partner_id
+        self.check_bank_id = (
+            commercial_partner.bank_ids and
+            commercial_partner.bank_ids[0].bank_id.id or False)
+        self.check_owner_name = commercial_partner.name
+        # TODO use document number instead of vat?
+        self.check_owner_vat = commercial_partner.main_id_number
 
-    ## @api.onchange('payment_method_code')
-    ## def _onchange_payment_method_code(self):
-    ##     if self.payment_method_code == 'issue_check':
-    ##         checkbook = self.env['account.checkbook'].search([
-    ##             ('state', '=', 'active'),
-    ##             ('journal_id', '=', self.journal_id.id)],
-    ##             limit=1)
-    ##         self.checkbook_id = checkbook
-
+    @api.onchange('payment_method_code')
+    def _onchange_payment_method_code(self):
+        if self.payment_method_code == 'issue_check':
+            checkbook = self.env['account.checkbook'].search([
+                 ('state', '=', 'active'),
+                 ('journal_id', '=', self.journal_id.id)],
+                 limit=1)
+            self.checkbook_id = checkbook
+            
+    #@api.onchange('journal_id')
     @api.onchange('checkbook_id')
     def onchange_checkbook(self):
         if self.checkbook_id:
-            self.check_number = self.checkbook_id.next_number
+            self.check_number = self.checkbook_id.sequence_id.number_next
+            
+    def valid_field_third_checks(self, vals):
+        third_checks = self.env.ref(
+            'account_check.account_payment_method_received_third_check')
+        
+        msg=[]
+                
+        if vals['payment_method_id'] == third_checks.id:
+            if vals['check_number'] <= 0:
+                msg.append("Check Number")
+            '''if vals['amount'] <= 0:
+                msg.append("Amount")
+             if vals['check_issue_date']:
+                msg.append("Issue Date")
+            if vals['payment_date']:
+                msg.append("Payment Date")
+            if vals['check_bank_id']:
+                msg.append("Bank")
+            if vals['check_owner_vat']:
+                msg.append("Owner VAT")   
+            if vals['check_owner_name']:
+                msg.append("Owner Name") '''
+                
+                
+            if len(msg) > 0:
+                raise UserError(_('Por favor completar. '+str(msg)))
 
-
-# post methods
-   # @api.model
-   # def create(self, vals):
-   #     issue_checks = self.env.ref(
-   #         'account_check.account_payment_method_issue_check')
-   #     if vals['payment_method_id'] == issue_checks.id and vals.get(
-   #             'checkbook_id'):
-   #         checkbook = self.env['account.checkbook'].browse(
-   #             vals['checkbook_id'])
-   #         vals.update({
-   #             # beacause number was readonly we write it here
-   #             'check_number': checkbook.next_number,
-   #             'check_name': checkbook.sequence_id.next_by_id(),
-   #         })
-   #     return super(AccountPayment, self.sudo()).create(vals)
-
+# CRUD methods
+# Create
+    @api.model
+    def create(self, vals):
+        #raise Warning('Something happened. '+str(self.check_number))
+        issue_checks = self.env.ref(
+            'account_check.account_payment_method_issue_check')
+        if vals['payment_method_id'] == issue_checks.id and vals.get(
+                'checkbook_id'):
+            checkbook = self.env['account.checkbook'].browse(
+                vals['checkbook_id'])
+            vals.update({
+                # beacause number was readonly we write it here
+                'check_number': checkbook.sequence_id.number_next,
+                'check_name': checkbook.sequence_id.next_by_id(),
+            })
+            
+        self.valid_field_third_checks(vals)    
+        return super(AccountPayment, self.sudo()).create(vals)
+        
     @api.multi
     def cancel(self):
         res = super(AccountPayment, self).cancel()
@@ -249,6 +278,7 @@ class AccountPayment(models.Model):
             'bank_id': bank.id,
             'owner_name': self.check_owner_name,
             'owner_vat': self.check_owner_vat,
+            'partner_id': self.partner_id.id,
             'number': self.check_number,
             'name': self.check_name,
             'checkbook_id': self.checkbook_id.id,
@@ -284,7 +314,7 @@ class AccountPayment(models.Model):
         return account
 
     @api.multi
-    def do_checks_operations(self, vals=None, cancel=False):
+    def do_checks_operations(self, vals={}, cancel=False):
         """
         Check attached .ods file on this module to understand checks workflows
         This method is called from:
@@ -368,7 +398,7 @@ class AccountPayment(models.Model):
 
             _logger.info('Hand Check')
             self.create_check('issue_check', operation, self.check_bank_id)
-            vals['date_maturity'] = self.check_payment_date
+            ## vals['date_maturity'] = self.check_payment_date
             # if check is deferred, change account
             if self.check_subtype == 'deferred':
                 vals['account_id'] = self.company_id._get_check_account(
@@ -405,10 +435,11 @@ class AccountPayment(models.Model):
                     rec.destination_journal_id.type)))
         return vals
 
-    # @api.multi
-    # def post(self):
-    #     self.do_checks_operations()
-    #     return super(AccountPayment, self).post()
+    @api.multi
+    def post(self):
+        for rec in self:
+            rec.do_checks_operations()
+        return super(AccountPayment, self).post()
 
     ##def _get_liquidity_move_line_vals(self, amount):
     ##    vals = super(AccountPayment, self)._get_liquidity_move_line_vals(

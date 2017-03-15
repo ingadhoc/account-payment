@@ -117,7 +117,7 @@ class AccountPaymentGroup(models.Model):
     selected_debt = fields.Monetary(
         # string='To Pay lines Amount',
         string='Selected Debt',
-        #compute='_compute_selected_debt',
+        compute='_compute_selected_debt',
     )
     # this field is to be used by others
     selected_debt_untaxed = fields.Monetary(
@@ -387,14 +387,14 @@ class AccountPaymentGroup(models.Model):
         selected_debt = 0.0
         selected_debt_untaxed = 0.0
         for line in self.to_pay_move_line_ids:
-            selected_finacial_debt += line.financial_amount_residual
+            #selected_finacial_debt += line.financial_amount_residual
             selected_debt += line.amount_residual
             # factor for total_untaxed
             invoice = line.invoice_id
             factor = invoice and invoice._get_tax_factor() or 1.0
             selected_debt_untaxed += line.amount_residual * factor
         sign = self.partner_type == 'supplier' and -1.0 or 1.0
-        self.selected_finacial_debt = selected_finacial_debt * sign
+        #self.selected_finacial_debt = selected_finacial_debt * sign
         self.selected_debt = selected_debt * sign
         self.selected_debt_untaxed = selected_debt_untaxed * sign
 

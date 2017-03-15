@@ -52,6 +52,18 @@ class AccountCheckbook(models.Model):
         context={'default_type': 'bank'},
         states={'draft': [('readonly', False)]}
     )
+    
+    debit_journal_id = fields.Many2one(
+        'account.journal', 'Debit Journal',
+        help='Journal where it is going to be used as Bank',
+        #readonly=True,
+        #required=True,
+        domain=[('type', '=', 'bank')],
+        ondelete='cascade',
+        context={'default_type': 'bank'},
+        states={'draft': [('readonly', False)]}
+    )
+    
     range_to = fields.Integer(
         'To Number',
         readonly=True,
@@ -94,15 +106,17 @@ class AccountCheckbook(models.Model):
 
     @api.multi
     def _compute_name(self):
+        name = ""
         for rec in self:
+            if rec.debit_journal_id:
+                name = str(rec.debit_journal_id.name)
             if rec.issue_check_subtype == 'deferred':
-                name = _('Deferred Checks')
+                name += _(' Deferred Checks')
             else:
-                name = _('Currents Checks')
+                name += _(' Currents Checks')
             if rec.range_to:
                 name += _(' up to %s') % rec.range_to
             rec.name = name
-
     @api.one
     def unlink(self):
         if self.issue_check_ids:
