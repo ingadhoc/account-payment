@@ -517,9 +517,9 @@ class AccountCheck(models.Model):
             move_reversed = operation.origin._reverse_move(fields.Date.today())
             move_reversed.post()
             if self.type == 'third_check':
-                self._add_operation('holding', move)
+                self._add_operation('holding', move_reversed)
             elif self.type == 'issue_check':
-                self._add_operation('handed', move)
+                self._add_operation('handed', move_reversed)
                 #self._add_operation('deposited', move)
             
 
