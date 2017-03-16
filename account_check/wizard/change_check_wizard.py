@@ -65,13 +65,17 @@ class account_change_check_wizard(models.TransientModel):
         'Owner Name',
     )
     @api.one
-    @api.constrains('number','checkbook_id')
+    @api.depends('checkbook_id','number'):
+        if self.original_check_id.type == 'issue_check':
+            self.number = self.checkbook_id.sequence_id.number_next_actual
+        else:
+            pass
+    
+    @api.one
+    @api.constrains('number','checkbook_id', 'original_check_id')
     def _contraint_number(self):
             if self.number > 0:
-                if self.original_check_id.type == 'issue_check':
-                    self.number = self.checkbook_id.sequence_id.number_next_actual
-                else:
-                    pass
+                pass
             else:
                 raise ValidationError(
                     _('Check Number Can\'t be Zero !'))                
