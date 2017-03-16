@@ -360,7 +360,7 @@ class AccountCheck(models.Model):
                     ('type', '=', rec.type),
                     ('number', '=', rec.number),
                 ])
-                #same_checks -= self
+                same_checks -= self
                 if same_checks:
                     raise ValidationError(_(
                         'Check Number must be unique per Owner and Bank!\n'
