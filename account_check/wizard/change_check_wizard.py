@@ -64,7 +64,7 @@ class account_change_check_wizard(models.TransientModel):
         'Owner Name',
     )
 
-    @api.depends('checkbook_id')
+    @api.depends('number','checkbook_id')
     def _compute_number(self):
         for record in self:
             number = record.number
