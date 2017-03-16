@@ -116,6 +116,9 @@ class account_change_check_wizard(models.TransientModel):
         #new_check.write({
         #    'journal_id': self.journal_id.id,
         #})
-        new_check._add_operation('holding', self.original_check_id)
+        if self.original_check_id.type == 'issue_check':
+            new_check._add_operation('handed', self.original_check_id)
+        else:
+            new_check._add_operation('holding', self.original_check_id)
             
         return new_check
