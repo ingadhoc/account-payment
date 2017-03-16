@@ -29,8 +29,9 @@ class account_change_check_wizard(models.TransientModel):
     number = fields.Integer(
         'Number',
         required=True,
-        readonly=True,
-        related='checkbook_id.sequence_id.number_next_actual',
+        compute='_compute_number',
+        #readonly=True,
+        #related='checkbook_id.sequence_id.number_next_actual',
     )
     issue_date = fields.Date(
         'Issue Date',
@@ -63,6 +64,11 @@ class account_change_check_wizard(models.TransientModel):
         'Owner Name',
     )
 
+    @api.depends('checkbook_id')
+    def _compute_number(self):
+        if original_check_id.type == 'issue_check':
+            for record in self:
+                record.number = record.checkbook_id.sequence_id.number_next_actual
         
     @api.onchange('original_check_id')
     def change_original_check(self):
