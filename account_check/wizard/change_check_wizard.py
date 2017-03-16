@@ -31,7 +31,6 @@ class account_change_check_wizard(models.TransientModel):
     number = fields.Integer(
         'Number',
         required=True,
-        compute='_compute_number',
         #readonly=True,
         #related='checkbook_id.sequence_id.number_next_actual',
     )
