@@ -352,7 +352,7 @@ class AccountPayment(models.Model):
             # si un solo inbound method y es received third check
             # entonces consideramos que se esta moviendo el cheque de un diario
             # al otro
-            if len(inbound_method) and (
+            if len(inbound_method) == 1 and (
                     inbound_method.code == 'received_third_check'):
                 if cancel:
                     _logger.info('Cancel Transfer Check')
