@@ -345,14 +345,15 @@ class AccountCheck(models.Model):
                 same_checks = self.search([
                     ('checkbook_id', '=', rec.checkbook_id.id),
                     ('type', '=', rec.type),
-                    ('number', '=', rec.name),
+                    ('name', '=', rec.name),
                 ])
+                ·
                 #same_checks -= self
-                if same_checks:
+                if len(same_checks) > 1:
                     raise ValidationError(_(
                         'Check Number must be unique per Checkbook!\n'
-                        '* Check ids: %s') % (
-                        same_checks.name))
+                        '* Checks: %s on Checkbook %s') % (
+                        list(same_checks.name), same_checks[0].checkbook_id.name))
             elif self.type == 'third_check':
                 same_checks = self.search([
                     ('bank_id', '=', rec.bank_id.id),
