@@ -48,6 +48,7 @@ class account_change_check_wizard(models.TransientModel):
     checkbook_id = fields.Many2one(
         'account.checkbook',
         'Checkbook',
+        compute='_compute_number',
         ondelete='cascade',
     )
     issue_check_subtype = fields.Selection(
@@ -65,7 +66,8 @@ class account_change_check_wizard(models.TransientModel):
         'Owner Name',
     )
     @api.one
-    @api.depends('checkbook_id','number'):
+    @api.depends('checkbook_id','number')
+    def _compute_number(self):
         if self.original_check_id.type == 'issue_check':
             self.number = self.checkbook_id.sequence_id.number_next_actual
         else:
