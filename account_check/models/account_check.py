@@ -514,12 +514,13 @@ class AccountCheck(models.Model):
         self.ensure_one()
         if self.state in ['rejected']:
             operation = self._get_operation('rejected')
+            last_operation = self._get_last_operation()
             move_reversed = operation.origin._reverse_move(fields.Date.today())
             move_reversed.post()
-            if self.type == 'third_check':
-                self._add_operation('holding', move_reversed)
-            elif self.type == 'issue_check':
-                self._add_operation('handed', move_reversed)
+            #if self.type == 'third_check':
+            self._add_operation(last_operation.state, move_reversed)
+            #elif self.type == 'issue_check':
+            #    self._add_operation(last_operation.state, move_reversed)
                 #self._add_operation('deposited', move)
             
 
@@ -563,8 +564,8 @@ class AccountCheck(models.Model):
         return operation
 
     @api.multi
-    def _get_last_operation(self): # Get last Operation
-        return self.operation_ids[-2]
+    def _get_last_operation(level=-2): # Get last Operation
+        return self.operation_ids[level]
 
     @api.multi
     def reject(self):
