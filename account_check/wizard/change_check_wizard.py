@@ -70,7 +70,7 @@ class account_change_check_wizard(models.TransientModel):
             if record.original_check_id.type == 'issue_check':
                 record.number = record.checkbook_id.sequence_id.number_next_actual
             else:
-                
+                pass
         
     @api.onchange('original_check_id')
     def change_original_check(self):
