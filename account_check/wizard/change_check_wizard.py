@@ -68,7 +68,7 @@ class account_change_check_wizard(models.TransientModel):
     @api.one
     @api.constrains('number','checkbook_id')
     def _contraint_number(self):
-            if self.number != 0:
+            if self.number < 0:
                 if self.original_check_id.type == 'issue_check':
                     self.number = self.checkbook_id.sequence_id.number_next_actual
                 else:
