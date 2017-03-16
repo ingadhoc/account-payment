@@ -168,10 +168,10 @@ class account_check_wizard(models.TransientModel):
     @api.multi
     def bank_rejected(self, check, date):
         self.ensure_one()
-        if check.state in ['deposited']:
-            operation = check._get_operation('deposited')
-            journal_id = operation.origin.journal_id
-        elif check.state in ['deposited', 'delivered']:
+        #if check.state in ['deposited']:
+        operation = check._get_operation('deposited')
+        journal_id = operation.origin.journal_id
+        if check.state in ['deposited', 'delivered']:
             vals = check.get_bank_vals(
                 'bank_reject', None, date)
             move = self.env['account.move'].create(vals)
