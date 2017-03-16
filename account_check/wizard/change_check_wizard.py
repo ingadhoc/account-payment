@@ -4,6 +4,8 @@
 # directory
 ##############################################################################
 from odoo import models, fields, api
+from odoo.exceptions import ValidationError
+
 
 
 class account_change_check_wizard(models.TransientModel):
@@ -63,15 +65,19 @@ class account_change_check_wizard(models.TransientModel):
     owner_name = fields.Char(
         'Owner Name',
     )
-
-    @api.depends('number','checkbook_id')
-    def _compute_number(self):
-        for record in self:
-            number = record.number
-            if record.original_check_id.type == 'issue_check':
-                record.number = record.checkbook_id.sequence_id.number_next_actual
+    @api.one
+    @api.constrains('number','checkbook_id')
+    def _contraint_number(self):
+            if self.number != 0:
+                if self.original_check_id.type == 'issue_check':
+                    self.number = self.checkbook_id.sequence_id.number_next_actual
+                else:
+                    pass
             else:
-                record.number = number
+                raise ValidationError(
+                    _('Check Number Can\'t be Zero !'))                
+                
+
         
     @api.onchange('original_check_id')
     def change_original_check(self):
