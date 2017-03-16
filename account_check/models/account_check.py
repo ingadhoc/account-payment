@@ -564,7 +564,7 @@ class AccountCheck(models.Model):
         return operation
 
     @api.multi
-    def _get_last_operation(level=-2): # Get last Operation
+    def _get_last_operation(self, level=-2): # Get last Operation
         return self.operation_ids[level]
 
     @api.multi
