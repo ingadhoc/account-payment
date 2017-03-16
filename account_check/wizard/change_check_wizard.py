@@ -48,7 +48,6 @@ class account_change_check_wizard(models.TransientModel):
     checkbook_id = fields.Many2one(
         'account.checkbook',
         'Checkbook',
-        compute='_compute_number',
         ondelete='cascade',
     )
     issue_check_subtype = fields.Selection(
@@ -65,9 +64,9 @@ class account_change_check_wizard(models.TransientModel):
     owner_name = fields.Char(
         'Owner Name',
     )
-    @api.one
-    @api.depends('checkbook_id','number')
-    def _compute_number(self):
+
+    @api.onchange('checkbook_id')
+    def compute_number(self):
         if self.original_check_id.type == 'issue_check':
             self.number = self.checkbook_id.sequence_id.number_next_actual
         else:
@@ -76,10 +75,10 @@ class account_change_check_wizard(models.TransientModel):
     @api.one
     @api.constrains('number','checkbook_id', 'original_check_id')
     def _contraint_number(self):
-            if self.number > 0:
-                pass
-            else:
-                raise ValidationError(
+        if self.number > 0:
+            pass
+        else:
+            raise ValidationError(
                     _('Check Number Can\'t be Zero !'))                
                 
 
