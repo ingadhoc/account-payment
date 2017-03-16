@@ -349,7 +349,8 @@ class AccountPaymentGroup(models.Model):
     # )
     # def set_selected_debt(self):
 
-
+    @api.one
+    @api.depends('to_pay_move_line_ids.amount_residual')
     def _compute_selected_debt(self):
         # # we dont make it computed because we want to store value.
         # # TODO check if odoo implement this kind of hybrid field

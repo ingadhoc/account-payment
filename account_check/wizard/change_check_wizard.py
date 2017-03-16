@@ -3,7 +3,9 @@
 # For copyright and license notices, see __openerp__.py file in module root
 # directory
 ##############################################################################
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError
+
 
 
 class account_change_check_wizard(models.TransientModel):
@@ -29,6 +31,8 @@ class account_change_check_wizard(models.TransientModel):
     number = fields.Integer(
         'Number',
         required=True,
+        #readonly=True,
+        #related='checkbook_id.sequence_id.number_next_actual',
     )
     issue_date = fields.Date(
         'Issue Date',
@@ -61,32 +65,60 @@ class account_change_check_wizard(models.TransientModel):
         'Owner Name',
     )
 
+    @api.onchange('checkbook_id')
+    def compute_number(self):
+        if self.original_check_id.type == 'issue_check':
+            self.number = self.checkbook_id.sequence_id.number_next_actual
+        else:
+            pass
+    
+    @api.one
+    @api.constrains('number','checkbook_id', 'original_check_id')
+    def _contraint_number(self):
+        if self.number > 0:
+            pass
+        else:
+            raise ValidationError(
+                    _('Check Number Can\'t be Zero !'))                
+                
+
+        
     @api.onchange('original_check_id')
     def change_original_check(self):
         self.checkbook_id = self.original_check_id.checkbook_id
         self.owner_vat = self.original_check_id.owner_vat
         self.owner_name = self.original_check_id.owner_name
-        self.bank_id = self.original_check_id.bank_id
+        #self.bank_id = self.journal_id.bank_id
 
     @api.multi
     def change(self):
         self.ensure_one()
         vals = {
-            'name':'name1',
+            #'name':'name1',
+            'name': str(self.number),
             'owner_vat': self.owner_vat,
             'owner_name': self.owner_name,
             'checkbook_id': self.checkbook_id.id,
             'payment_date': self.payment_date,
             'issue_date': self.issue_date,
             'number': self.number,
+            'bank_id': self.bank_id.id,
+#            'journal_id': self.journal_id.id,
         }
         new_check = self.original_check_id.sudo().copy(vals)
         self.original_check_id.sudo().write({
-            'name':'name2',
             'replacing_check_id': new_check.id,
             'amount': 0.0,
             'company_currency_amount': 0.0,
         })
-        #self.original_check_id.signal_workflow('change_check')
-        #new_check.signal_workflow('draft_router')
+        
+        self.original_check_id._add_operation('changed', new_check)
+        #new_check.write({
+        #    'journal_id': self.journal_id.id,
+        #})
+        if self.original_check_id.type == 'issue_check':
+            new_check._add_operation('handed', self.original_check_id)
+        else:
+            new_check._add_operation('holding', self.original_check_id)
+            
         return new_check

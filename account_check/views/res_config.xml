@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-
         <record id="view_account_config_settings" model="ir.ui.view">
             <field name="name">account.config.settings.form.inherit</field>
             <field name="model">account.config.settings</field>
@@ -11,16 +10,36 @@
                     <group name="checkaccounts" string="Check Accounts">
                         <label for="id" string="Check Accounts"/>
                         <div>
+                            <group col="1">
+                                <h3>Own Check Accounts Configuration</h3>
+                            <!-- Own -->
                             <div>
-                            <label for="rejected_check_account_id" string="Rejected Check Account"/><field name="rejected_check_account_id"/>
+                                <label for="own_check_rejected_account_id" string="Own Check Rejected Account"/><field name="own_check_rejected_account_id"/>
                             </div>
                             <div>
-                                <label for="deferred_check_account_id" string="Deferred Check Account"/><field name="deferred_check_account_id"/>
+                                <label for="own_check_cancelled_account_id" string="Own Check Cancelled Account"/><field name="own_check_cancelled_account_id"/>
                             </div>
                             <div>
-                                <label for="holding_check_account_id" string="Holding Check Account"/><field name="holding_check_account_id"/>
+                                <label for="deferred_check_account_id" string="Own Deferred Check Account"/><field name="deferred_check_account_id"/>
                             </div>
-                        </div>
+                            </group>
+                            <group col="1">
+                                <h3>Third Party Check Accounts Configuration</h3>
+                            <!-- Third Party -->
+                            <div>
+                                <label for="third_party_checks_cancelled_account_id " string="Third Party Cancelled Check Account"/><field name="third_party_checks_cancelled_account_id"/>
+                            </div>
+                            <div>
+                                <label for="third_party_checks_bounced_endorsed_account_id" string="Third Party Check Bounced from Endorsed Account"/><field name="third_party_checks_bounced_endorsed_account_id"/>
+                            </div>
+                            <div>
+                                <label for="rejected_check_account_id" string="Third Party Rejected Check Account"/><field name="rejected_check_account_id"/>
+                            </div>
+                            <div>
+                                <label for="holding_check_account_id" string="Third Party Holding Check Account"/><field name="holding_check_account_id"/>
+                            </div>
+                            </group>    
+                       </div>
                     </group>
                 </group>
             </field>
