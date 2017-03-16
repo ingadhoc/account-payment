@@ -347,7 +347,6 @@ class AccountCheck(models.Model):
                     ('type', '=', rec.type),
                     ('name', '=', rec.name),
                 ])
-                ·
                 #same_checks -= self
                 if len(same_checks) > 1:
                     raise ValidationError(_(
