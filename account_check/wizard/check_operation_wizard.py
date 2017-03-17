@@ -172,7 +172,7 @@ class account_check_wizard(models.TransientModel):
         try:
             operation = check._get_operation('deposited')
             journal_id = operation.origin.journal_id
-        else:
+        except:
             journal_id = None
         if check.state in ['deposited']:
             vals = check.get_bank_vals(
