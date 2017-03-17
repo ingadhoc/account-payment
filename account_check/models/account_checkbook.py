@@ -3,9 +3,9 @@
 # For copyright and license notices, see __openerp__.py file in module root
 # directory
 ##############################################################################
-from openerp import fields, models, api, _
+from odoo import fields, models, api, _
 import logging
-from openerp.exceptions import ValidationError
+from odoo.exceptions import ValidationError
 _logger = logging.getLogger(__name__)
 
 
@@ -109,7 +109,7 @@ class AccountCheckbook(models.Model):
         name = ""
         for rec in self:
             if rec.debit_journal_id:
-                name = str(rec.debit_journal_id.name)
+                name = rec.debit_journal_id.name
             if rec.issue_check_subtype == 'deferred':
                 name += _(' Deferred Checks')
             else:

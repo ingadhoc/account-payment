@@ -717,6 +717,10 @@ class AccountCheck(models.Model):
             debit_account = self.company_id._get_check_account('rejected')
             name = _('Check "%s" rejected by bank') % (self.name)
             # credit_account_id = vou_journal.default_credit_account_id.id
+        elif action == 'deliver_reject':
+            credit_account = self.company_id._get_check_account('third_party_bounced_endorsed')
+            debit_account = journal.default_debit_account_id
+            name = _('Check "%s" rejected by bank') % (self.name)
         elif action == 'supplier_rejected':
             debit_account = self.company_id._get_check_account('holding')
             credit_account = self.company_id._get_check_account('third_party_bounced_endorsed')
