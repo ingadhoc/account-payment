@@ -169,11 +169,11 @@ class account_check_wizard(models.TransientModel):
     def bank_rejected(self, check, date):
         self.ensure_one()
         #if check.state in ['deposited']:
-        #operation = check._get_operation('deposited')
-        #journal_id = operation.origin.journal_id
+        operation = check._get_operation('deposited')
+        journal_id = operation.origin.journal_id
         if check.state in ['deposited']:
             vals = check.get_bank_vals(
-                'bank_reject', None, date)
+                'bank_reject', journal_id, date)
             move = self.env['account.move'].create(vals)
             move.post()
             check._add_operation('rejected', move)
