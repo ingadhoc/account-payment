@@ -197,8 +197,11 @@ class account_check_wizard(models.TransientModel):
     def supplier_reject(self, check, date):
         self.ensure_one()
         if check.state in ['delivered']:
-            operation = check._get_operation('holding')
-            journal_id = operation.origin.journal_id 
+            try:
+                operation = check._get_operation('holding')
+                journal_id = operation.origin.journal_id
+            except:
+                journal_id = None
             vals = check.get_bank_vals(
                 'supplier_rejected', journal_id, date)
             move = self.env['account.move'].create(vals)
