@@ -13,7 +13,7 @@
                     <group>
                         <group>
                             <field name="checkbook_id" widget="selection" domain="[('journal_id', '=', journal_id), ('state', '=', 'active')]" attrs="{'invisible':[('type','!=','issue_check')], 'required':[('type','=','issue_check')]}"/>
-                            <field name="number"/>
+                            <field name="number" readonly="0"/>
                             <field name="bank_id" attrs="{'invisible': [('type', '!=', 'third_check')], 'required': [('type', '=', 'third_check')]}"/>
                         </group>
                         <group>

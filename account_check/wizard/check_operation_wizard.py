@@ -139,7 +139,7 @@ class account_check_wizard(models.TransientModel):
                 account_company = self.company_id._get_check_account('third_party_cancelled')
             else: 
                 account_company = self.company_id._get_check_account('rejected')
-            partner_type = 'customer'
+            partner_type = 'supplier'
         else:
             #if last_operation == 'returned':
             account_company = self.company_id._get_check_account('own_check_rejected')
@@ -154,11 +154,13 @@ class account_check_wizard(models.TransientModel):
             if exp_type == '3':
                 if amount <= 0:
                     raise UserError(_('You can\'t claim with Zero Amount!'))
-                else:
-                    return check.action_create_debit_note(
-                    'reclaimed', partner_type, check.partner_id, account, amount, account_company)
-            else:
-                return check._add_operation('reclaimed', check)
+                #else:
+            return check.action_create_debit_note(
+                'reclaimed', partner_type, check.partner_id, account, amount, account_company)
+            #else:
+            #    return check._add_operation('reclaimed', check)
+                #return check.action_create_debit_note(
+                #'reclaimed', partner_type, check.partner_id, account, amount, account_company)
 
 
             
@@ -166,12 +168,21 @@ class account_check_wizard(models.TransientModel):
     @api.multi
     def bank_rejected(self, check, date):
         self.ensure_one()
-        if check.state in ['deposited']:
+        #if check.state in ['deposited']:
+        try:
             operation = check._get_operation('deposited')
             journal_id = operation.origin.journal_id
-        elif check.state in ['deposited', 'delivered']:
+        except:
+            journal_id = None
+        if check.state in ['deposited']:
             vals = check.get_bank_vals(
-                'bank_reject', None, date)
+                'bank_reject', journal_id, date)
+            move = self.env['account.move'].create(vals)
+            move.post()
+            check._add_operation('rejected', move)
+        if check.state in ['delivered']:
+            vals = check.get_bank_vals(
+                'deliver_reject', None, date)
             move = self.env['account.move'].create(vals)
             move.post()
             check._add_operation('rejected', move)
@@ -189,8 +200,11 @@ class account_check_wizard(models.TransientModel):
     def supplier_reject(self, check, date):
         self.ensure_one()
         if check.state in ['delivered']:
-            operation = check._get_operation('holding')
-            journal_id = operation.origin.journal_id 
+            try:
+                operation = check._get_operation('holding')
+                journal_id = operation.origin.journal_id
+            except:
+                journal_id = None
             vals = check.get_bank_vals(
                 'supplier_rejected', journal_id, date)
             move = self.env['account.move'].create(vals)

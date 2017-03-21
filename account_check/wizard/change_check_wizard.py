@@ -3,7 +3,9 @@
 # For copyright and license notices, see __openerp__.py file in module root
 # directory
 ##############################################################################
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError
+
 
 
 class account_change_check_wizard(models.TransientModel):
@@ -29,8 +31,8 @@ class account_change_check_wizard(models.TransientModel):
     number = fields.Integer(
         'Number',
         required=True,
-        readonly=True,
-        related='checkbook_id.sequence_id.number_next_actual',
+        #readonly=True,
+        #related='checkbook_id.sequence_id.number_next_actual',
     )
     issue_date = fields.Date(
         'Issue Date',
@@ -62,6 +64,23 @@ class account_change_check_wizard(models.TransientModel):
     owner_name = fields.Char(
         'Owner Name',
     )
+
+    @api.onchange('checkbook_id')
+    def compute_number(self):
+        if self.original_check_id.type == 'issue_check':
+            self.number = self.checkbook_id.sequence_id.number_next_actual
+        else:
+            pass
+    
+    @api.one
+    @api.constrains('number','checkbook_id', 'original_check_id')
+    def _contraint_number(self):
+        if self.number > 0:
+            pass
+        else:
+            raise ValidationError(
+                    _('Check Number Can\'t be Zero !'))                
+                
 
         
     @api.onchange('original_check_id')
@@ -97,6 +116,9 @@ class account_change_check_wizard(models.TransientModel):
         #new_check.write({
         #    'journal_id': self.journal_id.id,
         #})
-        new_check._add_operation('holding', self.original_check_id)
+        if self.original_check_id.type == 'issue_check':
+            new_check._add_operation('handed', self.original_check_id)
+        else:
+            new_check._add_operation('holding', self.original_check_id)
             
         return new_check

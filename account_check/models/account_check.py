@@ -345,14 +345,14 @@ class AccountCheck(models.Model):
                 same_checks = self.search([
                     ('checkbook_id', '=', rec.checkbook_id.id),
                     ('type', '=', rec.type),
-                    ('number', '=', rec.number),
+                    ('name', '=', rec.name),
                 ])
-                same_checks -= self
-                if same_checks:
+                #same_checks -= self
+                if len(same_checks) > 1:
                     raise ValidationError(_(
                         'Check Number must be unique per Checkbook!\n'
-                        '* Check ids: %s') % (
-                        same_checks.ids))
+                        '* Checks: %s on Checkbook %s') % (
+                        list(same_checks.name), same_checks[0].checkbook_id.name))
             elif self.type == 'third_check':
                 same_checks = self.search([
                     ('bank_id', '=', rec.bank_id.id),
@@ -514,16 +514,14 @@ class AccountCheck(models.Model):
         self.ensure_one()
         if self.state in ['rejected']:
             operation = self._get_operation('rejected')
-            journal_id = operation.origin.journal_id
-            vals = self.get_bank_vals(
-                'reject_cancel', journal_id)
-            move = self.env['account.move'].create(vals)
-            move.post()
-            if self.type == 'third_check':
-                self._add_operation('holding', move)
-            elif self.type == 'issue_check':
-                self._add_operation('handed', move)
-            #self._add_operation('deposited', move)
+            last_operation = self._get_last_operation()
+            move_reversed = operation.origin._reverse_move(fields.Date.today())
+            move_reversed.post()
+            #if self.type == 'third_check':
+            self._add_operation(last_operation.operation, move_reversed)
+            #elif self.type == 'issue_check':
+            #    self._add_operation(last_operation.state, move_reversed)
+                #self._add_operation('deposited', move)
             
 
 #    @api.multi
@@ -566,8 +564,8 @@ class AccountCheck(models.Model):
         return operation
 
     @api.multi
-    def _get_last_operation(self): # Get last Operation
-        return self.operation_ids[-2]
+    def _get_last_operation(self, level=-2): # Get last Operation
+        return self.operation_ids[level]
 
     @api.multi
     def reject(self):
@@ -602,6 +600,7 @@ class AccountCheck(models.Model):
             journal_type = 'purchase'
             view_id = self.env.ref('account.invoice_supplier_form').id
         else:
+        #if True:
             invoice_type = 'out_invoice'
             journal_type = 'sale'
             view_id = self.env.ref('account.invoice_form').id
@@ -612,7 +611,6 @@ class AccountCheck(models.Model):
         ], limit=1)
 
         name = _('Check "%s" rejection') % (self.name)
-            
         inv_line_check_vals = {
             'name': name,
             'account_id': account_company.id,
@@ -621,14 +619,26 @@ class AccountCheck(models.Model):
             # 'invoice_id': invoice.id,
         }
         
-        inv_line_vals = {
-            # 'product_id': self.product_id.id,
-            'name': 'Gastos Financieros, '+name,
-            'account_id': account.id,
-            'partner_id': partner.id,
-            'price_unit': amount #(self.amount_currency and self.amount_currency or self.amount),
-            # 'invoice_id': invoice.id,
-        }
+        if partner_type == 'supplier':
+            partner_account_id = partner.property_account_payable_id
+        else:
+            partner_account_id = partner.property_account_receivable_id
+            
+        if True:
+            inv_line_vals = {
+                 # 'product_id': self.product_id.id,
+                'name': 'Gastos Financieros, '+name,
+                'account_id': account.id,
+                'partner_id': partner.id,
+                'price_unit': amount #(self.amount_currency and self.amount_currency or self.amount),
+                # 'invoice_id': invoice.id,
+            }
+
+            
+        if account == None or amount <= 0:
+            lines = [(0, 0, inv_line_check_vals)]
+        else:
+            lines = [(0, 0, inv_line_check_vals), (0, 0, inv_line_vals)]
 
         inv_vals = {
             # this is the reference that goes on account.move.line of debt line
@@ -639,12 +649,13 @@ class AccountCheck(models.Model):
             # 'date_invoice': self.date_invoice,
             'origin': _('Check nbr (id): %s (%s)') % (self.name, self.id),
             'journal_id': journal.id,
-            'account_id': partner.property_account_receivable_id.id, #journal.default_debit_account_id.id,
+            'account_id': partner_account_id.id, #journal.default_debit_account_id.id,
             # this is done on muticompany fix
             # 'company_id': journal.company_id.id,
             'partner_id': partner.id,
+            'journal_document_type_id': self.env['account.journal.document.type'].search([('document_type_id.internal_type','=', 'debit_note')], limit=1).id,
             'type': invoice_type,
-            'invoice_line_ids': [(0, 0, inv_line_check_vals), (0, 0, inv_line_vals)],
+            'invoice_line_ids': lines,
 
         }
         if self.currency_id:
@@ -706,14 +717,22 @@ class AccountCheck(models.Model):
             debit_account = self.company_id._get_check_account('rejected')
             name = _('Check "%s" rejected by bank') % (self.name)
             # credit_account_id = vou_journal.default_credit_account_id.id
+        elif action == 'deliver_reject':
+            credit_account = self.company_id._get_check_account('third_party_bounced_endorsed')
+            debit_account = journal.default_debit_account_id
+            name = _('Check "%s" rejected by bank') % (self.name)
         elif action == 'supplier_rejected':
             debit_account = self.company_id._get_check_account('holding')
             credit_account = self.company_id._get_check_account('third_party_bounced_endorsed')
             name = _('Check "%s" rejected by supplier') % (self.name)
         elif action == 'reject_cancel':
             name = _('Check "%s" bank rejection reverted') % (self.name)
-            debit_account = journal.default_debit_account_id
-            credit_account = self.company_id._get_check_account('rejected')
+            if self.type == 'third_check':
+                debit_account = journal.default_debit_account_id
+                credit_account = self.company_id._get_check_account('rejected')
+            else:
+                debit_account = self.company_id._get_check_account('own_check_cancelled')
+                credit_account = journal.default_debit_account_id
         elif action == 'bank_deposited':
             credit_account = self.company_id._get_check_account('holding')
             # la contrapartida es la cuenta que reemplazamos en el pago
