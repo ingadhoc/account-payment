@@ -70,7 +70,7 @@
                 <header>
                     <button name="account_check.action_account_check_claim_wizard" type="action" string="Claim to Customer" attrs="{'invisible':['|',('type', '=', 'issue_check'),('state','not in',['returned','rejected', 'reclaimed'])]}" help="It will create a draft debit note to customer and change check state"/>
                     <button name="account_check.action_account_check_claim_wizard" type="action" string="Claim to Supplier" attrs="{'invisible':['|',('type', '=', 'third_check'),('state','not in',['returned','rejected', 'reclaimed'])]}" help="It will create a draft debit note to supplier and change check state"/>
-                    <button name="account_check.action_account_check_claim_wizard" type="action" string="Claim to Supplier" attrs="{'invisible':['|',('type', '=', 'issue_check'),('state','not in',['rejected'])]}" help="It will create a draft debit note to supplier and change check state"/>
+                    <button name="account_check.action_account_check_claim_wizard" type="action" string="Claim to Supplier" attrs="{'invisible':['|',('type', '=', 'issue_check'),('state','not in',['rejected','reclaimed'])]}" help="It will create a draft debit note to supplier and change check state"/>
                     <button name="account_check.action_account_check_bank_debit_wizard" type="action" string="Bank Debit" states="handed" help="It will create a journal entry from Deferred Check Account to bank account and change check state"/>
                     <button name="deposit_cancel" type="object" string="Cancel Deposit" states="deposited"/>
                     <button name="account_check.action_account_check_bank_reject_wizard" type="action" string="Rejected" states="delivered,handed"/>
