@@ -123,7 +123,7 @@ class AccountPaymentGroup(models.Model):
     selected_debt_untaxed = fields.Monetary(
         # string='To Pay lines Amount',
         string='Selected Debt Untaxed',
-        #compute='_compute_selected_debt',
+        compute='_compute_selected_debt',
     )
     unreconciled_amount = fields.Monetary(
         string='Adjusment / Advance',
