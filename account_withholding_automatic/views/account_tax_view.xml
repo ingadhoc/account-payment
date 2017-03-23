@@ -7,7 +7,6 @@
             <field name="model">account.tax</field>
             <field name="inherit_id" ref="account.view_tax_form"/>
             <field name="arch" type="xml">
-                <!-- TODO mejorar esta vista -->
                 <xpath expr="//page" position="inside">
                     <group attrs="{'invisible': [('type_tax_use', '!=', 'supplier')]}">
                         <group name="withholdings">
@@ -24,6 +23,7 @@
                                     <field name="fix_amount"/>
                                 </tree>
                             </field>
+                            <button name="account_withholding_automatic.action_withholding_automatic_domain1_wizard" type="action" string="Insertar Regla" attrs="{'invisible': [('withholding_type', '!=', 'based_on_rule')]}"/> <!-- states="draft" -->
                         </group>
                         <group attrs="{'invisible':[('withholding_type', '=', 'none')]}">
                             <field name="withholding_accumulated_payments"/>
@@ -36,6 +36,7 @@
                             <field name="withholding_non_taxable_amount"/>
                             <field name="withholding_user_error_message"/>
                             <field name="withholding_user_error_domain" attrs="{'invisible': [('withholding_user_error_message', '=', False)]}"/>
+                            <button name="account_withholding_automatic.action_withholding_automatic_domain2_wizard" type="action" string="Insertar Regla" attrs="{'invisible': [('withholding_type', '!=', 'based_on_rule')]}"/> <!-- states="draft" -->
                         </group>
                     </group>
                 </xpath>

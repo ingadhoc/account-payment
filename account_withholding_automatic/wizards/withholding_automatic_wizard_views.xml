@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_withholding_automatic_wizard" model="ir.ui.view">
+            <field name="name">account.withholding.automatic.wizard</field>
+            <field name="model">account.withholding.automatic.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Change Check">
+                    <field name="action_type" invisible="1"/>
+                    <group>
+                        <group>
+                            <field name="account_id" placeholder="AA:ZZ ó AA,BB,CC ó AA:CC,DD ó AA:CC,DD,!EE"/>
+                            <field name="city"/>
+                            <field name="state_id"/>
+                        </group>
+                        <group attrs="{'invisible':[('action_type','==','insert_domain2')]}">
+                            <field name="percent" placeholder="Ingresar valores entre 0-1"/>
+                            <field name="fix_amount"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button string="Confirm" name="set_domains_in_original" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>       
+                </form>
+            </field>
+        </record>
+
+        <record id="action_withholding_automatic_domain1_wizard" model="ir.actions.act_window">
+            <field name="name">Set Rules</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.withholding.automatic.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="context">{'default_action_type':'insert_domain1'}</field>
+            <field name="key2">client_action_multi</field>
+        </record>
+
+        <record id="action_withholding_automatic_domain2_wizard" model="ir.actions.act_window">
+            <field name="name">Set Rules</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.withholding.automatic.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="context">{'default_action_type':'insert_domain2'}</field>
+            <field name="key2">client_action_multi</field>
+        </record>    
+    </data>
+</odoo>

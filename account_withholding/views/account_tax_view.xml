@@ -26,6 +26,13 @@
                 <xpath expr="//page/group/group" position="attributes">
                     <attribute name="attrs">{'invisible': [('type_tax_use', 'in', ['supplier', 'customer'])]}</attribute>
                 </xpath>
+                <xpath expr="//page/group" position="inside">
+                    <group>
+                        <field name="journal_id"/>
+                        <field name="sequence_id"/>
+                        <field name="min_retention_amount"/>
+                    </group>
+                </xpath>
             </field>
         </record>
 

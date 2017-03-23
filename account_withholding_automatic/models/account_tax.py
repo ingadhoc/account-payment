@@ -191,7 +191,8 @@ result = withholdable_base_amount * 0.10
                 vals['payment_method_id'] = payment_method.id
                 vals['payment_type'] = 'outbound'
                 vals['partner_id'] = payment_group.partner_id.id
-                payment_withholding = payment_withholding.create(vals)
+                if computed_withholding_amount >= tax.min_retention_amount:
+                    payment_withholding = payment_withholding.create(vals)
         return True
 
     # @api.multi
