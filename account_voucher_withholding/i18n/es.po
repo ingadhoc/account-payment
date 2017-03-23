@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: account-payment (8.0)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-28 19:39+0000\n"
-"PO-Revision-Date: 2016-05-24 20:32+0000\n"
+"POT-Creation-Date: 2017-03-06 16:50+0000\n"
+"PO-Revision-Date: 2016-10-26 15:50+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>\n"
 "Language-Team: Spanish (http://www.transifex.com/adhoc/ingadhoc-account-payment-8-0/language/es/)\n"
 "MIME-Version: 1.0\n"
@@ -82,9 +82,20 @@ msgid "Analytic Account"
 msgstr "Cuenta Analítica"
 
 #. module: account_voucher_withholding
+#: model:ir.actions.act_window,name:account_voucher_withholding.action_account_voucher_withholding_applied
+#: model:ir.ui.menu,name:account_voucher_withholding.menu_account_voucher_withholding_applied
+msgid "Applied Withholdings"
+msgstr ""
+
+#. module: account_voucher_withholding
 #: field:account.voucher.withholding,automatic:0
 msgid "Automatic"
 msgstr "Automático"
+
+#. module: account_voucher_withholding
+#: field:account.voucher.withholding,base_amount:0
+msgid "Base Amount"
+msgstr "Importe Base"
 
 #. module: account_voucher_withholding
 #: field:account.tax.withholding,base_code_id:0
@@ -259,6 +270,12 @@ msgid "Number"
 msgstr "Número"
 
 #. module: account_voucher_withholding
+#: code:addons/account_voucher_withholding/models/account_voucher_withholding.py:163
+#, python-format
+msgid "Only withholding of vouchers on draft state can be deleted!"
+msgstr ""
+
+#. module: account_voucher_withholding
 #: field:account.voucher.withholding,partner_id:0
 msgid "Partner"
 msgstr "Empresa"
@@ -274,6 +291,12 @@ msgstr "Pago"
 #: view:account.voucher:account_voucher_withholding.view_vendor_receipt_form
 msgid "Payment Information"
 msgstr "Información de pago"
+
+#. module: account_voucher_withholding
+#: view:account.voucher.withholding:account_voucher_withholding.account_voucher_withholding_filter_view
+#: field:account.voucher.withholding,period_id:0
+msgid "Period"
+msgstr ""
 
 #. module: account_voucher_withholding
 #: view:account.tax.withholding:account_voucher_withholding.account_tax_withholding_form_view
@@ -333,6 +356,12 @@ msgid "Status"
 msgstr "Estado"
 
 #. module: account_voucher_withholding
+#: model:ir.actions.act_window,name:account_voucher_withholding.action_account_voucher_withholding_suffered
+#: model:ir.ui.menu,name:account_voucher_withholding.menu_account_voucher_withholding_suffered
+msgid "Suffered Withholdings"
+msgstr ""
+
+#. module: account_voucher_withholding
 #: field:account.tax.withholding,type_tax_use:0
 #: field:account.tax.withholding.template,type_tax_use:0
 msgid "Tax Application"
@@ -351,10 +380,15 @@ msgid "Tax Code Sign"
 msgstr "Signo Código Impuesto"
 
 #. module: account_voucher_withholding
-#: code:addons/account_voucher_withholding/models/account_voucher_withholding.py:127
+#: code:addons/account_voucher_withholding/models/account_voucher_withholding.py:155
 #, python-format
 msgid "Tax Withholding is Required!"
 msgstr "Impuesto de Retención Requerido!"
+
+#. module: account_voucher_withholding
+#: model:ir.ui.menu,name:account_voucher_withholding.menu_account_withholding
+msgid "Tax Withholdings"
+msgstr ""
 
 #. module: account_voucher_withholding
 #: model:ir.model,name:account_voucher_withholding.model_account_chart_template
@@ -401,12 +435,13 @@ msgid "Usually 1 or -1."
 msgstr "Usualmente 1 o -1."
 
 #. module: account_voucher_withholding
+#: field:account.voucher.withholding,supplier_voucher_id:0
 #: field:account.voucher.withholding,voucher_id:0
 msgid "Voucher"
 msgstr "Comprobante"
 
 #. module: account_voucher_withholding
-#: code:addons/account_voucher_withholding/models/account_voucher_withholding.py:118
+#: code:addons/account_voucher_withholding/models/account_voucher_withholding.py:146
 #, python-format
 msgid "Voucher and Tax Withholding must belong to the same company"
 msgstr "El Comprobante y el Impuesto de Retención deben pertenecer a la misma compañía"
