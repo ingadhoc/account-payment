@@ -4,13 +4,14 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
+# Nicolas Mac Rouillon <nmr@ingadhoc.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-12-23 23:20+0000\n"
-"PO-Revision-Date: 2016-12-23 23:20+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
+"POT-Creation-Date: 2017-03-16 18:57+0000\n"
+"PO-Revision-Date: 2017-03-16 18:57+0000\n"
+"Last-Translator: Nicolas Mac Rouillon <nmr@ingadhoc.com>, 2017\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -30,6 +31,14 @@ msgid ""
 "                </xpath>\n"
 "            </data>"
 msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<data><group name=\"advanced_booleans\" position=\"attributes\">\n"
+"                    <attribute name=\"attrs\">{'invisible': [('type_tax_use', 'in', ['supplier', 'customer'])]}</attribute>\n"
+"                </group>\n"
+"                <xpath expr=\"//page/group/group\" position=\"attributes\">\n"
+"                    <attribute name=\"attrs\">{'invisible': [('type_tax_use', 'in', ['supplier', 'customer'])]}</attribute>\n"
+"                </xpath>\n"
+"            </data>"
 
 #. module: account_withholding
 #: model:ir.ui.view,arch_db:account_withholding.view_account_payment_form
@@ -46,6 +55,17 @@ msgid ""
 "                </field>\n"
 "            "
 msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<field name=\"communication\" position=\"after\">\n"
+"                    <div colspan=\"2\">\n"
+"                        <group string=\"Withholding data\" name=\"withholding_data\" attrs=\"{'invisible': [('payment_method_code', '!=', 'withholding')]}\">\n"
+"                            <field name=\"tax_withholding_id\" domain=\"[('type_tax_use', '=', partner_type), ('company_id', '=', company_id)]\" attrs=\"{'required': [('payment_method_code', '=', 'withholding')]}\"/>\n"
+"                            <field name=\"withholding_number\" attrs=\"{'required': [('payment_method_code', '=', 'withholding')]}\"/>\n"
+"                            <field name=\"withholding_base_amount\" attrs=\"{'required': [('payment_method_code', '=', 'withholding')]}\"/>\n"
+"                        </group>\n"
+"                    </div>\n"
+"                </field>\n"
+"            "
 
 #. module: account_withholding
 #: model:ir.ui.view,arch_db:account_withholding.view_account_tax_search
@@ -57,11 +77,12 @@ msgid ""
 "                </filter>\n"
 "            "
 msgstr ""
-
-#. module: account_withholding
-#: model:ir.model,name:account_withholding.model_account_journal
-msgid "Journal"
-msgstr "Diario"
+"<?xml version=\"1.0\"?>\n"
+"<filter name=\"purchase\" position=\"after\">\n"
+"                    <filter string=\"Customer Payment\" name=\"customer\" domain=\"[('type_tax_use','=','customer')]\"/>\n"
+"                    <filter string=\"Supplier Payment\" name=\"supplier\" domain=\"[('type_tax_use','=','supplier')]\"/>\n"
+"                </filter>\n"
+"            "
 
 #. module: account_withholding
 #: model:ir.model,name:account_withholding.model_account_payment

@@ -4,13 +4,14 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
+# Nicolas Mac Rouillon <nmr@ingadhoc.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-12-23 23:20+0000\n"
-"PO-Revision-Date: 2016-12-23 23:20+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
+"POT-Creation-Date: 2017-03-16 18:57+0000\n"
+"PO-Revision-Date: 2017-03-16 18:57+0000\n"
+"Last-Translator: Nicolas Mac Rouillon <nmr@ingadhoc.com>, 2017\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -19,7 +20,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: account_check
-#: code:addons/account_check/models/account_checkbook.py:100
+#: code:addons/account_check/models/account_checkbook.py:110
 #, python-format
 msgid " up to %s"
 msgstr "hasta %s"
@@ -39,6 +40,53 @@ msgid ""
 "           \t \t</page>\n"
 "            "
 msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<!--                 <notebook>\n"
+"                    <page string=\"Checkbooks\" attrs=\"{'invisible':[('outbound_payment_method_ids', '!=', 'issue_check')]}\">\n"
+"                        <field name=\"checkbook_ids\" context=\"{'default_company_id':company_id}\"/>\n"
+"                    </page>\n"
+"                </notebook> -->\n"
+"                <page name=\"bank_account\">\n"
+"                    <label for=\"checkbook_ids\"/>\n"
+"                \t<field name=\"checkbook_ids\" attrs=\"{'invisible': [('type', '!=', 'bank')]}\" context=\"{'company_id':company_id}\"/>\n"
+"           \t \t</page>\n"
+"            "
+
+#. module: account_check
+#: model:ir.ui.view,arch_db:account_check.view_account_check_calendar
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<calendar string=\"Checks\" mode=\"month\" date_start=\"payment_date\" color=\"bank_id\">\n"
+"                    <field name=\"amount\"/>\n"
+"                </calendar>\n"
+"            "
+msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<calendar string=\"Checks\" mode=\"month\" date_start=\"payment_date\" color=\"bank_id\">\n"
+"                    <field name=\"amount\"/>\n"
+"                </calendar>\n"
+"            "
+
+#. module: account_check
+#: model:ir.ui.view,arch_db:account_check.view_account_check_create_form
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<data><form position=\"attributes\">\n"
+"                    <attribute name=\"create\">true</attribute>\n"
+"                </form>\n"
+"                <field name=\"operation_ids\" position=\"attributes\">\n"
+"                    <attribute name=\"readonly\">0</attribute>\n"
+"                </field>\n"
+"            </data>"
+msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<data><form position=\"attributes\">\n"
+"                    <attribute name=\"create\">true</attribute>\n"
+"                </form>\n"
+"                <field name=\"operation_ids\" position=\"attributes\">\n"
+"                    <attribute name=\"readonly\">0</attribute>\n"
+"                </field>\n"
+"            </data>"
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_payment_form_inherited
@@ -47,6 +95,7 @@ msgid ""
 "<data><form>\n"
 "                    <field name=\"check_type\" invisible=\"1\"/>\n"
 "                    <field name=\"check_subtype\" invisible=\"1\"/>\n"
+"                    <field name=\"checkbook_block_manual_number\" invisible=\"1\"/>\n"
 "                </form>\n"
 "<!--                 <field name=\"state\" position=\"after\">\n"
 "                    <field name=\"check_state\" widget=\"statusbar\" statusbar_visible=\"holding,deposited\" attrs=\"{'invisible': [('payment_method_code', 'not in', ['received_third_check'])]}\"/>\n"
@@ -64,6 +113,7 @@ msgid ""
 "                                    <field name=\"name\"/>\n"
 "                                    <field name=\"payment_date\"/>\n"
 "                                    <field name=\"amount\" sum=\"Total\"/>\n"
+"                                    <field name=\"state\" invisible=\"1\"/>\n"
 "                                </tree>\n"
 "                            </field>\n"
 "                            <field name=\"check_ids\" options=\"{'no_create': True}\" domain=\"[('journal_id', '=', journal_id), ('state', '=', 'holding'), ('type', '=', 'third_check')]\" attrs=\"{'invisible': ['|', ('payment_method_code', '!=', 'delivered_third_check'), ('payment_type', 'not in', ['transfer', 'outbound'])], 'required': [('payment_method_code', '=', 'delivered_third_check'), ('payment_type', 'in', ['transfer', 'outbound'])]}\">\n"
@@ -71,14 +121,18 @@ msgid ""
 "                                    <field name=\"name\"/>\n"
 "                                    <field name=\"payment_date\"/>\n"
 "                                    <field name=\"amount\" sum=\"Total\"/>\n"
+"                                    <field name=\"state\" invisible=\"1\"/>\n"
 "                                </tree>\n"
 "                            </field>\n"
 "                        </group>\n"
 "                        <group name=\"check_data\" states=\"draft\">\n"
 "                            <newline/>\n"
-"                            <field name=\"checkbook_id\" attrs=\"{'invisible': [('payment_method_code', 'not in', ['issue_check'])], 'required': [('payment_method_code', 'in', ['issue_check'])]}\" domain=\"[('journal_id', '=', journal_id)]\"/>\n"
-"                            <field name=\"check_number\" attrs=\"{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])],  'readonly': ['|', ('state', '!=', 'draft'), ('payment_method_code', '=', 'issue_check')]}\"/>\n"
-"                            <field name=\"check_name\" attrs=\"{'invisible': [('payment_method_code', 'not in', ['received_third_check'])], 'required': [('payment_method_code', 'in', ['received_third_check'])]}\"/>\n"
+"                            <field name=\"checkbook_id\" attrs=\"{'invisible': [('payment_method_code', 'not in', ['issue_check'])], 'required': [('payment_method_code', 'in', ['issue_check'])]}\" domain=\"[('journal_id', '=', journal_id), ('state', '=', 'active')]\"/>\n"
+"                            <!-- we show this field if check cant be set manually -->\n"
+"                            <field name=\"check_number_readonly\" attrs=\"{'invisible': [('checkbook_block_manual_number', '!=', True)]}\"/>\n"
+"                            <field name=\"check_number\" attrs=\"{'invisible': ['|', ('checkbook_block_manual_number', '=', True), ('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])],  'readonly': [('state', '!=', 'draft')]}\"/>\n"
+"                            <!-- 'readonly': ['|', ('state', '!=', 'draft'), ('payment_method_code', '=', 'issue_check')] -->\n"
+"                            <field name=\"check_name\" attrs=\"{'invisible': ['|', ('checkbook_block_manual_number', '=', True), ('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}\"/>\n"
 "                            <field name=\"check_issue_date\" attrs=\"{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}\"/>\n"
 "                            <field name=\"check_payment_date\" attrs=\"{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('check_subtype', '=', 'deferred')]}\"/>\n"
 "                            <field name=\"check_bank_id\" attrs=\"{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check'])], 'required': [('payment_method_code', 'in', ['received_third_check'])]}\"/>\n"
@@ -109,6 +163,77 @@ msgid ""
 "                </div>\n"
 "            </data>"
 msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<data><form>\n"
+"                    <field name=\"check_type\" invisible=\"1\"/>\n"
+"                    <field name=\"check_subtype\" invisible=\"1\"/>\n"
+"                    <field name=\"checkbook_block_manual_number\" invisible=\"1\"/>\n"
+"                </form>\n"
+"<!--                 <field name=\"state\" position=\"after\">\n"
+"                    <field name=\"check_state\" widget=\"statusbar\" statusbar_visible=\"holding,deposited\" attrs=\"{'invisible': [('payment_method_code', 'not in', ['received_third_check'])]}\"/>\n"
+"                </field> -->\n"
+"\n"
+"                <!-- TODO hacer invisible si ('payment_type', '!=', 'transfer') -->\n"
+"                <field name=\"communication\" position=\"after\">\n"
+"                    <div colspan=\"2\" attrs=\"{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'delivered_third_check', 'issue_check'])]}\">\n"
+"                        <group name=\"checks\">\n"
+"                            <field name=\"check_id\" attrs=\"{'invisible': [('check_id', '=', False)]}\"/>\n"
+"                            <!-- no usamos el widget many2many_tags porque les interesa filtrar y buscar por montos y demas -->\n"
+"                            <!-- creamos un campo copy por compatibilidad con mig de v8 donde se podia mas de un cheque por payment, igualmente se podria unir todo en chekc_ids pero era medio complicada la consulta -->\n"
+"                            <field name=\"check_ids_copy\" attrs=\"{'invisible': ['|',  '|', ('check_ids_copy', '=', []), ('check_id', '!=', False), ('payment_method_code', 'not in', ['received_third_check', 'issue_check'])]}\">\n"
+"                                <tree edit=\"false\" create=\"false\">\n"
+"                                    <field name=\"name\"/>\n"
+"                                    <field name=\"payment_date\"/>\n"
+"                                    <field name=\"amount\" sum=\"Total\"/>\n"
+"                                    <field name=\"state\" invisible=\"1\"/>\n"
+"                                </tree>\n"
+"                            </field>\n"
+"                            <field name=\"check_ids\" options=\"{'no_create': True}\" domain=\"[('journal_id', '=', journal_id), ('state', '=', 'holding'), ('type', '=', 'third_check')]\" attrs=\"{'invisible': ['|', ('payment_method_code', '!=', 'delivered_third_check'), ('payment_type', 'not in', ['transfer', 'outbound'])], 'required': [('payment_method_code', '=', 'delivered_third_check'), ('payment_type', 'in', ['transfer', 'outbound'])]}\">\n"
+"                                <tree edit=\"false\">\n"
+"                                    <field name=\"name\"/>\n"
+"                                    <field name=\"payment_date\"/>\n"
+"                                    <field name=\"amount\" sum=\"Total\"/>\n"
+"                                    <field name=\"state\" invisible=\"1\"/>\n"
+"                                </tree>\n"
+"                            </field>\n"
+"                        </group>\n"
+"                        <group name=\"check_data\" states=\"draft\">\n"
+"                            <newline/>\n"
+"                            <field name=\"checkbook_id\" attrs=\"{'invisible': [('payment_method_code', 'not in', ['issue_check'])], 'required': [('payment_method_code', 'in', ['issue_check'])]}\" domain=\"[('journal_id', '=', journal_id), ('state', '=', 'active')]\"/>\n"
+"                            <!-- we show this field if check cant be set manually -->\n"
+"                            <field name=\"check_number_readonly\" attrs=\"{'invisible': [('checkbook_block_manual_number', '!=', True)]}\"/>\n"
+"                            <field name=\"check_number\" attrs=\"{'invisible': ['|', ('checkbook_block_manual_number', '=', True), ('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])],  'readonly': [('state', '!=', 'draft')]}\"/>\n"
+"                            <!-- 'readonly': ['|', ('state', '!=', 'draft'), ('payment_method_code', '=', 'issue_check')] -->\n"
+"                            <field name=\"check_name\" attrs=\"{'invisible': ['|', ('checkbook_block_manual_number', '=', True), ('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}\"/>\n"
+"                            <field name=\"check_issue_date\" attrs=\"{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}\"/>\n"
+"                            <field name=\"check_payment_date\" attrs=\"{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('check_subtype', '=', 'deferred')]}\"/>\n"
+"                            <field name=\"check_bank_id\" attrs=\"{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check'])], 'required': [('payment_method_code', 'in', ['received_third_check'])]}\"/>\n"
+"                            <field name=\"check_owner_vat\" attrs=\"{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check'])]}\"/>\n"
+"                            <field name=\"check_owner_name\" attrs=\"{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check'])]}\"/>\n"
+"                    <!-- TODO add to domain? -->\n"
+"                    <!-- ('currency_id', '=', currency_none_same_company_id), -->\n"
+"                    <!-- ('check_deposit_id', '=', False), -->\n"
+"                    <!-- ('debit', '>', 0), -->\n"
+"                    <!-- ('reconcile_id', '=', False), -->\n"
+"                    <!-- ('account_id', '=', journal_default_account_id) -->\n"
+"                    <!-- TODO use  -->\n"
+"                        </group>\n"
+"                    </div>\n"
+"                </field>\n"
+"                <label for=\"amount\" position=\"before\">\n"
+"                    <label for=\"readonly_amount\" attrs=\"{'invisible': [('payment_method_code', '!=', 'delivered_third_check')]}\"/>\n"
+"                    <div name=\"readonly_amount_div\" class=\"o_row\" attrs=\"{'invisible': [('payment_method_code', '!=', 'delivered_third_check')]}\">\n"
+"                        <field name=\"readonly_amount\"/>\n"
+"                        <field name=\"readonly_currency_id\" groups=\"base.group_multi_currency\"/>\n"
+"                    </div>\n"
+"                </label>\n"
+"                <label for=\"amount\" position=\"attributes\">\n"
+"                    <attribute name=\"attrs\">{'invisible': [('payment_method_code', '=', 'delivered_third_check')]}</attribute>\n"
+"                </label>\n"
+"                <div name=\"amount_div\" position=\"attributes\">\n"
+"                    <attribute name=\"attrs\">{'invisible': [('payment_method_code', '=', 'delivered_third_check')]}</attribute>\n"
+"                </div>\n"
+"            </data>"
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_payment_search
@@ -120,6 +245,12 @@ msgid ""
 "                </field>\n"
 "            "
 msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<field name=\"name\" position=\"after\">\n"
+"                    <field name=\"check_ids\"/>\n"
+"                    <!-- <field name=\"check_id\" filter_domain=\"['|', ('check_id','ilike',self), ('check_ids','ilike',self)]\"/> -->\n"
+"                </field>\n"
+"            "
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_chart_template_form
@@ -132,6 +263,44 @@ msgid ""
 "                </field>\n"
 "            "
 msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<field name=\"property_account_income_id\" position=\"after\">\n"
+"                    <field name=\"rejected_check_account_id\"/>\n"
+"                    <field name=\"deferred_check_account_id\"/>\n"
+"                    <field name=\"holding_check_account_id\"/>\n"
+"                </field>\n"
+"            "
+
+#. module: account_check
+#: model:ir.ui.view,arch_db:account_check.account_check_action_wizard_form_view
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<form string=\"Check Action\">\n"
+"                    <field name=\"action_type\" invisible=\"1\"/>\n"
+"                    <group>\n"
+"                        <field name=\"date\"/>\n"
+"                    </group>\n"
+"                    <footer>\n"
+"                        <button string=\"Confirm\" name=\"action_confirm\" type=\"object\" class=\"oe_highlight\"/>\n"
+"                        or\n"
+"                        <button string=\"Cancel\" class=\"oe_link\" special=\"cancel\"/>\n"
+"                    </footer>     \n"
+"                </form>\n"
+"            "
+msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<form string=\"Check Action\">\n"
+"                    <field name=\"action_type\" invisible=\"1\"/>\n"
+"                    <group>\n"
+"                        <field name=\"date\"/>\n"
+"                    </group>\n"
+"                    <footer>\n"
+"                        <button string=\"Confirm\" name=\"action_confirm\" type=\"object\" class=\"oe_highlight\"/>\n"
+"                        or\n"
+"                        <button string=\"Cancel\" class=\"oe_link\" special=\"cancel\"/>\n"
+"                    </footer>     \n"
+"                </form>\n"
+"            "
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_checkbook_form
@@ -147,6 +316,7 @@ msgid ""
 "                            <field name=\"issue_check_subtype\"/>\n"
 "                            <field name=\"sequence_id\"/>\n"
 "                            <field name=\"range_to\"/>\n"
+"                            <field name=\"block_manual_number\"/>\n"
 "                                <!-- <field name=\"debit_journal_id\" domain=\"[('company_id', '=', company_id),('type', '=', 'bank')]\" context=\"{'default_company_id': company_id, 'default_type': 'bank'}\"/> -->\n"
 "                                <!-- <field name=\"company_id\" groups=\"base.group_multi_company\"/> -->\n"
 "                        </group>\n"
@@ -154,6 +324,24 @@ msgid ""
 "                </form>\n"
 "            "
 msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<form string=\"Checkbooks\"> \n"
+"                    <header string=\"Checkbooks\">\n"
+"                        <field name=\"state\" widget=\"statusbar\" clickable=\"True\"/>\n"
+"                    </header>\n"
+"                    <sheet string=\"Checkbooks\">\n"
+"                        <group>\n"
+"                            <field name=\"name\" invisible=\"1\"/>\n"
+"                            <field name=\"issue_check_subtype\"/>\n"
+"                            <field name=\"sequence_id\"/>\n"
+"                            <field name=\"range_to\"/>\n"
+"                            <field name=\"block_manual_number\"/>\n"
+"                                <!-- <field name=\"debit_journal_id\" domain=\"[('company_id', '=', company_id),('type', '=', 'bank')]\" context=\"{'default_company_id': company_id, 'default_type': 'bank'}\"/> -->\n"
+"                                <!-- <field name=\"company_id\" groups=\"base.group_multi_company\"/> -->\n"
+"                        </group>\n"
+"                    </sheet>\n"
+"                </form>\n"
+"            "
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_check_form
@@ -166,12 +354,12 @@ msgid ""
 "                    <field name=\"currency_id\" invisible=\"1\"/>\n"
 "                    <field name=\"company_currency_id\" invisible=\"1\"/>\n"
 "                <header>\n"
-"                    <!-- TODO agregar botones -->\n"
-"                    <button name=\"claim\" type=\"object\" string=\"Claim to Customer\" states=\"rejected\" help=\"It will create a draft debit note to customerand change check state\"/>\n"
-"                    <button name=\"bank_debit\" type=\"object\" string=\"Bank Debit\" states=\"handed\" help=\"It will create a journal entry from Deferred Check Account to bank account and change check state\"/>\n"
-"                    <button name=\"reject\" type=\"object\" string=\"Supplier Rejection\" states=\"delivered,handed\" help=\"It will create a debit note from supplier in draft state and change check state\"/>\n"
-"                    <button name=\"reject\" type=\"object\" string=\"Bank Rejection\" states=\"deposited\" help=\"It will create an account entry from bank account to company rejection account and change check state\"/>\n"
-"                    <button name=\"reject\" type=\"object\" string=\"Sell Rejection\" states=\"selled\" help=\"It will create an account entry from cash account to company rejection account and change check state\"/>\n"
+"                    <!-- usamos la accion en vez del metodo directamente para pedir una fecha -->\n"
+"                    <button context=\"{'default_action_type': 'claim'}\" name=\"237\" type=\"action\" string=\"Claim to Customer\" attrs=\"{'invisible': ['|', ('state', '!=', 'rejected'), ('type', '!=', 'third_check')]}\" help=\"It will create a draft debit note to customerand change check state\"/>\n"
+"                    <button context=\"{'default_action_type': 'bank_debit'}\" name=\"237\" type=\"action\" string=\"Bank Debit\" states=\"handed\" help=\"It will create a journal entry from Deferred Check Account to bank account and change check state\"/>\n"
+"                    <button context=\"{'default_action_type': 'reject'}\" name=\"237\" type=\"action\" string=\"Supplier Rejection\" states=\"delivered,handed\" help=\"It will create a debit note from supplier in draft state and change check state\"/>\n"
+"                    <button context=\"{'default_action_type': 'reject'}\" name=\"237\" type=\"action\" string=\"Bank Rejection\" states=\"deposited\" help=\"It will create an account entry from bank account to company rejection account and change check state\"/>\n"
+"                    <button context=\"{'default_action_type': 'reject'}\" name=\"237\" type=\"action\" string=\"Sell Rejection\" states=\"selled\" help=\"It will create an account entry from cash account to company rejection account and change check state\"/>\n"
 "                    <!-- <field name=\"state\" widget=\"statusbar\"/> -->\n"
 "                </header>\n"
 "                <sheet string=\"Checks\">\n"
@@ -181,7 +369,7 @@ msgid ""
 "                    <group>  \n"
 "                        <group>\n"
 "                            <field name=\"journal_id\"/>\n"
-"                            <field name=\"checkbook_id\" attrs=\"{'invisible':[('type','!=','issue_check')],'required':[('type','=','issue_check')]}\"/>\n"
+"                            <field name=\"checkbook_id\" attrs=\"{'invisible':[('type','!=','issue_check')],'required':[('type','=','issue_check')]}\" domain=\"[('journal_id', '=', journal_id)]\"/>\n"
 "                            <field name=\"bank_id\"/>\n"
 "                            <field name=\"number\"/>\n"
 "                            <field name=\"amount\"/>\n"
@@ -197,8 +385,8 @@ msgid ""
 "                        </group>\n"
 "                    </group>\n"
 "                    <group string=\"Operations\">\n"
-"                        <field name=\"operation_ids\" nolabel=\"1\">\n"
-"                            <tree default_order=\"date\">\n"
+"                        <field name=\"operation_ids\" nolabel=\"1\" readonly=\"1\">\n"
+"                            <tree>\n"
 "                                <field name=\"date\"/>\n"
 "                                <field name=\"operation\"/>\n"
 "                                <field name=\"origin_name\" string=\"Origin\"/>\n"
@@ -206,7 +394,7 @@ msgid ""
 "                            </tree>\n"
 "                            <form>\n"
 "                                <group>\n"
-"                                    <!-- <field name=\"date\"/> -->\n"
+"                                    <field name=\"date\"/>\n"
 "                                    <field name=\"operation\"/>\n"
 "                                    <field name=\"origin\"/>\n"
 "                                    <field name=\"partner_id\"/>\n"
@@ -227,6 +415,74 @@ msgid ""
 "                </form>\n"
 "            "
 msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<form string=\"Checks\" create=\"false\">\n"
+"                    <field name=\"type\" invisible=\"1\"/>\n"
+"                    <!-- <field name=\"issue_check_subtype\" invisible=\"1\"/> -->\n"
+"                    <field name=\"journal_id\" invisible=\"1\"/>\n"
+"                    <field name=\"currency_id\" invisible=\"1\"/>\n"
+"                    <field name=\"company_currency_id\" invisible=\"1\"/>\n"
+"                <header>\n"
+"                    <!-- usamos la accion en vez del metodo directamente para pedir una fecha -->\n"
+"                    <button context=\"{'default_action_type': 'claim'}\" name=\"237\" type=\"action\" string=\"Claim to Customer\" attrs=\"{'invisible': ['|', ('state', '!=', 'rejected'), ('type', '!=', 'third_check')]}\" help=\"It will create a draft debit note to customerand change check state\"/>\n"
+"                    <button context=\"{'default_action_type': 'bank_debit'}\" name=\"237\" type=\"action\" string=\"Bank Debit\" states=\"handed\" help=\"It will create a journal entry from Deferred Check Account to bank account and change check state\"/>\n"
+"                    <button context=\"{'default_action_type': 'reject'}\" name=\"237\" type=\"action\" string=\"Supplier Rejection\" states=\"delivered,handed\" help=\"It will create a debit note from supplier in draft state and change check state\"/>\n"
+"                    <button context=\"{'default_action_type': 'reject'}\" name=\"237\" type=\"action\" string=\"Bank Rejection\" states=\"deposited\" help=\"It will create an account entry from bank account to company rejection account and change check state\"/>\n"
+"                    <button context=\"{'default_action_type': 'reject'}\" name=\"237\" type=\"action\" string=\"Sell Rejection\" states=\"selled\" help=\"It will create an account entry from cash account to company rejection account and change check state\"/>\n"
+"                    <!-- <field name=\"state\" widget=\"statusbar\"/> -->\n"
+"                </header>\n"
+"                <sheet string=\"Checks\">\n"
+"                    <h1>\n"
+"                        <field name=\"name\"/>\n"
+"                    </h1>\n"
+"                    <group>  \n"
+"                        <group>\n"
+"                            <field name=\"journal_id\"/>\n"
+"                            <field name=\"checkbook_id\" attrs=\"{'invisible':[('type','!=','issue_check')],'required':[('type','=','issue_check')]}\" domain=\"[('journal_id', '=', journal_id)]\"/>\n"
+"                            <field name=\"bank_id\"/>\n"
+"                            <field name=\"number\"/>\n"
+"                            <field name=\"amount\"/>\n"
+"                            <field name=\"amount_currency\" attrs=\"{'invisible': [('amount_currency', '=', 0.0)]}\"/>\n"
+"                        </group>\n"
+"                        <group>    \n"
+"                            <field name=\"state\"/>\n"
+"                            <field name=\"owner_name\" attrs=\"{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}\"/>\n"
+"                            <field name=\"owner_vat\" attrs=\"{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}\"/>\n"
+"                            <field name=\"issue_date\"/>\n"
+"                            <field name=\"payment_date\"/>\n"
+"                            <!-- <field name=\"company_id\" groups=\"base.group_multi_company\" widget=\"selection\"/> -->\n"
+"                        </group>\n"
+"                    </group>\n"
+"                    <group string=\"Operations\">\n"
+"                        <field name=\"operation_ids\" nolabel=\"1\" readonly=\"1\">\n"
+"                            <tree>\n"
+"                                <field name=\"date\"/>\n"
+"                                <field name=\"operation\"/>\n"
+"                                <field name=\"origin_name\" string=\"Origin\"/>\n"
+"                                <field name=\"partner_id\"/>\n"
+"                            </tree>\n"
+"                            <form>\n"
+"                                <group>\n"
+"                                    <field name=\"date\"/>\n"
+"                                    <field name=\"operation\"/>\n"
+"                                    <field name=\"origin\"/>\n"
+"                                    <field name=\"partner_id\"/>\n"
+"                                    <field name=\"notes\"/>\n"
+"                                </group>\n"
+"                            </form>\n"
+"                        </field>\n"
+"                    </group>\n"
+"                    <!-- <group string=\"Related Documents\">\n"
+"                        <field name=\"move_line_id\"/>\n"
+"                        <field name=\"deposit_move_line_id\"/>\n"
+"                    </group> -->\n"
+"                </sheet>    \n"
+"                <div class=\"oe_chatter\">\n"
+"                    <field name=\"message_follower_ids\" widget=\"mail_followers\"/>\n"
+"                    <field name=\"message_ids\" widget=\"mail_thread\"/>\n"
+"                </div>                \n"
+"                </form>\n"
+"            "
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_company_form
@@ -239,6 +495,13 @@ msgid ""
 "                </group>\n"
 "            "
 msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<group name=\"account_grp\">\n"
+"                    <field name=\"rejected_check_account_id\" domain=\"[('company_id', '=', id)]\"/>\n"
+"                    <field name=\"deferred_check_account_id\" domain=\"[('company_id', '=', id)]\"/>\n"
+"                    <field name=\"holding_check_account_id\" domain=\"[('company_id', '=', id)]\"/>\n"
+"                </group>\n"
+"            "
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_checks_search
@@ -252,6 +515,7 @@ msgid ""
 "                    <field name=\"state\"/>\n"
 "                    <field name=\"owner_name\"/>\n"
 "                    <field name=\"owner_vat\"/>\n"
+"                    <field name=\"payment_date\"/>\n"
 "                    <!-- <field name=\"deposit_date\"/> -->\n"
 "                    <group expand=\"0\" string=\"Group By...\">\n"
 "                        <filter string=\"Issue Date\" context=\"{'group_by':'issue_date'}\"/>\n"
@@ -265,6 +529,28 @@ msgid ""
 "                </search>\n"
 "            "
 msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<search string=\"Checks\">\n"
+"                    <field name=\"name\"/>\n"
+"                    <field name=\"partner_id\"/>\n"
+"                    <field name=\"journal_id\"/>\n"
+"                    <field name=\"company_id\" groups=\"base.group_multi_company\"/>\n"
+"                    <field name=\"state\"/>\n"
+"                    <field name=\"owner_name\"/>\n"
+"                    <field name=\"owner_vat\"/>\n"
+"                    <field name=\"payment_date\"/>\n"
+"                    <!-- <field name=\"deposit_date\"/> -->\n"
+"                    <group expand=\"0\" string=\"Group By...\">\n"
+"                        <filter string=\"Issue Date\" context=\"{'group_by':'issue_date'}\"/>\n"
+"                        <filter string=\"Payment Date\" context=\"{'group_by':'payment_date'}\"/>\n"
+"                        <!-- <filter string=\"Deposit Date\" context=\"{'group_by':'deposit_date:day'}\"/>                         -->\n"
+"                        <filter string=\"Journal\" context=\"{'group_by':'journal_id'}\"/>\n"
+"                        <filter string=\"State\" context=\"{'group_by':'state'}\"/>\n"
+"                        <filter string=\"Partner\" context=\"{'group_by':'partner_id'}\"/>\n"
+"                        <!-- <filter string=\"Destiny Partner\" context=\"{'group_by':'destiny_partner_id'}\"/> -->\n"
+"                    </group>\n"
+"                </search>\n"
+"            "
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_check_tree
@@ -275,6 +561,7 @@ msgid ""
 "                    <field name=\"journal_id\" invisible=\"1\"/>\n"
 "                    <field name=\"name\"/>\n"
 "                    <field name=\"issue_date\"/>\n"
+"                    <field name=\"payment_date\"/>\n"
 "                    <!-- <field name=\"payment_date\"/> -->\n"
 "                    <field name=\"partner_id\"/>\n"
 "                    <!-- <field name=\"source_partner_id\" invisible=\"context.get('default_type',False) != 'third_check'\" string=\"Source Partner\"/> -->\n"
@@ -288,21 +575,67 @@ msgid ""
 "                </tree>\n"
 "            "
 msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<tree colors=\"blue:state == 'draft';black:state in ('handed');red:state == 'hrejected';gray:state == 'cancel'\" create=\"false\" string=\"Checks\">\n"
+"                    <field name=\"checkbook_id\" invisible=\"context.get('default_type',False) != 'issue_check'\"/>\n"
+"                    <field name=\"journal_id\" invisible=\"1\"/>\n"
+"                    <field name=\"name\"/>\n"
+"                    <field name=\"issue_date\"/>\n"
+"                    <field name=\"payment_date\"/>\n"
+"                    <!-- <field name=\"payment_date\"/> -->\n"
+"                    <field name=\"partner_id\"/>\n"
+"                    <!-- <field name=\"source_partner_id\" invisible=\"context.get('default_type',False) != 'third_check'\" string=\"Source Partner\"/> -->\n"
+"                    <!-- <field name=\"destiny_partner_id\" string=\"Destiny Partner\"/> -->\n"
+"                    <field name=\"type\" invisible=\"1\"/>\n"
+"                    <field name=\"bank_id\" invisible=\"context.get('default_type',False) != 'third_check'\"/>\n"
+"                    <field name=\"amount\" sum=\"Total Amount\"/>\n"
+"                    <!-- <field name=\"company_id\" groups=\"base.group_multi_company\"/> -->\n"
+"                    <field name=\"state\"/>\n"
+"                    <field name=\"owner_name\" invisible=\"context.get('default_type',False) != 'third_check'\"/>\n"
+"                </tree>\n"
+"            "
+
+#. module: account_check
+#: model:ir.ui.view,arch_db:account_check.view_account_check_create_tree
+msgid ""
+"<?xml version=\"1.0\"?>\n"
+"<tree position=\"attributes\">\n"
+"                    <attribute name=\"create\">true</attribute>\n"
+"                </tree>\n"
+"            "
+msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<tree position=\"attributes\">\n"
+"                    <attribute name=\"create\">true</attribute>\n"
+"                </tree>\n"
+"            "
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_checkbook_tree
 msgid ""
 "<?xml version=\"1.0\"?>\n"
-"<tree string=\"Checkbooks\" colors=\"blue:state == 'draft';black:state in ('active');red:state == 'hrejected';gray:state == 'used'\">\n"
+"<tree string=\"Checkbooks\" colors=\"blue:state == 'draft';black:state in ('active');red:state == 'hrejected';gray:state == 'used'\" editable=\"bottom\">\n"
 "                    <field name=\"name\"/>\n"
 "                    <field name=\"next_number\"/>\n"
 "                    <field name=\"range_to\"/>\n"
+"                    <field name=\"block_manual_number\"/>\n"
 "                    <!-- <field name=\"debit_journal_id\"/> -->\n"
 "                    <!-- <field name=\"company_id\" groups=\"base.group_multi_company\"/> -->\n"
 "                    <field name=\"state\"/>\n"
 "                </tree>\n"
 "            "
 msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<tree string=\"Checkbooks\" colors=\"blue:state == 'draft';black:state in ('active');red:state == 'hrejected';gray:state == 'used'\" editable=\"bottom\">\n"
+"                    <field name=\"name\"/>\n"
+"                    <field name=\"next_number\"/>\n"
+"                    <field name=\"range_to\"/>\n"
+"                    <field name=\"block_manual_number\"/>\n"
+"                    <!-- <field name=\"debit_journal_id\"/> -->\n"
+"                    <!-- <field name=\"company_id\" groups=\"base.group_multi_company\"/> -->\n"
+"                    <field name=\"state\"/>\n"
+"                </tree>\n"
+"            "
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.account_journal_dashboard_kanban_view_inherited
@@ -311,32 +644,79 @@ msgid ""
 "<xpath expr=\"//t[@t-name='JournalBodyBankCash']//div[contains(@class, 'o_kanban_primary_right')]\" position=\"inside\">\n"
 "                    <div t-if=\"dashboard.show_third_checks\">\n"
 "                        <div class=\"row\">\n"
-"                            <div class=\"col-xs-12\">\n"
-"                                <a type=\"action\" name=\"238\">\n"
+"                            <div class=\"col-xs-6\">\n"
+"                                <a type=\"object\" name=\"open_action_checks\" context=\"{'check_type': 'third_check'}\">\n"
+"                                <!-- <a type=\"action\" name=\"238\"> -->\n"
 "                                    <t t-esc=\"dashboard.num_holding_third_checks\"/>\n"
 "                                    <t>Third Check(s) on hand</t>\n"
 "                                </a>\n"
 "                            </div>\n"
+"                            <div class=\"col-xs-6 text-right\">\n"
+"                                <span><t t-esc=\"dashboard.holding_amount\"/></span>\n"
+"                            </div>\n"
 "                        </div>\n"
-"                        <div class=\"row\">\n"
+"                        <!-- not so usefull -->\n"
+"<!--                         <div class=\"row\">\n"
 "                            <div class=\"col-xs-12\">\n"
 "                                <a type=\"object\" name=\"open_transfer_money\">Checks Deposits</a>\n"
 "                            </div>\n"
-"                        </div>\n"
+"                        </div> -->\n"
 "                    </div>\n"
 "                    <div t-if=\"dashboard.show_issue_checks\">\n"
 "                        <div class=\"row\">\n"
-"                            <div class=\"col-xs-12\">\n"
-"                                <a type=\"action\" name=\"239\">\n"
+"                            <div class=\"col-xs-6\">\n"
+"                                <a type=\"object\" name=\"open_action_checks\" context=\"{'check_type': 'issue_check'}\">\n"
+"                                <!-- <a type=\"action\" name=\"239\"> -->\n"
 "                                    <t t-esc=\"dashboard.num_handed_issue_checks\"/>\n"
 "                                    <t>Issue Check(s) handed</t>\n"
 "                                </a>\n"
+"                            </div>\n"
+"                            <div class=\"col-xs-6 text-right\">\n"
+"                                <span><t t-esc=\"dashboard.handed_amount\"/></span>\n"
 "                            </div>\n"
 "                        </div>\n"
 "                    </div>\n"
 "                </xpath>\n"
 "            "
 msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<xpath expr=\"//t[@t-name='JournalBodyBankCash']//div[contains(@class, 'o_kanban_primary_right')]\" position=\"inside\">\n"
+"                    <div t-if=\"dashboard.show_third_checks\">\n"
+"                        <div class=\"row\">\n"
+"                            <div class=\"col-xs-6\">\n"
+"                                <a type=\"object\" name=\"open_action_checks\" context=\"{'check_type': 'third_check'}\">\n"
+"                                <!-- <a type=\"action\" name=\"238\"> -->\n"
+"                                    <t t-esc=\"dashboard.num_holding_third_checks\"/>\n"
+"                                    <t>Third Check(s) on hand</t>\n"
+"                                </a>\n"
+"                            </div>\n"
+"                            <div class=\"col-xs-6 text-right\">\n"
+"                                <span><t t-esc=\"dashboard.holding_amount\"/></span>\n"
+"                            </div>\n"
+"                        </div>\n"
+"                        <!-- not so usefull -->\n"
+"<!--                         <div class=\"row\">\n"
+"                            <div class=\"col-xs-12\">\n"
+"                                <a type=\"object\" name=\"open_transfer_money\">Checks Deposits</a>\n"
+"                            </div>\n"
+"                        </div> -->\n"
+"                    </div>\n"
+"                    <div t-if=\"dashboard.show_issue_checks\">\n"
+"                        <div class=\"row\">\n"
+"                            <div class=\"col-xs-6\">\n"
+"                                <a type=\"object\" name=\"open_action_checks\" context=\"{'check_type': 'issue_check'}\">\n"
+"                                <!-- <a type=\"action\" name=\"239\"> -->\n"
+"                                    <t t-esc=\"dashboard.num_handed_issue_checks\"/>\n"
+"                                    <t>Issue Check(s) handed</t>\n"
+"                                </a>\n"
+"                            </div>\n"
+"                            <div class=\"col-xs-6 text-right\">\n"
+"                                <span><t t-esc=\"dashboard.handed_amount\"/></span>\n"
+"                            </div>\n"
+"                        </div>\n"
+"                    </div>\n"
+"                </xpath>\n"
+"            "
 
 #. module: account_check
 #: model:ir.model,name:account_check.model_account_check
@@ -344,21 +724,38 @@ msgid "Account Check"
 msgstr "Cheque"
 
 #. module: account_check
+#: model:ir.model,name:account_check.model_account_check_action_wizard
+msgid "Account Check Action Wizard"
+msgstr "Asistente para la acción de verificación de cuenta"
+
+#. module: account_check
 #: model:ir.model,name:account_check.model_account_checkbook
 msgid "Account Checkbook"
 msgstr "Chequera"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:619
+#: code:addons/account_check/models/account_check.py:649
 #, python-format
 msgid "Action %s not implemented for checks!"
 msgstr "¡Acción %s no implementada para cheques!"
+
+#. module: account_check
+#: code:addons/account_check/wizard/account_check_action_wizard.py:28
+#, python-format
+msgid "Action %s not supported on checks"
+msgstr "La acción %s no es compatible con los cheques"
 
 #. module: account_check
 #: field:account.check,message_needaction:0
 #: model:ir.model.fields,field_description:account_check.field_account_check_message_needaction
 msgid "Action Needed"
 msgstr "Se necesita una acción"
+
+#. module: account_check
+#: field:account.check.action.wizard,action_type:0
+#: model:ir.model.fields,field_description:account_check.field_account_check_action_wizard_action_type
+msgid "Action type passed on the context"
+msgstr "Tipo de acción pasada en el contexto"
 
 #. module: account_check
 #: field:account.check,amount:0
@@ -377,6 +774,22 @@ msgstr "Importe en moneda"
 #: model:ir.model.fields,field_description:account_check.field_account_check_bank_id
 msgid "Bank"
 msgstr "Banco"
+
+#. module: account_check
+#: field:account.checkbook,block_manual_number:0
+#: field:account.payment,checkbook_block_manual_number:0
+#: model:ir.model.fields,field_description:account_check.field_account_checkbook_block_manual_number
+#: model:ir.model.fields,field_description:account_check.field_account_payment_checkbook_block_manual_number
+msgid "Block manual number?"
+msgstr "¿Bloquear el número manual?"
+
+#. module: account_check
+#: help:account.checkbook,block_manual_number:0
+#: help:account.payment,checkbook_block_manual_number:0
+#: model:ir.model.fields,help:account_check.field_account_checkbook_block_manual_number
+#: model:ir.model.fields,help:account_check.field_account_payment_checkbook_block_manual_number
+msgid "Block user to enter manually another number than the suggested"
+msgstr "Bloquear usuario para ingresar manualmente otro número"
 
 #. module: account_check
 #: selection:account.check,state:0
@@ -402,11 +815,22 @@ msgid "Check"
 msgstr "Cheque"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:542
-#: code:addons/account_check/models/account_check.py:625
+#: code:addons/account_check/models/account_check.py:639
+#, python-format
+msgid "Check \"%s\" debit"
+msgstr "Marque el débito \"%s\""
+
+#. module: account_check
+#: code:addons/account_check/models/account_check.py:568
+#: code:addons/account_check/models/account_check.py:647
 #, python-format
 msgid "Check \"%s\" rejection"
 msgstr "Rechazo del Cheque \"%s\""
+
+#. module: account_check
+#: model:ir.actions.act_window,name:account_check.action_account_check_action_wizard
+msgid "Check Action"
+msgstr "Chequear acción"
 
 #. module: account_check
 #: field:account.payment,check_bank_id:0
@@ -428,29 +852,31 @@ msgstr "Nombre del Cheque"
 
 #. module: account_check
 #: field:account.payment,check_number:0
+#: field:account.payment,check_number_readonly:0
 #: model:ir.model.fields,field_description:account_check.field_account_payment_check_number
+#: model:ir.model.fields,field_description:account_check.field_account_payment_check_number_readonly
 msgid "Check Number"
 msgstr "Número del Cheque"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:339
+#: code:addons/account_check/models/account_check.py:356
 #, python-format
 msgid ""
-"Check Number must be unique per Checkbook!\n"
+"Check Number (%s) must be unique per Checkbook!\n"
 "* Check ids: %s"
 msgstr ""
-"¡El número del Cheque debe ser único por Chequera!\n"
-"* ID del Cheque: %s"
+"El número de cheque (%s) debe ser único por chequera! \n"
+"* Comprobar ids: %s"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:352
+#: code:addons/account_check/models/account_check.py:369
 #, python-format
 msgid ""
-"Check Number must be unique per Owner and Bank!\n"
+"Check Number (%s) must be unique per Owner and Bank!\n"
 "* Check ids: %s"
 msgstr ""
-"¡El número del Cheque debe ser único por Propietario y por Banco!\n"
-"* ID del Cheque: %s"
+"¡El número de cheque (%s) debe ser único por propietario y banco!\n"
+"* Comprobar ids: %s"
 
 #. module: account_check
 #: field:account.payment,check_owner_name:0
@@ -471,20 +897,20 @@ msgid "Check Payment Date"
 msgstr "Fecha de pago del Cheque"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:298
-#: code:addons/account_check/models/account_payment.py:187
+#: code:addons/account_check/models/account_check.py:315
+#: code:addons/account_check/models/account_payment.py:204
 #, python-format
 msgid "Check Payment Date must be greater than Issue Date"
 msgstr "La fecha de pago del Cheque debe ser mayor a la fecha de emisión"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:560
+#: code:addons/account_check/models/account_check.py:586
 #, python-format
 msgid "Check nbr (id): %s (%s)"
 msgstr "Nro del Cheque (id): %s (%s)"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:310
+#: code:addons/account_check/models/account_check.py:327
 #, python-format
 msgid "Check number (%s) can't be greater than %s on checkbook %s (%s)"
 msgstr ""
@@ -545,8 +971,11 @@ msgid "Company related to this journal"
 msgstr "Compañía relacionada a este diario"
 
 #. module: account_check
-#: field:account.check,create_uid:0 field:account.check.operation,create_uid:0
+#: field:account.check,create_uid:0
+#: field:account.check.action.wizard,create_uid:0
+#: field:account.check.operation,create_uid:0
 #: field:account.checkbook,create_uid:0
+#: model:ir.model.fields,field_description:account_check.field_account_check_action_wizard_create_uid
 #: model:ir.model.fields,field_description:account_check.field_account_check_create_uid
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_create_uid
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook_create_uid
@@ -555,8 +984,10 @@ msgstr "Creado por"
 
 #. module: account_check
 #: field:account.check,create_date:0
+#: field:account.check.action.wizard,create_date:0
 #: field:account.check.operation,create_date:0
 #: field:account.checkbook,create_date:0
+#: model:ir.model.fields,field_description:account_check.field_account_check_action_wizard_create_date
 #: model:ir.model.fields,field_description:account_check.field_account_check_create_date
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_create_date
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook_create_date
@@ -583,13 +1014,15 @@ msgid "Currents"
 msgstr "Corrientes"
 
 #. module: account_check
-#: code:addons/account_check/models/account_checkbook.py:98
+#: code:addons/account_check/models/account_checkbook.py:108
 #, python-format
 msgid "Currents Checks"
 msgstr "Cheques Corrientes"
 
 #. module: account_check
+#: field:account.check.action.wizard,date:0
 #: field:account.check.operation,date:0
+#: model:ir.model.fields,field_description:account_check.field_account_check_action_wizard_date
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_date
 msgid "Date"
 msgstr "Fecha"
@@ -624,7 +1057,7 @@ msgid "Deferred Check Account"
 msgstr "Cuenta de Cheque Diferido"
 
 #. module: account_check
-#: code:addons/account_check/models/account_checkbook.py:96
+#: code:addons/account_check/models/account_checkbook.py:106
 #, python-format
 msgid "Deferred Checks"
 msgstr "Cheques Diferidos"
@@ -659,8 +1092,10 @@ msgstr "Depositado"
 
 #. module: account_check
 #: field:account.check,display_name:0
+#: field:account.check.action.wizard,display_name:0
 #: field:account.check.operation,display_name:0
 #: field:account.checkbook,display_name:0
+#: model:ir.model.fields,field_description:account_check.field_account_check_action_wizard_display_name
 #: model:ir.model.fields,field_description:account_check.field_account_check_display_name
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_display_name
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook_display_name
@@ -724,8 +1159,9 @@ msgstr ""
 "Mano\""
 
 #. module: account_check
-#: field:account.check,id:0 field:account.check.operation,id:0
-#: field:account.checkbook,id:0
+#: field:account.check,id:0 field:account.check.action.wizard,id:0
+#: field:account.check.operation,id:0 field:account.checkbook,id:0
+#: model:ir.model.fields,field_description:account_check.field_account_check_action_wizard_id
 #: model:ir.model.fields,field_description:account_check.field_account_check_id
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_id
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook_id
@@ -814,17 +1250,22 @@ msgstr "Última Fecha de Mensaje"
 
 #. module: account_check
 #: field:account.check,__last_update:0
+#: field:account.check.action.wizard,__last_update:0
 #: field:account.check.operation,__last_update:0
 #: field:account.checkbook,__last_update:0
 #: model:ir.model.fields,field_description:account_check.field_account_check___last_update
+#: model:ir.model.fields,field_description:account_check.field_account_check_action_wizard___last_update
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation___last_update
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook___last_update
 msgid "Last Modified on"
 msgstr "Última Modificación el"
 
 #. module: account_check
-#: field:account.check,write_uid:0 field:account.check.operation,write_uid:0
+#: field:account.check,write_uid:0
+#: field:account.check.action.wizard,write_uid:0
+#: field:account.check.operation,write_uid:0
 #: field:account.checkbook,write_uid:0
+#: model:ir.model.fields,field_description:account_check.field_account_check_action_wizard_write_uid
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_write_uid
 #: model:ir.model.fields,field_description:account_check.field_account_check_write_uid
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook_write_uid
@@ -832,8 +1273,11 @@ msgid "Last Updated by"
 msgstr "Última actualización por"
 
 #. module: account_check
-#: field:account.check,write_date:0 field:account.check.operation,write_date:0
+#: field:account.check,write_date:0
+#: field:account.check.action.wizard,write_date:0
+#: field:account.check.operation,write_date:0
 #: field:account.checkbook,write_date:0
+#: model:ir.model.fields,field_description:account_check.field_account_check_action_wizard_write_date
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_write_date
 #: model:ir.model.fields,field_description:account_check.field_account_check_write_date
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook_write_date
@@ -918,7 +1362,7 @@ msgid "Operation"
 msgstr "Operación"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:440
+#: code:addons/account_check/models/account_check.py:459
 #, python-format
 msgid "Operation %s not implemented for checks!"
 msgstr "¡La operación %s no está implementada para los cheques!"
@@ -1052,10 +1496,18 @@ msgid "Templates for Account Chart"
 msgstr "Plantillas para el Plan de Cuentas"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:458
+#: code:addons/account_check/models/account_check.py:477
 #, python-format
 msgid "The Check must be in draft state for unlink !"
 msgstr "El Cheque debe estar en borrador para poder ser borrado!"
+
+#. module: account_check
+#: code:addons/account_check/models/account_check.py:397
+#, python-format
+msgid "The date of a new operation can not be minor than last operation date"
+msgstr ""
+"La fecha de una nueva operación no puede ser menor que la fecha de la última"
+" operación"
 
 #. module: account_check
 #: help:account.checkbook,issue_check_subtype:0
@@ -1071,7 +1523,9 @@ msgstr ""
 
 #. module: account_check
 #: help:account.payment,check_number:0
+#: help:account.payment,check_number_readonly:0
 #: model:ir.model.fields,help:account_check.field_account_payment_check_number
+#: model:ir.model.fields,help:account_check.field_account_payment_check_number_readonly
 msgid ""
 "The selected journal is configured to print check numbers. If your pre-"
 "printed check paper already has numbers or if the current numbering is "
@@ -1093,7 +1547,7 @@ msgid "Third Checks"
 msgstr "Cheque de Terceros"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:387
+#: code:addons/account_check/models/account_payment.py:456
 #, python-format
 msgid ""
 "This operatios is not implemented for checks:\n"
@@ -1113,6 +1567,16 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook_range_to
 msgid "To Number"
 msgstr "Hasta Número"
+
+#. module: account_check
+#: selection:account.check.operation,operation:0
+msgid "Transfer"
+msgstr "transferir"
+
+#. module: account_check
+#: selection:account.check,state:0
+msgid "Transfered"
+msgstr "Transferido"
 
 #. module: account_check
 #: field:account.check,type:0
@@ -1154,13 +1618,13 @@ msgid "Withdrawed"
 msgstr "Retirado"
 
 #. module: account_check
-#: code:addons/account_check/models/account_checkbook.py:107
+#: code:addons/account_check/models/account_checkbook.py:117
 #, python-format
 msgid "You can drop a checkbook if it has been used on checks!"
 msgstr "¡No puede eliminar una chequera si la ha utilizado para cheques!"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:443
+#: code:addons/account_check/models/account_check.py:462
 #, python-format
 msgid ""
 "You can not \"%s\" a check from state \"%s\"!\n"
@@ -1170,13 +1634,17 @@ msgstr ""
 "Nro. de Cheque (id): %s (%s)"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:366
+#: code:addons/account_check/models/account_check.py:383
 #, python-format
-msgid "You can not cancel operation \"%s\" if check is in \"%s\" state"
-msgstr "No puede cancelar la operación \"%s\" si el cheque está en estado \"%s\""
+msgid ""
+"You can not cancel this operation because this is not the last operation "
+"over the check. Check (id): %s (%s)"
+msgstr ""
+"No puede cancelar esta operación porque ésta no es la última operación sobre"
+" la comprobación. Comprobación (id):%s (%s)"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:70
+#: code:addons/account_check/models/account_check.py:74
 #, python-format
 msgid ""
 "You can not delete a check operation that has an origin.\n"
