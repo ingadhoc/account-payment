@@ -6,13 +6,14 @@
             <field name="model">account.withholding.automatic.wizard</field>
             <field name="arch" type="xml">
                 <form string="Change Check">
+                    <field name="action_type" invisible="1"/>
                     <group>
                         <group>
                             <field name="account_id" placeholder="AA:ZZ ó AA,BB,CC ó AA:CC,DD ó AA:CC,DD,!EE"/>
                             <field name="city"/>
                             <field name="state_id"/>
                         </group>
-                        <group>
+                        <group attrs="{'invisible':[('action_type','==','insert_domain2')]}">
                             <field name="percent" placeholder="Ingresar valores entre 0-1"/>
                             <field name="fix_amount"/>
                         </group>
