@@ -29,6 +29,7 @@
         'views/account_payment_view.xml',
         'views/res_company_view.xml',
         'security/ir.model.access.csv',
+        'wizards/withholding_automatic_wizard_views.xml',
     ],
     'demo': [
         'demo/withholding_demo.xml',
