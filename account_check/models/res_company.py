@@ -11,9 +11,8 @@ _logger = logging.getLogger(__name__)
 
 class ResCompany(models.Model):
     _inherit = 'res.company'
-    
-    #Own
-    
+
+    # Own
     own_check_rejected_account_id = fields.Many2one(
         'account.account',
         'Own Checks Rejected Account',
@@ -30,14 +29,17 @@ class ResCompany(models.Model):
         help='Deferred Checks account, for eg. "Deferred Checks"',
     )
 
-    #Third Party
-    
+    payment_method_validate_jr = fields.Boolean(
+        string='Validate Payment Method in Journals',
+    )
+
+    # Third Party
     third_party_checks_cancelled_account_id = fields.Many2one(
         'account.account',
         'Third Party Cancelled Check Account',
         help='Third Party Cancelled Account, for eg. "Third Party Cancelled Checks"',
     )
-    third_party_checks_bounced_endorsed_account_id  = fields.Many2one(
+    third_party_checks_bounced_endorsed_account_id = fields.Many2one(
         'account.account',
         'Third Party Bounced Check Account',
         help='Third Party Bounced Check Account, for eg. "Third Party Bounced Checks"',
@@ -51,7 +53,7 @@ class ResCompany(models.Model):
         'account.account',
         'Third Party Holding Check Account',
         help='Third Party Holding Checks account for third checks, for eg. "Third Party Holding Checks"',
-    )    
+    )
 
     @api.multi
     def _get_check_account(self, type):

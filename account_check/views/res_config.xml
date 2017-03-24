@@ -38,7 +38,12 @@
                             <div>
                                 <label for="holding_check_account_id" string="Third Party Holding Check Account"/><field name="holding_check_account_id"/>
                             </div>
-                            </group>    
+                            </group> 
+                            <group>
+                                <div>
+                                    <label for="payment_method_validate_jr" string="Validate Payment Method in Journals"/><field name="payment_method_validate_jr"/>    
+                                </div>
+                            </group>
                        </div>
                     </group>
                 </group>
