@@ -16,24 +16,24 @@ class AccountJournal(models.Model):
         'Checkbooks',
     )
     check_control = fields.Boolean(
-        'Check Control', required=True,default=False,
+        'Check Control', required=True, default=False,
     )
-                
-    #@api.one
+
+    # @api.one
     @api.one
     @api.constrains('outbound_payment_method_ids', 'inbound_payment_method_ids')
     def _check_payments_methods(self):
         payment_method = self.outbound_payment_method_ids.ids + self.inbound_payment_method_ids.ids
-        if ((8 in payment_method) and (len(payment_method) == 1)):
-            return 0
-        else:
-            if (((6 in payment_method and 7 in payment_method) and len(payment_method) == 2) or ((( 6 in payment_method) and len(payment_method) == 1) or (( 7 in payment_method) and len(payment_method) == 1))):
+        if self.company_id.payment_method_validate_jr:
+            if ((8 in payment_method) and (len(payment_method) == 1)):
                 return 0
-            if ( 8 not in payment_method) and (( 6 not in payment_method) or ( 7 not in payment_method)) and not ((4 in payment_method) and (5 in payment_method)):
-                return 0
-        raise ValidationError(_('A journal cannot have any of these two types at the same time, Own Check and 3rd Party Check, or Check (Own or 3rd Party) and Withholding. Please correct your selection in "Advanced Settings" tab.'))
-                
-    
+            else:
+                if (((6 in payment_method and 7 in payment_method) and len(payment_method) == 2) or (((6 in payment_method) and len(payment_method) == 1) or ((7 in payment_method) and len(payment_method) == 1))):
+                    return 0
+                if (8 not in payment_method) and ((6 not in payment_method) or (7 not in payment_method)) and not ((4 in payment_method) and (5 in payment_method)):
+                    return 0
+            raise ValidationError(_('A journal cannot have any of these two types at the same time, Own Check and 3rd Party Check, or Check (Own or 3rd Party) and Withholding. Please correct your selection in "Advanced Settings" tab.'))
+
     @api.model
     def create(self, vals):
         rec = super(AccountJournal, self).create(vals)
@@ -66,7 +66,7 @@ class AccountJournal(models.Model):
         for bank_journal in bank_journals:
             if not bank_journal.checkbook_ids:
                 bank_journal._create_checkbook()
-            #bank_journal.write({
+            # bank_journal.write({
             #    'outbound_payment_method_ids': [(4, issue_checks.id, None)],
             #})
 
