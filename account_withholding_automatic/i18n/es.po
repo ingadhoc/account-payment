@@ -4,13 +4,14 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
+# Nicolas Mac Rouillon <nmr@ingadhoc.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-12-23 23:20+0000\n"
-"PO-Revision-Date: 2016-12-23 23:20+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
+"POT-Creation-Date: 2017-03-16 18:57+0000\n"
+"PO-Revision-Date: 2017-03-16 18:57+0000\n"
+"Last-Translator: Nicolas Mac Rouillon <nmr@ingadhoc.com>, 2017\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -56,6 +57,40 @@ msgid ""
 "                </xpath>\n"
 "            "
 msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<!-- TODO mejorar esta vista -->\n"
+"                <xpath expr=\"//page\" position=\"inside\">\n"
+"                    <group attrs=\"{'invisible': [('type_tax_use', '!=', 'supplier')]}\">\n"
+"                        <group name=\"withholdings\">\n"
+"                            <label for=\"withholding_type\"/>\n"
+"                            <div>\n"
+"                                <field name=\"withholding_type\" class=\"oe_inline\"/>\n"
+"                            </div>\n"
+"                            <field name=\"withholding_python_compute\" attrs=\"{'invisible': [('withholding_type', '!=', 'code')]}\" class=\"oe_inline\" nolabel=\"1\" colspan=\"2\"/>\n"
+"                            <field name=\"withholding_rule_ids\" attrs=\"{'invisible': [('withholding_type', '!=', 'based_on_rule')]}\" class=\"oe_inline\" nolabel=\"1\" colspan=\"2\">\n"
+"                                <tree editable=\"bottom\">\n"
+"                                    <field name=\"sequence\" widget=\"handle\"/>\n"
+"                                    <field name=\"domain\"/>\n"
+"                                    <field name=\"percentage\"/>\n"
+"                                    <field name=\"fix_amount\"/>\n"
+"                                </tree>\n"
+"                            </field>\n"
+"                        </group>\n"
+"                        <group attrs=\"{'invisible':[('withholding_type', '=', 'none')]}\">\n"
+"                            <field name=\"withholding_accumulated_payments\"/>\n"
+"                            <field name=\"withholding_advances\"/>\n"
+"                            <label for=\"withholding_amount_type\" attrs=\"{'required':[('withholding_type', '!=', 'none')]}\"/>\n"
+"                            <div for=\"withholding_amount_type\" attrs=\"{'required':[('withholding_type', '!=', 'none')]}\">\n"
+"                                <field name=\"withholding_amount_type\" attrs=\"{'required':[('withholding_type', '!=', 'none')]}\" class=\"oe_inline\"/>\n"
+"                            </div>\n"
+"                            <field name=\"withholding_non_taxable_minimum\"/>\n"
+"                            <field name=\"withholding_non_taxable_amount\"/>\n"
+"                            <field name=\"withholding_user_error_message\"/>\n"
+"                            <field name=\"withholding_user_error_domain\" attrs=\"{'invisible': [('withholding_user_error_message', '=', False)]}\"/>\n"
+"                        </group>\n"
+"                    </group>\n"
+"                </xpath>\n"
+"            "
 
 #. module: account_withholding_automatic
 #: model:ir.ui.view,arch_db:account_withholding_automatic.view_account_payment_group_form
@@ -66,6 +101,11 @@ msgid ""
 "                </button>\n"
 "            "
 msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<button position=\"before\">\n"
+"                    <button name=\"compute_withholdings\" string=\"Compute Withholdings\" type=\"object\" states=\"confirmed\"/>\n"
+"                </button>\n"
+"            "
 
 #. module: account_withholding_automatic
 #: model:ir.ui.view,arch_db:account_withholding_automatic.view_account_payment_form
@@ -98,6 +138,33 @@ msgid ""
 "                <!-- </h1> -->\n"
 "            </data>"
 msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<data><form>\n"
+"                    <field name=\"automatic\" invisible=\"1\"/>\n"
+"                    <field name=\"withholding_accumulated_payments\" invisible=\"1\"/>\n"
+"                </form>\n"
+"                <!-- <h1 position=\"after\"> -->\n"
+"                    <!-- <group string=\"Calculation\" attrs=\"{'invisible': [('automatic', '=', False)]}\"> -->\n"
+"                    <group name=\"withholding_data\">\n"
+"                    <!-- <field name='communication' position=\"after\"> -->\n"
+"                        <!-- <group> -->\n"
+"                            <field name=\"withholdable_invoiced_amount\"/>\n"
+"                            <field name=\"withholdable_advanced_amount\"/>\n"
+"                            <field name=\"accumulated_amount\" attrs=\"{'invisible': [('withholding_accumulated_payments', '=', False)]}\"/>\n"
+"                            <field name=\"total_amount\"/>\n"
+"                            <field name=\"withholding_non_taxable_minimum\"/>\n"
+"                            <field name=\"withholding_non_taxable_amount\"/>\n"
+"                        <!-- </group> -->\n"
+"                        <!-- <group> -->\n"
+"                            <field name=\"withholdable_base_amount\"/>\n"
+"                            <field name=\"period_withholding_amount\" attrs=\"{'invisible': [('withholding_accumulated_payments', '=', False)]}\"/>\n"
+"                            <field name=\"previous_withholding_amount\" attrs=\"{'invisible': [('withholding_accumulated_payments', '=', False)]}\"/>\n"
+"                            <field name=\"computed_withholding_amount\"/>\n"
+"                        </group>\n"
+"                        <!-- </group> -->\n"
+"                    <!-- </group> -->\n"
+"                <!-- </h1> -->\n"
+"            </data>"
 
 #. module: account_withholding_automatic
 #: model:ir.ui.view,arch_db:account_withholding_automatic.view_company_form
@@ -108,6 +175,11 @@ msgid ""
 "                </field>\n"
 "            "
 msgstr ""
+"<?xml version=\"1.0\"?>\n"
+"<field name=\"double_validation\" position=\"after\">\n"
+"                    <field name=\"automatic_withholdings\"/>\n"
+"                </field>\n"
+"            "
 
 #. module: account_withholding_automatic
 #: field:account.payment,withholding_accumulated_payments:0
@@ -292,7 +364,7 @@ msgid "Month"
 msgstr "Mes"
 
 #. module: account_withholding_automatic
-#: code:addons/account_withholding_automatic/models/account_tax.py:187
+#: code:addons/account_withholding_automatic/models/account_tax.py:191
 #, python-format
 msgid "No journal for withholdings found on company %s"
 msgstr "No fueron encontrados diarios para las retenciones en la compañía %s"
@@ -362,32 +434,32 @@ msgstr "Código Python"
 #. module: account_withholding_automatic
 #: model:account.tax,description:account_withholding_automatic.with_monthly
 msgid "Ret acum mensual"
-msgstr ""
+msgstr "Ret acum mensual"
 
 #. module: account_withholding_automatic
 #: model:account.tax,description:account_withholding_automatic.with_no_acum
 msgid "Ret no acum"
-msgstr ""
+msgstr "Ret no acum"
 
 #. module: account_withholding_automatic
 #: model:account.tax,description:account_withholding_automatic.with_no_auto
 msgid "Ret no auto"
-msgstr ""
+msgstr "Ret no auto"
 
 #. module: account_withholding_automatic
 #: model:account.tax,name:account_withholding_automatic.with_monthly
 msgid "Retención 10% acumulada mensual"
-msgstr ""
+msgstr "Retención 10% acumulada mensual"
 
 #. module: account_withholding_automatic
 #: model:account.tax,name:account_withholding_automatic.with_no_acum
 msgid "Retención 15% no acumulada"
-msgstr ""
+msgstr "Retención 15% no acumulada"
 
 #. module: account_withholding_automatic
 #: model:account.tax,name:account_withholding_automatic.with_no_auto
 msgid "Retención no automatica"
-msgstr ""
+msgstr "Retención no automatica"
 
 #. module: account_withholding_automatic
 #: field:account.tax,withholding_rule_ids:0
