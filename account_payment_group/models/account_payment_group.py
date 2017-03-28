@@ -333,6 +333,16 @@ class AccountPaymentGroup(models.Model):
             #     rec.partner_type == 'supplier' and
             #     -payments_amount or payments_amount)
 
+    # TODO analizar en v10
+    # el onchange no funciona bien en o2m, si usamos write se escribe pero no
+    # se actualiza en interfaz lo cual puede ser confuzo, por ahora lo
+    # comentamos
+    # @api.onchange('payment_date')
+    # def change_payment_date(self):
+    #     # self.payment_ids.write({'payment_date': self.payment_date})
+    #     for line in self.payment_ids:
+    #         line.payment_date = self.payment_date
+
     @api.one
     # @api.onchange(
     @api.depends(
