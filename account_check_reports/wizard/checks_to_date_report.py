@@ -26,7 +26,10 @@ class account_check_to_date_report_wizard(models.TransientModel):
         issue_domain = [
             ('type', '=', 'issue_check'),
             ('state', 'not in', ['draft', 'cancel', 'changed', 'returned']),
-            ('issue_date', '<=', self.to_date),
+            # usamos la fecha del move porque es la que afecta la contabilidad
+            # (en realidad periodo) y la issue puede ser otra
+            # ('issue_date', '<=', self.to_date),
+            ('voucher_id.move_id.date', '<=', self.to_date),
             # todavia no debitado
             '|',
             ('debit_account_move_id', '=', False),
@@ -41,8 +44,11 @@ class account_check_to_date_report_wizard(models.TransientModel):
         third_domain = [
             ('type', '=', 'third_check'),
             ('state', 'not in', ['draft', 'cancel', 'changed', 'returned']),
-            ('issue_date', '<=', self.to_date),
-            # todavia no debitado
+            # usamos la fecha del move porque es la que afecta la contabilidad
+            # (en realidad periodo) y la issue puede ser otra
+            # ('issue_date', '<=', self.to_date),
+            ('voucher_id.move_id.date', '<=', self.to_date),
+            # todavia no depositado ni entregado
             '|',
             ('third_handed_voucher_id.move_id.date', '>', self.to_date),
             '|',
