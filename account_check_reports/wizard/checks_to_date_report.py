@@ -35,7 +35,8 @@ class account_check_to_date_report_wizard(models.TransientModel):
         ]
         if self.journal_id:
             issue_domain.append(('journal_id', '=', self.journal_id.id))
-        issue_checks = self.env['account.check'].search(issue_domain)
+        issue_checks = self.env['account.check'].search(
+            issue_domain, order='issue_date')
 
         third_domain = [
             ('type', '=', 'third_check'),
@@ -53,7 +54,8 @@ class account_check_to_date_report_wizard(models.TransientModel):
         ]
         if self.journal_id:
             third_domain.append(('journal_id', '=', self.journal_id.id))
-        third_checks = self.env['account.check'].search(third_domain)
+        third_checks = self.env['account.check'].search(
+            third_domain, order='issue_date')
 
         return self.env['report'].with_context(
             issue_check_ids=issue_checks.ids,

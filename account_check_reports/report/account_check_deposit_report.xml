@@ -11,7 +11,7 @@
     <field name="report_type">aeroo</field>
     <field name="in_format">oo-odt</field>
     <field name="report_rml">account_check_reports/report/account_check_deposit_report.odt</field>
-    <field name="out_format" ref="report_aeroo.report_mimetypes_pdf_odt"/>
+    <field name="out_format" ref="report_aeroo.report_mimetypes_doc_odt"/>
     <field name="tml_source">file</field>
     <field name="parser_state">loc</field>
     <field name="parser_loc">l10n_ar_aeroo_base/parser.py</field>
