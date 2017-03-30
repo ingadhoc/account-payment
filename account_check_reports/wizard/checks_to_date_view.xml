@@ -1,0 +1,36 @@
+<openerp>
+    <data>
+
+        <record id="account_check_to_date_report_view" model="ir.ui.view">
+            <field name="name">account.check.to_date.report.form</field>
+            <field name="model">account.check.to_date.report.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Entregar Cheques">
+                    <group>
+                        <field name="to_date"/>
+                        <field name="journal_id"/>
+                    </group>
+                    <footer>
+                        <button string="Confirmar" name="action_confirm" type="object" default_focus="1" class="oe_highlight"/>
+                        or
+                        <button string="Cancelar" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <act_window id="action_account_check_to_date_report"
+            name="Cheques pendientes a fecha"
+            res_model="account.check.to_date.report.wizard"
+            src_model="account.check"
+            view_mode="form" target="new" view_type="form"/>
+
+        <menuitem
+            id="menu_account_check_to_date_report"
+            sequence="20"
+            parent="account.final_accounting_reports"
+            action="action_account_check_to_date_report"
+            />
+
+    </data>
+</openerp>

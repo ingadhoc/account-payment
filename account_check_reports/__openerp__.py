@@ -20,7 +20,7 @@
 ##############################################################################
 {
     'name': 'Account Check Reports',
-    'version': '8.0.0.0.0',
+    'version': '8.0.0.1.0',
     'category': 'Localization/Argentina',
     'sequence': 14,
     'author': 'ADHOC SA',
@@ -40,6 +40,8 @@ Account Check Reports
     'data': [
         'views/account_check_view.xml',
         'report/account_check_deposit_report.xml',
+        'report/account_checks_to_date_report.xml',
+        'wizard/checks_to_date_view.xml',
     ],
     'demo': [
     ],
