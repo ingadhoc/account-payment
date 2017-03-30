@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: account-payment (8.0)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-28 19:39+0000\n"
-"PO-Revision-Date: 2016-05-24 20:29+0000\n"
+"POT-Creation-Date: 2017-03-06 16:50+0000\n"
+"PO-Revision-Date: 2016-08-30 14:02+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>\n"
 "Language-Team: Spanish (http://www.transifex.com/adhoc/ingadhoc-account-payment-8-0/language/es/)\n"
 "MIME-Version: 1.0\n"
@@ -62,6 +62,11 @@ msgid "Confirm"
 msgstr "Confirmar"
 
 #. module: account_voucher_double_validation
+#: model:res.groups,name:account_voucher_double_validation.group_confirm_payments
+msgid "Confirm Payments"
+msgstr ""
+
+#. module: account_voucher_double_validation
 #: code:addons/account_voucher_double_validation/account_voucher.py:17
 #, python-format
 msgid "Confirmed"
@@ -110,6 +115,11 @@ msgstr "Importe a Pagar"
 #: help:account.voucher,to_pay_amount:0
 msgid "Importe a ser pagado"
 msgstr "Importe a ser pagado"
+
+#. module: account_voucher_double_validation
+#: model:ir.model,name:account_voucher_double_validation.model_account_invoice
+msgid "Invoice"
+msgstr "Factura"
 
 #. module: account_voucher_double_validation
 #: model:ir.model,name:account_voucher_double_validation.model_account_journal
