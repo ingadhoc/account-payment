@@ -4,14 +4,14 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
-# Nicolas Mac Rouillon <nmr@ingadhoc.com>, 2017
+# Javier Diez <jd@adhoc.com.ar>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-16 18:57+0000\n"
-"PO-Revision-Date: 2017-03-16 18:57+0000\n"
-"Last-Translator: Nicolas Mac Rouillon <nmr@ingadhoc.com>, 2017\n"
+"POT-Creation-Date: 2017-03-30 23:26+0000\n"
+"PO-Revision-Date: 2017-03-30 23:26+0000\n"
+"Last-Translator: Javier Diez <jd@adhoc.com.ar>, 2017\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -20,176 +20,11 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: account_payment_group_document
-#: model:ir.ui.view,arch_db:account_payment_group_document.view_account_payment_form
-msgid ""
-"<?xml version=\"1.0\"?>\n"
-"<data><!-- we hide them always because we dont use them on transfers -->\n"
-"        <!-- <div class=\"oe_title\" position=\"attributes\">\n"
-"            <attribute name=\"invisible\">1</attribute>\n"
-"        </div> -->\n"
-"        <field name=\"receiptbook_id\" position=\"attributes\">\n"
-"            <attribute name=\"invisible\">1</attribute>\n"
-"        </field>\n"
-"        <field name=\"document_number\" position=\"attributes\">\n"
-"            <attribute name=\"invisible\">1</attribute>\n"
-"        </field>\n"
-"<!--         <div class=\"oe_title\" position=\"attributes\">\n"
-"            <attribute name=\"invisible\">context.get('payment_group')</attribute>\n"
-"        </div>\n"
-"        <field name=\"receiptbook_id\" position=\"attributes\">\n"
-"            <attribute name=\"invisible\">context.get('payment_group')</attribute>\n"
-"        </field> -->\n"
-"    </data>"
-msgstr ""
-"<?xml version=\"1.0\"?>\n"
-"<data><!-- we hide them always because we dont use them on transfers -->\n"
-"        <!-- <div class=\"oe_title\" position=\"attributes\">\n"
-"            <attribute name=\"invisible\">1</attribute>\n"
-"        </div> -->\n"
-"        <field name=\"receiptbook_id\" position=\"attributes\">\n"
-"            <attribute name=\"invisible\">1</attribute>\n"
-"        </field>\n"
-"        <field name=\"document_number\" position=\"attributes\">\n"
-"            <attribute name=\"invisible\">1</attribute>\n"
-"        </field>\n"
-"<!--         <div class=\"oe_title\" position=\"attributes\">\n"
-"            <attribute name=\"invisible\">context.get('payment_group')</attribute>\n"
-"        </div>\n"
-"        <field name=\"receiptbook_id\" position=\"attributes\">\n"
-"            <attribute name=\"invisible\">context.get('payment_group')</attribute>\n"
-"        </field> -->\n"
-"    </data>"
-
-#. module: account_payment_group_document
 #: model:ir.ui.view,arch_db:account_payment_group_document.view_account_payment_group_form
-msgid ""
-"<?xml version=\"1.0\"?>\n"
-"<data><form>\n"
-"                    <field name=\"document_sequence_id\" invisible=\"1\"/> \n"
-"                    <field name=\"localization\" invisible=\"1\"/>\n"
-"                </form> \n"
-"                <field name=\"payment_date\" position=\"before\">\n"
-"\n"
-"                    <!-- only required on posted state for compatibility if you install this module with payments already created -->\n"
-"                    <field name=\"receiptbook_id\" attrs=\"{'invisible': [('localization', '=', False)], 'required':[('localization', '!=', False), ('state', '=', 'draft')]}\" domain=\"[('partner_type', '=', partner_type), ('company_id', '=', company_id)]\"/>\n"
-"                    <field name=\"document_number\" attrs=\"{'invisible': ['|', ('document_sequence_id', '!=', False), ('localization', '=', False)], 'required': [('document_sequence_id', '=', False), ('localization', '!=', False)]}\"/>\n"
-"                    <!-- por ahora no agregamos esto, vamos a ver si alguien lo pide -->\n"
-"                    <!-- <field name=\"manual_prefix\" attrs=\"{'invisible':['|',('document_sequence_id', '!=', False), ('state','!=','draft')]}\"/> -->\n"
-"                    <!-- <field name=\"manual_sufix\" attrs=\"{'invisible':['|',('document_sequence_id', '!=', False), ('state', '!=', 'draft')], 'required':[('document_sequence_id', '=', False), ('localization', '!=', False)]}\"/> -->\n"
-"                    <!-- <field name=\"next_receipt_number\" attrs=\"{'invisible':['|',('receiptbook_sequence_type','!=','automatic'), ('state','!=','draft')]}\"/> -->\n"
-"                    <!-- we disable for now, probably depreciated, used by sirpeco yet -->\n"
-"                    <!-- <field name=\"force_number\" attrs=\"{'invisible':['|',('receiptbook_sequence_type','!=','automatic'),('state','!=','draft')]}\"/> -->\n"
-"                </field>\n"
-"\n"
-"\n"
-"<!--                 <field name=\"name\" position=\"attributes\">\n"
-"                    <attribute name=\"invisible\">1</attribute>\n"
-"                </field>\n"
-" -->\n"
-"                <!-- <field name=\"name\" position=\"before\"> -->\n"
-"                <!-- <div class=\"oe_title\" position=\"inside\"> -->\n"
-"                <h1>\n"
-"                    <field name=\"display_name\" attrs=\"{'invisible': [('display_name', '=', False)]}\" class=\"oe_inline\"/>\n"
-"                    <label string=\"- Next Number: \" attrs=\"{'invisible': [('next_number', 'in', (0, False))]}\" class=\"oe_inline\"/>\n"
-"                    <field name=\"next_number\" attrs=\"{'invisible': [('next_number', 'in', (0, False))]}\" class=\"oe_inline\"/>\n"
-"                </h1>\n"
-"                <!-- </div> -->\n"
-"            </data>"
-msgstr ""
-"<?xml version=\"1.0\"?>\n"
-"<data><form>\n"
-"                    <field name=\"document_sequence_id\" invisible=\"1\"/> \n"
-"                    <field name=\"localization\" invisible=\"1\"/>\n"
-"                </form> \n"
-"                <field name=\"payment_date\" position=\"before\">\n"
-"\n"
-"                    <!-- only required on posted state for compatibility if you install this module with payments already created -->\n"
-"                    <field name=\"receiptbook_id\" attrs=\"{'invisible': [('localization', '=', False)], 'required':[('localization', '!=', False), ('state', '=', 'draft')]}\" domain=\"[('partner_type', '=', partner_type), ('company_id', '=', company_id)]\"/>\n"
-"                    <field name=\"document_number\" attrs=\"{'invisible': ['|', ('document_sequence_id', '!=', False), ('localization', '=', False)], 'required': [('document_sequence_id', '=', False), ('localization', '!=', False)]}\"/>\n"
-"                    <!-- por ahora no agregamos esto, vamos a ver si alguien lo pide -->\n"
-"                    <!-- <field name=\"manual_prefix\" attrs=\"{'invisible':['|',('document_sequence_id', '!=', False), ('state','!=','draft')]}\"/> -->\n"
-"                    <!-- <field name=\"manual_sufix\" attrs=\"{'invisible':['|',('document_sequence_id', '!=', False), ('state', '!=', 'draft')], 'required':[('document_sequence_id', '=', False), ('localization', '!=', False)]}\"/> -->\n"
-"                    <!-- <field name=\"next_receipt_number\" attrs=\"{'invisible':['|',('receiptbook_sequence_type','!=','automatic'), ('state','!=','draft')]}\"/> -->\n"
-"                    <!-- we disable for now, probably depreciated, used by sirpeco yet -->\n"
-"                    <!-- <field name=\"force_number\" attrs=\"{'invisible':['|',('receiptbook_sequence_type','!=','automatic'),('state','!=','draft')]}\"/> -->\n"
-"                </field>\n"
-"\n"
-"\n"
-"<!--                 <field name=\"name\" position=\"attributes\">\n"
-"                    <attribute name=\"invisible\">1</attribute>\n"
-"                </field>\n"
-" -->\n"
-"                <!-- <field name=\"name\" position=\"before\"> -->\n"
-"                <!-- <div class=\"oe_title\" position=\"inside\"> -->\n"
-"                <h1>\n"
-"                    <field name=\"display_name\" attrs=\"{'invisible': [('display_name', '=', False)]}\" class=\"oe_inline\"/>\n"
-"                    <label string=\"- Next Number: \" attrs=\"{'invisible': [('next_number', 'in', (0, False))]}\" class=\"oe_inline\"/>\n"
-"                    <field name=\"next_number\" attrs=\"{'invisible': [('next_number', 'in', (0, False))]}\" class=\"oe_inline\"/>\n"
-"                </h1>\n"
-"                <!-- </div> -->\n"
-"            </data>"
+msgid "- Next Number:"
+msgstr "- Próximo número:"
 
 #. module: account_payment_group_document
-#: model:ir.ui.view,arch_db:account_payment_group_document.view_account_payment_group_invoice_wizard
-msgid ""
-"<?xml version=\"1.0\"?>\n"
-"<data><form>   \n"
-"                    <field name=\"available_journal_document_type_ids\" invisible=\"1\"/>\n"
-"                    <field name=\"use_documents\" invisible=\"1\"/>\n"
-"                    <field name=\"document_sequence_id\" invisible=\"1\"/>\n"
-"                </form>\n"
-"\n"
-"                <field name=\"journal_id\" position=\"after\">\n"
-"                    <field name=\"journal_document_type_id\" attrs=\"{'invisible': [('use_documents', '=', False)], 'required': [('use_documents', '=', True)]}\" domain=\"[('id', 'in', available_journal_document_type_ids and available_journal_document_type_ids[0][2] or [])]\"/>\n"
-"                    <field name=\"document_number\" attrs=\"{'invisible': ['|', ('document_sequence_id', '!=', False), ('use_documents', '=', False)], 'required': [('document_sequence_id', '=', False), ('use_documents', '=', True)]}\"/>\n"
-"                </field>\n"
-"            </data>"
-msgstr ""
-"<?xml version=\"1.0\"?>\n"
-"<data><form>   \n"
-"                    <field name=\"available_journal_document_type_ids\" invisible=\"1\"/>\n"
-"                    <field name=\"use_documents\" invisible=\"1\"/>\n"
-"                    <field name=\"document_sequence_id\" invisible=\"1\"/>\n"
-"                </form>\n"
-"\n"
-"                <field name=\"journal_id\" position=\"after\">\n"
-"                    <field name=\"journal_document_type_id\" attrs=\"{'invisible': [('use_documents', '=', False)], 'required': [('use_documents', '=', True)]}\" domain=\"[('id', 'in', available_journal_document_type_ids and available_journal_document_type_ids[0][2] or [])]\"/>\n"
-"                    <field name=\"document_number\" attrs=\"{'invisible': ['|', ('document_sequence_id', '!=', False), ('use_documents', '=', False)], 'required': [('document_sequence_id', '=', False), ('use_documents', '=', True)]}\"/>\n"
-"                </field>\n"
-"            </data>"
-
-#. module: account_payment_group_document
-#: model:ir.ui.view,arch_db:account_payment_group_document.view_account_payment_group_search
-msgid ""
-"<?xml version=\"1.0\"?>\n"
-"<field name=\"display_name\" position=\"attributes\">\n"
-"                    <attribute name=\"filter_domain\">['|', ('display_name','ilike',self), ('communication','ilike',self)]</attribute>\n"
-"                </field>\n"
-"            "
-msgstr ""
-"<?xml version=\"1.0\"?>\n"
-"<field name=\"display_name\" position=\"attributes\">\n"
-"                    <attribute name=\"filter_domain\">['|', ('display_name','ilike',self), ('communication','ilike',self)]</attribute>\n"
-"                </field>\n"
-"            "
-
-#. module: account_payment_group_document
-#: model:ir.ui.view,arch_db:account_payment_group_document.view_account_payment_group_tree
-msgid ""
-"<?xml version=\"1.0\"?>\n"
-"<field name=\"payment_date\" position=\"after\">\n"
-"                    <field name=\"display_name\"/>\n"
-"                </field>\n"
-"            "
-msgstr ""
-"<?xml version=\"1.0\"?>\n"
-"<field name=\"payment_date\" position=\"after\">\n"
-"                    <field name=\"display_name\"/>\n"
-"                </field>\n"
-"            "
-
-#. module: account_payment_group_document
-#: field:account.payment.group.invoice.wizard,available_journal_document_type_ids:0
 #: model:ir.model.fields,field_description:account_payment_group_document.field_account_payment_group_invoice_wizard_available_journal_document_type_ids
 msgid "Available Journal Document Types"
 msgstr "Tipos de Documentos Disponibles"
@@ -200,22 +35,17 @@ msgid "Credit / Debit Note"
 msgstr "Nota de Débito / Crédito"
 
 #. module: account_payment_group_document
-#: field:account.payment.group,document_number:0
-#: field:account.payment.group.invoice.wizard,document_number:0
 #: model:ir.model.fields,field_description:account_payment_group_document.field_account_payment_group_document_number
 #: model:ir.model.fields,field_description:account_payment_group_document.field_account_payment_group_invoice_wizard_document_number
 msgid "Document Number"
 msgstr "Número de Documento"
 
 #. module: account_payment_group_document
-#: field:account.payment.group,name:0
 #: model:ir.model.fields,field_description:account_payment_group_document.field_account_payment_group_name
 msgid "Document Reference"
 msgstr "Referencia del Documento"
 
 #. module: account_payment_group_document
-#: field:account.payment.group,document_type_id:0
-#: field:account.payment.group.invoice.wizard,journal_document_type_id:0
 #: model:ir.model.fields,field_description:account_payment_group_document.field_account_payment_group_document_type_id
 #: model:ir.model.fields,field_description:account_payment_group_document.field_account_payment_group_invoice_wizard_journal_document_type_id
 msgid "Document Type"
@@ -233,8 +63,6 @@ msgid "Draft Payment"
 msgstr "Pago borrador"
 
 #. module: account_payment_group_document
-#: field:account.payment.group,document_sequence_id:0
-#: field:account.payment.group.invoice.wizard,document_sequence_id:0
 #: model:ir.model.fields,field_description:account_payment_group_document.field_account_payment_group_document_sequence_id
 #: model:ir.model.fields,field_description:account_payment_group_document.field_account_payment_group_invoice_wizard_document_sequence_id
 msgid "Entry Sequence"
@@ -251,13 +79,11 @@ msgstr ""
 "talonario o establezca un número de documento."
 
 #. module: account_payment_group_document
-#: field:account.payment.group,localization:0
 #: model:ir.model.fields,field_description:account_payment_group_document.field_account_payment_group_localization
 msgid "Localization"
 msgstr "Localización"
 
 #. module: account_payment_group_document
-#: field:account.payment.group,next_number:0
 #: model:ir.model.fields,field_description:account_payment_group_document.field_account_payment_group_next_number
 msgid "Next Number"
 msgstr "Próximo número"
@@ -268,7 +94,6 @@ msgid "Payment Group"
 msgstr "Grupo de Pago"
 
 #. module: account_payment_group_document
-#: field:account.payment.group,receiptbook_id:0
 #: model:ir.model.fields,field_description:account_payment_group_document.field_account_payment_group_receiptbook_id
 msgid "ReceiptBook"
 msgstr "Talonario de Recibo"
@@ -281,7 +106,6 @@ msgstr ""
 "¡La compañía del talonario de recibo y la del pago deben ser la misma!"
 
 #. module: account_payment_group_document
-#: help:account.payment.group.invoice.wizard,document_sequence_id:0
 #: model:ir.model.fields,help:account_payment_group_document.field_account_payment_group_invoice_wizard_document_sequence_id
 msgid ""
 "This field contains the information related to the numbering of the "
@@ -291,7 +115,6 @@ msgstr ""
 "este talonario de recibo."
 
 #. module: account_payment_group_document
-#: help:account.payment.group,document_sequence_id:0
 #: model:ir.model.fields,help:account_payment_group_document.field_account_payment_group_document_sequence_id
 msgid ""
 "This field contains the information related to the numbering of the receipt "
@@ -301,7 +124,11 @@ msgstr ""
 "este talonario de recibo."
 
 #. module: account_payment_group_document
-#: field:account.payment.group.invoice.wizard,use_documents:0
 #: model:ir.model.fields,field_description:account_payment_group_document.field_account_payment_group_invoice_wizard_use_documents
 msgid "Use Documents?"
 msgstr "Utilizar Documentos?"
+
+#. module: account_payment_group_document
+#: model:ir.model,name:account_payment_group_document.model_account_payment_group_invoice_wizard
+msgid "account.payment.group.invoice.wizard"
+msgstr ""
