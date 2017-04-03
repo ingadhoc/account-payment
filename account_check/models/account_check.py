@@ -16,17 +16,22 @@ class AccountCheckOperation(models.Model):
     _order = 'date desc, id desc'
     # _order = 'create_date desc'
 
-    # we use create_date
-    date = fields.Datetime(
-        # default=fields.Date.context_today,
-        default=lambda self: fields.Datetime.now(),
+    # al final usamos solo date y no datetime porque el otro dato ya lo tenemos
+    # en create_date. ademas el orden es una mezcla de la fecha el id
+    # y entonces la fecha la solemos computar con el payment date para que
+    # sea igual a la fecha contable (payment date va al asiento)
+    # date = fields.Datetime(
+    date = fields.Date(
+        default=fields.Date.context_today,
+        # default=lambda self: fields.Datetime.now(),
         required=True,
     )
     check_id = fields.Many2one(
         'account.check',
         'Check',
         required=True,
-        ondelete='cascade'
+        ondelete='cascade',
+        auto_join=True,
     )
     operation = fields.Selection([
         # from payments
@@ -506,6 +511,37 @@ class AccountCheck(models.Model):
             operation = self._get_operation('holding', True)
             return self.action_create_debit_note(
                 'reclaimed', 'customer', operation.partner_id)
+
+    @api.model
+    def _get_checks_to_date_on_state(self, state, date, force_domain=None):
+        """
+        Devuelve el listado de cheques que a la fecha definida se encontraban
+        en el estadao definido.
+        Esta función no la usamos en este módulo pero si en otros que lo
+        extienden
+        La funcion devuelve un listado de las operaciones a traves de las
+        cuales se puede acceder al cheque, devolvemos las operaciones porque
+        dan información util de fecha, partner y demas
+        """
+        # buscamos operaciones anteriores a la fecha que definan este estado
+        if not force_domain:
+            force_domain = []
+        operations = self.operation_ids.search([
+            ('date', '<=', date),
+            ('operation', '=', state)] + force_domain)
+
+        for operation in operations:
+            # buscamos si hay alguna otra operacion posterior para el cheque
+            newer_op = operation.search([
+                ('date', '<=', date),
+                ('id', '>', operation.id),
+                ('check_id', '=', operation.check_id.id),
+            ])
+            # si hay una operacion posterior borramos la op del cheque porque
+            # hubo otra operación antes de la fecha
+            if newer_op:
+                operations -= operation
+        return operations
 
     @api.multi
     def _get_operation(self, operation, partner_required=False):

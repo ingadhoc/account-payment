@@ -11,9 +11,8 @@ class account_check_action_wizard(models.TransientModel):
     _name = 'account.check.action.wizard'
     _description = 'Account Check Action Wizard'
 
-    # we use datetime because for check operation this is required
-    date = fields.Datetime(
-        default=fields.Datetime.now,
+    date = fields.Date(
+        default=fields.Date.context_today,
         required=True,
     )
     action_type = fields.Char(

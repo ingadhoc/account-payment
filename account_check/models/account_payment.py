@@ -284,7 +284,8 @@ class AccountPayment(models.Model):
         }
         check = self.env['account.check'].create(check_vals)
         self.check_ids = [(4, check.id, False)]
-        check._add_operation(operation, self, self.partner_id)
+        check._add_operation(
+            operation, self, self.partner_id, date=self.payment_date)
         return check
 
     @api.multi
@@ -366,9 +367,9 @@ class AccountPayment(models.Model):
 
                 _logger.info('Transfer Check')
                 rec.check_ids._add_operation(
-                    'transfered', rec, False)
+                    'transfered', rec, False, date=rec.payment_date)
                 rec.check_ids._add_operation(
-                    'holding', rec, False)
+                    'holding', rec, False, date=rec.payment_date)
                 rec.check_ids.write({
                     'journal_id': rec.destination_journal_id.id})
                 vals['account_id'] = self.get_third_check_account().id
@@ -380,7 +381,7 @@ class AccountPayment(models.Model):
 
                 _logger.info('Sell Check')
                 rec.check_ids._add_operation(
-                    'selled', rec, False)
+                    'selled', rec, False, date=rec.payment_date)
                 vals['account_id'] = self.get_third_check_account().id
             # bank
             else:
@@ -391,7 +392,7 @@ class AccountPayment(models.Model):
 
                 _logger.info('Deposit Check')
                 rec.check_ids._add_operation(
-                    'deposited', rec, False)
+                    'deposited', rec, False, date=rec.payment_date)
                 vals['account_id'] = self.get_third_check_account().id
         elif (
                 rec.payment_method_code == 'delivered_third_check' and
@@ -407,7 +408,7 @@ class AccountPayment(models.Model):
 
             _logger.info('Deliver Check')
             rec.check_ids._add_operation(
-                'delivered', rec, rec.partner_id)
+                'delivered', rec, rec.partner_id, date=rec.payment_date)
             vals['account_id'] = self.get_third_check_account().id
         elif (
                 rec.payment_method_code == 'issue_check' and
