@@ -4,14 +4,13 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
-# Nicolas Mac Rouillon <nmr@ingadhoc.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-16 18:57+0000\n"
-"PO-Revision-Date: 2017-03-16 18:57+0000\n"
-"Last-Translator: Nicolas Mac Rouillon <nmr@ingadhoc.com>, 2017\n"
+"POT-Creation-Date: 2017-03-30 23:26+0000\n"
+"PO-Revision-Date: 2017-03-30 23:26+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -20,62 +19,16 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: account_payment_fix
-#: model:ir.ui.view,arch_db:account_payment_fix.view_account_payment_form
-msgid ""
-"<?xml version=\"1.0\"?>\n"
-"<data><form>\n"
-"                    <field name=\"payment_method_ids\" invisible=\"1\"/>\n"
-"                    <field name=\"journal_ids\" invisible=\"1\"/>\n"
-"                    <field name=\"destination_journal_ids\" invisible=\"1\"/>\n"
-"                </form>\n"
-"                <field name=\"journal_id\" position=\"attributes\">\n"
-"                    <attribute name=\"domain\">[('id', 'in', journal_ids and journal_ids[0][2] or [])]</attribute>\n"
-"                </field>\n"
-"                <field name=\"destination_journal_id\" position=\"attributes\">\n"
-"                    <attribute name=\"domain\">[('id', 'in', destination_journal_ids and destination_journal_ids[0][2] or [])]</attribute>\n"
-"                </field>\n"
-"                <field name=\"payment_method_id\" position=\"attributes\">\n"
-"                    <attribute name=\"domain\">[('id', 'in', payment_method_ids and payment_method_ids[0][2] or [])]</attribute>\n"
-"                </field>\n"
-"                <field name=\"partner_id\" position=\"attributes\">\n"
-"                    <attribute name=\"domain\">[(partner_type, '=', True)]</attribute>\n"
-"                </field>\n"
-"            </data>"
-msgstr ""
-"<?xml version=\"1.0\"?>\n"
-"<data><form>\n"
-"                    <field name=\"payment_method_ids\" invisible=\"1\"/>\n"
-"                    <field name=\"journal_ids\" invisible=\"1\"/>\n"
-"                    <field name=\"destination_journal_ids\" invisible=\"1\"/>\n"
-"                </form>\n"
-"                <field name=\"journal_id\" position=\"attributes\">\n"
-"                    <attribute name=\"domain\">[('id', 'in', journal_ids and journal_ids[0][2] or [])]</attribute>\n"
-"                </field>\n"
-"                <field name=\"destination_journal_id\" position=\"attributes\">\n"
-"                    <attribute name=\"domain\">[('id', 'in', destination_journal_ids and destination_journal_ids[0][2] or [])]</attribute>\n"
-"                </field>\n"
-"                <field name=\"payment_method_id\" position=\"attributes\">\n"
-"                    <attribute name=\"domain\">[('id', 'in', payment_method_ids and payment_method_ids[0][2] or [])]</attribute>\n"
-"                </field>\n"
-"                <field name=\"partner_id\" position=\"attributes\">\n"
-"                    <attribute name=\"domain\">[(partner_type, '=', True)]</attribute>\n"
-"                </field>\n"
-"            </data>"
-
-#. module: account_payment_fix
-#: field:account.payment,destination_journal_ids:0
 #: model:ir.model.fields,field_description:account_payment_fix.field_account_payment_destination_journal_ids
 msgid "Destination journal ids"
 msgstr "ids de Diario de destino"
 
 #. module: account_payment_fix
-#: field:account.payment,journal_ids:0
 #: model:ir.model.fields,field_description:account_payment_fix.field_account_payment_journal_ids
 msgid "Journal ids"
 msgstr "ids Diario"
 
 #. module: account_payment_fix
-#: field:account.payment,payment_method_ids:0
 #: model:ir.model.fields,field_description:account_payment_fix.field_account_payment_payment_method_ids
 msgid "Payment method ids"
 msgstr "ids de Método de pago"
