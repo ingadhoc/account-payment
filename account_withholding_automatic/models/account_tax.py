@@ -267,11 +267,9 @@ result = withholdable_base_amount * 0.10
             for same_period_payment_group in same_period_payments:
                 # obtenemos importe acumulado sujeto a retencion de voucher
                 # anteriores
-                accumulated_amount += (
-                    same_period_payment_group.matched_amount)
+                accumulated_amount += (same_period_payment_group.invoiced_debt_untaxed)
                 if self.withholding_advances:
-                    accumulated_amount += (
-                        same_period_payment_group.unmatched_amount)
+                    accumulated_amount += (same_period_payment_group.unmatched_amount)
             previous_withholding_amount = sum(
                 self.env['account.payment'].search(
                     previos_payments_domain +
