@@ -179,10 +179,13 @@ result = withholdable_base_amount * 0.10
                 payment_method = self.env.ref(
                     'account_withholding.'
                     'account_payment_method_out_withholding')
-                journal = self.env['account.journal'].search([
-                    ('company_id', '=', tax.company_id.id),
-                    ('outbound_payment_method_ids', '=', payment_method.id),
-                ], limit=1)
+                if tax.journal_id:
+                    journal = tax.journal_id
+                else:
+                    journal = self.env['account.journal'].search([
+                        ('company_id', '=', tax.company_id.id),
+                        ('outbound_payment_method_ids', '=', payment_method.id),
+                    ], limit=1)
                 if not journal:
                     raise UserError(_(
                         'No journal for withholdings found on company %s') % (
