@@ -123,6 +123,7 @@
                         <field name="unmatched_amount" options="{'currency_field': 'currency_id'}" states="posted"/>
                         <field name="unreconciled_amount" options="{'currency_field': 'currency_id'}" attrs="{'invisible': ['|', ('payment_subtype', '!=', 'double_validation'), ('state', 'not in', ['draft', 'confirmed'])]}"/>
                         <field name="to_pay_amount" options="{'currency_field': 'currency_id'}" attrs="{'invisible': ['|', ('payment_subtype', '!=', 'double_validation'), ('state', 'not in', ['draft', 'confirmed'])]}"/>
+                        <field name="invoiced_debt_untaxed" options="{'currency_field': 'currency_id'}" invisible="1"/>
                     </group>
                     <group>
                         <field name="payments_amount" string="Payments Amount" options="{'currency_field': 'currency_id'}"/>

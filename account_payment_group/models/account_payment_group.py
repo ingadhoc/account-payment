@@ -112,7 +112,7 @@ class AccountPaymentGroup(models.Model):
 
     selected_finacial_debt = fields.Monetary(
         string='Selected Financial Debt',
-        #compute='_compute_selected_debt',
+        # compute='_compute_selected_debt',
     )
     selected_debt = fields.Monetary(
         # string='To Pay lines Amount',
@@ -123,6 +123,12 @@ class AccountPaymentGroup(models.Model):
     selected_debt_untaxed = fields.Monetary(
         # string='To Pay lines Amount',
         string='Selected Debt Untaxed',
+        compute='_compute_selected_debt',
+    )
+
+    invoiced_debt_untaxed = fields.Monetary(
+        # string='To Pay lines Amount',
+        string='Invoice Debt Untaxed',
         compute='_compute_selected_debt',
     )
     unreconciled_amount = fields.Monetary(
@@ -387,6 +393,7 @@ class AccountPaymentGroup(models.Model):
         selected_finacial_debt = 0.0
         selected_debt = 0.0
         selected_debt_untaxed = 0.0
+        invoiced_debt_untaxed = 0.0
         for line in self.to_pay_move_line_ids:
             #selected_finacial_debt += line.financial_amount_residual
             selected_debt += line.amount_residual
@@ -394,10 +401,12 @@ class AccountPaymentGroup(models.Model):
             invoice = line.invoice_id
             factor = invoice and invoice._get_tax_factor() or 1.0
             selected_debt_untaxed += line.amount_residual * factor
+            invoiced_debt_untaxed += line.credit * factor
         sign = self.partner_type == 'supplier' and -1.0 or 1.0
         #self.selected_finacial_debt = selected_finacial_debt * sign
         self.selected_debt = selected_debt * sign
         self.selected_debt_untaxed = selected_debt_untaxed * sign
+        self.invoiced_debt_untaxed = invoiced_debt_untaxed
 
     @api.multi
     @api.depends(
