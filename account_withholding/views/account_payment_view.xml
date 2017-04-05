@@ -17,5 +17,17 @@
                 </field>
             </field>
         </record>
+
+        <record id="view_account_payment_from_group_tree_inherit" model="ir.ui.view">
+            <field name="name">account.payment.tree.inherit</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account_payment_group.view_account_payment_from_group_tree"/>
+            <field name="arch" type="xml">
+                
+                <field name="payment_method_id" position="after">
+                    <field name="tax_withholding_id" string="Withholding Tax Code"/>
+                </field>
+            </field>
+        </record>
     </data>
 </openerp>
