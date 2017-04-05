@@ -3,7 +3,7 @@
 # For copyright and license notices, see __openerp__.py file in module root
 # directory
 ##############################################################################
-from openerp import models, fields, _
+from openerp import models, fields, api, _
 from openerp.exceptions import UserError
 
 
@@ -51,3 +51,15 @@ class AccountPayment(models.Model):
             #         'Accounts not configured on tax %s' % (
             #             self.tax_withholding_id.name)))
         return vals
+
+    @api.one
+    def post(self):
+        res = super(AccountPayment, self).post()
+        for payment in self:
+            if payment.payment_method_code == 'withholding':
+                sequence = payment.tax_withholding_id.sequence_id
+                if sequence:
+                    next_number = sequence.number_next_actual
+                    self.withholding_number = sequence.get_next_char(next_number)
+                    payment.tax_withholding_id.sequence_id.write({'number_next_actual': sequence.number_next_actual + sequence.number_increment})
+        return res
