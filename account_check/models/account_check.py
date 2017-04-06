@@ -300,8 +300,11 @@ class account_check(models.Model):
                     cr, uid, [
                         ('id', '!=', obj.id),
                         ('number', '=', obj.number),
-                        ('voucher_id.partner_id', '=',
-                            obj.voucher_id.partner_id.id)], context=context)
+                        ('bank_id', '=', obj.bank_id.id),
+                        ('owner_name', '=', obj.owner_name),
+                        # ('voucher_id.partner_id', '=',
+                        #     obj.voucher_id.partner_id.id)
+                    ], context=context)
                 if same_number_check_ids:
                     return False
         return True
