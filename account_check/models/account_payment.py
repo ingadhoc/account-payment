@@ -233,22 +233,6 @@ class AccountPayment(models.Model):
 
 
 # post methods
-    @api.model
-    def create(self, vals):
-        # TODO borrar, ahora lo implementamos en el onchange
-        # issue_checks = self.env.ref(
-        #     'account_check.account_payment_method_issue_check')
-        # if vals['payment_method_id'] == issue_checks.id and vals.get(
-        #         'checkbook_id'):
-        #     checkbook = self.env['account.checkbook'].browse(
-        #         vals['checkbook_id'])
-        #     vals.update({
-        #         # beacause number was readonly we write it here
-        #         'check_number': checkbook.next_number,
-        #         'check_name': checkbook.sequence_id.next_by_id(),
-        #     })
-        return super(AccountPayment, self.sudo()).create(vals)
-
     @api.multi
     def cancel(self):
         res = super(AccountPayment, self).cancel()
