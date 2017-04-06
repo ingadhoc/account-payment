@@ -6,15 +6,10 @@
             <field name="model">account.journal</field>
             <field name="inherit_id" ref="account.view_account_journal_form"/>
             <field name="arch" type="xml">
-<!--                 <notebook>
-                    <page string="Checkbooks" attrs="{'invisible':[('outbound_payment_method_ids', '!=', 'issue_check')]}">
-                        <field name="checkbook_ids" context="{'default_company_id':company_id}"/>
-                    </page>
-                </notebook> -->
                 <page name="bank_account">
                     <label for="checkbook_ids"/>
-                	<field name="checkbook_ids" attrs="{'invisible': [('type', '!=', 'bank')]}" context="{'company_id':company_id}"/>
-           	 	</page>
+                    <field name="checkbook_ids" attrs="{'invisible': [('type', '!=', 'bank')]}" context="{'company_id':company_id}"/>
+                </page>
             </field>
         </record>
     </data>

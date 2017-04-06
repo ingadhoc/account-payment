@@ -13,21 +13,21 @@ Installation
 
 To install this module, you need to:
 
-#. Just install this module
+#. Do this ...
 
 Configuration
 =============
 
 To configure this module, you need to:
 
-#. Go to ... (TODO)
+#. Go to ...
 
 Usage
 =====
 
 To use this module, you need to:
 
-#. Go to ... (TODO)
+#. Go to ...
 
 .. image:: https://odoo-community.org/website/image/ir.attachment/5784_f2813bd/datas
    :alt: Try me on Runbot
