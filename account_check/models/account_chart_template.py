@@ -14,35 +14,23 @@ class AccountChartTemplate(models.Model):
     rejected_check_account_id = fields.Many2one(
         'account.account.template',
         'Rejected Check Account',
-        # required=True,
         help='Rejection Checks account, for eg. "Rejected Checks"',
         # domain=[('type', 'in', ['other'])],
     )
     deferred_check_account_id = fields.Many2one(
         'account.account.template',
         'Deferred Check Account',
-        # required=True,
         help='Deferred Checks account, for eg. "Deferred Checks"',
         # domain=[('type', 'in', ['other'])],
     )
     holding_check_account_id = fields.Many2one(
         'account.account.template',
         'Holding Check Account',
-        # required=True,
         help='Holding Checks account for third checks, '
         'for eg. "Holding Checks"',
         # domain=[('type', 'in', ['other'])],
     )
 
-    # @api.multi
-    # def _install_template(
-    #         self, company, code_digits=None, transfer_account_id=None,
-    #         obj_wizard=None, acc_ref=None, taxes_ref=None):
-    #     account_ref, taxes_ref = super(
-    #         AccountChartTemplate, self)._install_template(
-    #             self, company, code_digits=code_digits,
-    #             transfer_account_id=transfer_account_id,
-    #             obj_wizard=obj_wizard, acc_ref=acc_ref, taxes_ref=taxes_ref)
     @api.multi
     def _load_template(
             self, company, code_digits=None, transfer_account_id=None,
@@ -97,31 +85,6 @@ class WizardMultiChartsAccounts(models.TransientModel):
                 (4, delivered_third_check.id, None)],
         })
 
-        # al final creamos diario a parte para esto
-        # self.env['account.journal'].with_context(
-        #     force_company_id=company.id)._enable_third_check_on_cash_journals()
         self.env['account.journal'].with_context(
             force_company_id=company.id)._enable_issue_check_on_bank_journals()
-        # journals = self.env['account.journal'].search([
-        #     ('company_id', '=', company.id),
-        #     ('type', 'in', ['bank', 'cash']),
-        # ])
-        # for journal in journals:
-        #     if journal.type == 'bank':
-        #         issue_checks = self.env.ref(
-        #             'account_check.account_payment_method_issue_check')
-        #         journal.outbound_payment_method_ids = [
-        #             (4, issue_checks.id, None)]
-        #     elif journal.type == 'cash':
-        #         received_third_check = self.env.ref(
-        #             'account_check.'
-        #             'account_payment_method_received_third_check')
-        #         delivered_third_check = self.env.ref(
-        #             'account_check.'
-        #             'account_payment_method_delivered_third_check')
-
-        #         journal.inbound_payment_method_ids = [
-        #             (4, received_third_check.id, None)]
-        #         journal.outbound_payment_method_ids = [
-        #             (4, delivered_third_check.id, None)]
         return res

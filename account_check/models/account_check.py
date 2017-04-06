@@ -55,10 +55,6 @@ class AccountCheckOperation(models.Model):
     ],
         required=True,
     )
-    # move_line_id = fields.Many2one(
-    #     'account.move.line',
-    #     ondelete='cascade',
-    # )
     origin_name = fields.Char(
         compute='_compute_origin_name'
     )
@@ -81,11 +77,6 @@ class AccountCheckOperation(models.Model):
                     '\nYou can delete the origin reference and unlink after.'))
         return super(AccountCheckOperation, self).unlink()
 
-    # no longer needed because we try to autoclean origin
-    # @api.multi
-    # def clean_origin(self):
-    #     self.origin = False
-
     @api.multi
     @api.depends('origin')
     def _compute_origin_name(self):
@@ -105,7 +96,9 @@ class AccountCheckOperation(models.Model):
                     # origin_name = rec.origin.display_name
                 else:
                     origin_name = False
-            except:
+            except Exception, e:
+                _logger.exception(
+                    "Compute origin on checks exception: %s" % e)
                 # if we can get origin we clean it
                 rec.write({'origin': False})
                 origin_name = False
@@ -120,10 +113,6 @@ class AccountCheckOperation(models.Model):
             ('account.move', 'Journal Entry'),
             ('account.move.line', 'Journal Item'),
         ]
-        # models = self.env['ir.model'].search([('state', '!=', 'manual')])
-        # return [(model.model, model.name)
-        #         for model in models
-        #         if not model.model.startswith('ir.')]
 
 
 class AccountCheck(models.Model):
@@ -154,7 +143,6 @@ class AccountCheck(models.Model):
         'Checkbook',
         readonly=True,
         states={'draft': [('readonly', False)]},
-        # default=_get_checkbook,
     )
     type = fields.Selection(
         [('issue_check', 'Issue Check'), ('third_check', 'Third Check')],
@@ -181,14 +169,9 @@ class AccountCheck(models.Model):
         ('cancel', 'Cancel'),
     ],
         required=True,
-        # no need, operations are the track
-        # track_visibility='onchange',
         default='draft',
         copy=False,
         compute='_compute_state',
-        # search='_search_state',
-        # TODO enable store, se complico, ver search o probar si un related
-        # resuelve
         store=True,
     )
     issue_date = fields.Date(
@@ -214,29 +197,12 @@ class AccountCheck(models.Model):
         states={'draft': [('readonly', False)]}
     )
 
-# move.line fields
-    # move_line_id = fields.Many2one(
-    #     'account.move.line',
-    #     'Check Entry Line',
-    #     readonly=True,
-    #     copy=False
-    # )
-    # deposit_move_line_id = fields.Many2one(
-    #     'account.move.line',
-    #     'Deposit Journal Item',
-    #     readonly=True,
-    #     copy=False
-    # )
-
-# ex campos related
     amount = fields.Monetary(
-        # related='move_line_id.balance',
         currency_field='company_currency_id',
         readonly=True,
         states={'draft': [('readonly', False)]}
     )
     amount_currency = fields.Monetary(
-        # related='move_line_id.amount_currency',
         currency_field='currency_id',
         readonly=True,
         states={'draft': [('readonly', False)]},
@@ -245,12 +211,8 @@ class AccountCheck(models.Model):
         'res.currency',
         readonly=True,
         states={'draft': [('readonly', False)]},
-        # related='move_line_id.currency_id',
     )
     payment_date = fields.Date(
-        # related='move_line_id.date_maturity',
-        # store=True,
-        # readonly=True,
         readonly=True,
         states={'draft': [('readonly', False)]}
     )
@@ -261,9 +223,6 @@ class AccountCheck(models.Model):
         domain=[('type', 'in', ['cash', 'bank'])],
         readonly=True,
         states={'draft': [('readonly', False)]}
-        # related='move_line_id.journal_id',
-        # store=True,
-        # readonly=True,
     )
     company_id = fields.Many2one(
         related='journal_id.company_id',
@@ -274,39 +233,6 @@ class AccountCheck(models.Model):
         related='company_id.currency_id',
         readonly=True,
     )
-
-    # @api.model
-    # def _get_checkbook(self):
-    #     journal_id = self._context.get('default_journal_id', False)
-    #     payment_subtype = self._context.get('default_type', False)
-    #     if journal_id and payment_subtype == 'issue_check':
-    #         checkbooks = self.env['account.checkbook'].search(
-    #             [('state', '=', 'active'), ('journal_id', '=', journal_id)])
-    #         return checkbooks and checkbooks[0] or False
-
-    # @api.one
-    # @api.depends('number', 'checkbook_id', 'checkbook_id.padding')
-    # def _get_name(self):
-    #     padding = self.checkbook_id and self.checkbook_id.padding or 8
-    #     if len(str(self.number)) > padding:
-    #         padding = len(str(self.number))
-    #     self.name = '%%0%sd' % padding % self.number
-
-    # @api.one
-    # @api.depends(
-    #     'voucher_id',
-    #     'voucher_id.partner_id',
-    #     'type',
-    #     'third_handed_voucher_id',
-    #     'third_handed_voucher_id.partner_id',
-    # )
-    # def _get_destiny_partner(self):
-    #     partner_id = False
-    #     if self.type == 'third_check' and self.third_handed_voucher_id:
-    #         partner_id = self.third_handed_voucher_id.partner_id.id
-    #     elif self.type == 'issue_check':
-    #         partner_id = self.voucher_id.partner_id.id
-    #     self.destiny_partner_id = partner_id
 
     @api.multi
     @api.constrains('issue_date', 'payment_date')
@@ -346,7 +272,6 @@ class AccountCheck(models.Model):
         'type',
         'owner_name',
         'bank_id',
-        # 'check_number'
     )
     def _check_unique(self):
         for rec in self:
@@ -407,11 +332,8 @@ class AccountCheck(models.Model):
                 'date': date,
                 'check_id': rec.id,
                 'origin': '%s,%i' % (origin._name, origin.id),
-                # 'move_line_id': move_line and move_line.id or False,
                 'partner_id': partner and partner.id or False,
             }
-            # if date:
-            #     vals['date'] = date
             rec.operation_ids.create(vals)
 
     @api.multi
@@ -440,10 +362,6 @@ class AccountCheck(models.Model):
         # if we do it from _add_operation only, not from a contraint of before
         # computing the value, we can just read it
         old_state = self.state
-        # try:
-        #     old_state = self.read(['state'])[0]['state']
-        # except:
-        #     return True
         operation_from_state_map = {
             # 'draft': [False],
             'holding': ['draft', 'deposited', 'selled', 'delivered'],
@@ -488,21 +406,12 @@ class AccountCheck(models.Model):
     def bank_debit(self):
         self.ensure_one()
         if self.state in ['handed']:
-            # we can use check journal directly
-            # origin = self.operation_ids[0].origin
-            # if origin._name != 'account.payment':
-            #     raise ValidationError((
-            #         'The deposit operation is not linked to a payment.'
-            #         'If you want to reject you need to do it manually.'))
             vals = self.get_bank_vals(
-                # 'bank_debit', origin.journal_id)
                 'bank_debit', self.journal_id)
             action_date = self._context.get('action_date')
             vals['date'] = action_date
             move = self.env['account.move'].create(vals)
             move.post()
-            # self.env['account.move'].create({
-            # })
             self._add_operation('debited', move, date=action_date)
 
     @api.multi
@@ -617,7 +526,6 @@ class AccountCheck(models.Model):
             # 'name': name,
             # this is the reference that goes on account.move
             'reference': name,
-            # 'date': self.date,
             'date_invoice': action_date,
             'origin': _('Check nbr (id): %s (%s)') % (self.name, self.id),
             'journal_id': journal.id,
@@ -632,15 +540,6 @@ class AccountCheck(models.Model):
         # we send internal_type for compatibility with account_document
         invoice = self.env['account.invoice'].with_context(
             internal_type='debit_note').create(inv_vals)
-        # raise ValidationError('sadas')
-
-        # invoice_line = self.env['account.invoice.line'].new(inv_line_vals)
-        # invoice_line._onchange_product_id()
-        # line_values = invoice_line._convert_to_write(invoice_line._cache)
-        # line_values['price_unit'] = self.amount
-        # invoice.write({'invoice_line_ids': [(0, 0, inv_line_vals)]})
-        # invoice.signal_workflow('invoice_open')
-        # payment_group.to_pay_move_line_ids += invoice.open_move_line_ids
         self._add_operation(operation, invoice, partner, date=action_date)
 
         return {
@@ -651,13 +550,6 @@ class AccountCheck(models.Model):
             'view_id': view_id,
             'res_id': invoice.id,
             'type': 'ir.actions.act_window',
-            # 'context': {
-            # #     'default_partner_id': self.partner_id.id,
-            # #     'default_company_id': self.company_id.id,
-            #     'default_type': invoice_type,
-            #     'internal_type': 'debit_note',
-            # },
-            # 'domain': [('payment_id', 'in', self.payment_ids.ids)],
         }
 
     @api.multi
@@ -665,8 +557,6 @@ class AccountCheck(models.Model):
         self.ensure_one()
         # TODO improove how we get vals, get them in other functions
         if action == 'bank_debit':
-            # ref = _('Debit Check Nr. ')
-            # al pagar con banco se usa esta
             # self.journal_id.default_debit_account_id.id, al debitar
             # tenemos que usar esa misma
             credit_account = journal.default_debit_account_id
@@ -679,15 +569,10 @@ class AccountCheck(models.Model):
             # self.destination_journal_id.default_credit_account_id
             credit_account = journal.default_debit_account_id
             debit_account = self.company_id._get_check_account('rejected')
-            # credit_account_id = vou_journal.default_credit_account_id.id
             name = _('Check "%s" rejection') % (self.name)
         else:
             raise ValidationError(_(
                 'Action %s not implemented for checks!') % action)
-
-        # name = self.env['ir.sequence'].next_by_id(
-        #     journal.sequence_id.id)
-        # ref = self.name
 
         debit_line_vals = {
             'name': name,
@@ -714,5 +599,4 @@ class AccountCheck(models.Model):
             'line_ids': [
                 (0, False, debit_line_vals),
                 (0, False, credit_line_vals)],
-            # 'ref': ref,
         }

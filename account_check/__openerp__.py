@@ -34,10 +34,6 @@
     ],
     'data': [
         'data/account_payment_method_data.xml',
-        # TODO delete or enable, we should create it on chart installation
-        # if we create it from here accounts will be created, so we let
-        # this work to chart installation
-        # 'data/account_journal_data.xml',
         'wizard/account_check_action_wizard_view.xml',
         'views/account_payment_view.xml',
         'views/account_check_view.xml',
@@ -50,7 +46,6 @@
         'security/account_check_security.xml',
     ],
     'demo': [
-        # 'data/demo_data.xml',
     ],
     'test': [
     ],
