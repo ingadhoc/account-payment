@@ -335,6 +335,16 @@ class account_check(models.Model):
         self.owner_vat = self.voucher_id.partner_id.vat
 
     @api.one
+    @api.onchange('amount')
+    def recompute_currency_amount(self):
+        if self.currency_id \
+                and self.currency_id != self.env.user.company_id.currency_id:
+            self.company_currency_amount = self.currency_id.compute(
+                self.amount,
+                self.env.user.company_id.currency_id
+            )
+
+    @api.one
     def unlink(self):
         if self.state not in ('draft'):
             raise Warning(

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
     <data>
-       
+
     <!--  Checks -->
         <record model="ir.ui.view" id="view_account_check_tree">
             <field name="name">account.check.tree</field>
@@ -42,7 +42,7 @@
                 </tree>
             </field>
         </record>
-                  
+
         <record model="ir.ui.view" id="view_account_check_form">
             <field name="name">account.check.form</field>
             <field name="model">account.check</field>
@@ -71,15 +71,15 @@
                     <h1 attrs="{'invisible': [('name','=',False)]}">
                         <field name="name"/>
                     </h1>
-                    <group>  
+                    <group>
                         <group>
                             <field name="checkbook_id" widget="selection" domain="[('journal_id','=',journal_id),('state','=','active')]" attrs="{'invisible':[('type','!=','issue_check')],'required':[('type','=','issue_check')]}"/>
                             <field name="bank_id" attrs="{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}"/>
                             <field name="number"/>
                             <field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                            <field name="company_currency_amount" attrs="{'invisible':[('company_currency_amount','=', 0)]}" /> <!-- groups="base.group_no_one" -->
+                            <field name="company_currency_amount" readonly="1" attrs="{'invisible':[('company_currency_amount','=', 0)]}" /> <!-- groups="base.group_no_one" -->
                         </group>
-                        <group>    
+                        <group>
                             <field name="owner_name" attrs="{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}"/>
                             <field name="owner_vat" attrs="{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}"/>
                             <field name="issue_date"/>
@@ -105,14 +105,14 @@
                             <field name="return_account_move_id" attrs="{'invisible':[('return_account_move_id','=',False)]}"/>
                         </group>
                     </group>
-                </sheet>    
+                </sheet>
                 <div class="oe_chatter">
                     <field name="message_follower_ids" widget="mail_followers"/>
                     <field name="message_ids" widget="mail_thread"/>
-                </div>                
+                </div>
                 </form>
             </field>
-        </record> 
+        </record>
 
         <record model="ir.ui.view" id="view_checks_search">
             <field name="name">check.search</field>
@@ -131,8 +131,8 @@
                     <field name="deposit_date"/>
                     <group expand="0" string="Group By...">
                         <filter string="Issue Date" context="{'group_by':'issue_date'}"/>
-                        <filter string="Payment Date" context="{'group_by':'payment_date'}"/>                        
-                        <filter string="Deposit Date" context="{'group_by':'deposit_date:day'}"/>                        
+                        <filter string="Payment Date" context="{'group_by':'payment_date'}"/>
+                        <filter string="Deposit Date" context="{'group_by':'deposit_date:day'}"/>
                         <filter string="Journal" context="{'group_by':'journal_id'}"/>
                         <filter string="State" context="{'group_by':'state'}"/>
                         <filter string="Source Partner" context="{'group_by':'source_partner_id'}"/>
@@ -140,15 +140,15 @@
                     </group>
                 </search>
             </field>
-        </record> 
+        </record>
 
-        <!-- mode="month" --> 
+        <!-- mode="month" -->
         <record model="ir.ui.view" id="view_account_check_calendar">
             <field name="name">account.check.calendar</field>
             <field name="model">account.check</field>
             <field name="arch" type="xml">
-                <calendar string="Checks" 
-                          date_start="payment_date" 
+                <calendar string="Checks"
+                          date_start="payment_date"
                           color="destiny_partner_id">
                     <field name="amount"/>
                 </calendar>
@@ -166,13 +166,13 @@
             <field name="domain">[('type','=','third_check')]</field>
             <field name="context">{'search_default_state':'holding','default_type':'third_check'}</field>
         </record>
-        
+
         <menuitem
             action="action_third_check"
             id="menu_third_check"
             sequence="30"
-            parent="account.menu_finance_bank_and_cash"/> 
-        
+            parent="account.menu_finance_bank_and_cash"/>
+
         <!-- Issued Check Menu -->
         <record model="ir.actions.act_window" id="action_issue_check">
             <field name="name">Issue Checks</field>
@@ -184,12 +184,12 @@
             <field name="domain">[('type','=','issue_check')]</field>
             <field name="context">{'search_default_state':'handed','default_type':'issue_check'}</field>
         </record>
-        
+
         <menuitem
             action="action_issue_check"
             id="menu_issue_check"
             sequence="40"
-            parent="account.menu_finance_bank_and_cash"/>   
+            parent="account.menu_finance_bank_and_cash"/>
 
     </data>
 </openerp>
