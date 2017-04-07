@@ -12,6 +12,8 @@ By default payments are managed on one step, if you want, you can use two steps 
 
 A new security group "See Payments Menu" is created and native odoo payments menus are assigned to that group.
 
+We also add a pay now functionality on invoices so that payment can be automatically created if you choose a journal on the invoice. You need to enable this on accounting configuration.
+
 Installation
 ============
 

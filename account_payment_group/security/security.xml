@@ -20,6 +20,16 @@
         <field name="name">Choose Payment Type on Payments</field>
     </record>
 
+    <record model="res.groups" id="group_pay_now_customer_invoices">
+        <field name="category_id" ref="base.module_category_hidden"/>
+        <field name="name">Allow pay now on customer invoices</field>
+    </record>
+
+    <record model="res.groups" id="group_pay_now_vendor_invoices">
+        <field name="category_id" ref="base.module_category_hidden"/>
+        <field name="name">Allow pay now on vendor invoices</field>
+    </record>
+
 </data>
 <data noupdate="0">
     <!-- by default we enable it -->

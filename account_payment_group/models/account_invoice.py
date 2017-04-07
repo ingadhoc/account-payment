@@ -13,6 +13,14 @@ class AccountInvoice(models.Model):
         'account.move.line',
         compute='_compute_open_move_lines'
     )
+    pay_now_journal_id = fields.Many2one(
+        'account.journal',
+        'Pay now Journal',
+        help='If you set a journal here, after invoice validation, the invoice'
+        ' will be automatically paid with this journal',
+        readonly=True,
+        states={'draft': [('readonly', False)]},
+    )
 
     @api.multi
     def _get_tax_factor(self):
@@ -52,3 +60,54 @@ class AccountInvoice(models.Model):
                 'default_company_id': self.company_id.id,
             },
         }
+
+    @api.multi
+    def invoice_validate(self):
+        res = super(AccountInvoice, self).invoice_validate()
+        self.pay_now()
+        return res
+
+    @api.multi
+    def pay_now(self):
+        # validate_payment = not self._context.get('validate_payment')
+        for rec in self:
+            pay_journal = rec.pay_now_journal_id
+            if pay_journal and rec.state == 'open':
+                pay_context = {
+                    'to_pay_move_line_ids': (rec.open_move_line_ids.ids),
+                    'default_company_id': rec.company_id.id,
+                }
+                # factura de proveedor o reembolso a cliente, es saliente
+                if rec.type in ['in_invoice', 'out_refund']:
+                    payment_type = 'outbound'
+                    payment_methods = pay_journal.outbound_payment_method_ids
+                else:
+                    payment_type = 'inbound'
+                    payment_methods = pay_journal.inbound_payment_method_ids
+
+                payment_method = payment_methods.filtered(
+                    lambda x: x.code == 'manual')
+                if not payment_method:
+                    raise ValidationError(_(
+                        'Pay now journal must have manual method!'))
+
+                if rec.type in ['in_invoice', 'in_refund']:
+                    partner_type = 'supplier'
+                else:
+                    partner_type = 'customer'
+
+                payment_group = rec.env[
+                    'account.payment.group'].with_context(
+                        pay_context).create({})
+                payment_group.payment_ids.create({
+                    'payment_group_id': payment_group.id,
+                    'payment_type': payment_type,
+                    'partner_type': partner_type,
+                    'company_id': rec.company_id.id,
+                    'partner_id': payment_group.partner_id.id,
+                    'amount': payment_group.payment_difference,
+                    'journal_id': pay_journal.id,
+                    'payment_method_id': payment_method.id,
+                })
+                # if validate_payment:
+                payment_group.post()

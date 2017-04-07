@@ -9,6 +9,8 @@
             <field name="arch" type="xml">
                 <group name="bank_cash">
                     <field name="group_choose_payment_type"/>
+                    <field name="group_pay_now_customer_invoices"/>
+                    <field name="group_pay_now_vendor_invoices"/>
                 </group>
             </field>
         </record>
