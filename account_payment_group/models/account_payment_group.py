@@ -563,6 +563,11 @@ class AccountPaymentGroup(models.Model):
 
     @api.multi
     def post(self):
+        # dont know yet why, but if we came from an invoice context values
+        # break behaviour, for eg. with demo user error writing account.account
+        # and with other users, error with block date of accounting
+        # TODO we should look for a better way to solve this
+        self = self.with_context({})
         for rec in self:
             # TODO if we want to allow writeoff then we can disable this
             # constrain and send writeoff_journal_id and writeoff_acc_id
