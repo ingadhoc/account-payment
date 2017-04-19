@@ -4,14 +4,13 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
-# Javier Diez <jd@adhoc.com.ar>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-30 23:26+0000\n"
-"PO-Revision-Date: 2017-03-30 23:26+0000\n"
-"Last-Translator: Javier Diez <jd@adhoc.com.ar>, 2017\n"
+"POT-Creation-Date: 2017-04-18 16:41+0000\n"
+"PO-Revision-Date: 2017-04-18 16:41+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -53,6 +52,35 @@ msgstr "Añadir Todo / Refrescar"
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_unreconciled_amount
 msgid "Adjusment / Advance"
 msgstr "Adelanto / Avance"
+
+#. module: account_payment_group
+#: model:res.groups,name:account_payment_group.group_pay_now_customer_invoices
+msgid "Allow pay now on customer invoices"
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_config_settings_group_pay_now_customer_invoices
+msgid "Allow pay now on customer invoices?"
+msgstr ""
+
+#. module: account_payment_group
+#: model:res.groups,name:account_payment_group.group_pay_now_vendor_invoices
+msgid "Allow pay now on vendor invoices"
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_config_settings_group_pay_now_vendor_invoices
+msgid "Allow pay now on vendor invoices?"
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.model.fields,help:account_payment_group.field_account_config_settings_group_pay_now_customer_invoices
+#: model:ir.model.fields,help:account_payment_group.field_account_config_settings_group_pay_now_vendor_invoices
+msgid ""
+"Allow users to choose a payment journal on invoices so that invoice is "
+"automatically paid after invoice validation. A payment will be created using"
+" choosen journal"
+msgstr ""
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_amount
@@ -234,6 +262,14 @@ msgid "If checked, new messages require your attention."
 msgstr "Si está marcado, los nuevos mensajes requieren de su atención."
 
 #. module: account_payment_group
+#: model:ir.model.fields,help:account_payment_group.field_account_invoice_pay_now_journal_id
+msgid ""
+"If you set a journal here, after invoice validation, the invoice will be "
+"automatically paid with this journal. As manual paymentmethod is used, only "
+"journals with manual method are shown."
+msgstr ""
+
+#. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_account_invoice
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_invoice_tree
 msgid "Invoice"
@@ -293,18 +329,18 @@ msgid ""
 "Lines that has been matched to payments, only available after payment "
 "validation"
 msgstr ""
-"Líneas que fueron emparejadas a pagos, solo disponibles después de la "
+"Líneas que fueron imputadas a pagos, solo disponibles después de la "
 "validación del pago"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_matched_amount
 msgid "Matched amount"
-msgstr "Importe emparejado"
+msgstr "Importe imputado"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_matched_move_line_ids
 msgid "Matched move line ids"
-msgstr "Ids emparejadas de las líneas del movimiento"
+msgstr "Ids de los apuntes contables imputados"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_communication
@@ -379,6 +415,17 @@ msgid "Partner type"
 msgstr "Tipo de Partner"
 
 #. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_invoice_pay_now_journal_id
+msgid "Pay now Journal"
+msgstr ""
+
+#. module: account_payment_group
+#: code:addons/account_payment_group/models/account_invoice.py:92
+#, python-format
+msgid "Pay now journal must have manual method!"
+msgstr ""
+
+#. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_amount_company_currency
 msgid "Payment Amount on Company Currency"
 msgstr "Importe de Pago en Moneda de Compañía"
@@ -418,7 +465,7 @@ msgstr "Id del grupo de Pago"
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_move_line_payment_group_matched_amount
 msgid "Payment group matched amount"
-msgstr "Importe emparejado del grupo de Pagos"
+msgstr "Importe imputado en el grupo de Pagos"
 
 #. module: account_payment_group
 #: code:addons/account_payment_group/wizards/account_payment_group_invoice_wizard.py:83
@@ -439,9 +486,9 @@ msgid ""
 " date, no by maturity date). You can remove any line you dont want to be "
 "matched."
 msgstr ""
-"El pago será automáticamente emparejado con la línea más antigua de la lista"
-" (por fecha, no por fecha de vencimiento). Puede eliminar cualquier línea "
-"que no quiera que sea emparejada."
+"El pago será automáticamente imputado con la línea más antigua de la lista "
+"(por fecha, no por fecha de vencimiento). Puede eliminar cualquier línea que"
+" no quiera que sea imputado."
 
 #. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_account_payment
@@ -521,7 +568,7 @@ msgid "Refund Date"
 msgstr "Fecha de Devolución"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_invoice.py:40
+#: code:addons/account_payment_group/models/account_invoice.py:49
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #, python-format
 msgid "Register Payment"
@@ -540,12 +587,12 @@ msgstr "Ver Menú de Pagos"
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_selected_debt
 msgid "Selected Debt"
-msgstr "Seleccionar Deuda"
+msgstr "Deuda Seleccionada"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_selected_debt_untaxed
 msgid "Selected Debt Untaxed"
-msgstr "Seleccionar Deuda Sin Impuesto"
+msgstr "Deuda Sin Impuestos Seleccionada"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_selected_finacial_debt
@@ -596,7 +643,7 @@ msgid "To Pay Amount"
 msgstr "Importe a pagar"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:575
+#: code:addons/account_payment_group/models/account_payment_group.py:580
 #, python-format
 msgid "To Pay Amount and Payment Amount must be equal!"
 msgstr "¡El Importe a pagar y el Importe de Pago deben ser iguales!"
@@ -636,7 +683,7 @@ msgstr "Transferencias"
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_unmatched_amount
 msgid "Unmatched amount"
-msgstr "Importe no emparejado"
+msgstr "Importe no imputado"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_message_unread
@@ -673,7 +720,7 @@ msgid "Vendor"
 msgstr "Proveedor"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:570
+#: code:addons/account_payment_group/models/account_payment_group.py:575
 #, python-format
 msgid "You can not confirm a payment group without payment lines!"
 msgstr "¡No puede confirmar un grupo de pagos sin líneas de pago!"
@@ -692,7 +739,7 @@ msgid "You can not send to pay lines from different partners"
 msgstr "No puede enviar a pagar líneas de diferentes partners"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_invoice.py:34
+#: code:addons/account_payment_group/models/account_invoice.py:43
 #, python-format
 msgid "You can only register payment if invoice is open"
 msgstr "Solamente puede registrar un pago si la factura está abierta"
