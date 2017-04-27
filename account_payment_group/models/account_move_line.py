@@ -31,6 +31,8 @@ class AccountMoveLine(models.Model):
     @api.multi
     def compute_payment_group_matched_amount(self):
         """
+        Reciviendo un payment_group_id por contexto, decimos en ese payment
+        group, cuanto se pago para la lína en cuestión.
         """
         payment_group_id = self._context.get('payment_group_id')
         if not payment_group_id:
@@ -38,17 +40,18 @@ class AccountMoveLine(models.Model):
         payments = self.env['account.payment.group'].browse(
             payment_group_id).payment_ids
         payment_move_lines = payments.mapped('move_line_ids')
-        payment_partial_lines = self.env[
-            'account.partial.reconcile'].search([
-                '|',
-                ('credit_move_id', 'in', payment_move_lines.ids),
-                ('debit_move_id', 'in', payment_move_lines.ids),
-            ])
+
         for rec in self:
             matched_amount = 0.0
-            for pl in (rec.matched_debit_ids + rec.matched_credit_ids):
-                if pl in payment_partial_lines:
-                    matched_amount += pl.amount
+            reconciles = self.env['account.partial.reconcile'].search([
+                ('credit_move_id', 'in', payment_move_lines.ids),
+                ('debit_move_id', '=', rec.id)])
+            matched_amount += sum(reconciles.mapped('amount'))
+
+            reconciles = self.env['account.partial.reconcile'].search([
+                ('debit_move_id', 'in', payment_move_lines.ids),
+                ('credit_move_id', '=', rec.id)])
+            matched_amount -= sum(reconciles.mapped('amount'))
             rec.payment_group_matched_amount = matched_amount
 
     payment_group_matched_amount = fields.Monetary(
