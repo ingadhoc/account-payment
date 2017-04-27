@@ -47,7 +47,7 @@
             <field name="inherit_id" ref="account_payment_group.view_account_payment_group_search"/>
             <field name="arch" type="xml">
                 <field name="display_name" position="attributes">
-                    <attribute name="filter_domain">['|', ('display_name','ilike',self), ('communication','ilike',self)]</attribute>
+                    <attribute name="filter_domain">['|', ('name','ilike',self), ('communication','ilike',self)]</attribute>
                 </field>
             </field>
         </record>   
