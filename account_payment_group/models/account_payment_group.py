@@ -40,7 +40,8 @@ class AccountPaymentGroup(models.Model):
         states={'draft': [('readonly', False)]},
     )
     partner_type = fields.Selection(
-        [('customer', 'Customer'), ('supplier', 'Vendor')]
+        [('customer', 'Customer'), ('supplier', 'Vendor')],
+        track_visibility='always',
     )
     partner_id = fields.Many2one(
         'res.partner',
@@ -48,6 +49,7 @@ class AccountPaymentGroup(models.Model):
         required=True,
         readonly=True,
         states={'draft': [('readonly', False)]},
+        track_visibility='always',
     )
     commercial_partner_id = fields.Many2one(
         related='partner_id.commercial_partner_id',
@@ -60,6 +62,7 @@ class AccountPaymentGroup(models.Model):
         default=lambda self: self.env.user.company_id.currency_id,
         readonly=True,
         states={'draft': [('readonly', False)]},
+        track_visibility='always',
     )
     payment_date = fields.Date(
         string='Payment Date',
@@ -143,11 +146,13 @@ class AccountPaymentGroup(models.Model):
         # string='Total To Pay Amount',
         readonly=True,
         states={'draft': [('readonly', False)]},
+        track_visibility='always',
     )
 
     payments_amount = fields.Monetary(
         compute='_compute_payments_amount',
         string='Amount',
+        track_visibility='always',
     )
     # name = fields.Char(
     #     readonly=True,
@@ -160,7 +165,8 @@ class AccountPaymentGroup(models.Model):
         ('posted', 'Posted'),
         # ('sent', 'Sent'),
         # ('reconciled', 'Reconciled')
-    ], readonly=True, default='draft', copy=False, string="Status"
+    ], readonly=True, default='draft', copy=False, string="Status",
+        track_visibility='onchange',
     )
     move_lines_domain = (
         "["

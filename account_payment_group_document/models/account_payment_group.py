@@ -22,7 +22,8 @@ class AccountPaymentGroup(models.Model):
         string='Document Number',
         copy=False,
         readonly=True,
-        states={'draft': [('readonly', False)]}
+        states={'draft': [('readonly', False)]},
+        track_visibility='always',
     )
     document_sequence_id = fields.Many2one(
         related='receiptbook_id.sequence_id',
@@ -57,6 +58,7 @@ class AccountPaymentGroup(models.Model):
         'account.payment.receiptbook',
         'ReceiptBook',
         readonly=True,
+        track_visibility='always',
         states={'draft': [('readonly', False)]},
     )
     document_type_id = fields.Many2one(
