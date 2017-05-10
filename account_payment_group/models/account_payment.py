@@ -31,6 +31,10 @@ class AccountPayment(models.Model):
     amount_company_currency = fields.Monetary(
         string='Payment Amount on Company Currency',
         compute='_compute_amount_company_currency',
+        currency_field='company_currency_id',
+    )
+    company_currency_id = fields.Many2one(
+        related='company_id.currency_id'
     )
 
     @api.one

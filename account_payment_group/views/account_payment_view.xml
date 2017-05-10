@@ -42,6 +42,7 @@
             <field name="amount_company_currency" sum="Total"/>
             <field name="state"/>
             <field name="currency_id" invisible="1"/>
+            <field name="company_currency_id" invisible="1"/>
             <field name="partner_type" invisible="1"/>
         </tree>
     </field>
