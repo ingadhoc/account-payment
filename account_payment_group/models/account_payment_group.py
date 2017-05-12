@@ -226,6 +226,14 @@ class AccountPaymentGroup(models.Model):
     )
 
     @api.multi
+    def action_payment_sent(self):
+        raise ValidationError(_('Not implemented yet'))
+
+    @api.multi
+    def payment_print(self):
+        raise ValidationError(_('Not implemented yet'))
+
+    @api.multi
     @api.depends('to_pay_move_line_ids')
     def _compute_debt_move_line_ids(self):
         for rec in self:

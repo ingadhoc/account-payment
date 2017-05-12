@@ -76,6 +76,8 @@
             <field name="payment_subtype" invisible="1"/>
             <field name="pop_up" invisible="1"/>
             <header>
+                <button name="action_payment_sent" type="object" string="Send by Email" attrs="{'invisible':[('state', '!=', 'posted')]}" class="oe_highlight" groups="base.group_user"/>
+                <button name="payment_print" string="Print" type="object" attrs="{'invisible':[('state', '!=', 'posted')]}" class="oe_highlight" groups="base.group_user"/>
                 <button name="post" class="oe_highlight" string="Validate" type="object" attrs="{'invisible': ['|', '&amp;', ('payment_subtype', '=', 'simple'), ('state', '!=', 'draft'), '&amp;', ('payment_subtype', '=', 'double_validation'), ('state', '!=', 'confirmed')]}"/>
                 <!-- <button name="post" class="oe_highlight" states="draft" string="Validate" type="object"/> -->
                 <button name="confirm" class="oe_highlight" string="Confirm" type="object" attrs="{'invisible': ['|', ('payment_subtype', '!=', 'double_validation'), ('state', '!=', 'draft')]}"/>

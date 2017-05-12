@@ -11,6 +11,8 @@ _logger = logging.getLogger(__name__)
 
 class AccountPaymentGroup(models.Model):
     _inherit = "account.payment.group"
+    # usamos mismo orden que en facturas
+    _order = "document_number desc, id desc"
 
     # document_number = fields.Char(
     #     string=_('Document Number'),
