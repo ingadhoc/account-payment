@@ -193,3 +193,25 @@ class AccountPaymentGroup(models.Model):
             raise ValidationError(_(
                 'The company of the receiptbook and of the '
                 'payment must be the same!'))
+
+    @api.multi
+    @api.constrains('document_type_id', 'document_number')
+    def validate_document_number(self):
+        for rec in self:
+            # if we have a sequence, number is set by sequence and we dont
+            # check this
+            if rec.document_sequence_id or not rec.document_number:
+                continue
+            # para usar el validator deberiamos extenderlo para que reciba
+            # el registro o alguna referencia asi podemos obtener la data
+            # del prefix y el padding del talonario de recibo
+            res = rec.document_number
+            padding = rec.receiptbook_id.padding
+            res = '{:>0{padding}}'.format(res, padding=padding)
+
+            prefix = rec.receiptbook_id.prefix
+            if prefix and not res.startswith(prefix):
+                res = prefix + res
+
+            if res != rec.document_number:
+                rec.document_number = res
