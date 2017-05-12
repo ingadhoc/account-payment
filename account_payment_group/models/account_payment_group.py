@@ -479,23 +479,26 @@ class AccountPaymentGroup(models.Model):
         #     self.add_all()
 
     @api.multi
+    def _get_to_pay_move_lines_domain(self):
+        self.ensure_one()
+        return [
+            ('partner_id.commercial_partner_id', '=',
+                self.commercial_partner_id.id),
+            ('account_id.internal_type', '=',
+                self.account_internal_type),
+            ('account_id.reconcile', '=', True),
+            ('reconciled', '=', False),
+            ('company_id', '=', self.company_id.id),
+            # '|',
+            # ('amount_residual', '!=', False),
+            # ('amount_residual_currency', '!=', False),
+        ]
+
+    @api.multi
     def add_all(self):
         for rec in self:
-            # TODO ver si es necesario agregar un remove o el update las borra
-            domain = [
-                ('partner_id.commercial_partner_id', '=',
-                    rec.commercial_partner_id.id),
-                ('account_id.internal_type', '=',
-                    rec.account_internal_type),
-                ('account_id.reconcile', '=', True),
-                ('reconciled', '=', False),
-                ('company_id', '=', rec.company_id.id),
-                # '|',
-                # ('amount_residual', '!=', False),
-                # ('amount_residual_currency', '!=', False),
-            ]
             rec.to_pay_move_line_ids = rec.env['account.move.line'].search(
-                domain)
+                rec._get_to_pay_move_lines_domain())
 
     @api.multi
     def remove_all(self):
