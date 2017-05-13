@@ -9,7 +9,7 @@
     <field name="name">account.payment.group.tree</field>
     <field name="model">account.payment.group</field>
     <field name="arch" type="xml">
-        <tree decoration-info="state=='draft'" decoration-muted="state=='reconciled'" edit="false">
+        <tree decoration-info="state=='draft'" decoration-muted="state=='reconciled'">
             <field name="payment_date"/>
             <!-- <field name="name"/> -->
             <field name="partner_id" string="Customer"/>
