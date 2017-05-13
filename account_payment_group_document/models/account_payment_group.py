@@ -195,12 +195,13 @@ class AccountPaymentGroup(models.Model):
                 'payment must be the same!'))
 
     @api.multi
-    @api.constrains('document_type_id', 'document_number')
+    @api.constrains('receiptbook_id', 'document_number')
     def validate_document_number(self):
         for rec in self:
             # if we have a sequence, number is set by sequence and we dont
             # check this
-            if rec.document_sequence_id or not rec.document_number:
+            if rec.document_sequence_id or not rec.document_number \
+                    or not rec.receiptbook_id:
                 continue
             # para usar el validator deberiamos extenderlo para que reciba
             # el registro o alguna referencia asi podemos obtener la data
