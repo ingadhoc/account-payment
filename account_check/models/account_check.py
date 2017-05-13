@@ -350,49 +350,6 @@ class AccountCheck(models.Model):
                 rec.state = 'draft'
 
     @api.multi
-    def _check_state_change(self, operation):
-        """
-        We only check state change from _add_operation because we want to
-        leave the user the possibility of making anything from interface.
-        On operation_from_state_map dictionary:
-        * key is 'to state'
-        * value is 'from states'
-        """
-        self.ensure_one()
-        # if we do it from _add_operation only, not from a contraint of before
-        # computing the value, we can just read it
-        old_state = self.state
-        operation_from_state_map = {
-            # 'draft': [False],
-            'holding': ['draft', 'deposited', 'selled', 'delivered'],
-            'delivered': ['holding'],
-            'deposited': ['holding', 'rejected'],
-            'selled': ['holding'],
-            'handed': ['draft'],
-            'withdrawed': ['draft'],
-            'rejected': ['delivered', 'deposited', 'selled', 'handed'],
-            'debited': ['handed'],
-            'returned': ['handed'],
-            'changed': ['handed'],
-            'cancel': ['draft'],
-            'reclaimed': ['rejected'],
-        }
-        from_states = operation_from_state_map.get(operation)
-        if not from_states:
-            raise ValidationError(_(
-                'Operation %s not implemented for checks!') % operation)
-        if old_state not in from_states:
-            raise ValidationError(_(
-                'You can not "%s" a check from state "%s"!\n'
-                'Check nbr (id): %s (%s)') % (
-                    self.operation_ids._fields[
-                        'operation'].convert_to_export(
-                            operation, self.env),
-                    self._fields['state'].convert_to_export(
-                        old_state, self.env),
-                    self.name, self.id))
-
-    @api.multi
     def unlink(self):
         for rec in self:
             if rec.state not in ('draft', 'cancel'):
