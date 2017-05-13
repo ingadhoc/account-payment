@@ -208,6 +208,7 @@ class AccountPaymentGroup(models.Model):
         # no funcionaba bien
         readonly=True,
         states={'draft': [('readonly', False)]},
+        auto_join=True,
     )
     matched_move_line_ids = fields.Many2many(
         'account.move.line',

@@ -9,6 +9,18 @@ from openerp import models, fields, api
 class AccountMoveLine(models.Model):
     _inherit = "account.move.line"
 
+    # inverse field of the one created on payment groups, used by other modules
+    # like sipreco
+    payment_group_ids = fields.Many2many(
+        'account.payment.group',
+        'account_move_line_payment_group_to_pay_rel',
+        'to_pay_line_id',
+        'payment_group_id',
+        string="Payment Groups",
+        readonly=True,
+        auto_join=True,
+    )
+
     @api.multi
     def action_open_related_invoice(self):
         self.ensure_one()
