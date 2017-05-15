@@ -74,10 +74,22 @@ class AccountInvoice(models.Model):
         for rec in self:
             pay_journal = rec.pay_now_journal_id
             if pay_journal and rec.state == 'open':
+                # si bien no hace falta mandar el partner_type al paygroup
+                # porque el defaults lo calcula solo en funcion al tipo de
+                # cuenta, es mas claro mandarlo y podria evitar error si
+                # estamos usando cuentas cruzadas (payable, receivable) con
+                # tipo de factura
+                if rec.type in ['in_invoice', 'in_refund']:
+                    partner_type = 'supplier'
+                else:
+                    partner_type = 'customer'
+
                 pay_context = {
                     'to_pay_move_line_ids': (rec.open_move_line_ids.ids),
                     'default_company_id': rec.company_id.id,
+                    'default_partner_type': partner_type,
                 }
+
                 # factura de proveedor o reembolso a cliente, es saliente
                 if rec.type in ['in_invoice', 'out_refund']:
                     payment_type = 'outbound'
@@ -91,11 +103,6 @@ class AccountInvoice(models.Model):
                 if not payment_method:
                     raise ValidationError(_(
                         'Pay now journal must have manual method!'))
-
-                if rec.type in ['in_invoice', 'in_refund']:
-                    partner_type = 'supplier'
-                else:
-                    partner_type = 'customer'
 
                 payment_group = rec.env[
                     'account.payment.group'].with_context(
