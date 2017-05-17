@@ -3,12 +3,27 @@
 # For copyright and license notices, see __openerp__.py file in module root
 # directory
 ##############################################################################
-from openerp import models, api
+from openerp import models, api, fields
 
 
 class AccountPaymentGroup(models.Model):
 
     _inherit = "account.payment.group"
+
+    withholdings_amount = fields.Monetary(
+        compute='_compute_withholdings_amount'
+    )
+
+    @api.multi
+    @api.depends(
+        'payment_ids.tax_withholding_id',
+        'payment_ids.amount',
+    )
+    def _compute_withholdings_amount(self):
+        for rec in self:
+            rec.withholdings_amount = sum(
+                rec.payment_ids.filtered(
+                    lambda x: x.tax_withholding_id).mapped('amount'))
 
     @api.multi
     def compute_withholdings(self):
