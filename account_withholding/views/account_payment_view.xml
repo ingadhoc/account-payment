@@ -9,7 +9,7 @@
                 <field name='communication' position="after">
                     <div colspan="2">
                         <group string="Withholding data" name="withholding_data" attrs="{'invisible': [('payment_method_code', '!=', 'withholding')]}">
-                            <field name="tax_withholding_id" domain="[('type_tax_use', '=', partner_type), ('company_id', '=', company_id)]" attrs="{'required': [('payment_method_code', '=', 'withholding')]}"/>
+                            <field name="tax_withholding_id"  options="{'no_create': True, 'no_open': True}" domain="[('type_tax_use', '=', partner_type), ('company_id', '=', company_id)]" attrs="{'required': [('payment_method_code', '=', 'withholding')]}"/>
                             <field name="withholding_number" attrs="{'required': [('payment_method_code', '=', 'withholding')]}"/>
                             <field name="withholding_base_amount" attrs="{'required': [('payment_method_code', '=', 'withholding')]}"/>
                         </group>
