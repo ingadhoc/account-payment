@@ -15,19 +15,17 @@
                     <field name="name"/>
                     <field name="issue_date"/>
                     <field name="payment_date"/>
-                    <!-- <field name="payment_date"/> -->
                     <field name="partner_id"/>
-                    <!-- <field name="source_partner_id" invisible="context.get('default_type',False) != 'third_check'" string="Source Partner"/> -->
-                    <!-- <field name="destiny_partner_id" string="Destiny Partner"/> -->
                     <field name="type" invisible="1"/>
                     <field name="bank_id" invisible="context.get('default_type',False) != 'third_check'"/>
                     <field name="amount" sum="Total Amount"/>
-                    <!-- <field name="company_id" groups="base.group_multi_company"/> -->
+                    <field name="company_id" groups="base.group_multi_company"/>
                     <field name="state"/>
                     <field name="owner_name" invisible="context.get('default_type',False) != 'third_check'"/>
                 </tree>
             </field>
         </record>
+
         <record model="ir.ui.view" id="view_account_check_create_tree">
             <field name="name">account.check.create.tree</field>
             <field name="model">account.check</field>
@@ -39,23 +37,6 @@
                 </tree>
             </field>
         </record>
-<!--         <record model="ir.ui.view" id="view_account_check_create_tree">
-            <field name="name">account.check.tree</field>
-            <field name="model">account.check</field>
-            <field name="arch" type="xml">
-                <tree colors="blue:state == 'draft';black:state in ('handed');red:state == 'hrejected';gray:state == 'cancel'" string="Checks">
-                    <field name="checkbook_id" invisible="context.get('default_type',False) != 'issue_check'"/>
-                    <field name="journal_id"/>
-                    <field name="name" string="Number"/>
-                    <field name="issue_date"/>
-                    <field name="payment_date"/>
-                    <field name="source_partner_id" invisible="context.get('default_type',False) != 'third_check'" string="Source Partner"/>
-                    <field name="bank_id" invisible="context.get('default_type',False) != 'third_check'"/>
-                    <field name="amount" sum="Total Amount"/>
-                    <field name="state"/>
-                </tree>
-            </field>
-        </record> -->
                   
         <record model="ir.ui.view" id="view_account_check_form">
             <field name="name">account.check.form</field>
@@ -64,7 +45,6 @@
                 <form string="Checks" create="false">
                     <field name="id" invisible="1"/>
                     <field name="type" invisible="1"/>
-                    <!-- <field name="issue_check_subtype" invisible="1"/> -->
                     <field name="journal_id" invisible="1"/>
                     <field name="currency_id" invisible="1"/>
                     <field name="company_currency_id" invisible="1"/>
@@ -75,7 +55,6 @@
                     <button context="{'default_action_type': 'reject'}" name="%(action_account_check_action_wizard)d" type="action" string="Supplier Rejection" states="delivered,handed" help="It will create a debit note from supplier in draft state and change check state"/>
                     <button context="{'default_action_type': 'reject'}" name="%(action_account_check_action_wizard)d" type="action" string="Bank Rejection" states="deposited" help="It will create an account entry from bank account to company rejection account and change check state"/>
                     <button context="{'default_action_type': 'reject'}" name="%(action_account_check_action_wizard)d" type="action" string="Sell Rejection" states="selled" help="It will create an account entry from cash account to company rejection account and change check state"/>
-                    <!-- <field name="state" widget="statusbar"/> -->
                 </header>
                 <sheet string="Checks">
                     <h1>
@@ -96,7 +75,7 @@
                             <field name="owner_vat" attrs="{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}"/>
                             <field name="issue_date"/>
                             <field name="payment_date"/>
-                            <!-- <field name="company_id" groups="base.group_multi_company" widget="selection"/> -->
+                            <field name="company_id" groups="base.group_multi_company" widget="selection"/>
                         </group>
                     </group>
                     <group string="Operations">
@@ -118,10 +97,6 @@
                             </form>
                         </field>
                     </group>
-                    <!-- <group string="Related Documents">
-                        <field name="move_line_id"/>
-                        <field name="deposit_move_line_id"/>
-                    </group> -->
                 </sheet>    
                 <div class="oe_chatter">
                     <field name="message_follower_ids" widget="mail_followers"/>
@@ -165,15 +140,12 @@
                     <field name="owner_name"/>
                     <field name="owner_vat"/>
                     <field name="payment_date"/>
-                    <!-- <field name="deposit_date"/> -->
                     <group expand="0" string="Group By...">
                         <filter string="Issue Date" context="{'group_by':'issue_date'}"/>
                         <filter string="Payment Date" context="{'group_by':'payment_date'}"/>
-                        <!-- <filter string="Deposit Date" context="{'group_by':'deposit_date:day'}"/>                         -->
                         <filter string="Journal" context="{'group_by':'journal_id'}"/>
                         <filter string="State" context="{'group_by':'state'}"/>
                         <filter string="Partner" context="{'group_by':'partner_id'}"/>
-                        <!-- <filter string="Destiny Partner" context="{'group_by':'destiny_partner_id'}"/> -->
                     </group>
                 </search>
             </field>
@@ -198,8 +170,6 @@
             <field name="res_model">account.check</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form,calendar</field>
-            <!-- <field name="search_view_id" ref=""/> -->
-            <!-- <field name="view_id" ref="view_account_check_tree"/> -->
             <field name="domain">[('type','=','third_check')]</field>
             <field name="context">{'search_default_state':'holding','default_type':'third_check'}</field>
         </record>
@@ -216,8 +186,6 @@
             <field name="res_model">account.check</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form,calendar</field>
-            <!-- <field name="search_view_id" ref=""/> -->
-            <!-- <field name="view_id" ref="view_account_check_tree"/> -->
             <field name="domain">[('type','=','issue_check')]</field>
             <field name="context">{'search_default_state':'handed','default_type':'issue_check'}</field>
         </record>
