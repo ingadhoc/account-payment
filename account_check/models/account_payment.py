@@ -144,31 +144,36 @@ class AccountPayment(models.Model):
         if self.payment_method_code == 'delivered_third_check':
             self.amount = sum(self.check_ids.mapped('amount'))
 
-    # TODo activar
-    @api.one
+    @api.multi
     @api.onchange('check_number')
     def change_check_number(self):
         # TODO make default padding a parameter
-        if self.payment_method_code in ['received_third_check']:
-            if not self.check_number:
-                check_name = False
-            else:
-                # TODO make optional
-                padding = 8
-                if len(str(self.check_number)) > padding:
-                    padding = len(str(self.check_number))
-                # communication = _('Check nbr %s') % (
-                check_name = ('%%0%sd' % padding % self.check_number)
-            self.check_name = check_name
-        elif self.payment_method_code in ['issue_check']:
-            if not self.check_number:
-                check_name = False
-            else:
-                sequence = self.checkbook_id.sequence_id
-                if self.check_number != sequence.number_next_actual:
-                    sequence.write({'number_next_actual': self.check_number})
-                check_name = self.checkbook_id.sequence_id.next_by_id()
-            self.check_name = check_name
+        def _get_name_from_number(number):
+            padding = 8
+            if len(str(number)) > padding:
+                padding = len(str(number))
+            return ('%%0%sd' % padding % number)
+
+        for rec in self:
+            if rec.payment_method_code in ['received_third_check']:
+                if not rec.check_number:
+                    check_name = False
+                else:
+                    check_name = _get_name_from_number(rec.check_number)
+                rec.check_name = check_name
+            elif rec.payment_method_code in ['issue_check']:
+                sequence = rec.checkbook_id.sequence_id
+                if not rec.check_number:
+                    check_name = False
+                elif sequence:
+                    if rec.check_number != sequence.number_next_actual:
+                        sequence.write(
+                            {'number_next_actual': rec.check_number})
+                    check_name = rec.checkbook_id.sequence_id.next_by_id()
+                else:
+                    # in sipreco, for eg, no sequence on checkbooks
+                    check_name = _get_name_from_number(rec.check_number)
+                rec.check_name = check_name
 
     @api.onchange('check_issue_date', 'check_payment_date')
     def onchange_date(self):
