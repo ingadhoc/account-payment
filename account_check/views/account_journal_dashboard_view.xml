@@ -10,7 +10,6 @@
                         <div class="row">
                             <div class="col-xs-6">
                                 <a type="object" name="open_action_checks" context="{'check_type': 'third_check'}">
-                                <!-- <a type="action" name="%(action_third_check)d"> -->
                                     <t t-esc="dashboard.num_holding_third_checks"/>
                                     <t>Third Check(s) on hand</t>
                                 </a>
@@ -30,7 +29,6 @@
                         <div class="row">
                             <div class="col-xs-6">
                                 <a type="object" name="open_action_checks" context="{'check_type': 'issue_check'}">
-                                <!-- <a type="action" name="%(action_issue_check)d"> -->
                                     <t t-esc="dashboard.num_handed_issue_checks"/>
                                     <t>Issue Check(s) handed</t>
                                 </a>

@@ -11,8 +11,6 @@
                     <field name="next_number"/>
                     <field name="range_to"/>
                     <field name="block_manual_number"/>
-                    <!-- <field name="debit_journal_id"/> -->
-                    <!-- <field name="company_id" groups="base.group_multi_company"/> -->
                     <field name="state"/>
                 </tree>
             </field>
@@ -33,8 +31,6 @@
                             <field name="sequence_id"/>
                             <field name="range_to"/>
                             <field name="block_manual_number"/>
-                                <!-- <field name="debit_journal_id" domain="[('company_id', '=', company_id),('type', '=', 'bank')]" context="{'default_company_id': company_id, 'default_type': 'bank'}"/> -->
-                                <!-- <field name="company_id" groups="base.group_multi_company"/> -->
                         </group>
                     </sheet>
                 </form>

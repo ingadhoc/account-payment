@@ -12,11 +12,7 @@
                     <field name="check_subtype" invisible="1"/>
                     <field name="checkbook_block_manual_number" invisible="1"/>
                 </form>
-<!--                 <field name="state" position="after">
-                    <field name="check_state" widget="statusbar" statusbar_visible="holding,deposited" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])]}"/>
-                </field> -->
 
-                <!-- TODO hacer invisible si ('payment_type', '!=', 'transfer') -->
                 <field name='communication' position="after">
                     <div colspan="2" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'delivered_third_check', 'issue_check'])]}">
                         <group name="checks">
@@ -49,20 +45,12 @@
                             <!-- we show this field if check cant be set manually -->
                             <field name="check_number_readonly" attrs="{'invisible': [('checkbook_block_manual_number', '!=', True)]}"/>
                             <field name="check_number" attrs="{'invisible': ['|', ('checkbook_block_manual_number', '=', True), ('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])],  'readonly': [('state', '!=', 'draft')]}"/>
-                            <!-- 'readonly': ['|', ('state', '!=', 'draft'), ('payment_method_code', '=', 'issue_check')] -->
                             <field name="check_name" attrs="{'invisible': ['|', ('checkbook_block_manual_number', '=', True), ('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}"/>
                             <field name="check_issue_date" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}"/>
                             <field name="check_payment_date" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('check_subtype', '=', 'deferred')]}"/>
                             <field name="check_bank_id" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check'])], 'required': [('payment_method_code', 'in', ['received_third_check'])]}"/>
                             <field name="check_owner_vat" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check'])]}"/>
                             <field name="check_owner_name" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check'])]}"/>
-                    <!-- TODO add to domain? -->
-                    <!-- ('currency_id', '=', currency_none_same_company_id), -->
-                    <!-- ('check_deposit_id', '=', False), -->
-                    <!-- ('debit', '>', 0), -->
-                    <!-- ('reconcile_id', '=', False), -->
-                    <!-- ('account_id', '=', journal_default_account_id) -->
-                    <!-- TODO use  -->
                         </group>
                     </div>
                 </field>
@@ -90,47 +78,9 @@
             <field name="arch" type="xml">
                 <field name="name" position="after">
                     <field name="check_ids"/>
-                    <!-- <field name="check_id" filter_domain="['|', ('check_id','ilike',self), ('check_ids','ilike',self)]"/> -->
                 </field>
             </field>
         </record>
 
-
-        <!-- Third Check Menu -->
-<!--         <record model="ir.actions.act_window" id="action_payment_third_check">
-            <field name="name">Third Checks</field>
-            <field name="res_model">account.payment</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">tree,form,calendar</field>
-            <field name="search_view_id" ref=""/>
-            <field name="view_id" ref="view_account_third_check_tree"/>
-            <field name="domain">[('payment_method_code','=','received_third_check')]</field>
-            <field name="context">{'search_default_check_state':'holding'}</field>
-        </record> -->
-        
-<!--         <menuitem
-            action="action_third_check"
-            id="menu_third_check"
-            sequence="30"
-            parent="account.menu_finance_bank_and_cash"/>  -->
-        
-        <!-- Issued Check Menu -->
-<!--         <record model="ir.actions.act_window" id="action_payment_issue_check">
-            <field name="name">Issue Checks</field>
-            <field name="res_model">account.payment</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">tree,form,calendar</field>
-            <field name="search_view_id" ref=""/>
-            <field name="view_id" ref="view_account_issue_check_tree"/>
-            <field name="domain">[('payment_method_code','=','issue_check')]</field>
-            <field name="context">{'search_default_check_state':'handed'}</field>
-        </record> -->
-        
-<!--         <menuitem
-            action="action_issue_check"
-            id="menu_issue_check"
-            sequence="40"
-            parent="account.menu_finance_bank_and_cash"/>   
- -->
     </data>
 </openerp>
