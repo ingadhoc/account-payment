@@ -200,6 +200,9 @@ class AccountPaymentGroup(models.Model):
         readonly=True,
         states={'draft': [('readonly', False)]},
     )
+    has_outstanding = fields.Boolean(
+        compute='_compute_has_outstanding',
+    )
     to_pay_move_line_ids = fields.Many2many(
         'account.move.line',
         'account_move_line_payment_group_to_pay_rel',
@@ -230,6 +233,22 @@ class AccountPaymentGroup(models.Model):
         compute='_compute_payment_pop_up',
         default=lambda x: x._context.get('pop_up', False),
     )
+
+    @api.multi
+    @api.depends('to_pay_move_line_ids')
+    def _compute_has_outstanding(self):
+        for rec in self:
+            if rec.state != 'draft':
+                continue
+            if rec.partner_type == 'supplier':
+                # field = 'debit'
+                lines = rec.to_pay_move_line_ids.filtered(
+                    lambda x: x.amount_residual > 0.0)
+            else:
+                lines = rec.to_pay_move_line_ids.filtered(
+                    lambda x: x.amount_residual < 0.0)
+            if len(lines) != 0:
+                rec.has_outstanding = True
 
     def _search_payment_methods(self, operator, value):
         return [('payment_ids.journal_id.name', operator, value)]
