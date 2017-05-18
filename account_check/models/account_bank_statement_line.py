@@ -40,9 +40,10 @@ class AccountBankStatementLine(models.Model):
         """
 
         check = False
-        for line in counterpart_aml_dicts:
-            move_line = line.get('move_line')
-            check = move_line and move_line.payment_id.check_id or False
+        if counterpart_aml_dicts:
+            for line in counterpart_aml_dicts:
+                move_line = line.get('move_line')
+                check = move_line and move_line.payment_id.check_id or False
         moves = super(AccountBankStatementLine, self).process_reconciliation(
             counterpart_aml_dicts=counterpart_aml_dicts,
             payment_aml_rec=payment_aml_rec, new_aml_dicts=new_aml_dicts)
