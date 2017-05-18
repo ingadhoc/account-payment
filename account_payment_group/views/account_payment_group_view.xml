@@ -12,7 +12,8 @@
         <tree decoration-info="state=='draft'" decoration-muted="state=='reconciled'">
             <field name="payment_date"/>
             <!-- <field name="name"/> -->
-            <field name="partner_id" string="Customer"/>
+            <field name="partner_id"/>
+            <field name="payment_methods"/>
             <field name="payments_amount" sum="Total"/>
             <field name="state"/>
             <field name="company_id" groups="base.group_multi_company"/>
@@ -46,6 +47,7 @@
         <search string="Payments">
             <field name="display_name" filter_domain="[('communication','ilike',self)]" string="Description"/>
             <separator/>
+            <field name="payment_methods"/>
             <field name="partner_id" />
             <field name="company_id" groups="base.group_multi_company" />
             <!-- <filter string="Payable" domain="[('payment_type','=','outbound')]"/> -->

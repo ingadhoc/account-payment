@@ -39,6 +39,11 @@ class AccountPaymentGroup(models.Model):
         readonly=True,
         states={'draft': [('readonly', False)]},
     )
+    payment_methods = fields.Char(
+        string='Métodos de pago',
+        compute='_compute_payment_methods',
+        search='_search_payment_methods',
+    )
     partner_type = fields.Selection(
         [('customer', 'Customer'), ('supplier', 'Vendor')],
         track_visibility='always',
@@ -225,6 +230,17 @@ class AccountPaymentGroup(models.Model):
         compute='_compute_payment_pop_up',
         default=lambda x: x._context.get('pop_up', False),
     )
+
+    def _search_payment_methods(self, operator, value):
+        return [('payment_ids.journal_id.name', operator, value)]
+
+    @api.multi
+    def _compute_payment_methods(self):
+        # TODO tal vez sea interesante sumar al string el metodo en si mismo
+        # (manual, cheque, etc)
+        for rec in self:
+            rec.payment_methods = ", ".join(rec.payment_ids.mapped(
+                'journal_id.name'))
 
     @api.multi
     def action_payment_sent(self):
