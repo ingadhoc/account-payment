@@ -368,6 +368,24 @@ class AccountCheck(models.Model):
             action_date = self._context.get('action_date')
             vals['date'] = action_date
             move = self.env['account.move'].create(vals)
+            debit_account = self.company_id._get_check_account('deferred')
+
+            # conciliamos
+            if debit_account.reconcile:
+                operation = self._get_operation('handed')
+                if operation.origin._name == 'account.payment':
+                    move_lines = operation.origin.move_line_ids
+                elif operation.origin._name == 'account.move':
+                    move_lines = operation.origin.line_ids
+                move_lines |= move.line_ids
+                move_lines = move_lines.filtered(
+                    lambda x: x.account_id == debit_account)
+                if len(move_lines) != 2:
+                    raise ValidationError((
+                        'Se encontraron mas o menos que dos apuntes contables '
+                        'para conciliar en el débito del cheque.\n'
+                        '*Apuntes contables: %s') % move_lines.ids)
+                move_lines.reconcile()
             move.post()
             self._add_operation('debited', move, date=action_date)
 
@@ -444,6 +462,17 @@ class AccountCheck(models.Model):
             move.post()
             self._add_operation('rejected', move, date=action_date)
         elif self.state in ['delivered', 'handed']:
+            # TODO implementar rechazo de cheques de proveedor, si lo hacemos
+            # el codigo actual haria que la nota de débito use la cuenta
+            # cheques rechazados, pero nos falta el paso de dar de baja cheques
+            # diferidos, tal vez debería haber un paso intermedio? un rechazo
+            # del banco? nota de débito bancaria?. Tener en cuenta
+            # que se debe conciliar por la cuenta de cheques diferidos es
+            # conciliable
+            if self.state == 'handed':
+                raise UserError(
+                    'El rechazo de cheques propios no está implementado '
+                    'todavía. Por favor contacte a ADHOC.')
             operation = self._get_operation(self.state, True)
             return self.action_create_debit_note(
                 'rejected', 'supplier', operation.partner_id)

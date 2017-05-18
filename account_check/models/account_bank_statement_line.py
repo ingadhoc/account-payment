@@ -3,7 +3,7 @@
 # For copyright and license notices, see __openerp__.py file in module root
 # directory
 ##############################################################################
-from openerp import models, api
+from openerp import models, api, _
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -27,3 +27,29 @@ class AccountBankStatementLine(models.Model):
                     self -= st_line
         return super(
             AccountBankStatementLine, self).button_cancel_reconciliation()
+
+    def process_reconciliation(
+            self, counterpart_aml_dicts=None, payment_aml_rec=None,
+            new_aml_dicts=None):
+        """
+        Si el move line de contrapartida es un cheque entregado, entonces
+        registramos el debito desde el extracto en el cheque
+        TODO: por ahora si se cancela la linea de extracto no borramos el
+        debito, habria que ver si queremos hacer eso modificando la funcion de
+        arriba directamente
+        """
+
+        check = False
+        for line in counterpart_aml_dicts:
+            move_line = line.get('move_line')
+            check = move_line and move_line.payment_id.check_id or False
+        moves = super(AccountBankStatementLine, self).process_reconciliation(
+            counterpart_aml_dicts=counterpart_aml_dicts,
+            payment_aml_rec=payment_aml_rec, new_aml_dicts=new_aml_dicts)
+        if check and check.state == 'handed':
+            if len(moves) != 1:
+                raise Warning(_(
+                    'Para registrar el débito de un cheque desde el extracto '
+                    'solo debe haber una linea de contrapartida'))
+            check._add_operation('debited', moves, date=moves.date)
+        return moves

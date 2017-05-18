@@ -41,7 +41,7 @@ msgstr "Cheque"
 #. module: account_check
 #: model:ir.model,name:account_check.model_account_check_action_wizard
 msgid "Account Check Action Wizard"
-msgstr "Asistente para la acción de verificación de cuenta"
+msgstr "Asistente para acción de cheque"
 
 #. module: account_check
 #: model:ir.model,name:account_check.model_account_checkbook
@@ -139,7 +139,7 @@ msgstr "Cheque"
 #: code:addons/account_check/models/account_check.py:522
 #, python-format
 msgid "Check \"%s\" debit"
-msgstr "Marque el débito \"%s\""
+msgstr "Débito de cheque \"%s\""
 
 #. module: account_check
 #: code:addons/account_check/models/account_check.py:470
@@ -152,7 +152,7 @@ msgstr "Rechazo del Cheque \"%s\""
 #: model:ir.actions.act_window,name:account_check.action_account_check_action_wizard
 #: model:ir.ui.view,arch_db:account_check.account_check_action_wizard_form_view
 msgid "Check Action"
-msgstr "Chequear acción"
+msgstr "Acción en Cheques"
 
 #. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_payment_check_bank_id
@@ -183,7 +183,7 @@ msgid ""
 "* Check ids: %s"
 msgstr ""
 "El número de cheque (%s) debe ser único por chequera! \n"
-"* Comprobar ids: %s"
+"* Ids de Cheques: %s"
 
 #. module: account_check
 #: code:addons/account_check/models/account_check.py:299
@@ -193,7 +193,7 @@ msgid ""
 "* Check ids: %s"
 msgstr ""
 "¡El número de cheque (%s) debe ser único por propietario y banco!\n"
-"* Comprobar ids: %s"
+"* Ids de Cheques: %s"
 
 #. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_payment_check_owner_name
@@ -401,7 +401,7 @@ msgstr "Depositado"
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_display_name
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook_display_name
 msgid "Display Name"
-msgstr "Mostrar Nombre"
+msgstr "Nombre mostrado"
 
 #. module: account_check
 #: selection:account.check,state:0 selection:account.checkbook,state:0
