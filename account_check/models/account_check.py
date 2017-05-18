@@ -144,6 +144,9 @@ class AccountCheck(models.Model):
         readonly=True,
         states={'draft': [('readonly', False)]},
     )
+    issue_check_subtype = fields.Selection(
+        related='checkbook_id.issue_check_subtype'
+    )
     type = fields.Selection(
         [('issue_check', 'Issue Check'), ('third_check', 'Third Check')],
         readonly=True,
