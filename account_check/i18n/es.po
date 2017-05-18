@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-05-13 20:01+0000\n"
-"PO-Revision-Date: 2017-05-13 20:01+0000\n"
+"POT-Creation-Date: 2017-05-17 21:50+0000\n"
+"PO-Revision-Date: 2017-05-17 21:50+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
@@ -132,6 +132,8 @@ msgstr "Cambiado"
 #. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_check_id
 #: model:ir.model.fields,field_description:account_check.field_account_payment_check_id
+#: model:ir.ui.view,arch_db:account_check.view_account_check_graph
+#: model:ir.ui.view,arch_db:account_check.view_account_check_pivot
 msgid "Check"
 msgstr "Cheque"
 
@@ -212,7 +214,7 @@ msgstr "Fecha de pago del Cheque"
 
 #. module: account_check
 #: code:addons/account_check/models/account_check.py:246
-#: code:addons/account_check/models/account_payment.py:180
+#: code:addons/account_check/models/account_payment.py:185
 #, python-format
 msgid "Check Payment Date must be greater than Issue Date"
 msgstr "La fecha de pago del Cheque debe ser mayor a la fecha de emisión"
@@ -877,7 +879,7 @@ msgid "Third Checks"
 msgstr "Cheque de Terceros"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:411
+#: code:addons/account_check/models/account_payment.py:426
 #, python-format
 msgid ""
 "This operatios is not implemented for checks:\n"
