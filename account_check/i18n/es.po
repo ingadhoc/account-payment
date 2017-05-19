@@ -835,9 +835,9 @@ msgstr "El Cheque debe estar en borrador para poder ser borrado!"
 #. module: account_check
 #: code:addons/account_check/models/account_check.py:327
 #, python-format
-msgid "The date of a new operation can not be minor than last operation date"
+msgid "The date of a new check operation can not be minor than last operation date"
 msgstr ""
-"La fecha de una nueva operación no puede ser menor que la fecha de la última"
+"La fecha de una nueva operación de cheque no puede ser menor que la fecha de la última"
 " operación"
 
 #. module: account_check

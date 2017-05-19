@@ -328,8 +328,8 @@ class AccountCheck(models.Model):
             date = date or fields.Datetime.now()
             if rec.operation_ids and rec.operation_ids[0].date > date:
                 raise ValidationError(_(
-                    'The date of a new operation can not be minor than last '
-                    'operation date'))
+                    'The date of a new check operation can not be minor than '
+                    'last operation date'))
             vals = {
                 'operation': operation,
                 'date': date,
