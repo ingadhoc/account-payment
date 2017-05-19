@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-30 23:26+0000\n"
-"PO-Revision-Date: 2017-03-30 23:26+0000\n"
+"POT-Creation-Date: 2017-05-19 14:17+0000\n"
+"PO-Revision-Date: 2017-05-19 14:17+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
@@ -333,6 +333,11 @@ msgstr "Dominio de error del usuario de retención"
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_user_error_message
 msgid "Withholding user error message"
 msgstr "Mensaje de error del usuario de retención"
+
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_group_withholdings_amount
+msgid "Withholdings amount"
+msgstr "Importe de retenciones"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,help:account_withholding_automatic.field_account_tax_withholding_rule_domain
