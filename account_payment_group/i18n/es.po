@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-05-10 15:28+0000\n"
-"PO-Revision-Date: 2017-05-10 15:28+0000\n"
+"POT-Creation-Date: 2017-05-19 14:17+0000\n"
+"PO-Revision-Date: 2017-05-19 14:17+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
@@ -178,7 +178,6 @@ msgstr "Moneda"
 
 #. module: account_payment_group
 #: selection:account.payment.group,partner_type:0
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_tree
 msgid "Customer"
 msgstr "Cliente"
 
@@ -251,6 +250,20 @@ msgid "Followers (Partners)"
 msgstr "Seguidores (Partners)"
 
 #. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_has_outstanding
+msgid "Has outstanding"
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
+msgid ""
+"Hay <b>créditos pendientes</b> de imputar en la deuda seleccionada, se "
+"intentará imputar dichos créditos a otros comprobantes seleccionados pero "
+"dicha información <b>no quedará registrada en el pago</b>. Si no desea que "
+"se imputen automáticamente puede borrarlos de la lista."
+msgstr ""
+
+#. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_id
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_id
 msgid "ID"
@@ -301,7 +314,7 @@ msgid "Journal Item"
 msgstr "Apunte Contable"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:548
+#: code:addons/account_payment_group/models/account_payment_group.py:595
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
 #, python-format
@@ -366,6 +379,18 @@ msgid "Move line ids"
 msgstr "Ids de la línea del movimiento"
 
 #. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_payment_methods
+msgid "Métodos de pago"
+msgstr ""
+
+#. module: account_payment_group
+#: code:addons/account_payment_group/models/account_payment_group.py:266
+#: code:addons/account_payment_group/models/account_payment_group.py:270
+#, python-format
+msgid "Not implemented yet"
+msgstr "No implementado todavía"
+
+#. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_notes
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid "Notes"
@@ -428,7 +453,7 @@ msgid "Pay now Journal"
 msgstr "Diario de Pago Directo"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_invoice.py:92
+#: code:addons/account_payment_group/models/account_invoice.py:104
 #, python-format
 msgid "Pay now journal must have manual method!"
 msgstr "El diario de pago directo debe tener método manual!"
@@ -448,6 +473,11 @@ msgstr "Fecha de Pago"
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_payment_group_id
 msgid "Payment Group"
 msgstr "Grupo de Pago"
+
+#. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_move_line_payment_group_ids
+msgid "Payment Groups"
+msgstr ""
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_payment_ids
@@ -545,6 +575,11 @@ msgid "Posted"
 msgstr "Publicado"
 
 #. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
+msgid "Print"
+msgstr ""
+
+#. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_product_id
 msgid "Product id"
 msgstr "Id del Producto"
@@ -613,6 +648,11 @@ msgid "Send Money"
 msgstr "Enviar Dinero"
 
 #. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
+msgid "Send by Email"
+msgstr ""
+
+#. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.account_journal_dashboard_kanban_view
 msgid "Sended Money"
 msgstr "Dinero Enviado"
@@ -651,7 +691,7 @@ msgid "To Pay Amount"
 msgstr "Importe a pagar"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:608
+#: code:addons/account_payment_group/models/account_payment_group.py:655
 #, python-format
 msgid "To Pay Amount and Payment Amount must be equal!"
 msgstr "¡El Importe a pagar y el Importe de Pago deben ser iguales!"
@@ -664,7 +704,7 @@ msgstr "Líneas a Pagar"
 
 #. module: account_payment_group
 #: code:addons/account_payment_group/models/account_payment.py:124
-#: code:addons/account_payment_group/models/account_payment_group.py:588
+#: code:addons/account_payment_group/models/account_payment_group.py:635
 #, python-format
 msgid "To Pay Lines must be of the same account!"
 msgstr "Las líneas a pagar deben ser de la misma cuenta!"
@@ -728,20 +768,20 @@ msgid "Vendor"
 msgstr "Proveedor"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:603
+#: code:addons/account_payment_group/models/account_payment_group.py:650
 #, python-format
 msgid "You can not confirm a payment group without payment lines!"
 msgstr "¡No puede confirmar un grupo de pagos sin líneas de pago!"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:579
+#: code:addons/account_payment_group/models/account_payment_group.py:626
 #, python-format
 msgid "You can not delete a payment that is already posted"
 msgstr "No puede eliminar un pago que ya ha sido publicado"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:508
-#: code:addons/account_payment_group/models/account_payment_group.py:514
+#: code:addons/account_payment_group/models/account_payment_group.py:555
+#: code:addons/account_payment_group/models/account_payment_group.py:561
 #, python-format
 msgid "You can not send to pay lines from different partners"
 msgstr "No puede enviar a pagar líneas de diferentes partners"
