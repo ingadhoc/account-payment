@@ -257,8 +257,17 @@ class AccountPaymentGroup(models.Model):
     def _compute_payment_methods(self):
         # TODO tal vez sea interesante sumar al string el metodo en si mismo
         # (manual, cheque, etc)
+
+        # tuvmos que hacerlo asi sudo porque si no tenemos error, si agregamos
+        # el sudo al self o al rec no se computa el valor, probamos tmb
+        # haciendo compute sudo y no anduvo, la unica otra alternativa que
+        # funciono es el search de arriba (pero que no muestra todos los
+        # names)
         for rec in self:
-            rec.payment_methods = ", ".join(rec.payment_ids.mapped(
+            # journals = rec.env['account.journal'].search(
+            #     [('id', 'in', rec.payment_ids.ids)])
+            # rec.payment_methods = ", ".join(journals.mapped('name'))
+            rec.payment_methods = ", ".join(rec.payment_ids.sudo().mapped(
                 'journal_id.name'))
 
     @api.multi
