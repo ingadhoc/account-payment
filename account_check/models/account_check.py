@@ -392,12 +392,50 @@ class AccountCheck(models.Model):
             move.post()
             self._add_operation('debited', move, date=action_date)
 
+    @api.model
+    def get_third_check_account(self):
+        """
+        For third checks, if we use a journal only for third checks, we use
+        accounts on journal, if not we use company account
+        # TODO la idea es depreciar esto y que si se usa cheques de terceros
+        se use la misma cuenta que la del diario y no la cuenta configurada en
+        la cia, lo dejamos por ahora por nosotros y 4 clientes que estan asi
+        """
+        # self.ensure_one()
+        # desde los pagos, pueden venir mas de un cheque pero para que
+        # funcione bien, todos los cheques deberian usar la misma cuenta,
+        # hacemos esa verificación
+        account = self.env['account.account']
+        for rec in self:
+            credit_account = rec.journal_id.default_credit_account_id
+            debit_account = rec.journal_id.default_debit_account_id
+            inbound_methods = rec.journal_id['inbound_payment_method_ids']
+            outbound_methods = rec.journal_id['outbound_payment_method_ids']
+            # si hay cuenta en diario y son iguales, y si los metodos de pago
+            # y cobro son solamente uno, usamos el del diario, si no, usamos el
+            # de la compañía
+            if credit_account and credit_account == debit_account and len(
+                    inbound_methods) == 1 and len(outbound_methods) == 1:
+                account |= credit_account
+            else:
+                account |= rec.company_id._get_check_account('holding')
+        if len(account) != 1:
+            raise ValidationError()
+        return account
+
     @api.multi
     def claim(self):
         if self.state in ['rejected'] and self.type == 'third_check':
             operation = self._get_operation('holding', True)
             return self.action_create_debit_note(
                 'reclaimed', 'customer', operation.partner_id)
+
+    @api.multi
+    def customer_return(self):
+        if self.state in ['holding'] and self.type == 'third_check':
+            operation = self._get_operation('holding', True)
+            return self.action_create_debit_note(
+                'returned', 'customer', operation.partner_id)
 
     @api.model
     def _get_checks_to_date_on_state(self, state, date, force_domain=None):
@@ -499,12 +537,26 @@ class AccountCheck(models.Model):
             ('type', '=', journal_type),
         ], limit=1)
 
-        name = _('Check "%s" rejection') % (self.name)
+        # si pedimos rejected o reclamo, devolvemos mensaje de rechazo y cuenta
+        # de rechazo
+        if operation in ['rejected', 'reclaimed']:
+            name = 'Rechazo cheque "%s"' % (self.name)
+            account = self.company_id._get_check_account('rejected')
+        # si pedimos la de holding es una devolucion
+        elif operation == 'returned':
+            # TODO para los returned, obtenemos con este metodo, cuando lo
+            # depreciemos tendriamos que usar del diario directamente
+            name = 'Devolución cheque "%s"' % (self.name)
+            account = self.get_third_check_account()
+        else:
+            raise ValidationError(_(
+                'Debit note for operation %s not implemented!' % (
+                    operation)))
 
         inv_line_vals = {
             # 'product_id': self.product_id.id,
             'name': name,
-            'account_id': self.company_id._get_check_account('rejected').id,
+            'account_id': account.id,
             'price_unit': (
                 self.amount_currency and self.amount_currency or self.amount),
             # 'invoice_id': invoice.id,

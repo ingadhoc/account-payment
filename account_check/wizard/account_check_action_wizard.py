@@ -23,7 +23,8 @@ class account_check_action_wizard(models.TransientModel):
     @api.multi
     def action_confirm(self):
         self.ensure_one()
-        if self.action_type not in ['claim', 'bank_debit', 'reject']:
+        if self.action_type not in [
+                'claim', 'bank_debit', 'reject', 'customer_return']:
             raise ValidationError(_(
                 'Action %s not supported on checks') % self.action_type)
         check = self.env['account.check'].browse(

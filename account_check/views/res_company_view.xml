@@ -9,7 +9,8 @@
                 <group name="account_grp">
                     <field name="rejected_check_account_id" domain="[('company_id', '=', id)]"/>
                     <field name="deferred_check_account_id" domain="[('company_id', '=', id)]"/>
-                    <field name="holding_check_account_id" domain="[('company_id', '=', id)]"/>
+                    <!-- la ocultamos porque la idea es depreciarla y que si se usa cheques de terceros y manual en mismo diario, siempre se use la misma cuenta, la dejamos por compatibilidad para clientes que ya la tienen en uso -->
+                    <field name="holding_check_account_id" domain="[('company_id', '=', id)]" groups="base.group_no_one"/>
                 </group>
             </field>
         </record>
