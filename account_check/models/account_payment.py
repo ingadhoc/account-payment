@@ -380,20 +380,23 @@ class AccountPayment(models.Model):
                 # and rec.partner_type == 'supplier'
         ):
             if cancel:
-                _logger.info('Cancel Hand Check')
+                _logger.info('Cancel Hand/debit Check')
                 rec.check_ids._del_operation(self)
                 rec.check_ids.unlink()
                 return None
 
-            _logger.info('Hand Check')
-            check = self.create_check(
-                'issue_check', 'handed', self.check_bank_id)
-            vals['date_maturity'] = self.check_payment_date
-            vals['name'] = _('Hand check %s') % check.name
-            # if check is deferred, change account
+            _logger.info('Hand/debit Check')
+            # if check is deferred, hand it and later debit it change account
+            # if check is current, debit it directly
+            operation = 'debited'
             if self.check_subtype == 'deferred':
                 vals['account_id'] = self.company_id._get_check_account(
                     'deferred').id
+                operation = 'handed'
+            check = self.create_check(
+                'issue_check', operation, self.check_bank_id)
+            vals['date_maturity'] = self.check_payment_date
+            vals['name'] = _('Hand check %s') % check.name
         elif (
                 rec.payment_method_code == 'issue_check' and
                 rec.payment_type == 'transfer' and

@@ -47,7 +47,7 @@
                         </group>
                         <group name="check_data" states='draft'>
                             <newline/>
-                            <field name="checkbook_id" attrs="{'invisible': [('payment_method_code', 'not in', ['issue_check'])], 'required': [('payment_method_code', 'in', ['issue_check'])]}" domain="[('journal_id', '=', journal_id), ('state', '=', 'active')]"/>
+                            <field name="checkbook_id" options="{'no_create': True, 'no_open': True}" attrs="{'invisible': [('payment_method_code', 'not in', ['issue_check'])], 'required': [('payment_method_code', 'in', ['issue_check'])]}" domain="[('journal_id', '=', journal_id), ('state', '=', 'active')]"/>
                             <!-- we show this field if check cant be set manually -->
                             <field name="check_number_readonly" attrs="{'invisible': [('checkbook_block_manual_number', '!=', True)]}"/>
                             <field name="check_number" attrs="{'invisible': ['|', ('checkbook_block_manual_number', '=', True), ('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])],  'readonly': [('state', '!=', 'draft')]}"/>
