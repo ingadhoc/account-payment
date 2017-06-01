@@ -425,6 +425,7 @@ class AccountCheck(models.Model):
 
     @api.multi
     def claim(self):
+        self.ensure_one()
         if self.state in ['rejected'] and self.type == 'third_check':
             operation = self._get_operation('holding', True)
             return self.action_create_debit_note(
@@ -432,6 +433,7 @@ class AccountCheck(models.Model):
 
     @api.multi
     def customer_return(self):
+        self.ensure_one()
         if self.state in ['holding'] and self.type == 'third_check':
             operation = self._get_operation('holding', True)
             return self.action_create_debit_note(
