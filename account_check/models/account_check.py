@@ -50,7 +50,10 @@ class AccountCheckOperation(models.Model):
         ('rejected', 'Rejection'),
         ('debited', 'Debit'),
         ('returned', 'Return'),
-        ('changed', 'Change'),
+        # al final no vamos a implemnetar esto ya que habria que hacer muchas
+        # cosas hasta actualizar el asiento, mejor se vuelve atras y se
+        # vuelve a generar deuda y listo
+        # ('changed', 'Change'),
         ('cancel', 'Cancel'),
     ],
         required=True,
@@ -168,7 +171,7 @@ class AccountCheck(models.Model):
         ('rejected', 'Rejected'),
         ('debited', 'Debited'),
         ('returned', 'Returned'),
-        ('changed', 'Changed'),
+        # ('changed', 'Changed'),
         ('cancel', 'Cancel'),
     ],
         required=True,
@@ -315,7 +318,7 @@ class AccountCheck(models.Model):
             if not rec.operation_ids or rec.operation_ids[0].origin != origin:
                 raise ValidationError(_(
                     'You can not cancel this operation because this is not '
-                    'the last operation over the check. Check (id): %s (%s)'
+                    'the last operation over the check.\nCheck (id): %s (%s)'
                 ) % (rec.name, rec.id))
             rec.operation_ids[0].origin = False
             rec.operation_ids[0].unlink()
@@ -371,26 +374,36 @@ class AccountCheck(models.Model):
             action_date = self._context.get('action_date')
             vals['date'] = action_date
             move = self.env['account.move'].create(vals)
-            debit_account = self.company_id._get_check_account('deferred')
-
-            # conciliamos
-            if debit_account.reconcile:
-                operation = self._get_operation('handed')
-                if operation.origin._name == 'account.payment':
-                    move_lines = operation.origin.move_line_ids
-                elif operation.origin._name == 'account.move':
-                    move_lines = operation.origin.line_ids
-                move_lines |= move.line_ids
-                move_lines = move_lines.filtered(
-                    lambda x: x.account_id == debit_account)
-                if len(move_lines) != 2:
-                    raise ValidationError((
-                        'Se encontraron mas o menos que dos apuntes contables '
-                        'para conciliar en el débito del cheque.\n'
-                        '*Apuntes contables: %s') % move_lines.ids)
-                move_lines.reconcile()
+            self.handed_reconcile(move)
             move.post()
             self._add_operation('debited', move, date=action_date)
+
+    @api.multi
+    def handed_reconcile(self, move):
+        """
+        Funcion que por ahora solo intenta conciliar cheques propios entregados
+        cuando se hace un debito o cuando el proveedor lo rechaza
+        """
+
+        self.ensure_one()
+        debit_account = self.company_id._get_check_account('deferred')
+
+        # conciliamos
+        if debit_account.reconcile:
+            operation = self._get_operation('handed')
+            if operation.origin._name == 'account.payment':
+                move_lines = operation.origin.move_line_ids
+            elif operation.origin._name == 'account.move':
+                move_lines = operation.origin.line_ids
+            move_lines |= move.line_ids
+            move_lines = move_lines.filtered(
+                lambda x: x.account_id == debit_account)
+            if len(move_lines) != 2:
+                raise ValidationError((
+                    'Se encontraron mas o menos que dos apuntes contables '
+                    'para conciliar en el débito del cheque.\n'
+                    '*Apuntes contables: %s') % move_lines.ids)
+            move_lines.reconcile()
 
     @api.model
     def get_third_check_account(self):
@@ -422,22 +435,6 @@ class AccountCheck(models.Model):
         if len(account) != 1:
             raise ValidationError()
         return account
-
-    @api.multi
-    def claim(self):
-        self.ensure_one()
-        if self.state in ['rejected'] and self.type == 'third_check':
-            operation = self._get_operation('holding', True)
-            return self.action_create_debit_note(
-                'reclaimed', 'customer', operation.partner_id)
-
-    @api.multi
-    def customer_return(self):
-        self.ensure_one()
-        if self.state in ['holding'] and self.type == 'third_check':
-            operation = self._get_operation('holding', True)
-            return self.action_create_debit_note(
-                'returned', 'customer', operation.partner_id)
 
     @api.model
     def _get_checks_to_date_on_state(self, state, date, force_domain=None):
@@ -484,6 +481,24 @@ class AccountCheck(models.Model):
         return operation
 
     @api.multi
+    def claim(self):
+        self.ensure_one()
+        if self.state in ['rejected'] and self.type == 'third_check':
+            operation = self._get_operation('holding', True)
+            return self.action_create_debit_note(
+                'reclaimed', 'customer', operation.partner_id,
+                self.company_id._get_check_account('rejected'))
+
+    @api.multi
+    def customer_return(self):
+        self.ensure_one()
+        if self.state in ['holding'] and self.type == 'third_check':
+            operation = self._get_operation('holding', True)
+            return self.action_create_debit_note(
+                'returned', 'customer', operation.partner_id,
+                self.get_third_check_account())
+
+    @api.multi
     def reject(self):
         self.ensure_one()
         if self.state in ['deposited', 'selled']:
@@ -504,24 +519,20 @@ class AccountCheck(models.Model):
             move = self.env['account.move'].create(vals)
             move.post()
             self._add_operation('rejected', move, date=action_date)
-        elif self.state in ['delivered', 'handed']:
-            # TODO implementar rechazo de cheques de proveedor, si lo hacemos
-            # el codigo actual haria que la nota de débito use la cuenta
-            # cheques rechazados, pero nos falta el paso de dar de baja cheques
-            # diferidos, tal vez debería haber un paso intermedio? un rechazo
-            # del banco? nota de débito bancaria?. Tener en cuenta
-            # que se debe conciliar por la cuenta de cheques diferidos es
-            # conciliable
-            if self.state == 'handed':
-                raise UserError(
-                    'El rechazo de cheques propios no está implementado '
-                    'todavía. Por favor contacte a ADHOC.')
+        elif self.state == 'delivered':
             operation = self._get_operation(self.state, True)
             return self.action_create_debit_note(
-                'rejected', 'supplier', operation.partner_id)
+                'rejected', 'supplier', operation.partner_id,
+                self.company_id._get_check_account('rejected'))
+        elif self.state == 'handed':
+            operation = self._get_operation(self.state, True)
+            return self.action_create_debit_note(
+                'rejected', 'supplier', operation.partner_id,
+                self.company_id._get_check_account('deferred'))
 
     @api.multi
-    def action_create_debit_note(self, operation, partner_type, partner):
+    def action_create_debit_note(
+            self, operation, partner_type, partner, account):
         self.ensure_one()
         action_date = self._context.get('action_date')
 
@@ -543,13 +554,9 @@ class AccountCheck(models.Model):
         # de rechazo
         if operation in ['rejected', 'reclaimed']:
             name = 'Rechazo cheque "%s"' % (self.name)
-            account = self.company_id._get_check_account('rejected')
         # si pedimos la de holding es una devolucion
         elif operation == 'returned':
-            # TODO para los returned, obtenemos con este metodo, cuando lo
-            # depreciemos tendriamos que usar del diario directamente
             name = 'Devolución cheque "%s"' % (self.name)
-            account = self.get_third_check_account()
         else:
             raise ValidationError(_(
                 'Debit note for operation %s not implemented!' % (
@@ -568,6 +575,7 @@ class AccountCheck(models.Model):
             # this is the reference that goes on account.move.line of debt line
             # 'name': name,
             # this is the reference that goes on account.move
+            'rejected_check_id': self.id,
             'reference': name,
             'date_invoice': action_date,
             'origin': _('Check nbr (id): %s (%s)') % (self.name, self.id),
