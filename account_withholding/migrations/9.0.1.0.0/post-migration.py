@@ -4,8 +4,31 @@ from openupgradelib import openupgrade
 
 @openupgrade.migrate(use_env=True)
 def migrate(env, version):
-    env['account.journal']._enable_withholding_on_cash_journals()
+    # al final usamos diario separado
+    # env['account.journal']._enable_withholding_on_cash_journals()
     migrate_tax_withholding(env)
+    create_withholding_journal(env)
+
+
+def create_withholding_journal(env):
+    # creamos diario para retenciones
+    for company in env['res.company'].search([]):
+        inbound_withholding = env.ref(
+            'account_withholding.account_payment_method_in_withholding')
+        outbound_withholding = env.ref(
+            'account_withholding.account_payment_method_out_withholding')
+        journal = env['account.journal'].create({
+            'name': 'Retenciones',
+            'type': 'cash',
+            'company_id': company.id,
+            'inbound_payment_method_ids': [
+                (4, inbound_withholding.id, None)],
+            'outbound_payment_method_ids': [
+                (4, outbound_withholding.id, None)],
+        })
+        # we dont want this journal to have accounts and we can not inherit
+        # to avoid creation, so we delete it
+        journal.default_credit_account_id.unlink()
 
 
 def migrate_tax_withholding(env):
