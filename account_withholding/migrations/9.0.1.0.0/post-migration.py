@@ -12,23 +12,33 @@ def migrate(env, version):
 
 def create_withholding_journal(env):
     # creamos diario para retenciones
+    journals = env['account.journal']
     for company in env['res.company'].search([]):
         inbound_withholding = env.ref(
             'account_withholding.account_payment_method_in_withholding')
         outbound_withholding = env.ref(
             'account_withholding.account_payment_method_out_withholding')
-        journal = env['account.journal'].create({
+        vals = {
             'name': 'Retenciones',
+            # nos la jugamos a que no existe este codigo
+            'code': 'RET01',
             'type': 'cash',
             'company_id': company.id,
             'inbound_payment_method_ids': [
                 (4, inbound_withholding.id, None)],
             'outbound_payment_method_ids': [
                 (4, outbound_withholding.id, None)],
-        })
-        # we dont want this journal to have accounts and we can not inherit
-        # to avoid creation, so we delete it
-        journal.default_credit_account_id.unlink()
+        }
+        # porque odoo nos da error que localization argentina no existe
+        # (es un bug porque es campo related y readonly), lo creamos con
+        # _create que saltea algunas cosas, antes obtenemos el sequence
+        # y el code que son solo agregados si se llama con .create
+        # vals['code'] = journals.code
+        vals['sequence_id'] = journals._create_sequence(vals).id
+
+        # _create no crea las cuentas por defecto que borramos desde
+        # plan de cuentas, mejor
+        journals._create(vals)
 
 
 def migrate_tax_withholding(env):
