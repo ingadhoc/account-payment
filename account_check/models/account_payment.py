@@ -388,14 +388,14 @@ class AccountPayment(models.Model):
             _logger.info('Hand/debit Check')
             # if check is deferred, hand it and later debit it change account
             # if check is current, debit it directly
-            operation = 'debited'
+            # operation = 'debited'
             # al final por ahora depreciamos esto ya que deberiamos adaptar
             # rechazos y demas, deferred solamente sin fecha pero con cuenta
             # puente
             # if self.check_subtype == 'deferred':
-            #     vals['account_id'] = self.company_id._get_check_account(
-            #         'deferred').id
-            #     operation = 'handed'
+            vals['account_id'] = self.company_id._get_check_account(
+                'deferred').id
+            operation = 'handed'
             check = self.create_check(
                 'issue_check', operation, self.check_bank_id)
             vals['date_maturity'] = self.check_payment_date
