@@ -5,13 +5,14 @@
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
 # Javier Diez <jd@adhoc.com.ar>, 2017
+# Gonzalo Ruzafa <gr@ingadhoc.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-01 20:43+0000\n"
-"PO-Revision-Date: 2017-06-01 20:43+0000\n"
-"Last-Translator: Javier Diez <jd@adhoc.com.ar>, 2017\n"
+"POT-Creation-Date: 2017-06-08 00:12+0000\n"
+"PO-Revision-Date: 2017-06-08 00:12+0000\n"
+"Last-Translator: Gonzalo Ruzafa <gr@ingadhoc.com>, 2017\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -33,6 +34,8 @@ msgid ""
 "* Con cheques corrientes el asiento generado por el pago descontará directamente de la cuenta de banco y además la fecha de pago no es obligatoria.\n"
 "* Con cheques diferidos el asiento generado por el pago se hará contra la cuenta definida para tal fin en la compañía, luego será necesario el asiento de débito que se puede generar desde el extracto o desde el cheque."
 msgstr ""
+"* Con cheques corrientes el asiento generado por el pago descontará directamente de la cuenta de banco y además la fecha de pago no es obligatoria.\n"
+"* Con cheques diferidos el asiento generado por el pago se hará contra la cuenta definida para tal fin en la compañía, luego será necesario el asiento de débito que se puede generar desde el extracto o desde el cheque."
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_check_create_form
@@ -42,6 +45,10 @@ msgid ""
 "cheque.<br/><b>SOLO</b> debe crear o modificar operaciones para <b>carga de "
 "cheques inciales</b> o ajustes sobre <b>circuitos no convencionales.</b>"
 msgstr ""
+"<b>IMPORTANTE:</b> las operaciones de cheques se crean automáticamente con "
+"los pagos, transferencias o los botones disponibles sobre el "
+"cheque.<br/><b>SOLO</b> debe crear o modificar operaciones para <b>carga de "
+"cheques inciales</b> o ajustes sobre <b>circuitos no convencionales.</b>"
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_payment_form_inherited
@@ -49,6 +56,8 @@ msgid ""
 "<b>Importante:</b> Recomendamos que <b>solo</b> deposite <b>varios cheques</b> a la vez si no utiliza los extractos bancarios o si el banco acredita los cheques en una sola línea.<br/>\n"
 "                        Para el resto de los casos recomendamos que registre <b>una transferencia para cada cheque</b>."
 msgstr ""
+"<b>Importante:</b> Recomendamos que <b>solo</b> deposite <b>varios cheques</b> a la vez si no utiliza los extractos bancarios o si el banco acredita los cheques en una sola línea.<br/>\n"
+"                        Para el resto de los casos recomendamos que registre <b>una transferencia para cada cheque</b>."
 
 #. module: account_check
 #: model:ir.model,name:account_check.model_account_check
@@ -359,7 +368,7 @@ msgstr "Débito"
 #: code:addons/account_check/models/account_check.py:562
 #, python-format
 msgid "Debit note for operation %s not implemented!"
-msgstr ""
+msgstr "Nota de Debito para operacion %s no implementada!"
 
 #. module: account_check
 #: selection:account.check,state:0
@@ -398,7 +407,7 @@ msgstr "Endosar"
 #: code:addons/account_check/models/account_payment.py:373
 #, python-format
 msgid "Deliver checks %s"
-msgstr ""
+msgstr "Entregar cheques %s"
 
 #. module: account_check
 #: selection:account.check,state:0
@@ -414,7 +423,7 @@ msgstr "Depositar"
 #: code:addons/account_check/models/account_payment.py:355
 #, python-format
 msgid "Deposit checks %s"
-msgstr ""
+msgstr "Depositar cheques %s"
 
 #. module: account_check
 #: selection:account.check,state:0
@@ -574,11 +583,14 @@ msgstr ""
 #: model:ir.ui.view,arch_db:account_check.view_account_check_form
 msgid "It will create a draft debit note from supplier and change check state"
 msgstr ""
+"Se va a crear una nota de debito del proveedor y cambiar el cheque de estado"
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_check_form
 msgid "It will create a draft debit note to customer and change check state"
 msgstr ""
+"Se va a crear una nota de debito en borrador para el cliente y cambiar el "
+"cheque de estado"
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_check_form
@@ -801,6 +813,10 @@ msgid ""
 "<b>carga incial</b> de los mismos.<br/>Podrá cargar las operaciones "
 "correspondientes una vez que haya guardado el cheque."
 msgstr ""
+"Recuerde que los cheques se crean con los pagos.<br/><b>Solamente</b> debe "
+"crear cheques manualmente para realizar algún <b>ajuste</b> o para la "
+"<b>carga incial</b> de los mismos.<br/>Podrá cargar las operaciones "
+"correspondientes una vez que haya guardado el cheque."
 
 #. module: account_check
 #: selection:account.check,state:0
@@ -810,7 +826,7 @@ msgstr "Rechazado"
 #. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_invoice_rejected_check_id
 msgid "Rejected Check"
-msgstr ""
+msgstr "Cheque Rechazado"
 
 #. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_chart_template_rejected_check_account_id
@@ -837,7 +853,7 @@ msgstr "Devolver"
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_check_form
 msgid "Return to Customer"
-msgstr ""
+msgstr "Devolucion a Cliente"
 
 #. module: account_check
 #: selection:account.check,state:0
@@ -885,7 +901,7 @@ msgstr "Rechazo del Proveedor"
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_check_form
 msgid "Supplier Return/Rejection"
-msgstr ""
+msgstr "Devolución/Rechazo de Proveedor"
 
 #. module: account_check
 #: model:ir.model,name:account_check.model_account_chart_template
@@ -975,7 +991,7 @@ msgstr "transferir"
 #: code:addons/account_check/models/account_payment.py:330
 #, python-format
 msgid "Transfer checks %s"
-msgstr ""
+msgstr "Transferir Cheques %s"
 
 #. module: account_check
 #: selection:account.check,state:0
@@ -1012,7 +1028,7 @@ msgstr "Usado"
 #: code:addons/account_check/models/account_payment.py:415
 #, python-format
 msgid "Withdraw with checks %s"
-msgstr ""
+msgstr "Extracción con Cheques %s"
 
 #. module: account_check
 #: selection:account.check.operation,operation:0
@@ -1037,6 +1053,8 @@ msgid ""
 "You can not cancel this operation because this is not the last operation over the check.\n"
 "Check (id): %s (%s)"
 msgstr ""
+"No puede cancelar esta operación porque no es la última operación realizada sobre el cheque.\n"
+"Cheque (id): %s (%s)"
 
 #. module: account_check
 #: code:addons/account_check/models/account_check.py:78
