@@ -29,16 +29,9 @@ def create_withholding_journal(env):
             'outbound_payment_method_ids': [
                 (4, outbound_withholding.id, None)],
         }
-        # porque odoo nos da error que localization argentina no existe
-        # (es un bug porque es campo related y readonly), lo creamos con
-        # _create que saltea algunas cosas, antes obtenemos el sequence
-        # y el code que son solo agregados si se llama con .create
-        # vals['code'] = journals.code
-        vals['sequence_id'] = journals._create_sequence(vals).id
 
-        # _create no crea las cuentas por defecto que borramos desde
-        # plan de cuentas, mejor
-        journals._create(vals)
+        journal = journals.create(vals)
+        journal.default_credit_account_id.unlink()
 
 
 def migrate_tax_withholding(env):
