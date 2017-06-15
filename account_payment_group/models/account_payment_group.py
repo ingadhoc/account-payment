@@ -671,8 +671,11 @@ class AccountPaymentGroup(models.Model):
             counterpart_aml = rec.payment_ids.mapped('move_line_ids').filtered(
                 lambda r: not r.reconciled and r.account_id.internal_type in (
                     'payable', 'receivable'))
-            (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile(
-                writeoff_acc_id, writeoff_journal_id)
+            # porque la cuenta podria ser no recivible y ni conciliable
+            # (por ejemplo en sipreco)
+            if counterpart_aml and rec.to_pay_move_line_ids:
+                (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile(
+                    writeoff_acc_id, writeoff_journal_id)
             rec.state = 'posted'
 
     # @api.multi
