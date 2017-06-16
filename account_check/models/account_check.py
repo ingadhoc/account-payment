@@ -52,8 +52,9 @@ class AccountCheckOperation(models.Model):
         ('returned', 'Return'),
         # al final no vamos a implemnetar esto ya que habria que hacer muchas
         # cosas hasta actualizar el asiento, mejor se vuelve atras y se
-        # vuelve a generar deuda y listo
-        # ('changed', 'Change'),
+        # vuelve a generar deuda y listo, igualmente lo dejamos por si se
+        # quiere usar de manera manual
+        ('changed', 'Change'),
         ('cancel', 'Cancel'),
     ],
         required=True,
@@ -171,7 +172,7 @@ class AccountCheck(models.Model):
         ('rejected', 'Rejected'),
         ('debited', 'Debited'),
         ('returned', 'Returned'),
-        # ('changed', 'Changed'),
+        ('changed', 'Changed'),
         ('cancel', 'Cancel'),
     ],
         required=True,

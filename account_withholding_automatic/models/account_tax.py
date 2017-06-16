@@ -148,11 +148,15 @@ result = withholdable_base_amount * 0.10
                     raise ValidationError(tax.withholding_user_error_message)
             vals = tax.get_withholding_vals(payment_group)
 
-            # we set computed_withholding_amount
-            period_withholding_amount = vals.get(
-                'period_withholding_amount')
-            previous_withholding_amount = vals.get(
-                'previous_withholding_amount')
+            # we set computed_withholding_amount, hacemos round porque
+            # si no puede pasarse un valor con mas decimales del que se ve
+            # y terminar dando error en el asiento por debitos y creditos no
+            # son iguales, algo parecido hace odoo en el compute_all de taxes
+            currency = payment_group.currency_id
+            period_withholding_amount = currency.round(vals.get(
+                'period_withholding_amount', 0.0))
+            previous_withholding_amount = currency.round(vals.get(
+                'previous_withholding_amount'))
             # withholding can not be negative
             computed_withholding_amount = max(0, (
                 period_withholding_amount - previous_withholding_amount))
