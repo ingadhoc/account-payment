@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-08 00:12+0000\n"
-"PO-Revision-Date: 2017-06-08 00:12+0000\n"
+"POT-Creation-Date: 2017-06-16 16:56+0000\n"
+"PO-Revision-Date: 2017-06-16 16:56+0000\n"
 "Last-Translator: Gonzalo Ruzafa <gr@ingadhoc.com>, 2017\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
@@ -75,7 +75,7 @@ msgid "Account Checkbook"
 msgstr "Chequera"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:625
+#: code:addons/account_check/models/account_check.py:626
 #, python-format
 msgid "Action %s not implemented for checks!"
 msgstr "¡Acción %s no implementada para cheques!"
@@ -146,6 +146,16 @@ msgid "Cancel"
 msgstr "Cancelar"
 
 #. module: account_check
+#: selection:account.check.operation,operation:0
+msgid "Change"
+msgstr "Cambiar"
+
+#. module: account_check
+#: selection:account.check,state:0
+msgid "Changed"
+msgstr "Cambiado"
+
+#. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_check_id
 #: model:ir.model.fields,field_description:account_check.field_account_payment_check_id
 #: model:ir.ui.view,arch_db:account_check.view_account_check_graph
@@ -154,13 +164,13 @@ msgid "Check"
 msgstr "Cheque"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:616
+#: code:addons/account_check/models/account_check.py:617
 #, python-format
 msgid "Check \"%s\" debit"
 msgstr "Débito de cheque \"%s\""
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:623
+#: code:addons/account_check/models/account_check.py:624
 #, python-format
 msgid "Check \"%s\" rejection"
 msgstr "Rechazo del Cheque \"%s\""
@@ -193,7 +203,7 @@ msgid "Check Number"
 msgstr "Número del Cheque"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:292
+#: code:addons/account_check/models/account_check.py:293
 #, python-format
 msgid ""
 "Check Number (%s) must be unique per Checkbook!\n"
@@ -203,7 +213,7 @@ msgstr ""
 "* Ids de Cheques: %s"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:305
+#: code:addons/account_check/models/account_check.py:306
 #, python-format
 msgid ""
 "Check Number (%s) must be unique per Owner and Bank!\n"
@@ -228,20 +238,20 @@ msgid "Check Payment Date"
 msgstr "Fecha de pago del Cheque"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:252
+#: code:addons/account_check/models/account_check.py:253
 #: code:addons/account_check/models/account_payment.py:185
 #, python-format
 msgid "Check Payment Date must be greater than Issue Date"
 msgstr "La fecha de pago del Cheque debe ser mayor a la fecha de emisión"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:581
+#: code:addons/account_check/models/account_check.py:582
 #, python-format
 msgid "Check nbr (id): %s (%s)"
 msgstr "Nro del Cheque (id): %s (%s)"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:264
+#: code:addons/account_check/models/account_check.py:265
 #, python-format
 msgid "Check number (%s) can't be greater than %s on checkbook %s (%s)"
 msgstr ""
@@ -335,7 +345,7 @@ msgstr "Moneda"
 #. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_check_currency_id
 msgid "Currency id"
-msgstr "ID de la moneda"
+msgstr "Moneda"
 
 #. module: account_check
 #: selection:account.checkbook,issue_check_subtype:0
@@ -365,7 +375,7 @@ msgid "Debit"
 msgstr "Débito"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:562
+#: code:addons/account_check/models/account_check.py:563
 #, python-format
 msgid "Debit note for operation %s not implemented!"
 msgstr "Nota de Debito para operacion %s no implementada!"
@@ -730,7 +740,7 @@ msgstr "Operación"
 #. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_ids
 msgid "Operation ids"
-msgstr "Ids de operación"
+msgstr "Operaciones"
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_check_form
@@ -909,13 +919,13 @@ msgid "Templates for Account Chart"
 msgstr "Plantillas para el Plan de Cuentas"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:363
+#: code:addons/account_check/models/account_check.py:364
 #, python-format
 msgid "The Check must be in draft state for unlink !"
 msgstr "El Cheque debe estar en borrador para poder ser borrado!"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:333
+#: code:addons/account_check/models/account_check.py:334
 #, python-format
 msgid ""
 "The date of a new check operation can not be minor than last operation date"
@@ -1047,7 +1057,7 @@ msgid "You can drop a checkbook if it has been used on checks!"
 msgstr "¡No puede eliminar una chequera si la ha utilizado para cheques!"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:319
+#: code:addons/account_check/models/account_check.py:320
 #, python-format
 msgid ""
 "You can not cancel this operation because this is not the last operation over the check.\n"
@@ -1057,7 +1067,7 @@ msgstr ""
 "Cheque (id): %s (%s)"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:78
+#: code:addons/account_check/models/account_check.py:79
 #, python-format
 msgid ""
 "You can not delete a check operation that has an origin.\n"
