@@ -22,8 +22,10 @@ def migrate(env, version):
     # TODO copy checks and enable
     add_operations(env)
     old_journal_ids = change_issue_journals(env)
+
     # al final no mergeamos los third checks journals
-    old_journal_ids += change_third_journals(env)
+    # old_journal_ids += change_third_journals(env)
+
     # TODO. Improove this. if this gives an error you can comment it and
     # later delete de journals by fixing manually related remaining move and
     # move lines
@@ -38,6 +40,7 @@ def migrate(env, version):
 
     # al final no mergeamos los third checks journals
     # env['account.journal']._enable_third_check_on_cash_journals()
+    _enable_third_check_method(env)
     env['account.journal']._enable_issue_check_on_bank_journals()
     delete_old_ir_rule(env)
 
@@ -196,13 +199,16 @@ def change_issue_journals(env):
     return old_journal_ids
 
 
-def change_third_journals(env):
+def _enable_third_check_method(env):
     """
     Search for old payment_subtype = third_check journals and move to cash
     journals of each company
     """
     cr = env.cr
-    old_journal_ids = []
+    in_third_checks = env.ref(
+        'account_check.account_payment_method_received_third_check')
+    out_third_checks = env.ref(
+        'account_check.account_payment_method_delivered_third_check')
     for company in env['res.company'].search([]):
         openupgrade.logged_query(cr, """
             SELECT
@@ -212,32 +218,61 @@ def change_third_journals(env):
                 type in ('cash', 'bank') AND
                 company_id = %s
             """, (company.id,))
-        old_third_journals_read = cr.fetchall()
-        if old_third_journals_read:
-            # default order is sequence so you should order first the journal
-            # you want to use
-            new_third_journal = env['account.journal'].search([
-                ('company_id', '=', company.id),
-                ('type', '=', 'cash'),
-                '|',
-                ('currency_id', '=', company.currency_id.id),
-                ('currency_id', '=', False),
-            ], limit=1)
-            if not new_third_journal:
-                raise ValidationError(
-                    'We havent found a new_third_journal for company %s' % (
-                        company.id))
-            for old_journal_id in old_third_journals_read[0]:
-                _change_journal(cr, old_journal_id, new_third_journal.id)
-                old_journal_ids.append(old_journal_id)
-                # if there is a default debit account we set this as holding
-                # account
-                old_third_journal = env[
-                    'account.journal'].browse(old_journal_id)
-                account = old_third_journal.default_debit_account_id
-                if account:
-                    company.holding_check_account_id = account.id
-    return old_journal_ids
+        third_journals_read = cr.fetchall()
+        third_journals_ids = [x[0] for x in third_journals_read]
+        for third_journal in env['account.journal'].browse(
+                third_journals_ids):
+            third_journal.write({
+                'inbound_payment_method_ids': [
+                    (4, in_third_checks.id, None)],
+                'outbound_payment_method_ids': [
+                    (4, out_third_checks.id, None)],
+            })
+
+
+# def change_third_journals(env):
+#     """
+#     viejo metodo, ahora no unificamos
+#     Search for old payment_subtype = third_check journals and move to cash
+#     journals of each company
+#     """
+#     cr = env.cr
+#     old_journal_ids = []
+#     for company in env['res.company'].search([]):
+#         openupgrade.logged_query(cr, """
+#             SELECT
+#                 id
+#             FROM account_journal
+#             WHERE payment_subtype = 'third_check' AND
+#                 type in ('cash', 'bank') AND
+#                 company_id = %s
+#             """, (company.id,))
+#         old_third_journals_read = cr.fetchall()
+#         if old_third_journals_read:
+#             # default order is sequence so you should order first the journal
+#             # you want to use
+#             new_third_journal = env['account.journal'].search([
+#                 ('company_id', '=', company.id),
+#                 ('type', '=', 'cash'),
+#                 '|',
+#                 ('currency_id', '=', company.currency_id.id),
+#                 ('currency_id', '=', False),
+#             ], limit=1)
+#             if not new_third_journal:
+#                 raise ValidationError(
+#                     'We havent found a new_third_journal for company %s' % (
+#                         company.id))
+#             for old_journal_id in old_third_journals_read[0]:
+#                 _change_journal(cr, old_journal_id, new_third_journal.id)
+#                 old_journal_ids.append(old_journal_id)
+#                 # if there is a default debit account we set this as holding
+#                 # account
+#                 old_third_journal = env[
+#                     'account.journal'].browse(old_journal_id)
+#                 account = old_third_journal.default_debit_account_id
+#                 if account:
+#                     company.holding_check_account_id = account.id
+#     return old_journal_ids
 
 
 def get_payment(env, voucher_id):
@@ -287,6 +322,7 @@ def add_operations(env):
     cr = env.cr
     openupgrade.logged_query(cr, """
         SELECT
+            id,
             state,
             name,
             number,
@@ -308,9 +344,14 @@ def add_operations(env):
             return_account_move_id,
             type
         FROM account_check_copy
+        ORDER BY replacing_check_id desc, id desc
         """,)
+    # map con claves de ids de cheques viejos y valores de ids de cheques
+    # nuevos, por ahora solo lo usamos para cheques reemplazados
+    checks_map = {}
     for read in cr.fetchall():
         (
+            check_id,
             original_state,
             name,
             number,
@@ -345,6 +386,7 @@ def add_operations(env):
             # 'currency_id': currency_id,
         }
         check = env['account.check'].create(check_vals)
+        checks_map[check_id] = check.id
         if check.type == 'third_check':
             payment = get_payment(env, voucher_id)
             if payment:
@@ -446,12 +488,13 @@ def add_operations(env):
                 date=rejection_account_move.date)
 
         if replacing_check_id:
-            replacing_check = env['account.check'].browse(
-                replacing_check_id)
-            check._add_operation(
-                'changed', replacing_check,
-                partner=replacing_check.partner_id,
-                date=replacing_check.create_date)
+            replacing_check = check.browse(
+                checks_map.get(replacing_check_id, False))
+            if replacing_check:
+                check._add_operation(
+                    'changed', replacing_check,
+                    partner=replacing_check.partner_id,
+                    date=replacing_check.create_date)
 
         if return_account_move_id:
             return_account_move = env['account.move'].browse(
