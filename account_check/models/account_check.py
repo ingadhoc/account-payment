@@ -328,6 +328,7 @@ class AccountCheck(models.Model):
     def _add_operation(
             self, operation, origin, partner=None, date=False):
         for rec in self:
+            rec._check_state_change(operation)
             # agregamos validacion de fechas
             date = date or fields.Datetime.now()
             if rec.operation_ids and rec.operation_ids[0].date > date:
@@ -355,6 +356,53 @@ class AccountCheck(models.Model):
                 rec.state = operation
             else:
                 rec.state = 'draft'
+
+    @api.multi
+    def _check_state_change(self, operation):
+        """
+        We only check state change from _add_operation because we want to
+        leave the user the possibility of making anything from interface.
+        Necesitamos este chequeo para evitar, por ejemplo, que un cheque se
+        agregue dos veces en un pago y luego al confirmar se entregue dos veces
+        On operation_from_state_map dictionary:
+        * key is 'to state'
+        * value is 'from states'
+        """
+        self.ensure_one()
+        # if we do it from _add_operation only, not from a contraint of before
+        # computing the value, we can just read it
+        old_state = self.state
+        operation_from_state_map = {
+            # 'draft': [False],
+            'holding': [
+                'draft', 'deposited', 'selled', 'delivered', 'transfered'],
+            'delivered': ['holding'],
+            'deposited': ['holding', 'rejected'],
+            'selled': ['holding'],
+            'handed': ['draft'],
+            'transfered': ['holding'],
+            'withdrawed': ['draft'],
+            'rejected': ['delivered', 'deposited', 'selled', 'handed'],
+            'debited': ['handed'],
+            'returned': ['handed', 'holding'],
+            'changed': ['handed'],
+            'cancel': ['draft'],
+            'reclaimed': ['rejected'],
+        }
+        from_states = operation_from_state_map.get(operation)
+        if not from_states:
+            raise ValidationError(_(
+                'Operation %s not implemented for checks!') % operation)
+        if old_state not in from_states:
+            raise ValidationError(_(
+                'You can not "%s" a check from state "%s"!\n'
+                'Check nbr (id): %s (%s)') % (
+                    self.operation_ids._fields[
+                        'operation'].convert_to_export(
+                            operation, self.env),
+                    self._fields['state'].convert_to_export(
+                        old_state, self.env),
+                    self.name, self.id))
 
     @api.multi
     def unlink(self):
@@ -471,21 +519,22 @@ class AccountCheck(models.Model):
     @api.multi
     def _get_operation(self, operation, partner_required=False):
         self.ensure_one()
-        operation = self.operation_ids.search([
+        op = self.operation_ids.search([
             ('check_id', '=', self.id), ('operation', '=', operation)],
             limit=1)
         if partner_required:
-            if not operation.partner_id:
+            if not op.partner_id:
                 raise ValidationError((
-                    'The %s operation has no partner linked.'
-                    'You will need to do it manually.') % operation)
-        return operation
+                    'The %s (id %s) operation has no partner linked.'
+                    'You will need to do it manually.') % (operation, op.id))
+        return op
 
     @api.multi
     def claim(self):
         self.ensure_one()
         if self.state in ['rejected'] and self.type == 'third_check':
-            operation = self._get_operation('holding', True)
+            operation = self._get_operation('rejected', True)
+            # operation = self._get_operation('holding', True)
             return self.action_create_debit_note(
                 'reclaimed', 'customer', operation.partner_id,
                 self.company_id._get_check_account('rejected'))
