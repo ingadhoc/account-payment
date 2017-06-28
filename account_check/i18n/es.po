@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-16 16:56+0000\n"
-"PO-Revision-Date: 2017-06-16 16:56+0000\n"
+"POT-Creation-Date: 2017-06-27 18:33+0000\n"
+"PO-Revision-Date: 2017-06-27 18:33+0000\n"
 "Last-Translator: Gonzalo Ruzafa <gr@ingadhoc.com>, 2017\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
@@ -75,7 +75,7 @@ msgid "Account Checkbook"
 msgstr "Chequera"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:626
+#: code:addons/account_check/models/account_check.py:675
 #, python-format
 msgid "Action %s not implemented for checks!"
 msgstr "¡Acción %s no implementada para cheques!"
@@ -164,13 +164,13 @@ msgid "Check"
 msgstr "Cheque"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:617
+#: code:addons/account_check/models/account_check.py:666
 #, python-format
 msgid "Check \"%s\" debit"
 msgstr "Débito de cheque \"%s\""
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:624
+#: code:addons/account_check/models/account_check.py:673
 #, python-format
 msgid "Check \"%s\" rejection"
 msgstr "Rechazo del Cheque \"%s\""
@@ -245,7 +245,7 @@ msgid "Check Payment Date must be greater than Issue Date"
 msgstr "La fecha de pago del Cheque debe ser mayor a la fecha de emisión"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:582
+#: code:addons/account_check/models/account_check.py:631
 #, python-format
 msgid "Check nbr (id): %s (%s)"
 msgstr "Nro del Cheque (id): %s (%s)"
@@ -375,7 +375,7 @@ msgid "Debit"
 msgstr "Débito"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:563
+#: code:addons/account_check/models/account_check.py:612
 #, python-format
 msgid "Debit note for operation %s not implemented!"
 msgstr "Nota de Debito para operacion %s no implementada!"
@@ -738,6 +738,12 @@ msgid "Operation"
 msgstr "Operación"
 
 #. module: account_check
+#: code:addons/account_check/models/account_check.py:394
+#, python-format
+msgid "Operation %s not implemented for checks!"
+msgstr "¡La operación %s no está implementada para los cheques!"
+
+#. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_ids
 msgid "Operation ids"
 msgstr "Operaciones"
@@ -919,13 +925,13 @@ msgid "Templates for Account Chart"
 msgstr "Plantillas para el Plan de Cuentas"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:364
+#: code:addons/account_check/models/account_check.py:412
 #, python-format
 msgid "The Check must be in draft state for unlink !"
 msgstr "El Cheque debe estar en borrador para poder ser borrado!"
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:334
+#: code:addons/account_check/models/account_check.py:335
 #, python-format
 msgid ""
 "The date of a new check operation can not be minor than last operation date"
@@ -1055,6 +1061,16 @@ msgstr "Retirado"
 #, python-format
 msgid "You can drop a checkbook if it has been used on checks!"
 msgstr "¡No puede eliminar una chequera si la ha utilizado para cheques!"
+
+#. module: account_check
+#: code:addons/account_check/models/account_check.py:397
+#, python-format
+msgid ""
+"You can not \"%s\" a check from state \"%s\"!\n"
+"Check nbr (id): %s (%s)"
+msgstr ""
+"¡No puede \"%s\" un cheque de estado \"%s\"!\n"
+"Nro. de Cheque (id): %s (%s)"
 
 #. module: account_check
 #: code:addons/account_check/models/account_check.py:320
