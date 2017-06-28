@@ -177,6 +177,23 @@ def change_issue_journals(env):
         _change_journal_issue(
             env, checkbook.id, new_journal_id)
 
+        # si existían pagos con diario cheques pero sin cheques cargados,
+        # no sabemos la chequera y no los podemos mover, entonces lo borramos
+        # si estaban en borrador
+        env['account.payment'].search([
+            ('journal_id', '=', old_journal_id), ('check_ids', '=', False),
+            ('state', '=', 'draft')]).write({'journal_id': new_journal_id})
+        # borramos cheques en borrador ya que no tienen mucho sentido
+        env['account.check'].search([('state', '=', 'draft')]).unlink()
+
+        # hubo casos con pagos sin cheques en importe cero, estos estan mal
+        # y no los podemos migrar correctamente
+        wrong_checks = env['account.payment'].search([
+            ('journal_id', '=', old_journal_id), ('check_ids', '=', False),
+            ('amount', '=', 0.0)])
+        wrong_checks.cancel()
+        wrong_checks.unlink()
+
         # no sabemos a que diario mandar si existe 'account_bank_statement'
         # no deberia haber statements para diario de cheques, los borramos
         openupgrade.logged_query(cr, """
