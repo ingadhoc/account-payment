@@ -44,6 +44,7 @@
             <field name="currency_id" invisible="1"/>
             <field name="company_currency_id" invisible="1"/>
             <field name="partner_type" invisible="1"/>
+            <button icon="fa-pencil" type="object" states="draft" name="show_details" />
         </tree>
     </field>
 </record>
@@ -84,13 +85,17 @@
                 <attribute name="invisible">context.get('payment_group')</attribute>
             </button> -->
             <button name="post" position="attributes">
-                <!-- <attribute name="attrs">{'invisible': [('state', '!=', 'draft'), ('payment_type', '!=', 'transfer')]}</attribute> -->
-                <!-- <attribute name="states"></attribute> -->
-                <attribute name="invisible">1</attribute>
+                <!-- idem cancel -->
+                <!-- <attribute name="invisible">1</attribute> -->
+                <attribute name="groups">base.group_no_one</attribute>
+                <attribute name="confirm">IMPORTANTE: La validación de la línea de pago se debe hacer desde el recibo. La validación manual de una línea de pago se usa solo para correcciones y usos avanzados. Seguro desea continuar?</attribute>
             </button>
              
             <button name="cancel" position="attributes">
-                <attribute name="invisible">1</attribute>
+                <!-- al final lo hacemos visible para poder hacer ajustes sin cancelar todo el payment group, pero solo si no transfer, con tec group y un confirm -->
+                <!-- <attribute name="invisible">1</attribute> -->
+                <attribute name="groups">base.group_no_one</attribute>
+                <attribute name="confirm">IMPORTANTE: La validación de la línea de pago se debe hacer desde el recibo. La cancelación manual de una línea de pago se usa solo para correcciones y usos avanzados. Seguro desea continuar?</attribute>
             </button>
 
             <field name="payment_type" position="after">
@@ -142,7 +147,7 @@
         <field name="priority">90</field>
         <field name="mode">primary</field>
         <field name="arch" type="xml">
-            <!-- we need to re enable this, we could not achive to inherit later than the modification for no transfers -->
+            <!-- we need to re enable this -->
             <form position="attributes">
                 <attribute name="create">true</attribute>
                 <attribute name="edit">true</attribute>
@@ -150,12 +155,16 @@
 
             <field name="payment_type_copy" position="replace"/>
 
+            <!-- sacamos confirm y groups en transfers -->
             <button name="post" position="attributes">
-                <attribute name="invisible">0</attribute>
+                <attribute name="confirm"></attribute>
+                <attribute name="groups"></attribute>
             </button>
              
+            <!-- sacamos confirm y groups en transfers -->
             <button name="cancel" position="attributes">
-                <attribute name="invisible">0</attribute>
+                <attribute name="confirm"></attribute>
+                <attribute name="groups"></attribute>
             </button>
         </field>
     </record>

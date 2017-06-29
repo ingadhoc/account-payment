@@ -128,3 +128,21 @@ class AccountPayment(models.Model):
         else:
             return super(
                 AccountPayment, self)._compute_destination_account_id()
+
+    @api.multi
+    def show_details(self):
+        """
+        Metodo para mostrar form editable de payment, principalmente para ser
+        usado cuando hacemos ajustes y el payment group esta confirmado pero
+        queremos editar una linea
+        """
+        return {
+            'name': _('Payment Lines'),
+            'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'account.payment',
+            'target': 'new',
+            'res_id': self.id,
+            'context': self._context,
+        }
