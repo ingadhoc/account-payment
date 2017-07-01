@@ -22,25 +22,6 @@ class AccountMoveLine(models.Model):
     )
 
     @api.multi
-    def action_open_related_invoice(self):
-        self.ensure_one()
-        record = self.invoice_id
-        if not record:
-            return False
-        if record.type in ['in_refund', 'in_invoice']:
-            view_id = self.env.ref('account.invoice_supplier_form').id
-        else:
-            view_id = self.env.ref('account.invoice_form').id
-        return {
-            'type': 'ir.actions.act_window',
-            'res_model': record._name,
-            'view_type': 'form',
-            'view_mode': 'form',
-            'res_id': record.id,
-            'view_id': view_id,
-        }
-
-    @api.multi
     def compute_payment_group_matched_amount(self):
         """
         Reciviendo un payment_group_id por contexto, decimos en ese payment

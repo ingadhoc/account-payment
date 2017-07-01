@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
     <data>
+
 <!-- Journal Items -->
 <record id="view_move_line_tree" model="ir.ui.view">
     <field name="name">account.move.line.tree</field>
@@ -33,7 +34,6 @@
             <field name="company_currency_id" invisible="1"/>
             <field name="company_id" invisible="1"/>
             <field name="invoice_id" invisible="1"/>
-            <button type="object" string="Open Invocice" icon="STOCK_JUSTIFY_LEFT" help="Open Related Invoice" name="action_open_related_invoice" attrs="{'invisible': [('invoice_id', '=', False)]}"/>
         </tree>
     </field>
 </record>
