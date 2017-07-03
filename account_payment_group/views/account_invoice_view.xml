@@ -43,6 +43,14 @@
             <attribute name="name">action_account_invoice_payment_group</attribute>
             <attribute name="type">object</attribute>
         </button>
+
+        <field name="payments_widget" position="after">
+            <field name="payment_group_ids" invisible="1"/>
+            <button type="object"  name="action_view_payment_groups"
+                    class="oe_link" string="View Payments"
+                    colspan="2"
+                    attrs="{'invisible':[('payment_group_ids','=',[])]}"/>
+        </field>
     </field>
 </record>
 
@@ -60,6 +68,14 @@
             <attribute name="name">action_account_invoice_payment_group</attribute>
             <attribute name="type">object</attribute>
         </button>
+
+        <field name="payments_widget" position="after">
+            <field name="payment_group_ids" invisible="1"/>
+            <button type="object"  name="action_view_payment_groups"
+                    class="oe_link" string="View Payments"
+                    colspan="2"
+                    attrs="{'invisible':[('payment_group_ids','=',[])]}"/>
+        </field>
     </field>
 </record>
 

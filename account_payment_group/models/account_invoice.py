@@ -22,6 +22,22 @@ class AccountInvoice(models.Model):
         readonly=True,
         states={'draft': [('readonly', False)]},
     )
+    payment_group_ids = fields.Many2many(
+        'account.payment.group',
+        compute='_compute_payment_groups',
+        string='Payment Groups',
+    )
+
+    @api.multi
+    @api.depends('payment_move_line_ids')
+    def _compute_payment_groups(self):
+        """
+        El campo en invoices "payment_id" no lo seteamos con los payment groups
+        Por eso tenemos que calcular este campo
+        """
+        for rec in self:
+            rec.payment_group_ids = rec.payment_move_line_ids.mapped(
+                'payment_id.payment_group_id')
 
     @api.multi
     def _get_tax_factor(self):
@@ -119,3 +135,23 @@ class AccountInvoice(models.Model):
                 })
                 # if validate_payment:
                 payment_group.post()
+
+    @api.multi
+    def action_view_payment_groups(self):
+        if self.type in ('in_invoice', 'in_refund'):
+            action = self.env.ref(
+                'account_payment_group.action_account_payments_group_payable')
+        else:
+            action = self.env.ref(
+                'account_payment_group.action_account_payments_group')
+
+        result = action.read()[0]
+
+        if len(self.payment_group_ids) != 1:
+            result['domain'] = [('id', 'in', self.payment_group_ids.ids)]
+        elif len(self.payment_group_ids) == 1:
+            res = self.env.ref(
+                'account_payment_group.view_account_payment_group_form', False)
+            result['views'] = [(res and res.id or False, 'form')]
+            result['res_id'] = self.payment_group_ids.id
+        return result
