@@ -4,14 +4,13 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
-# Gonzalo Ruzafa <gr@ingadhoc.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-29 19:41+0000\n"
-"PO-Revision-Date: 2017-06-29 19:41+0000\n"
-"Last-Translator: Gonzalo Ruzafa <gr@ingadhoc.com>, 2017\n"
+"POT-Creation-Date: 2017-07-01 18:57+0000\n"
+"PO-Revision-Date: 2017-07-01 18:57+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -431,16 +430,6 @@ msgstr "Número de mensajes que requieren una acción"
 #: model:ir.model.fields,help:account_payment_group.field_account_payment_group_message_unread_counter
 msgid "Number of unread messages"
 msgstr "Número de mensajes no léidos"
-
-#. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
-msgid "Open Invocice"
-msgstr "Abrir Factura"
-
-#. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
-msgid "Open Related Invoice"
-msgstr "Abrir Factura Relacionada"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_invoice_open_move_line_ids
