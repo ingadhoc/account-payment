@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-07-01 18:57+0000\n"
-"PO-Revision-Date: 2017-07-01 18:57+0000\n"
+"POT-Creation-Date: 2017-07-03 19:39+0000\n"
+"PO-Revision-Date: 2017-07-03 19:39+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
@@ -463,7 +463,7 @@ msgid "Pay now Journal"
 msgstr "Diario de Pago Directo"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_invoice.py:104
+#: code:addons/account_payment_group/models/account_invoice.py:120
 #, python-format
 msgid "Pay now journal must have manual method!"
 msgstr "El diario de pago directo debe tener método manual!"
@@ -485,6 +485,7 @@ msgid "Payment Group"
 msgstr "Grupo de Pago"
 
 #. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_invoice_payment_group_ids
 #: model:ir.model.fields,field_description:account_payment_group.field_account_move_line_payment_group_ids
 msgid "Payment Groups"
 msgstr "Grupos de Pago"
@@ -623,7 +624,7 @@ msgid "Refund Date"
 msgstr "Fecha de Devolución"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_invoice.py:49
+#: code:addons/account_payment_group/models/account_invoice.py:65
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #, python-format
 msgid "Register Payment"
@@ -780,6 +781,12 @@ msgid "Vendor"
 msgstr "Proveedor"
 
 #. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.invoice_form
+#: model:ir.ui.view,arch_db:account_payment_group.invoice_supplier_form
+msgid "View Payments"
+msgstr ""
+
+#. module: account_payment_group
 #: code:addons/account_payment_group/models/account_payment_group.py:659
 #, python-format
 msgid "You can not confirm a payment group without payment lines!"
@@ -799,7 +806,7 @@ msgid "You can not send to pay lines from different partners"
 msgstr "No puede enviar a pagar líneas de diferentes partners"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_invoice.py:43
+#: code:addons/account_payment_group/models/account_invoice.py:59
 #, python-format
 msgid "You can only register payment if invoice is open"
 msgstr "Solamente puede registrar un pago si la factura está abierta"
