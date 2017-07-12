@@ -533,8 +533,8 @@ class AccountCheck(models.Model):
     def claim(self):
         self.ensure_one()
         if self.state in ['rejected'] and self.type == 'third_check':
-            operation = self._get_operation('rejected', True)
-            # operation = self._get_operation('holding', True)
+            # anulamos la operación en la que lo recibimos
+            operation = self._get_operation('holding', True)
             return self.action_create_debit_note(
                 'reclaimed', 'customer', operation.partner_id,
                 self.company_id._get_check_account('rejected'))
