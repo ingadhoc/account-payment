@@ -228,7 +228,11 @@ class AccountPayment(models.Model):
     def cancel(self):
         res = super(AccountPayment, self).cancel()
         for rec in self:
-            rec.do_checks_operations(cancel=True)
+            # solo cancelar operaciones si estaba postead, por ej para comp.
+            # con pagos confirmados, se cancelan pero no hay que deshacer nada
+            # de asientos ni cheques
+            if rec.state in ['confirmed', 'posted']:
+                rec.do_checks_operations(cancel=True)
         return res
 
     @api.multi
