@@ -34,7 +34,10 @@ class AccountPayment(models.Model):
         for rec in self:
             domain = [
                 ('type', 'in', ('bank', 'cash')),
-                ('at_least_one_inbound', '=', True),
+                # al final pensamos mejor no agregar esta restricción, por ej,
+                # para poder transferir a tarjeta a pagar. Esto solo se usa
+                # en transferencias
+                # ('at_least_one_inbound', '=', True),
                 ('company_id', '=', rec.journal_id.company_id.id),
             ]
             rec.destination_journal_ids = rec.journal_ids.search(domain)
