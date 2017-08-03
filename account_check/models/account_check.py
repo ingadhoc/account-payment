@@ -334,7 +334,14 @@ class AccountCheck(models.Model):
             if rec.operation_ids and rec.operation_ids[0].date > date:
                 raise ValidationError(_(
                     'The date of a new check operation can not be minor than '
-                    'last operation date'))
+                    'last operation date.\n'
+                    '* Check Id: %s\n'
+                    '* Check Number: %s\n'
+                    '* Operation: %s\n'
+                    '* Operation Date: %s\n'
+                    '* Last Operation Date: %s') % (
+                    rec.id, rec.name, operation, date,
+                    rec.operation_ids[0].date))
             vals = {
                 'operation': operation,
                 'date': date,
@@ -385,7 +392,7 @@ class AccountCheck(models.Model):
             'rejected': ['delivered', 'deposited', 'selled', 'handed'],
             'debited': ['handed'],
             'returned': ['handed', 'holding'],
-            'changed': ['handed'],
+            'changed': ['handed', 'holding'],
             'cancel': ['draft'],
             'reclaimed': ['rejected'],
         }

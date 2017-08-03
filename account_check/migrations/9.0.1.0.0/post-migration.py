@@ -190,9 +190,35 @@ def change_issue_journals(env):
         # y no los podemos migrar correctamente
         wrong_checks = env['account.payment'].search([
             ('journal_id', '=', old_journal_id), ('check_ids', '=', False),
-            ('amount', '=', 0.0)])
-        wrong_checks.cancel()
-        wrong_checks.unlink()
+            # sacamos lo de monto cero por ejempo porque en cudnik usaron
+            # diario cheques para pagar retencion
+            # ('amount', '=', 0.0)
+        ])
+        # en vez de borrarlos a estos, porque el asiento podria estar
+        # conciliando cosas y da error y si rompemos conciliacion va a
+        # molestar, los cambiamos de diario
+        if wrong_checks:
+            move_line_ids = wrong_checks.mapped('move_line_ids').ids
+            openupgrade.logged_query(cr, """
+                UPDATE account_move_line aml SET journal_id = %s
+                WHERE id in %s
+                """ % (new_journal_id, tuple(move_line_ids)),
+            )
+            openupgrade.logged_query(cr, """
+                UPDATE account_move am SET journal_id = %s
+                WHERE am.id in (SELECT move_id FROM account_move_line aml
+                    WHERE aml.id in %s)
+                """ % (new_journal_id, tuple(move_line_ids)),
+            )
+            openupgrade.logged_query(cr, """
+                UPDATE
+                    account_payment
+                SET
+                    journal_id=%s
+                WHERE id in %s
+                """ % (new_journal_id, tuple(wrong_checks.ids)),)
+        # wrong_checks.cancel()
+        # wrong_checks.unlink()
 
         # no sabemos a que diario mandar si existe 'account_bank_statement'
         # no deberia haber statements para diario de cheques, los borramos

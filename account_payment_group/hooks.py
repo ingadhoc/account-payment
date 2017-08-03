@@ -3,6 +3,8 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 try:
     from openupgradelib.openupgrade_tools import table_exists
+    from openupgradelib.openupgrade_tools import column_exists
+    from openupgradelib import openupgrade
 except ImportError:
     table_exists = None
 import logging
@@ -33,3 +35,11 @@ def post_init_hook(cr, registry):
                 payment.state in ['sent', 'reconciled'] and
                 'posted' or payment.state),
         })
+
+    if column_exists(cr, 'res_company', 'double_validation'):
+        field = 'field_res_company_double_validation'
+        xmlid_renames = [(
+            'account_voucher_double_validation.%s' % field,
+            'account_payment_group.%s' % field),
+        ]
+        openupgrade.rename_xmlids(cr, xmlid_renames)
