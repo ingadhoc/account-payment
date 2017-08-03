@@ -2,11 +2,11 @@
 # Copyright <YEAR(S)> <AUTHOR(S)>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 try:
-    from openupgradelib.openupgrade_tools import table_exists
     from openupgradelib.openupgrade_tools import column_exists
     from openupgradelib import openupgrade
 except ImportError:
-    table_exists = None
+    column_exists = None
+    openupgrade = None
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ def post_init_hook(cr, registry):
                 'posted' or payment.state),
         })
 
-    if column_exists(cr, 'res_company', 'double_validation'):
+    if column_exists and column_exists(cr, 'res_company', 'double_validation'):
         field = 'field_res_company_double_validation'
         xmlid_renames = [(
             'account_voucher_double_validation.%s' % field,
