@@ -197,8 +197,8 @@ def change_issue_journals(env):
         # en vez de borrarlos a estos, porque el asiento podria estar
         # conciliando cosas y da error y si rompemos conciliacion va a
         # molestar, los cambiamos de diario
-        if wrong_checks:
-            move_line_ids = wrong_checks.mapped('move_line_ids').ids
+        move_line_ids = wrong_checks.mapped('move_line_ids').ids
+        if move_line_ids:
             openupgrade.logged_query(cr, """
                 UPDATE account_move_line aml SET journal_id = %s
                 WHERE id in %s
