@@ -8,6 +8,32 @@ _logger = logging.getLogger(__name__)
 class AccountPayment(models.Model):
     _inherit = 'account.payment'
 
+    # inicio backport commit d19cf48499b42fbd24e6a7ec283433a577362666
+    state = fields.Selection([
+        ('draft', 'Draft'),
+        ('posted', 'Posted'),
+        ('sent', 'Sent'),
+        ('reconciled', 'Reconciled'),
+        ('cancel', 'Cancelled')],
+        readonly=True,
+        default='draft',
+        copy=False,
+        string="Status",
+    )
+
+    # backport
+    @api.multi
+    def cancel(self):
+        res = super(AccountPayment, self).cancel()
+        self.write({'state': 'cancel'})
+        return res
+
+    @api.multi
+    def action_draft(self):
+        return self.write({'state': 'draft'})
+
+    # fin backport
+
     # nuevo campo funcion para definir dominio de los metodos
     payment_method_ids = fields.Many2many(
         'account.payment.method',

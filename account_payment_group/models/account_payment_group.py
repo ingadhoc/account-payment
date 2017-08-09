@@ -170,6 +170,7 @@ class AccountPaymentGroup(models.Model):
         ('posted', 'Posted'),
         # ('sent', 'Sent'),
         # ('reconciled', 'Reconciled')
+        ('cancel', 'Cancelled')
     ], readonly=True, default='draft', copy=False, string="Status",
         track_visibility='onchange',
     )
@@ -627,7 +628,12 @@ class AccountPaymentGroup(models.Model):
                 # if rec.to_pay_move_line_ids:
                 #     move.line_ids.remove_move_reconcile()
             rec.payment_ids.cancel()
-            rec.state = 'draft'
+            rec.state = 'cancel'
+
+    @api.multi
+    def action_draft(self):
+        self.mapped('payment_ids').action_draft()
+        return self.write({'state': 'draft'})
 
     @api.multi
     def unlink(self):
