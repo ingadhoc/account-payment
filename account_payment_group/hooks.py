@@ -3,6 +3,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 try:
     from openupgradelib.openupgrade_tools import column_exists
+    from openupgradelib.openupgrade_tools import table_exists
     from openupgradelib import openupgrade
 except ImportError:
     column_exists = None
@@ -21,7 +22,8 @@ def post_init_hook(cr, registry):
     """
     _logger.info('running payment')
 
-    restore_canceled_payments_state(cr, registry)
+    if table_exists and table_exists(cr, 'account_voucher_copy'):
+        restore_canceled_payments_state(cr, registry)
 
     payment_ids = registry['account.payment'].search(
         cr, 1, [('payment_type', '!=', 'transfer')])
