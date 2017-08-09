@@ -20,9 +20,14 @@ def post_init_hook(cr, registry):
         Database registry, using v7 api.
     """
     _logger.info('running payment')
+
+    restore_canceled_payments_state(cr, registry)
+
     payment_ids = registry['account.payment'].search(
         cr, 1, [('payment_type', '!=', 'transfer')])
+
     for payment in registry['account.payment'].browse(cr, 1, payment_ids):
+
         _logger.info('creating payment group for payment %s' % payment.id)
         registry['account.payment.group'].create(cr, 1, {
             'company_id': payment.company_id.id,
@@ -43,3 +48,41 @@ def post_init_hook(cr, registry):
             'account_payment_group.%s' % field),
         ]
         openupgrade.rename_xmlids(cr, xmlid_renames)
+
+
+def restore_canceled_payments_state(cr, registry):
+    """
+    Odoo depreció el estado cancel en la v9 y lo volvió a agregar en la 11,
+    nosotros hicimos un backport pero como la mig lo borra, lo tenemos que
+    restaurar
+    """
+    cr.execute("""
+        SELECT partner_id, name, create_date, create_uid, reference
+        FROM account_voucher_copy
+        WHERE state = 'cancel'
+        """,)
+    reads = cr.fetchall()
+    for read in reads:
+        (
+            partner_id,
+            name,
+            create_date,
+            create_uid,
+            reference) = read
+        # al final no buscamos por name porque si no estaba setado odoo
+        # completa con otra cosa
+        # ('name', '=', name),
+        domain = [
+            ('partner_id', '=', partner_id),
+            ('create_date', '=', create_date), ('create_uid', '=', create_uid),
+            ('payment_reference', '=', reference)]
+        payment_id = registry['account.payment'].search(
+            cr, 1, domain, limit=1)
+        if not payment_id:
+            _logger.error(
+                'No encontramos payment para cancelar con dominio %s' % (
+                    domain))
+            continue
+        _logger.info('Cancelando payment %s' % payment_id)
+        registry['account.payment'].write(
+            cr, 1, payment_id, {'state': 'cancel'})
