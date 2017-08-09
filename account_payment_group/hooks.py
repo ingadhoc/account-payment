@@ -7,6 +7,7 @@ try:
     from openupgradelib import openupgrade
 except ImportError:
     column_exists = None
+    table_exists = None
     openupgrade = None
 import logging
 _logger = logging.getLogger(__name__)
