@@ -4,13 +4,14 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
+# emiquinodoz <eq@ingadhoc.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-08-03 20:45+0000\n"
-"PO-Revision-Date: 2017-08-03 20:45+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
+"POT-Creation-Date: 2017-08-11 18:15+0000\n"
+"PO-Revision-Date: 2017-08-11 18:15+0000\n"
+"Last-Translator: emiquinodoz <eq@ingadhoc.com>, 2017\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1096,7 +1097,7 @@ msgstr ""
 #. module: account_check
 #: model:ir.model,name:account_check.model_account_check_operation
 msgid "account.check.operation"
-msgstr ""
+msgstr "account.check.operation"
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.account_check_action_wizard_form_view
@@ -1106,4 +1107,4 @@ msgstr "o"
 #. module: account_check
 #: model:ir.model,name:account_check.model_wizard_multi_charts_accounts
 msgid "wizard.multi.charts.accounts"
-msgstr ""
+msgstr "wizard.multi.charts.accounts"

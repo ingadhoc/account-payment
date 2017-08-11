@@ -4,13 +4,14 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
+# emiquinodoz <eq@ingadhoc.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-05-19 14:17+0000\n"
-"PO-Revision-Date: 2017-05-19 14:17+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
+"POT-Creation-Date: 2017-08-11 18:15+0000\n"
+"PO-Revision-Date: 2017-08-11 18:15+0000\n"
+"Last-Translator: emiquinodoz <eq@ingadhoc.com>, 2017\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -179,7 +180,7 @@ msgid "Month"
 msgstr "Mes"
 
 #. module: account_withholding_automatic
-#: code:addons/account_withholding_automatic/models/account_tax.py:191
+#: code:addons/account_withholding_automatic/models/account_tax.py:195
 #, python-format
 msgid "No journal for withholdings found on company %s"
 msgstr "No fueron encontrados diarios para las retenciones en la compañía %s"
@@ -353,4 +354,4 @@ msgstr "Año"
 #. module: account_withholding_automatic
 #: model:ir.model,name:account_withholding_automatic.model_account_tax_withholding_rule
 msgid "account.tax.withholding.rule"
-msgstr ""
+msgstr "account.tax.withholding.rule"

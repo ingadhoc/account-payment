@@ -4,14 +4,14 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
-# Javier Diez <jd@adhoc.com.ar>, 2017
+# emiquinodoz <eq@ingadhoc.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-30 23:26+0000\n"
-"PO-Revision-Date: 2017-03-30 23:26+0000\n"
-"Last-Translator: Javier Diez <jd@adhoc.com.ar>, 2017\n"
+"POT-Creation-Date: 2017-08-11 18:15+0000\n"
+"PO-Revision-Date: 2017-08-11 18:15+0000\n"
+"Last-Translator: emiquinodoz <eq@ingadhoc.com>, 2017\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -57,7 +57,7 @@ msgid "Document number must be unique per receiptbook!"
 msgstr "¡El Número de Documento debe ser único por talonario de recibo!"
 
 #. module: account_payment_group_document
-#: code:addons/account_payment_group_document/models/account_payment_group.py:131
+#: code:addons/account_payment_group_document/models/account_payment_group.py:135
 #, python-format
 msgid "Draft Payment"
 msgstr "Pago borrador"
@@ -69,7 +69,7 @@ msgid "Entry Sequence"
 msgstr "Secuencia de Entrada"
 
 #. module: account_payment_group_document
-#: code:addons/account_payment_group_document/models/account_payment_group.py:169
+#: code:addons/account_payment_group_document/models/account_payment_group.py:173
 #, python-format
 msgid ""
 "Error!. Please define sequence on the receiptbook related documents to this "
@@ -99,7 +99,7 @@ msgid "ReceiptBook"
 msgstr "Talonario de Recibo"
 
 #. module: account_payment_group_document
-#: code:addons/account_payment_group_document/models/account_payment_group.py:189
+#: code:addons/account_payment_group_document/models/account_payment_group.py:193
 #, python-format
 msgid "The company of the receiptbook and of the payment must be the same!"
 msgstr ""
@@ -131,4 +131,4 @@ msgstr "Utilizar Documentos?"
 #. module: account_payment_group_document
 #: model:ir.model,name:account_payment_group_document.model_account_payment_group_invoice_wizard
 msgid "account.payment.group.invoice.wizard"
-msgstr ""
+msgstr "account.payment.group.invoice.wizard"

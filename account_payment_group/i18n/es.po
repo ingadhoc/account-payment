@@ -4,13 +4,14 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
+# emiquinodoz <eq@ingadhoc.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-07-03 19:39+0000\n"
-"PO-Revision-Date: 2017-07-03 19:39+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
+"POT-Creation-Date: 2017-08-11 18:15+0000\n"
+"PO-Revision-Date: 2017-08-11 18:15+0000\n"
+"Last-Translator: emiquinodoz <eq@ingadhoc.com>, 2017\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -97,6 +98,11 @@ msgstr "Importe"
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_invoice_wizard
 msgid "Cancel"
 msgstr "Cancelar"
+
+#. module: account_payment_group
+#: selection:account.payment.group,state:0
+msgid "Cancelled"
+msgstr "Cancelado"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_config_settings_group_choose_payment_type
@@ -280,6 +286,9 @@ msgid ""
 " La cancelación manual de una línea de pago se usa solo para correcciones y "
 "usos avanzados. Seguro desea continuar?"
 msgstr ""
+"IMPORTANTE: La validación de la línea de pago se debe hacer desde el recibo."
+" La cancelación manual de una línea de pago se usa solo para correcciones y "
+"usos avanzados. Seguro desea continuar?"
 
 #. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_form
@@ -288,6 +297,9 @@ msgid ""
 " La validación manual de una línea de pago se usa solo para correcciones y "
 "usos avanzados. Seguro desea continuar?"
 msgstr ""
+"IMPORTANTE: La validación de la línea de pago se debe hacer desde el recibo."
+" La validación manual de una línea de pago se usa solo para correcciones y "
+"usos avanzados. Seguro desea continuar?"
 
 #. module: account_payment_group
 #: model:ir.model.fields,help:account_payment_group.field_account_payment_group_message_unread
@@ -334,7 +346,7 @@ msgid "Journal Item"
 msgstr "Apunte Contable"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:604
+#: code:addons/account_payment_group/models/account_payment_group.py:605
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
 #, python-format
@@ -404,8 +416,8 @@ msgid "Métodos de pago"
 msgstr "Métodos de pago"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:275
-#: code:addons/account_payment_group/models/account_payment_group.py:279
+#: code:addons/account_payment_group/models/account_payment_group.py:276
+#: code:addons/account_payment_group/models/account_payment_group.py:280
 #, python-format
 msgid "Not implemented yet"
 msgstr "No implementado todavía"
@@ -677,6 +689,11 @@ msgid "Sent"
 msgstr "Enviado"
 
 #. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
+msgid "Set to Draft"
+msgstr "Establecer como Borrador"
+
+#. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
 msgid "State"
@@ -704,7 +721,7 @@ msgid "To Pay Amount"
 msgstr "Importe a pagar"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:664
+#: code:addons/account_payment_group/models/account_payment_group.py:670
 #, python-format
 msgid "To Pay Amount and Payment Amount must be equal!"
 msgstr "¡El Importe a pagar y el Importe de Pago deben ser iguales!"
@@ -717,7 +734,7 @@ msgstr "Líneas a Pagar"
 
 #. module: account_payment_group
 #: code:addons/account_payment_group/models/account_payment.py:124
-#: code:addons/account_payment_group/models/account_payment_group.py:644
+#: code:addons/account_payment_group/models/account_payment_group.py:650
 #, python-format
 msgid "To Pay Lines must be of the same account!"
 msgstr "Las líneas a pagar deben ser de la misma cuenta!"
@@ -784,23 +801,23 @@ msgstr "Proveedor"
 #: model:ir.ui.view,arch_db:account_payment_group.invoice_form
 #: model:ir.ui.view,arch_db:account_payment_group.invoice_supplier_form
 msgid "View Payments"
-msgstr ""
+msgstr "Ver pagos"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:659
+#: code:addons/account_payment_group/models/account_payment_group.py:665
 #, python-format
 msgid "You can not confirm a payment group without payment lines!"
 msgstr "¡No puede confirmar un grupo de pagos sin líneas de pago!"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:635
+#: code:addons/account_payment_group/models/account_payment_group.py:641
 #, python-format
 msgid "You can not delete a payment that is already posted"
 msgstr "No puede eliminar un pago que ya ha sido publicado"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:564
-#: code:addons/account_payment_group/models/account_payment_group.py:570
+#: code:addons/account_payment_group/models/account_payment_group.py:565
+#: code:addons/account_payment_group/models/account_payment_group.py:571
 #, python-format
 msgid "You can not send to pay lines from different partners"
 msgstr "No puede enviar a pagar líneas de diferentes partners"
@@ -814,9 +831,9 @@ msgstr "Solamente puede registrar un pago si la factura está abierta"
 #. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_account_config_settings
 msgid "account.config.settings"
-msgstr ""
+msgstr "account.config.settings"
 
 #. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_account_payment_group_invoice_wizard
 msgid "account.payment.group.invoice.wizard"
-msgstr ""
+msgstr "account.payment.group.invoice.wizard"
