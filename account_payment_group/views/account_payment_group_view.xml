@@ -85,7 +85,9 @@
                 <button name="action_draft" states="cancel" string="Set to Draft" type="object"/>
                 <!-- <button name="post" class="oe_highlight" states="draft" string="Validate" type="object"/> -->
                 <button name="confirm" class="oe_highlight" string="Confirm" type="object" attrs="{'invisible': ['|', ('payment_subtype', '!=', 'double_validation'), ('state', '!=', 'draft')]}"/>
-                <button name="cancel" states="posted,sent,reconciled" string="Cancel" type="object"/>
+                <!-- odoo, en los payments, lo muestra solo si ya validado, nosotros queremos que en borrador, confirmado o cuando sea, se pueda cancelar -->
+                <button name="cancel" attrs="{'invisible': [('state', '=', 'cancel')]}" string="Cancel" type="object"/>
+                <!-- <button name="cancel" states="posted,sent,reconciled" string="Cancel" type="object"/> -->
                 <field name="state" widget="statusbar" statusbar_visible="posted"/>
             </header>
             <div class="alert alert-info" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('has_outstanding','=',False)]}">
