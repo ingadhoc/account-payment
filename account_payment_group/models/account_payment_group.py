@@ -170,7 +170,7 @@ class AccountPaymentGroup(models.Model):
         ('posted', 'Posted'),
         # ('sent', 'Sent'),
         # ('reconciled', 'Reconciled')
-        ('cancel', 'Cancelled')
+        ('cancel', 'Cancelled'),
     ], readonly=True, default='draft', copy=False, string="Status",
         track_visibility='onchange',
     )

@@ -10,6 +10,8 @@ except ImportError:
     table_exists = None
     openupgrade = None
 import logging
+from openerp.api import Environment
+from openerp.exceptions import ValidationError
 _logger = logging.getLogger(__name__)
 
 
@@ -37,6 +39,9 @@ def post_init_hook(cr, registry):
             'partner_type': payment.partner_type,
             'partner_id': payment.partner_id.id,
             'payment_date': payment.payment_date,
+            # en realidad aparentemente odoo no migra nada a communication
+            # tal vez a este campo deberíamos llevar el viejo name que ahora
+            # name es la secuencia
             'communication': payment.communication,
             'payment_ids': [(4, payment.id, False)],
             'state': (
@@ -59,8 +64,10 @@ def restore_canceled_payments_state(cr, registry):
     nosotros hicimos un backport pero como la mig lo borra, lo tenemos que
     restaurar
     """
+    env = Environment(cr, 1, {})
     cr.execute("""
-        SELECT partner_id, name, create_date, create_uid, reference
+        SELECT partner_id, name, create_date, create_uid,
+            reference, state, amount
         FROM account_voucher_copy
         WHERE state = 'cancel'
         """,)
@@ -71,21 +78,36 @@ def restore_canceled_payments_state(cr, registry):
             name,
             create_date,
             create_uid,
-            reference) = read
-        # al final no buscamos por name porque si no estaba setado odoo
-        # completa con otra cosa
-        # ('name', '=', name),
+            reference,
+            state,
+            amount) = read
+
+        # como esta cancelado y no hay asiento que vincule, entonces tratamos
+        # tratamos de buscar algo unico para vincular el voucher con el payment
+
         domain = [
             ('partner_id', '=', partner_id),
-            ('create_date', '=', create_date), ('create_uid', '=', create_uid),
-            ('payment_reference', '=', reference)]
-        payment_id = registry['account.payment'].search(
-            cr, 1, domain, limit=1)
-        if not payment_id:
-            _logger.error(
-                'No encontramos payment para cancelar con dominio %s' % (
-                    domain))
-            continue
-        _logger.info('Cancelando payment %s' % payment_id)
-        registry['account.payment'].write(
-            cr, 1, payment_id, {'state': 'cancel'})
+            ('create_date', '=', create_date),
+            ('create_uid', '=', create_uid),
+            ('payment_reference', '=', reference),
+            # usamos abs porque pagos negativos se convirtieron a positivo
+            ('amount', '=', abs(amount)),
+            # Odoo los migra en draft
+            ('state', '=', 'draft'),
+        ]
+        payment = env['account.payment'].search(domain)
+
+        # si nos devuelve mas de uno intentamos agregar condición de name
+        # no lo hacemos antes ya que en otros casos no sirve
+        if len(payment) > 1 and name:
+            domain.append(('name', '=', name))
+            payment = env['account.payment'].search(domain)
+
+        if len(payment) != 1:
+            raise ValidationError(
+                'Se encontro mas de un payment o ninguno!!! \n'
+                '* Payments: %s\n'
+                '* Domain: %s' % (payment, domain))
+
+        _logger.info('Cancelando payment %s' % payment)
+        payment.state = 'cancel'

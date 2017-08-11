@@ -328,7 +328,8 @@ def get_payment(env, voucher_id):
     cr = env.cr
     openupgrade.logged_query(cr, """
         SELECT
-            move_id, amount, journal_id, state
+            move_id, amount, journal_id, state, create_uid, partner_id,
+            reference, name, create_date
         FROM
             account_voucher_copy
         WHERE
@@ -336,19 +337,45 @@ def get_payment(env, voucher_id):
             """, (voucher_id,))
     read = cr.fetchall()
     if read:
-        (move_id, amount, journal_id, state) = read[0]
-        payment = env['account.move.line'].search([
-            ('move_id', '=', move_id), ('payment_id', '!=', False)],
-            limit=1).payment_id
-        if payment:
-            return payment
-        elif state in ['draft', 'cancel']:
-            payments = env['account.payment'].search([
-                ('state', '=', 'draft'),
+        (move_id, amount, journal_id, state, create_uid,
+            partner_id, reference, name, create_date) = read[0]
+        if move_id:
+            domain = [('move_id', '=', move_id), ('payment_id', '!=', False)]
+            payment = env[('account.move.line')].search(domain).mapped(
+                'payment_id')
+        # ODOO las migra en estos estados a sipreco y cia
+        # elif state in ['draft', 'cancel']:
+        elif state not in ['posted', 'sent', 'reconciled']:
+            domain = [
+                # ('state', '=', 'draft'),
+                # por compatibilidad con sipreco aunque igual a draft tmb
+                # deberia estar bien
+                ('state', 'not in', ('posted', 'sent', 'reconciled')),
+                # ('state', '=', 'draft'),
                 ('journal_id', '=', journal_id),
-                ('amount', '=', amount)])
-            if len(payments) == 1:
-                return payments[0]
+                ('payment_reference', '=', reference),
+                ('partner_id', '=', partner_id),
+                ('create_date', '=', create_date),
+                ('create_uid', '=', create_uid),
+                # pagos negativos se conieron a positivos
+                ('amount', '=', abs(amount))]
+            payment = env['account.payment'].search(domain)
+
+            # si nos devuelve mas de uno intentamos agregar condición de name
+            # no lo hacemos antes ya que en otros casos no sirve
+            if len(payment) > 1 and name:
+                domain.append(('name', '=', name))
+                payment = env['account.payment'].search(domain)
+
+            if len(payment) != 1:
+                raise ValidationError(
+                    'Se encontro mas de un payment o ninguno!!! \n'
+                    '* Payments: %s\n'
+                    '* Domain: %s' % (payment, domain))
+        else:
+            raise ValidationError(
+                'Error de cheque al querer vincular con pago')
+        return payment
     return False
 
 
