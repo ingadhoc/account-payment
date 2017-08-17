@@ -215,13 +215,14 @@ def change_issue_journals(env):
                     WHERE aml.id in %s)
                 """ % (new_journal_id, tuple(move_line_ids)),
             )
-        openupgrade.logged_query(cr, """
-            UPDATE
-                account_payment
-            SET
-                journal_id=%s
-            WHERE id in %s
-            """ % (new_journal_id, tuple(wrong_checks.ids)),)
+        if wrong_checks:
+            openupgrade.logged_query(cr, """
+                UPDATE
+                    account_payment
+                SET
+                    journal_id=%s
+                WHERE id in %s
+                """ % (new_journal_id, tuple(wrong_checks.ids)),)
         # wrong_checks.cancel()
         # wrong_checks.unlink()
 
