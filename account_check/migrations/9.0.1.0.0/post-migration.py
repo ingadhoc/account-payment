@@ -22,19 +22,23 @@ def migrate(env, version):
     # TODO copy checks and enable
     add_operations(env)
     old_journal_ids = change_issue_journals(env)
+    _logger.info('old_journal_ids %s' % old_journal_ids)
 
     # al final no mergeamos los third checks journals
     # old_journal_ids += change_third_journals(env)
 
+    # NO LO HACMEOS NI CON TRY PORQUE SI NO DE ALGUNA MAENRA LUEGO NOS
+    # DA ERROR AL BUSCAR LOS NEW PAYMENT METHODS CREADOS CON ESTE MODULO
+    # APARENTEMENTE HACE UN ROLLBACK O ALGO ASI, LO HACEMOS EN POST SCRIPT A
+    # ESTO Y LISTO
     # TODO. Improove this. if this gives an error you can comment it and
     # later delete de journals by fixing manually related remaining move and
     # move lines
     # env['account.journal'].browse(old_journal_ids).unlink()
-
-    try:
-        env['account.journal'].browse(old_journal_ids).unlink()
-    except Exception:
-        _logger.warning('Could not delete checks journals')
+    # try:
+    #     env['account.journal'].browse(old_journal_ids).unlink()
+    # except:
+    #     _logger.warning('Could not delete checks journals')
 
     # first unlink then add third issue types because if not a checkbook
     # is created for old journals and we cant unlink them
