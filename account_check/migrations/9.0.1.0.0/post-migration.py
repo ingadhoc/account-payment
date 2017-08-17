@@ -2,8 +2,8 @@
 from openupgradelib import openupgrade
 from openerp.exceptions import ValidationError
 from openerp.addons.account_check.models.account_check import AccountCheck
-# import logging
-# _logger = logging.getLogger(__name__)
+import logging
+_logger = logging.getLogger(__name__)
 
 
 def issue_number_interval(self):
@@ -29,11 +29,12 @@ def migrate(env, version):
     # TODO. Improove this. if this gives an error you can comment it and
     # later delete de journals by fixing manually related remaining move and
     # move lines
-    env['account.journal'].browse(old_journal_ids).unlink()
-    # try:
-    #     env['account.journal'].browse(old_journal_ids).unlink()
-    # except:
-    #     _logger.warning('Could not delete checks journals')
+    # env['account.journal'].browse(old_journal_ids).unlink()
+
+    try:
+        env['account.journal'].browse(old_journal_ids).unlink()
+    except Exception:
+        _logger.warning('Could not delete checks journals')
 
     # first unlink then add third issue types because if not a checkbook
     # is created for old journals and we cant unlink them
