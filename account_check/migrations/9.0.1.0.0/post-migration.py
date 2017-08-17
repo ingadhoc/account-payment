@@ -127,14 +127,12 @@ def _change_journal_issue(env, checkbook_id, new_journal_id):
         openupgrade.logged_query(cr, """
             UPDATE account_move_line aml SET journal_id = %s
             WHERE id in %s
-            """ % (new_journal_id, tuple(move_line_ids)),
-        )
+            """, (new_journal_id, tuple(move_line_ids)))
         openupgrade.logged_query(cr, """
             UPDATE account_move am SET journal_id = %s
             WHERE am.id in (SELECT move_id FROM account_move_line aml
                 WHERE aml.id in %s)
-            """ % (new_journal_id, tuple(move_line_ids)),
-        )
+            """, (new_journal_id, tuple(move_line_ids)))
 
     tables = ['account_check', 'account_payment']
     # 'account_voucher' no tiene checkbook_id
@@ -207,14 +205,12 @@ def change_issue_journals(env):
             openupgrade.logged_query(cr, """
                 UPDATE account_move_line aml SET journal_id = %s
                 WHERE id in %s
-                """ % (new_journal_id, tuple(move_line_ids)),
-            )
+                """, (new_journal_id, tuple(move_line_ids)))
             openupgrade.logged_query(cr, """
                 UPDATE account_move am SET journal_id = %s
                 WHERE am.id in (SELECT move_id FROM account_move_line aml
                     WHERE aml.id in %s)
-                """ % (new_journal_id, tuple(move_line_ids)),
-            )
+                """, (new_journal_id, tuple(move_line_ids)))
         if wrong_checks:
             openupgrade.logged_query(cr, """
                 UPDATE
@@ -222,7 +218,7 @@ def change_issue_journals(env):
                 SET
                     journal_id=%s
                 WHERE id in %s
-                """ % (new_journal_id, tuple(wrong_checks.ids)),)
+                """, (new_journal_id, tuple(wrong_checks.ids)))
         # wrong_checks.cancel()
         # wrong_checks.unlink()
 
