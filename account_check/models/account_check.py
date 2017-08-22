@@ -295,7 +295,10 @@ class AccountCheck(models.Model):
                         '* Check ids: %s') % (
                         rec.name, same_checks.ids))
             elif self.type == 'third_check':
+                # agregamos condicion de company ya que un cheque de terceros
+                # se puede pasar entre distintas cias
                 same_checks = self.search([
+                    ('company_id', '=', rec.company_id.id),
                     ('bank_id', '=', rec.bank_id.id),
                     ('owner_name', '=', rec.owner_name),
                     ('type', '=', rec.type),
