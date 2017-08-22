@@ -541,6 +541,13 @@ def add_operations(env):
                 'rejected', supplier_reject_debit_note,
                 partner=supplier_reject_debit_note.partner_id,
                 date=supplier_reject_debit_note.date_invoice)
+        elif rejection_account_move_id:
+            rejection_account_move = env['account.move'].browse(
+                rejection_account_move_id)
+            check._add_operation(
+                'rejected', rejection_account_move,
+                partner=rejection_account_move.partner_id,
+                date=rejection_account_move.date)
 
         if customer_reject_debit_note_id:
             customer_reject_debit_note = env['account.invoice'].browse(
@@ -551,13 +558,13 @@ def add_operations(env):
                 date=customer_reject_debit_note.date_invoice)
             # TODO ver si hace falta
             check.state = 'reclaimed'
-        elif rejection_account_move_id:
-            rejection_account_move = env['account.move'].browse(
-                rejection_account_move_id)
-            check._add_operation(
-                'reclaimed', rejection_account_move,
-                partner=rejection_account_move.partner_id,
-                date=rejection_account_move.date)
+        # elif rejection_account_move_id:
+        #     rejection_account_move = env['account.move'].browse(
+        #         rejection_account_move_id)
+        #     check._add_operation(
+        #         'reclaimed', rejection_account_move,
+        #         partner=rejection_account_move.partner_id,
+        #         date=rejection_account_move.date)
 
         if replacing_check_id:
             replacing_check = check.browse(
