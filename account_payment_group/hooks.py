@@ -57,6 +57,21 @@ def post_init_hook(cr, registry):
         ]
         openupgrade.rename_xmlids(cr, xmlid_renames)
 
+    set_user_group_for_double_validation(cr, registry)
+
+
+def set_user_group_for_double_validation(cr, registry):
+    """
+    En v9 incorporamos un nuevo grupo para pdoer confirmar pagos, lo marcamos
+    por defecto para todos los que vienen de v8 porque si tenían double
+    validation no pueden hacer pagos
+    """
+    env = Environment(cr, 1, {})
+    invoice_group = env.ref('account.group_account_invoice')
+    confirm_group = env.ref('account_payment_group.account_confirm_payment')
+    users = env['res.users'].search([('groups_id', '=', invoice_group.id)])
+    users.write({'groups_id': [(4, confirm_group.id, None)]})
+
 
 def restore_canceled_payments_state(cr, registry):
     """

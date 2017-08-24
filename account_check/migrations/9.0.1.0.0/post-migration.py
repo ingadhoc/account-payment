@@ -269,9 +269,9 @@ def _enable_third_check_method(env):
                 third_journals_ids):
             third_journal.write({
                 'inbound_payment_method_ids': [
-                    (4, in_third_checks.id, None)],
+                    (6, None, [in_third_checks.id])],
                 'outbound_payment_method_ids': [
-                    (4, out_third_checks.id, None)],
+                    (6, None, [out_third_checks.id])],
             })
 
 
