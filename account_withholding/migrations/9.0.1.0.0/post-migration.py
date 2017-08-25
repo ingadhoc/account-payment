@@ -36,8 +36,13 @@ def create_withholding_journal(env):
 
 def migrate_tax_withholding(env):
     cr = env.cr
+    # add column to store old withholding_tax_id (to be used l10n..withho..)
+    openupgrade.logged_query(
+        cr, "alter table account_tax_withholding add column new_tax_id int")
+
     openupgrade.logged_query(cr, """
     SELECT
+        id,
         name,
         description,
         type_tax_use,
@@ -53,6 +58,7 @@ def migrate_tax_withholding(env):
     """,)
     for tax_read in cr.fetchall():
         (
+            id,
             name,
             description,
             type_tax_use,
@@ -94,9 +100,35 @@ def migrate_tax_withholding(env):
             'amount': 0.0,
         }
         new_tax = env['account.tax'].create(tax_vals)
+
+        # almacenamos en la tabla vieja el id del nuevo tax para poder usarlo
+        # mas adelante
+        openupgrade.logged_query(cr, """
+            UPDATE account_tax_withholding set new_tax_id = %s where id = %s
+        """ % (new_tax.id, id))
+
         # we add tax_code_id by sql because it is a column but not a field
         # we add this so l10n_ar_account postinstall script can map tax group
         if tax_code_id:
             openupgrade.logged_query(cr, """
             UPDATE account_tax set tax_code_id = %s where id = %s
             """ % (tax_code_id, new_tax.id))
+
+            cr.execute("""
+                SELECT id from account_tax_withholding WHERE tax_code_id = %s
+                """, (tax_code_id,))
+            taxes = cr.fetchall()
+            # si habia uno solo impuesto con este codigo, entonces es el que
+            # acabamos de crear y actualizamos todos los apuntes contables
+            # que tengan tax_code pero no tax_id
+            if len(taxes) == 1:
+                cr.execute("""
+                    SELECT id from account_move_line_copy
+                    WHERE tax_code_id = %s
+                    """, (tax_code_id,))
+                move_lines_copy = cr.fetchall()
+                move_lines_copy_ids = [x[0] for x in move_lines_copy]
+                move_lines = env['account.move.line'].search([
+                    ('tax_line_id', '=', False),
+                    ('id', 'in', move_lines_copy_ids)])
+                move_lines.write({'tax_line_id': new_tax.id})
