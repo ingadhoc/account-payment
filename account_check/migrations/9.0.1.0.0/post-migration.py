@@ -45,8 +45,9 @@ def migrate(env, version):
 
     # al final no mergeamos los third checks journals
     # env['account.journal']._enable_third_check_on_cash_journals()
-    _enable_third_check_method(env)
     env['account.journal']._enable_issue_check_on_bank_journals()
+    # primero issue para que este lo desmarque
+    _enable_third_check_method(env)
     delete_old_ir_rule(env)
 
 
