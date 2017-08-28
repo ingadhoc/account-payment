@@ -184,6 +184,16 @@ class AccountPayment(models.Model):
             raise UserError(
                 _('Check Payment Date must be greater than Issue Date'))
 
+    @api.onchange('check_owner_vat')
+    def onchange_check_owner_vat(self):
+        """
+        We suggest owner name from owner vat
+        """
+        # if not self.check_owner_name:
+        self.check_owner_name = self.search(
+            [('check_owner_vat', '=', self.check_owner_vat)],
+            limit=1).check_owner_name
+
     @api.one
     @api.onchange('partner_id', 'payment_method_code')
     def onchange_partner_check(self):
