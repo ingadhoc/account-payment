@@ -13,7 +13,7 @@
         # por el backport
         'account_cancel',
     ],
-    'installable': True,
+    'installable': False,
     'name': 'Account Payment Fix',
     'test': [],
     'version': '9.0.1.1.0',
