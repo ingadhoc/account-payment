@@ -4,14 +4,13 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
-# emiquinodoz <eq@ingadhoc.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-08-11 18:15+0000\n"
-"PO-Revision-Date: 2017-08-11 18:15+0000\n"
-"Last-Translator: emiquinodoz <eq@ingadhoc.com>, 2017\n"
+"POT-Creation-Date: 2017-08-30 18:50+0000\n"
+"PO-Revision-Date: 2017-08-30 18:50+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -145,6 +144,11 @@ msgstr "Compañía"
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_invoice_wizard
 msgid "Confirm"
 msgstr "Confirmar"
+
+#. module: account_payment_group
+#: model:res.groups,name:account_payment_group.account_confirm_payment
+msgid "Confirm payments (only if double validation is enabled)"
+msgstr ""
 
 #. module: account_payment_group
 #: selection:account.payment.group,state:0
@@ -625,7 +629,6 @@ msgid "Received Money"
 msgstr "Dinero Recibido"
 
 #. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
 msgid "Reconciled"
 msgstr "Conciliado"
@@ -683,7 +686,6 @@ msgid "Sended Money"
 msgstr "Dinero Enviado"
 
 #. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
 msgid "Sent"
 msgstr "Enviado"
