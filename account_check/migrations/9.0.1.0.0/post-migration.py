@@ -396,6 +396,7 @@ def add_operations(env):
     openupgrade.logged_query(cr, """
         SELECT
             id,
+            payment_date,
             state,
             name,
             number,
@@ -425,6 +426,7 @@ def add_operations(env):
     for read in cr.fetchall():
         (
             check_id,
+            payment_date,
             original_state,
             name,
             number,
@@ -456,6 +458,7 @@ def add_operations(env):
             'issue_date': issue_date,
             'type': check_type,
             'amount': amount,
+            'payment_date': payment_date,
             # 'currency_id': currency_id,
         }
         check = env['account.check'].create(check_vals)
