@@ -447,6 +447,10 @@ def add_operations(env):
             deposit_account_move_id,
             return_account_move_id,
             check_type) = read
+
+        if payment_date and payment_date < issue_date:
+            payment_date = issue_date
+
         check_vals = {
             'name': name,
             'number': number,
