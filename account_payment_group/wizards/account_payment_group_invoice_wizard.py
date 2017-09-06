@@ -48,6 +48,14 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
     description = fields.Char(
         string='Reason',
     )
+    company_id = fields.Many2one(
+        'res.company',
+        related='payment_group_id.company_id'
+    )
+    account_analytic_id = fields.Many2one(
+        'account.analytic.account',
+        'Analytic Account',
+    )
 
     @api.onchange('payment_group_id')
     def change_payment_group(self):
@@ -98,11 +106,12 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
             'price_unit': self.amount,
             'invoice_id': invoice.id,
         }
-
         invoice_line = self.env['account.invoice.line'].new(inv_line_vals)
         invoice_line._onchange_product_id()
         line_values = invoice_line._convert_to_write(invoice_line._cache)
         line_values['price_unit'] = self.amount
+        if self.account_analytic_id:
+            line_values['account_analytic_id'] = self.account_analytic_id.id
         invoice.write({'invoice_line_ids': [(0, 0, line_values)]})
         invoice.compute_taxes()
         invoice.signal_workflow('invoice_open')

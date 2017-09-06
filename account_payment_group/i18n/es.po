@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-08-30 18:50+0000\n"
-"PO-Revision-Date: 2017-08-30 18:50+0000\n"
+"POT-Creation-Date: 2017-09-06 15:09+0000\n"
+"PO-Revision-Date: 2017-09-06 15:09+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
@@ -93,6 +93,11 @@ msgid "Amount"
 msgstr "Importe"
 
 #. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_account_analytic_id
+msgid "Analytic Account"
+msgstr ""
+
+#. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_invoice_wizard
 msgid "Cancel"
@@ -133,6 +138,7 @@ msgstr "Compañías"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_company_id
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_company_id
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_payment_group_company_id
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
@@ -535,7 +541,7 @@ msgid "Payment group matched amount"
 msgstr "Importe imputado en el grupo de Pagos"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/wizards/account_payment_group_invoice_wizard.py:83
+#: code:addons/account_payment_group/wizards/account_payment_group_invoice_wizard.py:91
 #, python-format
 msgid "Payment id %s"
 msgstr "Id del Pago %s"

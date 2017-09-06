@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-30 23:26+0000\n"
-"PO-Revision-Date: 2017-03-30 23:26+0000\n"
+"POT-Creation-Date: 2017-09-06 15:09+0000\n"
+"PO-Revision-Date: 2017-09-06 15:09+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
 "Language-Team: Turkish (https://www.transifex.com/adhoc/teams/46451/tr/)\n"
 "MIME-Version: 1.0\n"
@@ -54,6 +54,35 @@ msgid "Adjusment / Advance"
 msgstr ""
 
 #. module: account_payment_group
+#: model:res.groups,name:account_payment_group.group_pay_now_customer_invoices
+msgid "Allow pay now on customer invoices"
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_config_settings_group_pay_now_customer_invoices
+msgid "Allow pay now on customer invoices?"
+msgstr ""
+
+#. module: account_payment_group
+#: model:res.groups,name:account_payment_group.group_pay_now_vendor_invoices
+msgid "Allow pay now on vendor invoices"
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_config_settings_group_pay_now_vendor_invoices
+msgid "Allow pay now on vendor invoices?"
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.model.fields,help:account_payment_group.field_account_config_settings_group_pay_now_customer_invoices
+#: model:ir.model.fields,help:account_payment_group.field_account_config_settings_group_pay_now_vendor_invoices
+msgid ""
+"Allow users to choose a payment journal on invoices so that invoice is "
+"automatically paid after invoice validation. A payment will be created using"
+" choosen journal"
+msgstr ""
+
+#. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_amount
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_payments_amount
 #: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
@@ -61,10 +90,20 @@ msgid "Amount"
 msgstr "Tutar"
 
 #. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_account_analytic_id
+msgid "Analytic Account"
+msgstr ""
+
+#. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_invoice_wizard
 msgid "Cancel"
 msgstr "İptal"
+
+#. module: account_payment_group
+#: selection:account.payment.group,state:0
+msgid "Cancelled"
+msgstr ""
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_config_settings_group_choose_payment_type
@@ -95,6 +134,7 @@ msgstr ""
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_company_id
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_company_id
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_payment_group_company_id
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
@@ -105,6 +145,11 @@ msgstr "Firma"
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_invoice_wizard
 msgid "Confirm"
+msgstr ""
+
+#. module: account_payment_group
+#: model:res.groups,name:account_payment_group.account_confirm_payment
+msgid "Confirm payments (only if double validation is enabled)"
 msgstr ""
 
 #. module: account_payment_group
@@ -135,6 +180,7 @@ msgid "Credit Note"
 msgstr ""
 
 #. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_company_currency_id
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_currency_id
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_currency_id
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
@@ -144,7 +190,6 @@ msgstr ""
 
 #. module: account_payment_group
 #: selection:account.payment.group,partner_type:0
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_tree
 msgid "Customer"
 msgstr ""
 
@@ -215,10 +260,40 @@ msgid "Followers (Partners)"
 msgstr ""
 
 #. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_has_outstanding
+msgid "Has outstanding"
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
+msgid ""
+"Hay <b>créditos pendientes</b> de imputar en la deuda seleccionada, se "
+"intentará imputar dichos créditos a otros comprobantes seleccionados pero "
+"dicha información <b>no quedará registrada en el pago</b>. Si no desea que "
+"se imputen automáticamente puede borrarlos de la lista."
+msgstr ""
+
+#. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_id
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_id
 msgid "ID"
 msgstr "ID"
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_form
+msgid ""
+"IMPORTANTE: La validación de la línea de pago se debe hacer desde el recibo."
+" La cancelación manual de una línea de pago se usa solo para correcciones y "
+"usos avanzados. Seguro desea continuar?"
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_form
+msgid ""
+"IMPORTANTE: La validación de la línea de pago se debe hacer desde el recibo."
+" La validación manual de una línea de pago se usa solo para correcciones y "
+"usos avanzados. Seguro desea continuar?"
+msgstr ""
 
 #. module: account_payment_group
 #: model:ir.model.fields,help:account_payment_group.field_account_payment_group_message_unread
@@ -228,6 +303,14 @@ msgstr "İşaretliyse yeni mesajlara dikkat edin."
 #. module: account_payment_group
 #: model:ir.model.fields,help:account_payment_group.field_account_payment_group_message_needaction
 msgid "If checked, new messages require your attention."
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.model.fields,help:account_payment_group.field_account_invoice_pay_now_journal_id
+msgid ""
+"If you set a journal here, after invoice validation, the invoice will be "
+"automatically paid with this journal. As manual paymentmethod is used, only "
+"journals with manual method are shown."
 msgstr ""
 
 #. module: account_payment_group
@@ -254,7 +337,7 @@ msgid "Journal Item"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:520
+#: code:addons/account_payment_group/models/account_payment_group.py:605
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
 #, python-format
@@ -317,6 +400,18 @@ msgid "Move line ids"
 msgstr ""
 
 #. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_payment_methods
+msgid "Métodos de pago"
+msgstr ""
+
+#. module: account_payment_group
+#: code:addons/account_payment_group/models/account_payment_group.py:276
+#: code:addons/account_payment_group/models/account_payment_group.py:280
+#, python-format
+msgid "Not implemented yet"
+msgstr ""
+
+#. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_notes
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid "Notes"
@@ -335,16 +430,6 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model.fields,help:account_payment_group.field_account_payment_group_message_unread_counter
 msgid "Number of unread messages"
-msgstr ""
-
-#. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
-msgid "Open Invocice"
-msgstr ""
-
-#. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
-msgid "Open Related Invoice"
 msgstr ""
 
 #. module: account_payment_group
@@ -374,6 +459,17 @@ msgid "Partner type"
 msgstr ""
 
 #. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_invoice_pay_now_journal_id
+msgid "Pay now Journal"
+msgstr ""
+
+#. module: account_payment_group
+#: code:addons/account_payment_group/models/account_invoice.py:120
+#, python-format
+msgid "Pay now journal must have manual method!"
+msgstr ""
+
+#. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_amount_company_currency
 msgid "Payment Amount on Company Currency"
 msgstr ""
@@ -390,8 +486,16 @@ msgid "Payment Group"
 msgstr ""
 
 #. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_invoice_payment_group_ids
+#: model:ir.model.fields,field_description:account_payment_group.field_account_move_line_payment_group_ids
+msgid "Payment Groups"
+msgstr ""
+
+#. module: account_payment_group
+#: code:addons/account_payment_group/models/account_payment.py:140
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_payment_ids
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
+#, python-format
 msgid "Payment Lines"
 msgstr ""
 
@@ -416,7 +520,7 @@ msgid "Payment group matched amount"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/wizards/account_payment_group_invoice_wizard.py:83
+#: code:addons/account_payment_group/wizards/account_payment_group_invoice_wizard.py:91
 #, python-format
 msgid "Payment id %s"
 msgstr ""
@@ -461,8 +565,8 @@ msgid ""
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment.py:103
 #: code:addons/account_payment_group/models/account_payment.py:107
+#: code:addons/account_payment_group/models/account_payment.py:111
 #, python-format
 msgid "Payments must be created from payments groups"
 msgstr ""
@@ -477,6 +581,11 @@ msgstr ""
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
 msgid "Posted"
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
+msgid "Print"
 msgstr ""
 
 #. module: account_payment_group
@@ -500,7 +609,6 @@ msgid "Received Money"
 msgstr ""
 
 #. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
 msgid "Reconciled"
 msgstr ""
@@ -511,7 +619,7 @@ msgid "Refund Date"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_invoice.py:40
+#: code:addons/account_payment_group/models/account_invoice.py:65
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #, python-format
 msgid "Register Payment"
@@ -548,14 +656,23 @@ msgid "Send Money"
 msgstr ""
 
 #. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
+msgid "Send by Email"
+msgstr ""
+
+#. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.account_journal_dashboard_kanban_view
 msgid "Sended Money"
 msgstr ""
 
 #. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
 msgid "Sent"
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
+msgid "Set to Draft"
 msgstr ""
 
 #. module: account_payment_group
@@ -586,7 +703,7 @@ msgid "To Pay Amount"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:575
+#: code:addons/account_payment_group/models/account_payment_group.py:670
 #, python-format
 msgid "To Pay Amount and Payment Amount must be equal!"
 msgstr ""
@@ -598,8 +715,8 @@ msgid "To Pay Lines"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment.py:120
-#: code:addons/account_payment_group/models/account_payment_group.py:560
+#: code:addons/account_payment_group/models/account_payment.py:124
+#: code:addons/account_payment_group/models/account_payment_group.py:650
 #, python-format
 msgid "To Pay Lines must be of the same account!"
 msgstr ""
@@ -661,26 +778,32 @@ msgid "Vendor"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:570
+#: model:ir.ui.view,arch_db:account_payment_group.invoice_form
+#: model:ir.ui.view,arch_db:account_payment_group.invoice_supplier_form
+msgid "View Payments"
+msgstr ""
+
+#. module: account_payment_group
+#: code:addons/account_payment_group/models/account_payment_group.py:665
 #, python-format
 msgid "You can not confirm a payment group without payment lines!"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:551
+#: code:addons/account_payment_group/models/account_payment_group.py:641
 #, python-format
 msgid "You can not delete a payment that is already posted"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:480
-#: code:addons/account_payment_group/models/account_payment_group.py:486
+#: code:addons/account_payment_group/models/account_payment_group.py:565
+#: code:addons/account_payment_group/models/account_payment_group.py:571
 #, python-format
 msgid "You can not send to pay lines from different partners"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_invoice.py:34
+#: code:addons/account_payment_group/models/account_invoice.py:59
 #, python-format
 msgid "You can only register payment if invoice is open"
 msgstr ""
