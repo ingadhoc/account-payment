@@ -55,8 +55,8 @@
             <separator/>
             <filter string="Draft" domain="[('state','=','draft')]" name='state_draft'/>
             <filter string="Posted" domain="[('state','=','posted')]" name='state_posted'/>
-            <filter string="Sent" domain="[('state','=','sent')]" name='state_sent'/>
-            <filter string="Reconciled" domain="[('state','=','reconciled')]"/>
+            <!-- <filter string="Sent" domain="[('state','=','sent')]" name='state_sent'/> -->
+            <!-- <filter string="Reconciled" domain="[('state','=','reconciled')]"/> -->
             <separator/>
             <filter string="Partner" domain="[]" context="{'group_by': 'partner_id'}"/>
             <filter string="State" domain="[]" context="{'group_by': 'state'}"/>
