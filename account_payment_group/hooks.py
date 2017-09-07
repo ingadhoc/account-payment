@@ -16,7 +16,7 @@ def post_init_hook(cr, registry):
     for payment in payments:
 
         _logger.info('creating payment group for payment %s' % payment.id)
-        registry['account.payment.group'].create(cr, 1, {
+        env['account.payment.group'].create({
             'company_id': payment.company_id.id,
             'partner_type': payment.partner_type,
             'partner_id': payment.partner_id.id,
