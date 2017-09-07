@@ -7,7 +7,7 @@ from openerp import api, fields, models, _
 from openerp.exceptions import ValidationError
 
 
-class account_check_action_wizard(models.TransientModel):
+class AccountCheckActionWizard(models.TransientModel):
     _name = 'account.check.action.wizard'
     _description = 'Account Check Action Wizard'
 

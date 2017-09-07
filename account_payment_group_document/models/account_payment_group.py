@@ -68,7 +68,7 @@ class AccountPaymentGroup(models.Model):
     )
     next_number = fields.Integer(
         # related='receiptbook_id.sequence_id.number_next_actual',
-        compute='_get_next_number',
+        compute='_compute_next_number',
         string='Next Number',
     )
     name = fields.Char(
@@ -85,7 +85,7 @@ class AccountPaymentGroup(models.Model):
     @api.depends(
         'receiptbook_id.sequence_id.number_next_actual',
     )
-    def _get_next_number(self):
+    def _compute_next_number(self):
         """
         show next number only for payments without number and on draft state
         """
@@ -181,17 +181,18 @@ class AccountPaymentGroup(models.Model):
                 })
         return super(AccountPaymentGroup, self).post()
 
-    @api.one
+    @api.multi
     @api.constrains('receiptbook_id', 'company_id')
     def _check_company_id(self):
         """
         Check receiptbook_id and voucher company
         """
-        if (self.receiptbook_id and
-                self.receiptbook_id.company_id != self.company_id):
-            raise ValidationError(_(
-                'The company of the receiptbook and of the '
-                'payment must be the same!'))
+        for rec in self:
+            if (rec.receiptbook_id and
+                    rec.receiptbook_id.company_id != rec.company_id):
+                raise ValidationError(_(
+                    'The company of the receiptbook and of the '
+                    'payment must be the same!'))
 
     @api.multi
     @api.constrains('receiptbook_id', 'document_number')

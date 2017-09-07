@@ -37,25 +37,26 @@ class AccountPayment(models.Model):
         related='company_id.currency_id'
     )
 
-    @api.one
+    @api.multi
     @api.depends('amount', 'currency_id', 'company_id.currency_id')
     def _compute_amount_company_currency(self):
-        payment_currency = self.currency_id
-        company_currency = self.company_id.currency_id
-        if payment_currency and payment_currency != company_currency:
-            amount_company_currency = self.currency_id.with_context(
-                date=self.payment_date).compute(
-                    self.amount, self.company_id.currency_id)
-        else:
-            amount_company_currency = self.amount
-        sign = 1.0
-        if (
-                (self.partner_type == 'supplier' and
-                    self.payment_type == self.payment_type == 'inbound') or
-                (self.partner_type == 'customer' and
-                    self.payment_type == self.payment_type == 'outbound')):
-            sign = -1.0
-        self.amount_company_currency = amount_company_currency * sign
+        for rec in self:
+            payment_currency = rec.currency_id
+            company_currency = rec.company_id.currency_id
+            if payment_currency and payment_currency != company_currency:
+                amount_company_currency = rec.currency_id.with_context(
+                    date=rec.payment_date).compute(
+                        rec.amount, rec.company_id.currency_id)
+            else:
+                amount_company_currency = rec.amount
+            sign = 1.0
+            if (
+                    (rec.partner_type == 'supplier' and
+                        rec.payment_type == rec.payment_type == 'inbound') or
+                    (rec.partner_type == 'customer' and
+                        rec.payment_type == rec.payment_type == 'outbound')):
+                sign = -1.0
+            rec.amount_company_currency = amount_company_currency * sign
 
     @api.multi
     @api.onchange('payment_type_copy')
@@ -76,12 +77,12 @@ class AccountPayment(models.Model):
     @api.multi
     def get_journals_domain(self):
         domain = super(AccountPayment, self).get_journals_domain()
-        # if self._context.get('payment_group'):
         if self.payment_group_company_id:
             domain.append(
                 ('company_id', '=', self.payment_group_company_id.id))
         return domain
 
+    @api.multi
     @api.onchange('payment_type')
     def _onchange_payment_type(self):
         """
@@ -111,23 +112,23 @@ class AccountPayment(models.Model):
                     raise ValidationError(_(
                         'Payments must be created from payments groups'))
 
-    @api.one
+    @api.multi
     @api.depends('invoice_ids', 'payment_type', 'partner_type', 'partner_id')
     def _compute_destination_account_id(self):
         """
         If we are paying a payment gorup with paylines, we use account
         of lines that are going to be paid
         """
-        to_pay_account = self.payment_group_id.to_pay_move_line_ids.mapped(
-            'account_id')
-        if len(to_pay_account) > 1:
-            raise ValidationError(_(
-                'To Pay Lines must be of the same account!'))
-        elif len(to_pay_account) == 1:
-            self.destination_account_id = to_pay_account[0]
-        else:
-            return super(
-                AccountPayment, self)._compute_destination_account_id()
+        for rec in self:
+            to_pay_account = rec.payment_group_id.to_pay_move_line_ids.mapped(
+                'account_id')
+            if len(to_pay_account) > 1:
+                raise ValidationError(_(
+                    'To Pay Lines must be of the same account!'))
+            elif len(to_pay_account) == 1:
+                rec.destination_account_id = to_pay_account[0]
+            else:
+                super(AccountPayment, rec)._compute_destination_account_id()
 
     @api.multi
     def show_details(self):

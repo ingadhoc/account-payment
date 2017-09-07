@@ -12,3 +12,4 @@ from . import account_journal_dashboard
 from . import res_company
 from . import account_chart_template
 from . import account_bank_statement_line
+from . import res_config

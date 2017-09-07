@@ -4,7 +4,7 @@ from openerp.tools.misc import formatLang
 from ast import literal_eval
 
 
-class account_journal(models.Model):
+class AccountJournal(models.Model):
     _inherit = "account.journal"
 
     @api.multi
@@ -28,7 +28,7 @@ class account_journal(models.Model):
         holding_checks = self.env['account.check'].search(
             domain_holding_third_checks)
         return dict(
-            super(account_journal, self).get_journal_dashboard_datas(),
+            super(AccountJournal, self).get_journal_dashboard_datas(),
             num_holding_third_checks=len(holding_checks),
             show_third_checks=(
                 'received_third_check' in

@@ -22,7 +22,7 @@ class AccountMoveLine(models.Model):
     )
 
     @api.multi
-    def compute_payment_group_matched_amount(self):
+    def _compute_payment_group_matched_amount(self):
         """
         Reciviendo un payment_group_id por contexto, decimos en ese payment
         group, cuanto se pago para la lína en cuestión.
@@ -48,6 +48,6 @@ class AccountMoveLine(models.Model):
             rec.payment_group_matched_amount = matched_amount
 
     payment_group_matched_amount = fields.Monetary(
-        compute='compute_payment_group_matched_amount',
+        compute='_compute_payment_group_matched_amount',
         currency_field='company_currency_id',
     )

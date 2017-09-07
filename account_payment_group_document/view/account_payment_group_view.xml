@@ -1,69 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<openerp>
-    <data>
+<odoo>
 
-        <record id="view_account_payment_group_form" model="ir.ui.view">
-            <field name="name">account.payment.group.inherit.view</field>
-            <field name="model">account.payment.group</field>
-            <field name="inherit_id" ref="account_payment_group.view_account_payment_group_form"/>
-            <field name="arch" type="xml">
-                <form>
-                    <field name="document_sequence_id" invisible="1"/> 
-                    <field name="localization" invisible="1"/>
-                </form> 
-                <field name="payment_date" position="before">
-
-                    <!-- only required on posted state for compatibility if you install this module with payments already created -->
-                    <field name="receiptbook_id" attrs="{'invisible': [('localization', '=', False)], 'required':[('localization', '!=', False), ('state', '=', 'draft')]}" domain="[('partner_type', '=', partner_type), ('company_id', '=', company_id)]"/>
-                    <field name="document_number" attrs="{'invisible': ['|', ('document_sequence_id', '!=', False), ('localization', '=', False)], 'required': [('document_sequence_id', '=', False), ('localization', '!=', False)]}"/>
-                    <!-- por ahora no agregamos esto, vamos a ver si alguien lo pide -->
-                    <!-- <field name="manual_prefix" attrs="{'invisible':['|',('document_sequence_id', '!=', False), ('state','!=','draft')]}"/> -->
-                    <!-- <field name="manual_sufix" attrs="{'invisible':['|',('document_sequence_id', '!=', False), ('state', '!=', 'draft')], 'required':[('document_sequence_id', '=', False), ('localization', '!=', False)]}"/> -->
-                    <!-- <field name="next_receipt_number" attrs="{'invisible':['|',('receiptbook_sequence_type','!=','automatic'), ('state','!=','draft')]}"/> -->
-                    <!-- we disable for now, probably depreciated, used by sirpeco yet -->
-                    <!-- <field name="force_number" attrs="{'invisible':['|',('receiptbook_sequence_type','!=','automatic'),('state','!=','draft')]}"/> -->
-                </field>
-
-
-<!--                 <field name="name" position="attributes">
-                    <attribute name="invisible">1</attribute>
-                </field>
- -->
-                <!-- <field name="name" position="before"> -->
-                <!-- <div class="oe_title" position="inside"> -->
-                <h1>
-                    <field name="display_name" attrs="{'invisible': [('display_name', '=', False)]}" class="oe_inline"/>
-                    <label string="- Next Number: " attrs="{'invisible': [('next_number', 'in', (0, False))]}" class="oe_inline"/>
-                    <field name="next_number" attrs="{'invisible': [('next_number', 'in', (0, False))]}" class="oe_inline"/>
-                </h1>
-                <!-- </div> -->
+    <record id="view_account_payment_group_form" model="ir.ui.view">
+        <field name="name">account.payment.group.inherit.view</field>
+        <field name="model">account.payment.group</field>
+        <field name="inherit_id" ref="account_payment_group.view_account_payment_group_form"/>
+        <field name="arch" type="xml">
+            <form>
+                <field name="document_sequence_id" invisible="1"/> 
+                <field name="localization" invisible="1"/>
+            </form> 
+            <field name="payment_date" position="before">
+                <!-- only required on posted state for compatibility if you install this module with payments already created -->
+                <field name="receiptbook_id" attrs="{'invisible': [('localization', '=', False)], 'required':[('localization', '!=', False), ('state', '=', 'draft')]}" domain="[('partner_type', '=', partner_type), ('company_id', '=', company_id)]"/>
+                <field name="document_number" attrs="{'invisible': ['|', ('document_sequence_id', '!=', False), ('localization', '=', False)], 'required': [('document_sequence_id', '=', False), ('localization', '!=', False)]}"/>
             </field>
-        </record>   
 
-        <!-- Search view -->
-        <record id="view_account_payment_group_search" model="ir.ui.view">
-            <field name="name">receipt.payment.group.search</field>
-            <field name="model">account.payment.group</field>
-            <field name="inherit_id" ref="account_payment_group.view_account_payment_group_search"/>
-            <field name="arch" type="xml">
-                <field name="display_name" position="attributes">
-                    <attribute name="filter_domain">['|', ('name','ilike',self), ('communication','ilike',self)]</attribute>
-                </field>
-            </field>
-        </record>   
+            <h1>
+                <field name="display_name" attrs="{'invisible': [('display_name', '=', False)]}" class="oe_inline"/>
+                <label string="- Next Number: " attrs="{'invisible': [('next_number', 'in', (0, False))]}" class="oe_inline"/>
+                <field name="next_number" attrs="{'invisible': [('next_number', 'in', (0, False))]}" class="oe_inline"/>
+            </h1>
+        </field>
+    </record>   
 
-        <!-- Tree view -->
-        <record id="view_account_payment_group_tree" model="ir.ui.view">
-            <field name="name">receipt.payment.group.tree</field>
-            <field name="model">account.payment.group</field>
-            <field name="inherit_id" ref="account_payment_group.view_account_payment_group_tree"/>
-            <field name="arch" type="xml">
-                <field name="payment_date" position="after">
-                    <field name="display_name"/>
-                </field>
+    <!-- Search view -->
+    <record id="view_account_payment_group_search" model="ir.ui.view">
+        <field name="name">receipt.payment.group.search</field>
+        <field name="model">account.payment.group</field>
+        <field name="inherit_id" ref="account_payment_group.view_account_payment_group_search"/>
+        <field name="arch" type="xml">
+            <field name="display_name" position="attributes">
+                <attribute name="filter_domain">['|', ('name','ilike',self), ('communication','ilike',self)]</attribute>
             </field>
-        </record>   
-          
-     
-    </data>
-</openerp>
+        </field>
+    </record>   
+
+    <!-- Tree view -->
+    <record id="view_account_payment_group_tree" model="ir.ui.view">
+        <field name="name">receipt.payment.group.tree</field>
+        <field name="model">account.payment.group</field>
+        <field name="inherit_id" ref="account_payment_group.view_account_payment_group_tree"/>
+        <field name="arch" type="xml">
+            <field name="payment_date" position="after">
+                <field name="display_name"/>
+            </field>
+        </field>
+    </record>   
+      
+</odoo>
