@@ -17,7 +17,7 @@ def post_init_hook(cr, registry):
     # on payment groups. So, we dont create payment groups for payments
     # without partner_id
     payments = env['account.payment'].search(
-        [('partner?id', '!=', False)])
+        [('partner_id', '!=', False)])
 
     for payment in payments:
 
