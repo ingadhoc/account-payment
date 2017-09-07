@@ -10,8 +10,14 @@ def post_init_hook(cr, registry):
     Create a payment group for every existint payment
     """
     env = api.Environment(cr, SUPERUSER_ID, {})
+    # payments = env['account.payment'].search(
+    #     [('payment_type', '!=', 'transfer')])
+    # on v10, on reconciling from statements, if not partner is choosen, then
+    # a payment is created with no partner. We still make partners mandatory
+    # on payment groups. So, we dont create payment groups for payments
+    # without partner_id
     payments = env['account.payment'].search(
-        [('payment_type', '!=', 'transfer')])
+        [('partner?id', '!=', False)])
 
     for payment in payments:
 
