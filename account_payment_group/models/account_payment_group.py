@@ -236,6 +236,22 @@ class AccountPaymentGroup(models.Model):
     )
 
     @api.multi
+    def onchange(self, values, field_name, field_onchange):
+        """
+        En este caso es distinto el fix al uso que le damos para domains [0][2]
+        de campos x2many en vista. En este caso lo necesitamos porque la mejora
+        que hicieron de vistas de alguna menra molesta y hace pensar que
+        estamos escribiendo los move lines, con esto se soluciona
+        """
+        for field in field_onchange.keys():
+            if field.startswith((
+                    'to_pay_move_line_ids.',
+                    'debt_move_line_ids.')):
+                del field_onchange[field]
+        return super(AccountPaymentGroup, self).onchange(
+            values, field_name, field_onchange)
+
+    @api.multi
     @api.depends('to_pay_move_line_ids')
     def _compute_has_outstanding(self):
         for rec in self:

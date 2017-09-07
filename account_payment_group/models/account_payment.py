@@ -34,7 +34,8 @@ class AccountPayment(models.Model):
         currency_field='company_currency_id',
     )
     company_currency_id = fields.Many2one(
-        related='company_id.currency_id'
+        related='company_id.currency_id',
+        readonly=True,
     )
 
     @api.one

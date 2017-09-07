@@ -49,8 +49,8 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
         string='Reason',
     )
     company_id = fields.Many2one(
-        'res.company',
-        related='payment_group_id.company_id'
+        related='payment_group_id.company_id',
+        readonly=True,
     )
     account_analytic_id = fields.Many2one(
         'account.analytic.account',
