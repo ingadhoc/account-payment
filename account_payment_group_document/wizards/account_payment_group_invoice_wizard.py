@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 ##############################################################################
 # For copyright and license notices, see __openerp__.py file in root directory
 ##############################################################################
@@ -27,7 +27,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
     )
     available_journal_document_type_ids = fields.Many2many(
         'account.journal.document.type',
-        compute='get_available_journal_document_types',
+        compute='_compute_available_journal_document_types',
         string='Available Journal Document Types',
     )
 
@@ -52,7 +52,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
 
     @api.multi
     @api.depends('journal_id')
-    def get_available_journal_document_types(self):
+    def _compute_available_journal_document_types(self):
         for rec in self:
             journal = rec.journal_id
             if not journal:

@@ -25,13 +25,14 @@ class AccountJournal(models.Model):
             rec._create_checkbook()
         return rec
 
-    @api.one
+    @api.multi
     def _create_checkbook(self):
         """ Create a check sequence for the journal """
-        checkbook = self.checkbook_ids.create({
-            'journal_id': self.id,
-        })
-        checkbook.state = 'active'
+        for rec in self:
+            checkbook = rec.checkbook_ids.create({
+                'journal_id': rec.id,
+            })
+            checkbook.state = 'active'
 
     @api.model
     def _enable_issue_check_on_bank_journals(self):

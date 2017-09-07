@@ -194,26 +194,27 @@ class AccountPayment(models.Model):
             [('check_owner_vat', '=', self.check_owner_vat)],
             limit=1).check_owner_name
 
-    @api.one
+    @api.multi
     @api.onchange('partner_id', 'payment_method_code')
     def onchange_partner_check(self):
-        commercial_partner = self.partner_id.commercial_partner_id
-        if self.payment_method_code == 'received_third_check':
-            self.check_bank_id = (
-                commercial_partner.bank_ids and
-                commercial_partner.bank_ids[0].bank_id or False)
-            self.check_owner_name = commercial_partner.name
-            vat_field = 'vat'
-            # to avoid needed of another module, we add this check to see
-            # if l10n_ar cuit field is available
-            if 'cuit' in commercial_partner._fields:
-                vat_field = 'cuit'
-            self.check_owner_vat = commercial_partner[vat_field]
-        elif self.payment_method_code == 'issue_check':
-            self.check_bank_id = self.journal_id.bank_id
-            self.check_owner_name = False
-            self.check_owner_vat = False
-        # no hace falta else porque no se usa en otros casos
+        for rec in self:
+            commercial_partner = rec.partner_id.commercial_partner_id
+            if rec.payment_method_code == 'received_third_check':
+                rec.check_bank_id = (
+                    commercial_partner.bank_ids and
+                    commercial_partner.bank_ids[0].bank_id or False)
+                rec.check_owner_name = commercial_partner.name
+                vat_field = 'vat'
+                # to avoid needed of another module, we add this check to see
+                # if l10n_ar cuit field is available
+                if 'cuit' in commercial_partner._fields:
+                    vat_field = 'cuit'
+                rec.check_owner_vat = commercial_partner[vat_field]
+            elif rec.payment_method_code == 'issue_check':
+                rec.check_bank_id = rec.journal_id.bank_id
+                rec.check_owner_name = False
+                rec.check_owner_vat = False
+            # no hace falta else porque no se usa en otros casos
 
     @api.onchange('payment_method_code')
     def _onchange_payment_method_code(self):

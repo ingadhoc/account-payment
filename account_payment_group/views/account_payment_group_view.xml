@@ -2,8 +2,7 @@
 <!-- © 2016 ADHOC SA
      License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
 
-<openerp>
-<data>
+<odoo>
 
 <record id="view_account_payment_group_tree" model="ir.ui.view">
     <field name="name">account.payment.group.tree</field>
@@ -257,5 +256,4 @@
 <menuitem action="action_account_payments_group" id="menu_action_account_payments_group_receivable" parent="account.menu_finance_receivables" sequence="20" groups="account.group_account_user"/>
 <menuitem action="action_account_payments_group_payable" id="menu_action_account_payments_group_payable" parent="account.menu_finance_payables" sequence="20" groups="account.group_account_user"/>
 <!-- <menuitem action="action_account_payments_group_payable" id="menu_action_account_payments_group_payable" parent="account.menu_finance_payables" sequence="20" groups="account.group_account_user"/> -->
-</data>
-</openerp>
+</odoo>

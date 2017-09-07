@@ -2,8 +2,7 @@
 <!-- © 2016 ADHOC SA
      License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
 
-<openerp>
-<data>
+<odoo>
 
 <!-- hide default payments menus -->
 <record id="account.menu_action_account_payments_receivable" model="ir.ui.menu">
@@ -233,5 +232,5 @@
     </record>
 
     <menuitem action="action_account_payments_transfer" id="menu_action_account_payments_transfer" parent="account.menu_finance_bank_and_cash" sequence="30" groups="account.group_account_user"/>
-</data>
-</openerp>
+
+</odoo>
