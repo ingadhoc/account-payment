@@ -11,5 +11,4 @@ class ResCompany(models.Model):
     double_validation = fields.Boolean(
         'Double Validation on Payments?',
         help='Use two steps validation on payments to suppliers'
-        # readonly=True,
     )

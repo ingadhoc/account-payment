@@ -23,7 +23,7 @@
     'version': '10.0.1.0.0',
     'category': 'Accounting',
     'summary': 'Accounting, Payment, Check, Third, Issue',
-    'author': 'OpenERP Team de Localizacion Argentina',
+    'author': 'ADHOC SA,Odoo Community Association (OCA)',
     'license': 'AGPL-3',
     'images': [
     ],
