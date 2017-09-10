@@ -37,13 +37,13 @@ class AccountCheckbook(models.Model):
         readonly=True,
         required=True,
         default='deferred',
-        help='* Con cheques corrientes el asiento generado por el pago '
-        'descontará directamente de la cuenta de banco y además la fecha de '
-        'pago no es obligatoria.\n'
-        '* Con cheques diferidos el asiento generado por el pago se hará '
-        'contra la cuenta definida para tal fin en la compañía, luego será '
-        'necesario el asiento de débito que se puede generar desde el extracto'
-        ' o desde el cheque.',
+        help=u'* Con cheques corrientes el asiento generado por el pago '
+        u'descontará directamente de la cuenta de banco y además la fecha de '
+        u'pago no es obligatoria.\n'
+        u'* Con cheques diferidos el asiento generado por el pago se hará '
+        u'contra la cuenta definida para tal fin en la compañía, luego será '
+        u'necesario el asiento de débito que se puede generar desde el '
+        u'extracto o desde el cheque.',
         states={'draft': [('readonly', False)]}
     )
 
