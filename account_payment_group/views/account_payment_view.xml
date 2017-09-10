@@ -231,6 +231,6 @@
         </field>
     </record>
 
-    <menuitem action="action_account_payments_transfer" id="menu_action_account_payments_transfer" parent="account.menu_finance_bank_and_cash" sequence="30" groups="account.group_account_user"/>
+    <menuitem action="action_account_payments_transfer" id="menu_action_account_payments_transfer" parent="account_payment_fix.menu_finance_bank_and_cash" sequence="30" groups="account.group_account_user"/>
 
 </odoo>
