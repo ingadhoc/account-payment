@@ -392,14 +392,24 @@ class AccountPaymentGroup(models.Model):
             'draft': [('readonly', False)],
             'confirmed': [('readonly', False)]},
     )
-    move_line_ids = fields.One2many(
-        related='payment_ids.move_line_ids',
+    move_line_ids = fields.Many2many(
+        'account.move.line',
+        # related o2m a o2m solo toma el primer o2m y le hace o2m, por eso
+        # hacemos computed
+        # related='payment_ids.move_line_ids',
+        compute='_compute_move_lines',
         readonly=True,
         copy=False,
     )
     account_internal_type = fields.Char(
         compute='_compute_account_internal_type'
     )
+
+    @api.multi
+    @api.depends('payment_ids.move_line_ids')
+    def _compute_move_lines(self):
+        for rec in self:
+            rec.move_line_ids = rec.payment_ids.mapped('move_line_ids')
 
     @api.multi
     @api.depends('partner_type')

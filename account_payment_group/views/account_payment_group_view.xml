@@ -55,6 +55,7 @@
             <separator/>
             <filter string="Draft" domain="[('state','=','draft')]" name='state_draft'/>
             <filter string="Posted" domain="[('state','=','posted')]" name='state_posted'/>
+            <filter string="Not Cancelled" domain="[('state','!=','cancel')]" name='not_cancelled'/>
             <!-- <filter string="Sent" domain="[('state','=','sent')]" name='state_sent'/> -->
             <!-- <filter string="Reconciled" domain="[('state','=','reconciled')]"/> -->
             <separator/>
@@ -210,7 +211,7 @@
     <field name="view_type">form</field>
     <field name="view_mode">tree,form,graph</field>
     <!-- <field name="context">{'default_payment_type': 'inbound'}</field> -->
-    <field name="context">{'default_partner_type': 'customer'}</field>
+    <field name="context">{'default_partner_type': 'customer', 'search_default_not_cancelled': 1}</field>
     <!-- <field name="context">{'default_payment_type': 'inbound', 'default_partner_type': 'customer'}</field> -->
     <field name="domain">[('partner_type', '=', 'customer')]</field>
     <!-- <field name="view_id" ref="view_account_payment_group_tree"/> -->
@@ -239,7 +240,7 @@
     <field name="res_model">account.payment.group</field>
     <field name="view_type">form</field>
     <field name="view_mode">tree,form,graph</field>
-    <field name="context">{'default_partner_type': 'supplier'}</field>
+    <field name="context">{'default_partner_type': 'supplier', 'search_default_not_cancelled': 1}</field>
     <!-- <field name="context">{'default_payment_type': 'outbound', 'default_partner_type': 'supplier'}</field> -->
     <!-- <field name="context">{'default_payment_type': 'outbound'}</field> -->
     <field name="domain">[('partner_type', '=', 'supplier')]</field>
