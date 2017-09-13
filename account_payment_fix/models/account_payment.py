@@ -27,6 +27,7 @@ class AccountPayment(models.Model):
     partner_id = fields.Many2one(track_visibility='always')
     journal_id = fields.Many2one(track_visibility='always')
     destination_journal_id = fields.Many2one(track_visibility='always')
+    currency_id = fields.Many2one(track_visibility='always')
 
     # backport
     @api.multi
