@@ -28,8 +28,9 @@
                     <sheet string="Checkbooks">
                         <group>
                             <field name="name" invisible="1"/>
+                            <field name="sequence_id" groups="base.group_no_one"/>
+                            <field name="next_number"/>
                             <field name="issue_check_subtype"/>
-                            <field name="sequence_id"/>
                             <field name="range_to"/>
                             <field name="block_manual_number"/>
                         </group>
