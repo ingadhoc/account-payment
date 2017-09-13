@@ -6,7 +6,8 @@ _logger = logging.getLogger(__name__)
 
 
 class AccountPayment(models.Model):
-    _inherit = 'account.payment'
+    _name = "account.payment"
+    _inherit = ['mail.thread', 'account.payment']
 
     # inicio backport commit d19cf48499b42fbd24e6a7ec283433a577362666
     state = fields.Selection([
@@ -19,7 +20,13 @@ class AccountPayment(models.Model):
         default='draft',
         copy=False,
         string="Status",
+        track_visibility='always',
+
     )
+    amount = fields.Monetary(track_visibility='always')
+    partner_id = fields.Many2one(track_visibility='always')
+    journal_id = fields.Many2one(track_visibility='always')
+    destination_journal_id = fields.Many2one(track_visibility='always')
 
     # backport
     @api.multi

@@ -14,6 +14,7 @@ Several modification, fixes or improovements to payments:
 * We also recreate the menu "Bank and Cash"
 * Allow to make payments of child companies
 * Backport estado cancelado: https://github.com/odoo/odoo/commit/d19cf48499b42fbd24e6a7ec283433a577362666
+* Backport from odoo v11 the chatter on payments.
 
 Installation
 ============
