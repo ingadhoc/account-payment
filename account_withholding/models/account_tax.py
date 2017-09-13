@@ -28,3 +28,15 @@ class AccountTax(models.Model):
     amount = fields.Float(
         required=False
     )
+    withholding_sequence_id = fields.Many2one(
+        'ir.sequence',
+        'Withholding Number Sequence',
+        domain=[('code', '=', 'account.tax.withholding')],
+        context=(
+            "{'default_code': 'account.tax.withholding',"
+            " 'default_name': name}"),
+        help='If no sequence provided then it will be required for you to'
+             ' enter withholding number when registering one.',
+        # 'default_prefix': 'x-', 'default_padding': 8}",
+        copy=False
+    )

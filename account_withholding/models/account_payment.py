@@ -3,7 +3,7 @@
 # For copyright and license notices, see __openerp__.py file in module root
 # directory
 ##############################################################################
-from openerp import models, fields, _
+from openerp import models, fields, api, _
 from openerp.exceptions import UserError
 
 
@@ -51,3 +51,11 @@ class AccountPayment(models.Model):
             #         'Accounts not configured on tax %s' % (
             #             self.tax_withholding_id.name)))
         return vals
+
+    @api.onchange('tax_withholding_id')
+    def onchange_tax_withholding(self):
+        sequence = self.tax_withholding_id.withholding_sequence_id
+        if sequence:
+            # por ahora lo hacemos simple, no como en cheques que si no
+            # se guarda no consume
+            self.withholding_number = sequence.next_by_id()
