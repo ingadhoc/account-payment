@@ -35,6 +35,7 @@ class AccountPaymentGroup(models.Model):
         string='Company',
         required=True,
         index=True,
+        change_default=True,
         default=lambda self: self.env.user.company_id,
         readonly=True,
         states={'draft': [('readonly', False)]},
@@ -47,6 +48,7 @@ class AccountPaymentGroup(models.Model):
     partner_type = fields.Selection(
         [('customer', 'Customer'), ('supplier', 'Vendor')],
         track_visibility='always',
+        change_default=True,
     )
     partner_id = fields.Many2one(
         'res.partner',
@@ -55,6 +57,7 @@ class AccountPaymentGroup(models.Model):
         readonly=True,
         states={'draft': [('readonly', False)]},
         track_visibility='always',
+        change_default=True,
     )
     commercial_partner_id = fields.Many2one(
         related='partner_id.commercial_partner_id',
