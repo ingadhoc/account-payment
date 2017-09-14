@@ -16,5 +16,5 @@
     'installable': True,
     'name': 'Account Payment Fix',
     'test': [],
-    'version': '9.0.1.1.0',
+    'version': '9.0.1.2.0',
 }
