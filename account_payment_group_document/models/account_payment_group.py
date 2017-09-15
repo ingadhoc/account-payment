@@ -90,7 +90,8 @@ class AccountPaymentGroup(models.Model):
         show next number only for payments without number and on draft state
         """
         for payment in self.filtered(
-                lambda x: x.state == 'draft' and x.receiptbook_id):
+            lambda x: x.state == 'draft' and x.receiptbook_id and
+                not x.document_number):
             sequence = payment.receiptbook_id.sequence_id
             # we must check if sequence use date ranges
             if not sequence.use_date_range:
