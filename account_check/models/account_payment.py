@@ -167,7 +167,8 @@ class AccountPayment(models.Model):
                     check_name = False
                 elif sequence:
                     if rec.check_number != sequence.number_next_actual:
-                        sequence.write(
+                        # write with sudo for access rights over sequence
+                        sequence.sudo().write(
                             {'number_next_actual': rec.check_number})
                     check_name = rec.checkbook_id.sequence_id.next_by_id()
                 else:
