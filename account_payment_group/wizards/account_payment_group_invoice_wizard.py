@@ -90,6 +90,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
             'date_invoice': self.date_invoice,
             'origin': _('Payment id %s') % payment_group.id,
             'journal_id': self.journal_id.id,
+            'user_id': payment_group.partner_id.user_id.id,
             'partner_id': payment_group.partner_id.id,
             'type': invoice_type,
             # 'invoice_line_ids': [('invoice_type')],
