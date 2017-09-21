@@ -319,9 +319,10 @@ class AccountPaymentGroup(models.Model):
     @api.multi
     @api.depends('company_id.double_validation', 'partner_type')
     def _compute_payment_subtype(self):
+        force_simple = self._context.get('force_simple')
         for rec in self:
             if (rec.partner_type == 'supplier' and
-                    rec.company_id.double_validation):
+                    rec.company_id.double_validation and not force_simple):
                 payment_subtype = 'double_validation'
             else:
                 payment_subtype = 'simple'

@@ -168,6 +168,10 @@ class AccountPaymentGroup(models.Model):
         for rec in self:
             # TODO ver si lo agregamos a las transfers o no
             if rec.localization:
+                # si no ha receiptbook no exigimos el numero, esto por ej. lo
+                # usa sipreco
+                if not rec.receiptbook_id:
+                    continue
                 if not rec.document_number:
                     if not rec.receiptbook_id.sequence_id:
                         raise UserError(_(
