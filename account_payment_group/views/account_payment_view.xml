@@ -36,7 +36,8 @@
             <!-- <field name="payment_date"/> -->
             <field name="name"/>
             <field name="journal_id"/>
-            <field name="payment_method_id"/>
+            <!-- <field name="payment_method_id"/> -->
+            <field name="payment_method_description"/>
             <!-- sum de este amount no tiene sentido por que puede ser distintas monedas -->
             <field name="amount"/>
             <field name="amount_company_currency" sum="Total"/>

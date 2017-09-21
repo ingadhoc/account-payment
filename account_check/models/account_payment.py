@@ -134,6 +134,21 @@ class AccountPayment(models.Model):
                     'delivered_third_check']:
                 rec.check_type = 'third_check'
 
+    @api.multi
+    def _compute_payment_method_description(self):
+        check_payments = self.filtered(
+            lambda x: x.payment_method_code in
+            ['issue_check', 'received_third_check', 'delivered_third_check'])
+        for rec in check_payments:
+            if rec.check_ids:
+                checks_desc = ', '.join(rec.check_ids.mapped('name'))
+            else:
+                checks_desc = rec.check_name
+            name = "%s: %s" % (rec.payment_method_id.display_name, checks_desc)
+            rec.payment_method_description = name
+        return super(
+            AccountPayment,
+            (self - check_payments))._compute_payment_method_description()
 
 # on change methods
 

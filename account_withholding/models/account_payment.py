@@ -59,3 +59,14 @@ class AccountPayment(models.Model):
             # por ahora lo hacemos simple, no como en cheques que si no
             # se guarda no consume
             self.withholding_number = sequence.next_by_id()
+
+    @api.multi
+    def _compute_payment_method_description(self):
+        payments = self.filtered(
+            lambda x: x.payment_method_code == 'withholding')
+        for rec in payments:
+            name = rec.tax_withholding_id.name or rec.payment_method_id.name
+            rec.payment_method_description = name
+        return super(
+            AccountPayment,
+            (self - payments))._compute_payment_method_description()

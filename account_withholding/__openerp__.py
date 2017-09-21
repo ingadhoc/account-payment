@@ -30,6 +30,7 @@
     ],
     'depends': [
         'account',
+        'account_payment_fix',  # for payment method description
     ],
     'installable': True,
     'name': 'Withholdings on Payments',

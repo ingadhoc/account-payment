@@ -28,6 +28,18 @@ class AccountPayment(models.Model):
     journal_id = fields.Many2one(track_visibility='always')
     destination_journal_id = fields.Many2one(track_visibility='always')
     currency_id = fields.Many2one(track_visibility='always')
+    # campo a ser extendido y mostrar un nombre detemrinado en las lineas de
+    # pago de un payment group o donde se desee (por ej. con cheque, retención,
+    # etc)
+    payment_method_description = fields.Char(
+        compute='_compute_payment_method_description',
+        string='Payment Method',
+    )
+
+    @api.multi
+    def _compute_payment_method_description(self):
+        for rec in self:
+            rec.payment_method_description = rec.payment_method_id.display_name
 
     # backport
     @api.multi
