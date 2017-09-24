@@ -29,7 +29,11 @@ class AccountCheckbook(models.Model):
     )
     next_number = fields.Integer(
         'Next Number',
-        related='sequence_id.number_next_actual',
+        compute='_compute_next_number',
+        inverse='_inverse_next_number',
+        # usamos compute para poder usar sudo cuando se setea secuencia sin
+        # necesidad de dar permiso en ir.sequence
+        # related='sequence_id.number_next_actual',
     )
     issue_check_subtype = fields.Selection(
         [('deferred', 'Deferred'), ('currents', 'Currents')],
@@ -46,7 +50,6 @@ class AccountCheckbook(models.Model):
         ' o desde el cheque.',
         states={'draft': [('readonly', False)]}
     )
-
     journal_id = fields.Many2one(
         'account.journal', 'Journal',
         help='Journal where it is going to be used',
@@ -85,6 +88,17 @@ class AccountCheckbook(models.Model):
         help='Block user to enter manually another number than the suggested'
     )
 
+    @api.multi
+    @api.depends('sequence_id.number_next_actual')
+    def _compute_next_number(self):
+        for rec in self:
+            rec.next_number = rec.sequence_id.number_next_actual
+
+    @api.multi
+    def _inverse_next_number(self):
+        for rec in self.filtered('sequence_id'):
+            rec.sequence_id.sudo().number_next_actual = rec.next_number
+
     @api.model
     def create(self, vals):
         rec = super(AccountCheckbook, self).create(vals)
@@ -101,6 +115,8 @@ class AccountCheckbook(models.Model):
             'padding': 8,
             'number_increment': 1,
             'code': 'issue_check',
+            # si no lo pasamos, en la creacion se setea 1
+            'number_next_actual': self.next_number,
             'company_id': self.journal_id.company_id.id,
         })
 
