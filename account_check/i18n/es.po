@@ -4,14 +4,13 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
-# Gonzalo Ruzafa <gr@ingadhoc.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-09-08 17:48+0000\n"
-"PO-Revision-Date: 2017-09-08 17:48+0000\n"
-"Last-Translator: Gonzalo Ruzafa <gr@ingadhoc.com>, 2017\n"
+"POT-Creation-Date: 2017-09-24 22:41+0000\n"
+"PO-Revision-Date: 2017-09-24 22:41+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -20,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: account_check
-#: code:addons/account_check/models/account_checkbook.py:115
+#: code:addons/account_check/models/account_checkbook.py:131
 #, python-format
 msgid " up to %s"
 msgstr "hasta %s"
@@ -238,7 +237,7 @@ msgstr "Fecha de pago del Cheque"
 
 #. module: account_check
 #: code:addons/account_check/models/account_check.py:253
-#: code:addons/account_check/models/account_payment.py:185
+#: code:addons/account_check/models/account_payment.py:201
 #, python-format
 msgid "Check Payment Date must be greater than Issue Date"
 msgstr "La fecha de pago del Cheque debe ser mayor a la fecha de emisión"
@@ -352,7 +351,7 @@ msgid "Currents"
 msgstr "Corrientes"
 
 #. module: account_check
-#: code:addons/account_check/models/account_checkbook.py:113
+#: code:addons/account_check/models/account_checkbook.py:129
 #, python-format
 msgid "Currents Checks"
 msgstr "Cheques Corrientes"
@@ -396,7 +395,7 @@ msgid "Deferred Check Account"
 msgstr "Cuenta de Cheque Diferido"
 
 #. module: account_check
-#: code:addons/account_check/models/account_checkbook.py:111
+#: code:addons/account_check/models/account_checkbook.py:127
 #, python-format
 msgid "Deferred Checks"
 msgstr "Cheques Diferidos"
@@ -413,7 +412,7 @@ msgid "Deliver"
 msgstr "Endosar"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:387
+#: code:addons/account_check/models/account_payment.py:403
 #, python-format
 msgid "Deliver checks %s"
 msgstr "Entregar cheques %s"
@@ -429,7 +428,7 @@ msgid "Deposit"
 msgstr "Depositar"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:369
+#: code:addons/account_check/models/account_payment.py:385
 #, python-format
 msgid "Deposit checks %s"
 msgstr "Depositar cheques %s"
@@ -478,7 +477,7 @@ msgid "Hand"
 msgstr "Entregar"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:416
+#: code:addons/account_check/models/account_payment.py:432
 #, python-format
 msgid "Hand check %s"
 msgstr "Cheque entregado %s"
@@ -687,15 +686,6 @@ msgid "Next Number"
 msgstr "Próximo número"
 
 #. module: account_check
-#: model:ir.model.fields,help:account_check.field_account_checkbook_next_number
-msgid ""
-"Next number that will be used. This number can be incremented frequently so "
-"the displayed value might already be obsolete"
-msgstr ""
-"Próximo número que será utilizado. Este número puede ser incrementado "
-"frecuentemente por lo que que el valor mostrado capaz que ya esté obsoleto."
-
-#. module: account_check
 #: code:addons/account_check/models/res_company.py:47
 #, python-format
 msgid "No checks %s account defined for company %s"
@@ -810,7 +800,7 @@ msgid "Receive"
 msgstr "Recibir"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:312
+#: code:addons/account_check/models/account_payment.py:328
 #, python-format
 msgid "Receive check %s"
 msgstr "Cheque recibido %s"
@@ -886,7 +876,7 @@ msgid "Sell Rejection"
 msgstr "Rechazo de la Venta"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:356
+#: code:addons/account_check/models/account_payment.py:372
 #, python-format
 msgid "Sell check %s"
 msgstr "Cheque vendido %s"
@@ -976,7 +966,7 @@ msgid "Third Checks"
 msgstr "Cheque de Terceros"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:443
+#: code:addons/account_check/models/account_payment.py:459
 #, python-format
 msgid ""
 "This operatios is not implemented for checks:\n"
@@ -1012,7 +1002,7 @@ msgid "Transfer"
 msgstr "transferir"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:344
+#: code:addons/account_check/models/account_payment.py:360
 #, python-format
 msgid "Transfer checks %s"
 msgstr "Transferir Cheques %s"
@@ -1049,7 +1039,7 @@ msgid "Used"
 msgstr "Usado"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:429
+#: code:addons/account_check/models/account_payment.py:445
 #, python-format
 msgid "Withdraw with checks %s"
 msgstr "Extracción con Cheques %s"
@@ -1065,7 +1055,7 @@ msgid "Withdrawed"
 msgstr "Retirado"
 
 #. module: account_check
-#: code:addons/account_check/models/account_checkbook.py:122
+#: code:addons/account_check/models/account_checkbook.py:138
 #, python-format
 msgid "You can drop a checkbook if it has been used on checks!"
 msgstr "¡No puede eliminar una chequera si la ha utilizado para cheques!"
