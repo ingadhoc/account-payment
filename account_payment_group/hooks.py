@@ -11,7 +11,7 @@ except ImportError:
     openupgrade = None
 import logging
 from openerp.api import Environment
-# from openerp.exceptions import ValidationError
+from openerp.exceptions import ValidationError
 _logger = logging.getLogger(__name__)
 
 
@@ -119,16 +119,18 @@ def restore_canceled_payments_state(cr, registry):
             payment = env['account.payment'].search(domain)
 
         if len(payment) != 1:
+            # TODO borrar, al final lo revertimos porque en realidad en cheques
+            # si es necesario que sea unico para poder mapear
             # al final preferimos dar error de log y no parar upgrade por esto
             # que no es crítico
-            _logger.warning(
-                'Se encontro mas de un payment o ninguno!!! \n'
-                '* Payments: %s\n'
-                '* Domain: %s' % (payment, domain))
-            # raise ValidationError(
+            # _logger.warning(
             #     'Se encontro mas de un payment o ninguno!!! \n'
             #     '* Payments: %s\n'
             #     '* Domain: %s' % (payment, domain))
+            raise ValidationError(
+                'Se encontro mas de un payment o ninguno!!! \n'
+                '* Payments: %s\n'
+                '* Domain: %s' % (payment, domain))
 
         _logger.info('Cancelando payment %s' % payment)
         payment.state = 'cancel'
