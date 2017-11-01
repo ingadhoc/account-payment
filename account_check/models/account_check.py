@@ -158,6 +158,7 @@ class AccountCheck(models.Model):
     partner_id = fields.Many2one(
         related='operation_ids.partner_id',
         readonly=True,
+        store=True
     )
     state = fields.Selection([
         ('draft', 'Draft'),
