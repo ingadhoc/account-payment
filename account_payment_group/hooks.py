@@ -80,11 +80,12 @@ def restore_canceled_payments_state(cr, registry):
     restaurar
     """
     env = Environment(cr, 1, {})
+    # solo buscamos amount != 0.0 porque odoo borra los pagos en 0
     cr.execute("""
         SELECT partner_id, name, create_date, create_uid,
             reference, state, amount
         FROM account_voucher_copy
-        WHERE state = 'cancel'
+        WHERE state = 'cancel' and amount != 0.0
         """,)
     reads = cr.fetchall()
     for read in reads:
