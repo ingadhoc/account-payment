@@ -3,7 +3,7 @@
 # For copyright and license notices, see __openerp__.py file in module root
 # directory
 ##############################################################################
-from openerp import models, api
+from openerp import models, api, _
 from openerp.exceptions import ValidationError
 import logging
 _logger = logging.getLogger(__name__)
@@ -50,12 +50,13 @@ class AccountBankStatementLine(models.Model):
             payment_aml_rec=payment_aml_rec, new_aml_dicts=new_aml_dicts)
         if check and check.state == 'handed':
             if check.journal_id != self.statement_id.journal_id:
-                raise ValidationError(
-                    'Para registrar el débito de un cheque desde el extracto, '
-                    'el diario del cheque y del extracto deben ser los mismos')
+                raise ValidationError(_(
+                    'Para registrar el debito de un cheque desde el extracto, '
+                    'el diario del cheque y del extracto deben ser los mismos'
+                ))
             if len(moves) != 1:
-                raise ValidationError(
-                    'Para registrar el débito de un cheque desde el extracto '
-                    'solo debe haber una linea de contrapartida')
+                raise ValidationError(_(
+                    'Para registrar el debito de un cheque desde el extracto '
+                    'solo debe haber una linea de contrapartida'))
             check._add_operation('debited', moves, date=moves.date)
         return moves

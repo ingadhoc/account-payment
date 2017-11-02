@@ -128,10 +128,10 @@ def restore_canceled_payments_state(cr, registry):
             #     'Se encontro mas de un payment o ninguno!!! \n'
             #     '* Payments: %s\n'
             #     '* Domain: %s' % (payment, domain))
-            raise ValidationError(
+            raise ValidationError(_(
                 'Se encontro mas de un payment o ninguno!!! \n'
                 '* Payments: %s\n'
-                '* Domain: %s' % (payment, domain))
+                '* Domain: %s' % (payment, domain)))
 
         _logger.info('Cancelando payment %s' % payment)
         payment.state = 'cancel'

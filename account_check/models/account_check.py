@@ -419,8 +419,8 @@ class AccountCheck(models.Model):
     def unlink(self):
         for rec in self:
             if rec.state not in ('draft', 'cancel'):
-                raise ValidationError(
-                    _('The Check must be in draft state for unlink !'))
+                raise ValidationError(_(
+                    'The Check must be in draft state for unlink !'))
         return super(AccountCheck, self).unlink()
 
 # checks operations from checks
@@ -459,10 +459,10 @@ class AccountCheck(models.Model):
             move_lines = move_lines.filtered(
                 lambda x: x.account_id == debit_account)
             if len(move_lines) != 2:
-                raise ValidationError((
-                    'Se encontraron mas o menos que dos apuntes contables '
-                    'para conciliar en el débito del cheque.\n'
-                    '*Apuntes contables: %s') % move_lines.ids)
+                raise ValidationError(_(
+                    'We have found more or less thant two journal items to '
+                    'reconcile with check debit.\n'
+                    '*Journal items: %s') % move_lines.ids)
             move_lines.reconcile()
 
     @api.model
@@ -493,7 +493,7 @@ class AccountCheck(models.Model):
             else:
                 account |= rec.company_id._get_check_account('holding')
         if len(account) != 1:
-            raise ValidationError()
+            raise ValidationError(_('Error not specified'))
         return account
 
     @api.model
@@ -535,7 +535,7 @@ class AccountCheck(models.Model):
             limit=1)
         if partner_required:
             if not op.partner_id:
-                raise ValidationError((
+                raise ValidationError(_(
                     'The %s (id %s) operation has no partner linked.'
                     'You will need to do it manually.') % (operation, op.id))
         return op
@@ -570,7 +570,7 @@ class AccountCheck(models.Model):
             elif operation.origin._name == 'account.move':
                 journal = operation.origin.journal_id
             else:
-                raise ValidationError((
+                raise ValidationError(_(
                     'The deposit operation is not linked to a payment.'
                     'If you want to reject you need to do it manually.'))
             vals = self.get_bank_vals(

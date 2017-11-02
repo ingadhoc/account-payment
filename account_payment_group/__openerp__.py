@@ -6,7 +6,7 @@
     "version": "9.0.1.23.0",
     "category": "Accounting",
     "website": "www.adhoc.com.ar",
-    "author": "ADHOC SA, Odoo Community Association (OCA)",
+    "author": "ADHOC SA,Odoo Community Association (OCA)",
     "license": "AGPL-3",
     "application": False,
     "installable": True,
