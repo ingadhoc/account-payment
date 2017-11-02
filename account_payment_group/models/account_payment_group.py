@@ -41,7 +41,7 @@ class AccountPaymentGroup(models.Model):
         states={'draft': [('readonly', False)]},
     )
     payment_methods = fields.Char(
-        string='Métodos de pago',
+        string='Payment Methods',
         compute='_compute_payment_methods',
         search='_search_payment_methods',
     )

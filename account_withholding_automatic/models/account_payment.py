@@ -20,12 +20,12 @@ class AccountPayment(models.Model):
         readonly=True,
     )
     withholdable_invoiced_amount = fields.Float(
-        'Importe imputado sujeto a retención',
+        'Importe imputado sujeto a retencion',
         # compute='get_withholding_data',
         readonly=True,
     )
     withholdable_advanced_amount = fields.Float(
-        'Importe a cuenta sujeto a retención',
+        'Importe a cuenta sujeto a retencion',
         # compute='get_withholding_data',
         readonly=True,
     )

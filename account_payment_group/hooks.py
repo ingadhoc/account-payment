@@ -11,6 +11,7 @@ except ImportError:
     openupgrade = None
 import logging
 from openerp.api import Environment
+from openerp import _
 from openerp.exceptions import ValidationError
 _logger = logging.getLogger(__name__)
 
