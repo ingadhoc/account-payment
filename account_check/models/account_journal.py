@@ -3,7 +3,7 @@
 # For copyright and license notices, see __openerp__.py file in module root
 # directory
 ##############################################################################
-from openerp import models, fields, api
+from openerp import models, fields, api, _
 from openerp.tools.misc import formatLang
 from ast import literal_eval
 
@@ -78,8 +78,18 @@ class AccountJournal(models.Model):
             domain_handed_issue_checks)
         holding_checks = self.env['account.check'].search(
             domain_holding_third_checks)
+
+        domain_checks_to_print = [
+            ('journal_id', '=', self.id),
+            ('payment_method_id.code', '=', 'check_printing'),
+            ('state', '=', 'draft')
+            # ('state', '=', 'posted')
+        ]
+
         return dict(
             super(AccountJournal, self).get_journal_dashboard_datas(),
+            num_checks_to_print=len(
+                self.env['account.payment'].search(domain_checks_to_print)),
             num_holding_third_checks=len(holding_checks),
             show_third_checks=(
                 'received_third_check' in
@@ -111,3 +121,21 @@ class AccountJournal(models.Model):
         context['search_default_journal_id'] = self.id
         action_read['context'] = context
         return action_read
+
+    @api.multi
+    def action_checks_to_print(self):
+        return {
+            'name': _('Checks to Print'),
+            'type': 'ir.actions.act_window',
+            'view_mode': 'list,form,graph',
+            'res_model': 'account.payment',
+            'context': dict(
+                self.env.context,
+                search_default_checks_to_send=1,
+                journal_id=self.id,
+                default_journal_id=self.id,
+                default_payment_type='outbound',
+                default_payment_method_id=self.env.ref(
+                    'account_check.account_payment_method_check').id,
+            ),
+        }
