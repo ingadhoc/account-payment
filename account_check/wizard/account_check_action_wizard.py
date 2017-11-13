@@ -27,7 +27,12 @@ class AccountCheckActionWizard(models.TransientModel):
                 'claim', 'bank_debit', 'reject', 'customer_return']:
             raise ValidationError(_(
                 'Action %s not supported on checks') % self.action_type)
-        check = self.env['account.check'].browse(
-            self._context.get('active_id'))
-        return getattr(
-            check.with_context(action_date=self.date), self.action_type)()
+        checks = self.env['account.check'].browse(
+            self._context.get('active_ids'))
+        for check in checks:
+            res = getattr(
+                check.with_context(action_date=self.date), self.action_type)()
+        if len(checks) == 1:
+            return res
+        else:
+            return True
