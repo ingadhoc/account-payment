@@ -30,7 +30,11 @@ class AccountPaymentGroup(models.Model):
         for rec in self:
             if rec.partner_type != 'supplier':
                 continue
-            self.env['account.tax'].search([
+            # limpiamos el type por si se paga desde factura ya que el en ese
+            # caso viene in_invoice o out_invoice y en search de tax filtrar
+            # por impuestos de venta y compra (y no los nuestros de pagos
+            # y cobros)
+            self.env['account.tax'].with_context(type=None).search([
                 ('type_tax_use', '=', rec.partner_type),
                 ('company_id', '=', rec.company_id.id),
             ]).create_payment_withholdings(rec)
