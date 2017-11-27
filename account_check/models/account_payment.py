@@ -115,13 +115,19 @@ class AccountPayment(models.Model):
     check_type = fields.Char(
         compute='_compute_check_type',
     )
-    checkbook_block_manual_number = fields.Boolean(
-        related='checkbook_id.block_manual_number',
-    )
-    check_number_readonly = fields.Integer(
-        related='check_number',
+    checkbook_numerate_on_printing = fields.Boolean(
+        related='checkbook_id.numerate_on_printing',
         readonly=True,
     )
+    # TODO borrar, esto estaria depreciado
+    # checkbook_block_manual_number = fields.Boolean(
+    #     related='checkbook_id.block_manual_number',
+    #     readonly=True,
+    # )
+    # check_number_readonly = fields.Integer(
+    #     related='check_number',
+    #     readonly=True,
+    # )
 
     @api.multi
     @api.depends('payment_method_code')
@@ -245,9 +251,10 @@ class AccountPayment(models.Model):
 
     @api.onchange('checkbook_id')
     def onchange_checkbook(self):
-        if self.checkbook_id:
+        if self.checkbook_id and not self.checkbook_id.numerate_on_printing:
             self.check_number = self.checkbook_id.next_number
-
+        else:
+            self.check_number = False
 
 # post methods
     @api.multi
@@ -463,6 +470,17 @@ class AccountPayment(models.Model):
                     rec.destination_journal_id.type)))
         return vals
 
+    @api.multi
+    def post(self):
+        for rec in self.filtered(
+                lambda x: x.payment_method_code == 'issue_check'):
+            if not rec.check_number or not rec.check_name:
+                raise UserError(
+                    'Para mandar a proceso de firma debe definir número '
+                    'de cheque en cada línea de pago.\n'
+                    '* ID del pago: %s' % rec.id)
+        return super(AccountPayment, self).post()
+
     def _get_liquidity_move_line_vals(self, amount):
         vals = super(AccountPayment, self)._get_liquidity_move_line_vals(
             amount)
@@ -471,40 +489,47 @@ class AccountPayment(models.Model):
 
     @api.multi
     def do_print_checks(self):
-        us_check_layout = self[0].company_id.us_check_layout
-        if us_check_layout != 'disabled':
-            self.write({'state': 'sent'})
-            return self.env['report'].get_action(self, us_check_layout)
-        return super(account_payment, self).do_print_checks()
+        # si cambiamos nombre de check_report tener en cuenta en sipreco
+        check_report = self.env['report'].get_action(self, 'check_report')
+        # ya el buscar el reporte da el error solo
+        # if not check_report:
+        #     raise UserError(_(
+        #       "There is no check report configured.\nMake sure to configure "
+        #       "a check report named 'account_check_report'."))
+        return check_report
 
     @api.multi
     def print_checks(self):
-        if len(self.mapped('journal_id')) != 1:
+        if len(self.mapped('checkbook_id')) != 1:
             raise UserError(_(
                 "In order to print multiple checks at once, they must belong "
-                "to the same bank journal."))
-
+                "to the same checkbook."))
         # por ahora preferimos no postearlos
         # self.filtered(lambda r: r.state == 'draft').post()
 
-        if not self[0].journal_id.check_manual_sequencing:
-            # The wizard asks for the number printed on the first pre-printed check
-            # so payments are attributed the number of the check the'll be printed on.
-            last_printed_check = self.search([
-                ('journal_id', '=', self[0].journal_id.id),
-                ('check_number', '!=', 0)], order="check_number desc", limit=1)
-            next_check_number = last_printed_check and last_printed_check.check_number + 1 or 1
-            return {
-                'name': _('Print Pre-numbered Checks'),
-                'type': 'ir.actions.act_window',
-                'res_model': 'print.prenumbered.checks',
-                'view_type': 'form',
-                'view_mode': 'form',
-                'target': 'new',
-                'context': {
-                    'payment_ids': self.ids,
-                    'default_next_check_number': next_check_number,
+        # si numerar al imprimir entonces llamamos al wizard
+        if self[0].checkbook_id.numerate_on_printing:
+            if all([not x.check_name for x in self]):
+                next_check_number = self[0].checkbook_id.next_number
+                return {
+                    'name': _('Print Pre-numbered Checks'),
+                    'type': 'ir.actions.act_window',
+                    'res_model': 'print.prenumbered.checks',
+                    'view_type': 'form',
+                    'view_mode': 'form',
+                    'target': 'new',
+                    'context': {
+                        'payment_ids': self.ids,
+                        'default_next_check_number': next_check_number,
+                    }
                 }
-            }
+            # si ya están enumerados mandamos a imprimir directamente
+            elif all([x.check_name for x in self]):
+                return self.do_print_checks()
+            else:
+                raise UserError(_(
+                    'Está queriendo imprimir y enumerar cheques que ya han '
+                    'sido numerados. Seleccione solo cheques numerados o solo'
+                    ' cheques sin número.'))
         else:
             return self.do_print_checks()

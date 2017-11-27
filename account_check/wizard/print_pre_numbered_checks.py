@@ -17,4 +17,5 @@ class print_pre_numbered_checks(models.TransientModel):
         for payment in payments:
             payment.check_number = check_number
             check_number += 1
+            payment.change_check_number()
         return payments.do_print_checks()

@@ -79,17 +79,16 @@ class AccountJournal(models.Model):
         holding_checks = self.env['account.check'].search(
             domain_holding_third_checks)
 
-        domain_checks_to_print = [
+        domain_checks_to_numerate = [
             ('journal_id', '=', self.id),
-            ('payment_method_id.code', '=', 'check_printing'),
-            ('state', '=', 'draft')
-            # ('state', '=', 'posted')
+            ('payment_method_id.code', '=', 'issue_check'),
+            ('state', '=', 'draft'),
+            ('check_name', '=', False),
         ]
-
         return dict(
             super(AccountJournal, self).get_journal_dashboard_datas(),
-            num_checks_to_print=len(
-                self.env['account.payment'].search(domain_checks_to_print)),
+            num_checks_to_numerate=len(
+                self.env['account.payment'].search(domain_checks_to_numerate)),
             num_holding_third_checks=len(holding_checks),
             show_third_checks=(
                 'received_third_check' in
@@ -123,19 +122,19 @@ class AccountJournal(models.Model):
         return action_read
 
     @api.multi
-    def action_checks_to_print(self):
+    def action_checks_to_numerate(self):
         return {
-            'name': _('Checks to Print'),
+            'name': _('Checks to Print and Numerate'),
             'type': 'ir.actions.act_window',
             'view_mode': 'list,form,graph',
             'res_model': 'account.payment',
             'context': dict(
                 self.env.context,
-                search_default_checks_to_send=1,
+                search_default_checks_to_numerate=1,
                 journal_id=self.id,
                 default_journal_id=self.id,
                 default_payment_type='outbound',
                 default_payment_method_id=self.env.ref(
-                    'account_check.account_payment_method_check').id,
+                    'account_check.account_payment_method_issue_check').id,
             ),
         }

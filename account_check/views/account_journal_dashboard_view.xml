@@ -38,6 +38,15 @@
                                 <span><t t-esc="dashboard.handed_amount"/></span>
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <a type="object" name="action_checks_to_numerate">
+                                    <t t-esc="dashboard.num_checks_to_numerate"/>
+                                    <t t-if="dashboard.num_checks_to_numerate == 1">Check to print and numerate</t>
+                                    <t t-if="dashboard.num_checks_to_numerate != 1">Checks to print and numerate</t>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </xpath>
             </field>
