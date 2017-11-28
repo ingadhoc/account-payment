@@ -79,16 +79,18 @@ class AccountJournal(models.Model):
         holding_checks = self.env['account.check'].search(
             domain_holding_third_checks)
 
-        domain_checks_to_numerate = [
-            ('journal_id', '=', self.id),
-            ('payment_method_id.code', '=', 'issue_check'),
-            ('state', '=', 'draft'),
-            ('check_name', '=', False),
-        ]
+        num_checks_to_numerate = False
+        if self.env['ir.actions.report.xml'].search(
+                [('report_name', '=', 'check_report')]):
+            num_checks_to_numerate = self.env['account.payment'].search_count([
+                ('journal_id', '=', self.id),
+                ('payment_method_id.code', '=', 'issue_check'),
+                ('state', '=', 'draft'),
+                ('check_name', '=', False),
+            ])
         return dict(
             super(AccountJournal, self).get_journal_dashboard_datas(),
-            num_checks_to_numerate=len(
-                self.env['account.payment'].search(domain_checks_to_numerate)),
+            num_checks_to_numerate=num_checks_to_numerate,
             num_holding_third_checks=len(holding_checks),
             show_third_checks=(
                 'received_third_check' in
