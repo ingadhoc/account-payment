@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    'author': 'ADHOC SA',
+    'author': 'ADHOC SA,Odoo Community Association (OCA)',
     'website': 'www.adhoc.com.ar',
     'license': 'AGPL-3',
     'category': 'Accounting & Finance',
@@ -16,5 +16,5 @@
     'installable': True,
     'name': 'Account Payment Fix',
     'test': [],
-    'version': '9.0.1.2.0',
+    'version': '9.0.1.3.0',
 }

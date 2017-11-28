@@ -81,12 +81,21 @@ class AccountCheckbook(models.Model):
         default='draft',
         copy=False
     )
+    # TODO depreciar esta funcionalidad que no estamos usando
     block_manual_number = fields.Boolean(
         default=True,
         string='Block manual number?',
         # readonly=True,
         # states={'draft': [('readonly', False)]},
         help='Block user to enter manually another number than the suggested'
+    )
+    numerate_on_printing = fields.Boolean(
+        readonly=True,
+        default=True,
+        string='Numerate on printing?',
+        states={'draft': [('readonly', False)]},
+        help='No number will be assigne while creating payment, number will be'
+        'assigned after printing check.'
     )
 
     @api.multi
