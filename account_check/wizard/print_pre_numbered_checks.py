@@ -3,7 +3,7 @@
 from openerp import api, fields, models
 
 
-class print_pre_numbered_checks(models.TransientModel):
+class PrintPreNumberedChecks(models.TransientModel):
     _name = 'print.prenumbered.checks'
     _description = 'Print Pre-numbered Checks'
 

@@ -475,10 +475,10 @@ class AccountPayment(models.Model):
         for rec in self.filtered(
                 lambda x: x.payment_method_code == 'issue_check'):
             if not rec.check_number or not rec.check_name:
-                raise UserError(
+                raise UserError(_(
                     'Para mandar a proceso de firma debe definir número '
                     'de cheque en cada línea de pago.\n'
-                    '* ID del pago: %s' % rec.id)
+                    '* ID del pago: %s') % rec.id)
         return super(AccountPayment, self).post()
 
     def _get_liquidity_move_line_vals(self, amount):
