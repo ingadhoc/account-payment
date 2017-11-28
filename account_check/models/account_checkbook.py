@@ -20,12 +20,13 @@ class AccountCheckbook(models.Model):
     sequence_id = fields.Many2one(
         'ir.sequence',
         'Sequence',
-        readonly=True,
         copy=False,
         domain=[('code', '=', 'issue_check')],
         help="Checks numbering sequence.",
         context={'default_code': 'issue_check'},
-        states={'draft': [('readonly', False)]},
+        # sacamos lo de states ya que molesta más que ayudar
+        # readonly=True,
+        # states={'draft': [('readonly', False)]},
     )
     next_number = fields.Integer(
         'Next Number',
@@ -38,7 +39,6 @@ class AccountCheckbook(models.Model):
     issue_check_subtype = fields.Selection(
         [('deferred', 'Deferred'), ('currents', 'Currents')],
         string='Issue Check Subtype',
-        readonly=True,
         required=True,
         default='deferred',
         help='* Con cheques corrientes el asiento generado por el pago '
@@ -48,7 +48,8 @@ class AccountCheckbook(models.Model):
         'contra la cuenta definida para tal fin en la compañía, luego será '
         'necesario el asiento de débito que se puede generar desde el extracto'
         ' o desde el cheque.',
-        states={'draft': [('readonly', False)]}
+        # readonly=True,
+        # states={'draft': [('readonly', False)]}
     )
     journal_id = fields.Many2one(
         'account.journal', 'Journal',
@@ -62,8 +63,8 @@ class AccountCheckbook(models.Model):
     )
     range_to = fields.Integer(
         'To Number',
-        readonly=True,
-        states={'draft': [('readonly', False)]},
+        # readonly=True,
+        # states={'draft': [('readonly', False)]},
         help='If you set a number here, this checkbook will be automatically'
         ' set as used when this number is raised.'
     )
@@ -81,10 +82,10 @@ class AccountCheckbook(models.Model):
         copy=False
     )
     block_manual_number = fields.Boolean(
-        readonly=True,
         default=True,
         string='Block manual number?',
-        states={'draft': [('readonly', False)]},
+        # readonly=True,
+        # states={'draft': [('readonly', False)]},
         help='Block user to enter manually another number than the suggested'
     )
 
