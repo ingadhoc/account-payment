@@ -166,24 +166,26 @@ class AccountPaymentGroup(models.Model):
     @api.multi
     def post(self):
         for rec in self:
-            # TODO ver si lo agregamos a las transfers o no
-            if rec.localization:
-                # si no ha receiptbook no exigimos el numero, esto por ej. lo
-                # usa sipreco
-                if not rec.receiptbook_id:
-                    continue
-                if not rec.document_number:
-                    if not rec.receiptbook_id.sequence_id:
-                        raise UserError(_(
-                            'Error!. Please define sequence on the receiptbook'
-                            ' related documents to this payment or set the '
-                            'document number.'))
-                    rec.document_number = (
-                        rec.receiptbook_id.sequence_id.next_by_id())
+            # si no ha receiptbook no exigimos el numero, esto por ej. lo
+            # usa sipreco. Ademas limpiamos receiptbooks que se pueden
+            # haber seteado en el pago
+            if not rec.receiptbook_id:
                 rec.payment_ids.write({
-                    'document_number': rec.document_number,
-                    'receiptbook_id': rec.receiptbook_id.id,
+                    'receiptbook_id': False,
                 })
+                continue
+            if not rec.document_number:
+                if not rec.receiptbook_id.sequence_id:
+                    raise UserError(_(
+                        'Error!. Please define sequence on the receiptbook'
+                        ' related documents to this payment or set the '
+                        'document number.'))
+                rec.document_number = (
+                    rec.receiptbook_id.sequence_id.next_by_id())
+            rec.payment_ids.write({
+                'document_number': rec.document_number,
+                'receiptbook_id': rec.receiptbook_id.id,
+            })
         return super(AccountPaymentGroup, self).post()
 
     @api.one
