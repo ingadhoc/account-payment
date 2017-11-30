@@ -198,6 +198,7 @@ result = withholdable_base_amount * 0.10
                 vals['journal_id'] = journal.id
                 vals['payment_method_id'] = payment_method.id
                 vals['payment_type'] = 'outbound'
+                vals['partner_type'] = payment_group.partner_type
                 vals['partner_id'] = payment_group.partner_id.id
                 payment_withholding = payment_withholding.create(vals)
         return True
