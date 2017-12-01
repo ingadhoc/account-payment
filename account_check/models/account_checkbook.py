@@ -91,7 +91,7 @@ class AccountCheckbook(models.Model):
     )
     numerate_on_printing = fields.Boolean(
         readonly=True,
-        default=True,
+        default=False,
         string='Numerate on printing?',
         states={'draft': [('readonly', False)]},
         help='No number will be assigne while creating payment, number will be'
