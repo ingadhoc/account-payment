@@ -4,14 +4,13 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
-# emiquinodoz <eq@ingadhoc.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-08-11 18:15+0000\n"
-"PO-Revision-Date: 2017-08-11 18:15+0000\n"
-"Last-Translator: emiquinodoz <eq@ingadhoc.com>, 2017\n"
+"POT-Creation-Date: 2017-12-01 14:25+0000\n"
+"PO-Revision-Date: 2017-12-01 14:25+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -146,13 +145,13 @@ msgstr "Si ninguna se selecciona, entonces los pagos no son acumulados"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_withholdable_advanced_amount
-msgid "Importe a cuenta sujeto a retención"
-msgstr "Importe a cuenta sujeto a retención"
+msgid "Importe a cuenta sujeto a retencion"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_withholdable_invoiced_amount
-msgid "Importe imputado sujeto a retención"
-msgstr "Importe imputado sujeto a retención"
+msgid "Importe imputado sujeto a retencion"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule___last_update

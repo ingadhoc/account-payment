@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-30 23:26+0000\n"
-"PO-Revision-Date: 2017-03-30 23:26+0000\n"
+"POT-Creation-Date: 2017-12-01 14:24+0000\n"
+"PO-Revision-Date: 2017-12-01 14:24+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
 "Language-Team: Catalan (https://www.transifex.com/adhoc/teams/46451/ca/)\n"
 "MIME-Version: 1.0\n"
@@ -19,9 +19,34 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: account_check
-#: code:addons/account_check/models/account_checkbook.py:110
+#: code:addons/account_check/models/account_checkbook.py:141
 #, python-format
 msgid " up to %s"
+msgstr ""
+
+#. module: account_check
+#: model:ir.model.fields,help:account_check.field_account_check_issue_check_subtype
+#: model:ir.model.fields,help:account_check.field_account_checkbook_issue_check_subtype
+#: model:ir.model.fields,help:account_check.field_account_payment_check_subtype
+msgid ""
+"* Con cheques corrientes el asiento generado por el pago descontará directamente de la cuenta de banco y además la fecha de pago no es obligatoria.\n"
+"* Con cheques diferidos el asiento generado por el pago se hará contra la cuenta definida para tal fin en la compañía, luego será necesario el asiento de débito que se puede generar desde el extracto o desde el cheque."
+msgstr ""
+
+#. module: account_check
+#: model:ir.ui.view,arch_db:account_check.view_account_check_create_form
+msgid ""
+"<b>IMPORTANTE:</b> las operaciones de cheques se crean automáticamente con "
+"los pagos, transferencias o los botones disponibles sobre el "
+"cheque.<br/><b>SOLO</b> debe crear o modificar operaciones para <b>carga de "
+"cheques inciales</b> o ajustes sobre <b>circuitos no convencionales.</b>"
+msgstr ""
+
+#. module: account_check
+#: model:ir.ui.view,arch_db:account_check.view_account_payment_form_inherited
+msgid ""
+"<b>Importante:</b> Recomendamos que <b>solo</b> deposite <b>varios cheques</b> a la vez si no utiliza los extractos bancarios o si el banco acredita los cheques en una sola línea.<br/>\n"
+"                        Para el resto de los casos recomendamos que registre <b>una transferencia para cada cheque</b>."
 msgstr ""
 
 #. module: account_check
@@ -40,7 +65,7 @@ msgid "Account Checkbook"
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:649
+#: code:addons/account_check/models/account_check.py:686
 #, python-format
 msgid "Action %s not implemented for checks!"
 msgstr ""
@@ -87,14 +112,17 @@ msgid "Bank Rejection"
 msgstr ""
 
 #. module: account_check
+#: model:ir.model,name:account_check.model_account_bank_statement_line
+msgid "Bank Statement Line"
+msgstr ""
+
+#. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook_block_manual_number
-#: model:ir.model.fields,field_description:account_check.field_account_payment_checkbook_block_manual_number
 msgid "Block manual number?"
 msgstr ""
 
 #. module: account_check
 #: model:ir.model.fields,help:account_check.field_account_checkbook_block_manual_number
-#: model:ir.model.fields,help:account_check.field_account_payment_checkbook_block_manual_number
 msgid "Block user to enter manually another number than the suggested"
 msgstr ""
 
@@ -102,6 +130,7 @@ msgstr ""
 #: selection:account.check,state:0
 #: selection:account.check.operation,operation:0
 #: model:ir.ui.view,arch_db:account_check.account_check_action_wizard_form_view
+#: model:ir.ui.view,arch_db:account_check.print_pre_numbered_checks_view
 msgid "Cancel"
 msgstr "Cancel·la"
 
@@ -118,18 +147,19 @@ msgstr ""
 #. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_check_id
 #: model:ir.model.fields,field_description:account_check.field_account_payment_check_id
+#: model:ir.ui.view,arch_db:account_check.view_account_check_graph
+#: model:ir.ui.view,arch_db:account_check.view_account_check_pivot
 msgid "Check"
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:639
+#: code:addons/account_check/models/account_check.py:677
 #, python-format
 msgid "Check \"%s\" debit"
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:568
-#: code:addons/account_check/models/account_check.py:647
+#: code:addons/account_check/models/account_check.py:684
 #, python-format
 msgid "Check \"%s\" rejection"
 msgstr ""
@@ -157,12 +187,11 @@ msgstr ""
 
 #. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_payment_check_number
-#: model:ir.model.fields,field_description:account_check.field_account_payment_check_number_readonly
 msgid "Check Number"
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:356
+#: code:addons/account_check/models/account_check.py:294
 #, python-format
 msgid ""
 "Check Number (%s) must be unique per Checkbook!\n"
@@ -170,7 +199,7 @@ msgid ""
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:369
+#: code:addons/account_check/models/account_check.py:310
 #, python-format
 msgid ""
 "Check Number (%s) must be unique per Owner and Bank!\n"
@@ -193,22 +222,27 @@ msgid "Check Payment Date"
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:315
-#: code:addons/account_check/models/account_payment.py:204
+#: code:addons/account_check/models/account_check.py:254
+#: code:addons/account_check/models/account_payment.py:207
 #, python-format
 msgid "Check Payment Date must be greater than Issue Date"
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:586
+#: code:addons/account_check/models/account_check.py:642
 #, python-format
 msgid "Check nbr (id): %s (%s)"
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:327
+#: code:addons/account_check/models/account_check.py:266
 #, python-format
 msgid "Check number (%s) can't be greater than %s on checkbook %s (%s)"
+msgstr ""
+
+#. module: account_check
+#: model:ir.ui.view,arch_db:account_check.account_journal_dashboard_kanban_view_inherited
+msgid "Check to print and numerate"
 msgstr ""
 
 #. module: account_check
@@ -240,8 +274,24 @@ msgid "Checks"
 msgstr ""
 
 #. module: account_check
+#: model:ir.ui.view,arch_db:account_check.view_account_payment_search
+msgid "Checks To Print and Numerate"
+msgstr ""
+
+#. module: account_check
 #: model:ir.model.fields,help:account_check.field_account_checkbook_sequence_id
 msgid "Checks numbering sequence."
+msgstr ""
+
+#. module: account_check
+#: code:addons/account_check/models/account_journal.py:129
+#, python-format
+msgid "Checks to Print and Numerate"
+msgstr ""
+
+#. module: account_check
+#: model:ir.ui.view,arch_db:account_check.account_journal_dashboard_kanban_view_inherited
+msgid "Checks to print and numerate"
 msgstr ""
 
 #. module: account_check
@@ -279,6 +329,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_check.field_account_check_create_uid
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_create_uid
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook_create_uid
+#: model:ir.model.fields,field_description:account_check.field_print_prenumbered_checks_create_uid
 msgid "Created by"
 msgstr ""
 
@@ -287,6 +338,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_check.field_account_check_create_date
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_create_date
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook_create_date
+#: model:ir.model.fields,field_description:account_check.field_print_prenumbered_checks_create_date
 msgid "Created on"
 msgstr ""
 
@@ -307,7 +359,7 @@ msgid "Currents"
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_checkbook.py:108
+#: code:addons/account_check/models/account_checkbook.py:139
 #, python-format
 msgid "Currents Checks"
 msgstr ""
@@ -329,6 +381,12 @@ msgid "Debit"
 msgstr ""
 
 #. module: account_check
+#: code:addons/account_check/models/account_check.py:623
+#, python-format
+msgid "Debit note for operation %s not implemented!"
+msgstr ""
+
+#. module: account_check
 #: selection:account.check,state:0
 msgid "Debited"
 msgstr ""
@@ -345,7 +403,7 @@ msgid "Deferred Check Account"
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_checkbook.py:106
+#: code:addons/account_check/models/account_checkbook.py:137
 #, python-format
 msgid "Deferred Checks"
 msgstr ""
@@ -362,6 +420,12 @@ msgid "Deliver"
 msgstr ""
 
 #. module: account_check
+#: code:addons/account_check/models/account_payment.py:410
+#, python-format
+msgid "Deliver checks %s"
+msgstr ""
+
+#. module: account_check
 #: selection:account.check,state:0
 msgid "Delivered"
 msgstr ""
@@ -369,6 +433,12 @@ msgstr ""
 #. module: account_check
 #: selection:account.check.operation,operation:0
 msgid "Deposit"
+msgstr ""
+
+#. module: account_check
+#: code:addons/account_check/models/account_payment.py:392
+#, python-format
+msgid "Deposit checks %s"
 msgstr ""
 
 #. module: account_check
@@ -381,6 +451,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_check.field_account_check_display_name
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_display_name
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook_display_name
+#: model:ir.model.fields,field_description:account_check.field_print_prenumbered_checks_display_name
 msgid "Display Name"
 msgstr ""
 
@@ -388,6 +459,20 @@ msgstr ""
 #: selection:account.check,state:0 selection:account.checkbook,state:0
 msgid "Draft"
 msgstr "Esborrany"
+
+#. module: account_check
+#: code:addons/account_check/models/account_check.py:496
+#, python-format
+msgid "Error not specified"
+msgstr ""
+
+#. module: account_check
+#: code:addons/account_check/models/account_payment.py:530
+#, python-format
+msgid ""
+"Está queriendo imprimir y enumerar cheques que ya han sido numerados. "
+"Seleccione solo cheques numerados o solo cheques sin número."
+msgstr ""
 
 #. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_check_message_follower_ids
@@ -412,6 +497,12 @@ msgstr ""
 #. module: account_check
 #: selection:account.check.operation,operation:0
 msgid "Hand"
+msgstr ""
+
+#. module: account_check
+#: code:addons/account_check/models/account_payment.py:439
+#, python-format
+msgid "Hand check %s"
 msgstr ""
 
 #. module: account_check
@@ -441,6 +532,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_check.field_account_check_id
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_id
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook_id
+#: model:ir.model.fields,field_description:account_check.field_print_prenumbered_checks_id
 msgid "ID"
 msgstr ""
 
@@ -467,6 +559,19 @@ msgid "In Use"
 msgstr ""
 
 #. module: account_check
+#: code:addons/account_check/models/account_payment.py:504
+#, python-format
+msgid ""
+"In order to print multiple checks at once, they must belong to the same "
+"checkbook."
+msgstr ""
+
+#. module: account_check
+#: model:ir.model,name:account_check.model_account_invoice
+msgid "Invoice"
+msgstr ""
+
+#. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_check_message_is_follower
 msgid "Is Follower"
 msgstr ""
@@ -477,6 +582,7 @@ msgid "Issue Check"
 msgstr ""
 
 #. module: account_check
+#: model:ir.model.fields,field_description:account_check.field_account_check_issue_check_subtype
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook_issue_check_subtype
 #: model:ir.model.fields,field_description:account_check.field_account_payment_check_subtype
 msgid "Issue Check Subtype"
@@ -509,7 +615,12 @@ msgstr ""
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_check_form
-msgid "It will create a draft debit note to customerand change check state"
+msgid "It will create a draft debit note from supplier and change check state"
+msgstr ""
+
+#. module: account_check
+#: model:ir.ui.view,arch_db:account_check.view_account_check_form
+msgid "It will create a draft debit note to customer and change check state"
 msgstr ""
 
 #. module: account_check
@@ -556,6 +667,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_check.field_account_check_action_wizard___last_update
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation___last_update
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook___last_update
+#: model:ir.model.fields,field_description:account_check.field_print_prenumbered_checks___last_update
 msgid "Last Modified on"
 msgstr ""
 
@@ -564,6 +676,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_write_uid
 #: model:ir.model.fields,field_description:account_check.field_account_check_write_uid
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook_write_uid
+#: model:ir.model.fields,field_description:account_check.field_print_prenumbered_checks_write_uid
 msgid "Last Updated by"
 msgstr ""
 
@@ -572,6 +685,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_write_date
 #: model:ir.model.fields,field_description:account_check.field_account_check_write_date
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook_write_date
+#: model:ir.model.fields,field_description:account_check.field_print_prenumbered_checks_write_date
 msgid "Last Updated on"
 msgstr ""
 
@@ -587,21 +701,27 @@ msgid "Name"
 msgstr "Nom"
 
 #. module: account_check
+#: model:ir.model.fields,field_description:account_check.field_print_prenumbered_checks_next_check_number
+msgid "Next Check Number"
+msgstr ""
+
+#. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook_next_number
 msgid "Next Number"
 msgstr ""
 
 #. module: account_check
-#: model:ir.model.fields,help:account_check.field_account_checkbook_next_number
-msgid ""
-"Next number that will be used. This number can be incremented frequently so "
-"the displayed value might already be obsolete"
+#: code:addons/account_check/models/res_company.py:47
+#, python-format
+msgid "No checks %s account defined for company %s"
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/res_company.py:50
-#, python-format
-msgid "No checks %s account defined for company %s"
+#: model:ir.model.fields,help:account_check.field_account_checkbook_numerate_on_printing
+#: model:ir.model.fields,help:account_check.field_account_payment_checkbook_numerate_on_printing
+msgid ""
+"No number will be assigne while creating payment, number will beassigned "
+"after printing check."
 msgstr ""
 
 #. module: account_check
@@ -630,6 +750,12 @@ msgid "Number of unread messages"
 msgstr ""
 
 #. module: account_check
+#: model:ir.model.fields,field_description:account_check.field_account_checkbook_numerate_on_printing
+#: model:ir.model.fields,field_description:account_check.field_account_payment_checkbook_numerate_on_printing
+msgid "Numerate on printing?"
+msgstr ""
+
+#. module: account_check
 #: model:ir.model.fields,help:account_check.field_account_payment_check_payment_date
 msgid "Only if this check is post dated"
 msgstr ""
@@ -640,7 +766,7 @@ msgid "Operation"
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:459
+#: code:addons/account_check/models/account_check.py:405
 #, python-format
 msgid "Operation %s not implemented for checks!"
 msgstr ""
@@ -681,6 +807,30 @@ msgid "Owner Vat"
 msgstr ""
 
 #. module: account_check
+#: code:addons/account_check/models/account_payment.py:478
+#, python-format
+msgid ""
+"Para mandar a proceso de firma debe definir número de cheque en cada línea de pago.\n"
+"* ID del pago: %s"
+msgstr ""
+
+#. module: account_check
+#: code:addons/account_check/models/account_bank_statement_line.py:58
+#, python-format
+msgid ""
+"Para registrar el debito de un cheque desde el extracto solo debe haber una "
+"linea de contrapartida"
+msgstr ""
+
+#. module: account_check
+#: code:addons/account_check/models/account_bank_statement_line.py:53
+#, python-format
+msgid ""
+"Para registrar el debito de un cheque desde el extracto, el diario del "
+"cheque y del extracto deben ser los mismos"
+msgstr ""
+
+#. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_partner_id
 #: model:ir.model.fields,field_description:account_check.field_account_check_partner_id
 #: model:ir.ui.view,arch_db:account_check.view_checks_search
@@ -708,8 +858,39 @@ msgid "Payments"
 msgstr ""
 
 #. module: account_check
+#: model:ir.ui.view,arch_db:account_check.print_pre_numbered_checks_view
+msgid ""
+"Please enter the number of the first pre-printed check that you are about to"
+" print on."
+msgstr ""
+
+#. module: account_check
+#: model:ir.ui.view,arch_db:account_check.print_pre_numbered_checks_view
+msgid "Print"
+msgstr ""
+
+#. module: account_check
+#: model:ir.actions.server,name:account_check.action_account_print_checks
+msgid "Print Checks"
+msgstr ""
+
+#. module: account_check
+#: code:addons/account_check/models/account_payment.py:515
+#: model:ir.model,name:account_check.model_print_prenumbered_checks
+#: model:ir.ui.view,arch_db:account_check.print_pre_numbered_checks_view
+#, python-format
+msgid "Print Pre-numbered Checks"
+msgstr ""
+
+#. module: account_check
 #: selection:account.check.operation,operation:0
 msgid "Receive"
+msgstr ""
+
+#. module: account_check
+#: code:addons/account_check/models/account_payment.py:335
+#, python-format
+msgid "Receive check %s"
 msgstr ""
 
 #. module: account_check
@@ -718,8 +899,22 @@ msgid "Reclaimed"
 msgstr ""
 
 #. module: account_check
+#: model:ir.ui.view,arch_db:account_check.view_account_check_create_form
+msgid ""
+"Recuerde que los cheques se crean con los pagos.<br/><b>Solamente</b> debe "
+"crear cheques manualmente para realizar algún <b>ajuste</b> o para la "
+"<b>carga incial</b> de los mismos.<br/>Podrá cargar las operaciones "
+"correspondientes una vez que haya guardado el cheque."
+msgstr ""
+
+#. module: account_check
 #: selection:account.check,state:0
 msgid "Rejected"
+msgstr ""
+
+#. module: account_check
+#: model:ir.model.fields,field_description:account_check.field_account_invoice_rejected_check_id
+msgid "Rejected Check"
 msgstr ""
 
 #. module: account_check
@@ -745,6 +940,11 @@ msgid "Return"
 msgstr ""
 
 #. module: account_check
+#: model:ir.ui.view,arch_db:account_check.view_account_check_form
+msgid "Return to Customer"
+msgstr ""
+
+#. module: account_check
 #: selection:account.check,state:0
 msgid "Returned"
 msgstr ""
@@ -757,6 +957,12 @@ msgstr ""
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_check_form
 msgid "Sell Rejection"
+msgstr ""
+
+#. module: account_check
+#: code:addons/account_check/models/account_payment.py:379
+#, python-format
+msgid "Sell check %s"
 msgstr ""
 
 #. module: account_check
@@ -782,33 +988,51 @@ msgid "Supplier Rejection"
 msgstr ""
 
 #. module: account_check
+#: model:ir.ui.view,arch_db:account_check.view_account_check_form
+msgid "Supplier Return/Rejection"
+msgstr ""
+
+#. module: account_check
 #: model:ir.model,name:account_check.model_account_chart_template
 msgid "Templates for Account Chart"
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:477
+#: code:addons/account_check/models/account_check.py:538
+#, python-format
+msgid ""
+"The %s (id %s) operation has no partner linked.You will need to do it "
+"manually."
+msgstr ""
+
+#. module: account_check
+#: code:addons/account_check/models/account_check.py:422
 #, python-format
 msgid "The Check must be in draft state for unlink !"
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:397
+#: code:addons/account_check/models/account_check.py:339
 #, python-format
-msgid "The date of a new operation can not be minor than last operation date"
+msgid ""
+"The date of a new check operation can not be minor than last operation date.\n"
+"* Check Id: %s\n"
+"* Check Number: %s\n"
+"* Operation: %s\n"
+"* Operation Date: %s\n"
+"* Last Operation Date: %s"
 msgstr ""
 
 #. module: account_check
-#: model:ir.model.fields,help:account_check.field_account_checkbook_issue_check_subtype
-#: model:ir.model.fields,help:account_check.field_account_payment_check_subtype
+#: code:addons/account_check/models/account_check.py:573
+#, python-format
 msgid ""
-"The only difference bewteen Deferred and Currents is that when delivering a "
-"Deferred check a Payment Date is Require"
+"The deposit operation is not linked to a payment.If you want to reject you "
+"need to do it manually."
 msgstr ""
 
 #. module: account_check
 #: model:ir.model.fields,help:account_check.field_account_payment_check_number
-#: model:ir.model.fields,help:account_check.field_account_payment_check_number_readonly
 msgid ""
 "The selected journal is configured to print check numbers. If your pre-"
 "printed check paper already has numbers or if the current numbering is "
@@ -832,7 +1056,7 @@ msgid "Third Checks"
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:456
+#: code:addons/account_check/models/account_payment.py:466
 #, python-format
 msgid ""
 "This operatios is not implemented for checks:\n"
@@ -840,6 +1064,12 @@ msgid ""
 "* Partner type: %s\n"
 "* Payment method: %s\n"
 "* Destination journal: %s\n"
+msgstr ""
+
+#. module: account_check
+#: model:ir.ui.view,arch_db:account_check.print_pre_numbered_checks_view
+msgid ""
+"This will allow to save on payments the number of the corresponding check."
 msgstr ""
 
 #. module: account_check
@@ -863,6 +1093,12 @@ msgid "Transfer"
 msgstr ""
 
 #. module: account_check
+#: code:addons/account_check/models/account_payment.py:367
+#, python-format
+msgid "Transfer checks %s"
+msgstr ""
+
+#. module: account_check
 #: selection:account.check,state:0
 msgid "Transfered"
 msgstr ""
@@ -873,7 +1109,7 @@ msgid "Type"
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/res_company.py:48
+#: code:addons/account_check/models/res_company.py:45
 #, python-format
 msgid "Type %s not implemented!"
 msgstr ""
@@ -894,6 +1130,20 @@ msgid "Used"
 msgstr ""
 
 #. module: account_check
+#: code:addons/account_check/models/account_check.py:462
+#, python-format
+msgid ""
+"We have found more or less thant two journal items to reconcile with check debit.\n"
+"*Journal items: %s"
+msgstr ""
+
+#. module: account_check
+#: code:addons/account_check/models/account_payment.py:452
+#, python-format
+msgid "Withdraw with checks %s"
+msgstr ""
+
+#. module: account_check
 #: selection:account.check.operation,operation:0
 msgid "Withdrawal"
 msgstr ""
@@ -904,13 +1154,13 @@ msgid "Withdrawed"
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_checkbook.py:117
+#: code:addons/account_check/models/account_checkbook.py:148
 #, python-format
 msgid "You can drop a checkbook if it has been used on checks!"
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:462
+#: code:addons/account_check/models/account_check.py:408
 #, python-format
 msgid ""
 "You can not \"%s\" a check from state \"%s\"!\n"
@@ -918,15 +1168,15 @@ msgid ""
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:383
+#: code:addons/account_check/models/account_check.py:324
 #, python-format
 msgid ""
-"You can not cancel this operation because this is not the last operation "
-"over the check. Check (id): %s (%s)"
+"You can not cancel this operation because this is not the last operation over the check.\n"
+"Check (id): %s (%s)"
 msgstr ""
 
 #. module: account_check
-#: code:addons/account_check/models/account_check.py:74
+#: code:addons/account_check/models/account_check.py:79
 #, python-format
 msgid ""
 "You can not delete a check operation that has an origin.\n"
@@ -940,6 +1190,7 @@ msgstr ""
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.account_check_action_wizard_form_view
+#: model:ir.ui.view,arch_db:account_check.print_pre_numbered_checks_view
 msgid "or"
 msgstr ""
 

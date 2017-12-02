@@ -4,14 +4,13 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
-# Gonzalo Ruzafa <gr@ingadhoc.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-09-08 17:48+0000\n"
-"PO-Revision-Date: 2017-09-08 17:48+0000\n"
-"Last-Translator: Gonzalo Ruzafa <gr@ingadhoc.com>, 2017\n"
+"POT-Creation-Date: 2017-12-01 14:25+0000\n"
+"PO-Revision-Date: 2017-12-01 14:25+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -357,7 +356,7 @@ msgid "Journal Item"
 msgstr "Apunte Contable"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:621
+#: code:addons/account_payment_group/models/account_payment_group.py:635
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
 #, python-format
@@ -422,13 +421,13 @@ msgid "Move line ids"
 msgstr "Apuntes Contables"
 
 #. module: account_payment_group
-#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_payment_methods
-msgid "Métodos de pago"
-msgstr "Métodos de pago"
+#: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
+msgid "Not Cancelled"
+msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:292
-#: code:addons/account_payment_group/models/account_payment_group.py:296
+#: code:addons/account_payment_group/models/account_payment_group.py:295
+#: code:addons/account_payment_group/models/account_payment_group.py:299
 #, python-format
 msgid "Not implemented yet"
 msgstr "No implementado todavía"
@@ -525,6 +524,11 @@ msgstr "Líneas del Pago"
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
 msgid "Payment Method"
 msgstr "Método de Pago"
+
+#. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_payment_methods
+msgid "Payment Methods"
+msgstr ""
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_payment_type_copy
@@ -658,6 +662,15 @@ msgid "Remove All"
 msgstr "Eliminar Todo"
 
 #. module: account_payment_group
+#: code:addons/account_payment_group/hooks.py:135
+#, python-format
+msgid ""
+"Se encontro mas de un payment o ninguno!!! \n"
+"* Payments: %s\n"
+"* Domain: %s"
+msgstr ""
+
+#. module: account_payment_group
 #: model:res.groups,name:account_payment_group.account_see_payment_menu
 msgid "See Payments Menu"
 msgstr "Ver Menú de Pagos"
@@ -730,7 +743,7 @@ msgid "To Pay Amount"
 msgstr "Importe a pagar"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:686
+#: code:addons/account_payment_group/models/account_payment_group.py:700
 #, python-format
 msgid "To Pay Amount and Payment Amount must be equal!"
 msgstr "¡El Importe a pagar y el Importe de Pago deben ser iguales!"
@@ -743,7 +756,7 @@ msgstr "Líneas a Pagar"
 
 #. module: account_payment_group
 #: code:addons/account_payment_group/models/account_payment.py:125
-#: code:addons/account_payment_group/models/account_payment_group.py:666
+#: code:addons/account_payment_group/models/account_payment_group.py:680
 #, python-format
 msgid "To Pay Lines must be of the same account!"
 msgstr "Las líneas a pagar deben ser de la misma cuenta!"
@@ -813,20 +826,20 @@ msgid "View Payments"
 msgstr "Ver pagos"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:681
+#: code:addons/account_payment_group/models/account_payment_group.py:695
 #, python-format
 msgid "You can not confirm a payment group without payment lines!"
 msgstr "¡No puede confirmar un grupo de pagos sin líneas de pago!"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:657
+#: code:addons/account_payment_group/models/account_payment_group.py:671
 #, python-format
 msgid "You can not delete a payment that is already posted"
 msgstr "No puede eliminar un pago que ya ha sido publicado"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:581
-#: code:addons/account_payment_group/models/account_payment_group.py:587
+#: code:addons/account_payment_group/models/account_payment_group.py:595
+#: code:addons/account_payment_group/models/account_payment_group.py:601
 #, python-format
 msgid "You can not send to pay lines from different partners"
 msgstr "No puede enviar a pagar líneas de diferentes partners"
