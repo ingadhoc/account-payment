@@ -28,6 +28,10 @@ class AccountPayment(models.Model):
         inverse='_inverse_payment_type_copy',
         string='Payment Type'
     )
+    signed_amount = fields.Monetary(
+        string='Payment Amount',
+        compute='compute_signed_amount',
+    )
     amount_company_currency = fields.Monetary(
         string='Payment Amount on Company Currency',
         compute='_compute_amount_company_currency',
@@ -37,6 +41,19 @@ class AccountPayment(models.Model):
         related='company_id.currency_id',
         readonly=True,
     )
+
+    @api.multi
+    @api.depends('amount', 'payment_type', 'partner_type')
+    def compute_signed_amount(self):
+        for rec in self:
+            sign = 1.0
+            if (
+                    (rec.partner_type == 'supplier' and
+                        rec.payment_type == 'inbound') or
+                    (rec.partner_type == 'customer' and
+                        rec.payment_type == 'outbound')):
+                sign = -1.0
+            rec.signed_amount = rec.amount and rec.amount * sign
 
     @api.one
     @api.depends('amount', 'currency_id', 'company_id.currency_id')
@@ -52,9 +69,9 @@ class AccountPayment(models.Model):
         sign = 1.0
         if (
                 (self.partner_type == 'supplier' and
-                    self.payment_type == self.payment_type == 'inbound') or
+                    self.payment_type == 'inbound') or
                 (self.partner_type == 'customer' and
-                    self.payment_type == self.payment_type == 'outbound')):
+                    self.payment_type == 'outbound')):
             sign = -1.0
         self.amount_company_currency = amount_company_currency * sign
 

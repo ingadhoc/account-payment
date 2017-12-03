@@ -460,7 +460,7 @@ class AccountCheck(models.Model):
                 lambda x: x.account_id == debit_account)
             if len(move_lines) != 2:
                 raise ValidationError(_(
-                    'We have found more or less thant two journal items to '
+                    'We have found more or less than two journal items to '
                     'reconcile with check debit.\n'
                     '*Journal items: %s') % move_lines.ids)
             move_lines.reconcile()

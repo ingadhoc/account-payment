@@ -38,8 +38,11 @@
             <field name="journal_id"/>
             <!-- <field name="payment_method_id"/> -->
             <field name="payment_method_description"/>
+
             <!-- sum de este amount no tiene sentido por que puede ser distintas monedas -->
-            <field name="amount"/>
+            <!-- <field name="amount"/> -->
+            <field name="signed_amount"/>
+
             <field name="amount_company_currency" sum="Total"/>
             <field name="state"/>
             <field name="currency_id" invisible="1"/>
@@ -76,6 +79,7 @@
             </form>
             <form>
                 <field name="payment_group_company_id" invisible="1"/>
+                <field name="signed_amount" invisible="1"/>
             </form>
             <!-- ahora lo hicimos con el fix -->
             <!-- <field name="journal_id" position="attributes">
