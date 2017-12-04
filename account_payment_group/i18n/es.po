@@ -4,13 +4,14 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
+# Javier Diez <jd@adhoc.com.ar>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-01 14:25+0000\n"
-"PO-Revision-Date: 2017-12-01 14:25+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016\n"
+"POT-Creation-Date: 2017-12-03 23:02+0000\n"
+"PO-Revision-Date: 2017-12-03 23:02+0000\n"
+"Last-Translator: Javier Diez <jd@adhoc.com.ar>, 2017\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -491,6 +492,11 @@ msgid "Pay now journal must have manual method!"
 msgstr "El diario de pago directo debe tener método manual!"
 
 #. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_signed_amount
+msgid "Payment Amount"
+msgstr "Importe del Pago"
+
+#. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_amount_company_currency
 msgid "Payment Amount on Company Currency"
 msgstr "Importe de Pago en Moneda de Compañía"
@@ -513,7 +519,7 @@ msgid "Payment Groups"
 msgstr "Grupos de Pago"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment.py:141
+#: code:addons/account_payment_group/models/account_payment.py:158
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_payment_ids
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #, python-format
@@ -596,8 +602,8 @@ msgstr ""
 "Puede procesar esos pagos por sus propios medios o utilizando los servicios instalados."
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment.py:108
-#: code:addons/account_payment_group/models/account_payment.py:112
+#: code:addons/account_payment_group/models/account_payment.py:125
+#: code:addons/account_payment_group/models/account_payment.py:129
 #, python-format
 msgid "Payments must be created from payments groups"
 msgstr "Los pagos deben ser creados desde grupos depago"
@@ -755,7 +761,7 @@ msgid "To Pay Lines"
 msgstr "Líneas a Pagar"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment.py:125
+#: code:addons/account_payment_group/models/account_payment.py:142
 #: code:addons/account_payment_group/models/account_payment_group.py:680
 #, python-format
 msgid "To Pay Lines must be of the same account!"
