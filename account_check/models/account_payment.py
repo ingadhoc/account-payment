@@ -224,7 +224,10 @@ class AccountPayment(models.Model):
             self.check_bank_id = (
                 commercial_partner.bank_ids and
                 commercial_partner.bank_ids[0].bank_id or False)
-            self.check_owner_name = commercial_partner.name
+            # en realidad se termina pisando con onchange_check_owner_vat
+            # entonces llevamos nombre solo si ya existe la priemr vez
+            # TODO ver si lo mejoramos o borramos esto directamente
+            # self.check_owner_name = commercial_partner.name
             vat_field = 'vat'
             # to avoid needed of another module, we add this check to see
             # if l10n_ar cuit field is available
