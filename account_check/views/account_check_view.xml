@@ -146,6 +146,8 @@
                     <field name="owner_name"/>
                     <field name="owner_vat"/>
                     <field name="payment_date"/>
+                    <filter name="to_cash" string="Ready to Cash" invisible="context.get('default_type',False) != 'third_check'" domain="[['state', '=', 'holding'], ['payment_date', '&lt;=', context_today().strftime('%Y-%m-%d')]]"/>
+                    <filter name="to_expire" string="Soon to Expire" invisible="context.get('default_type',False) != 'third_check'" domain="[['state', '=', 'holding'], ['payment_date', '&lt;=', (context_today()-datetime.timedelta(days=15)).strftime('%Y-%m-%d')]]"/>
                     <group expand="0" string="Group By...">
                         <filter string="Issue Date" context="{'group_by':'issue_date'}"/>
                         <filter string="Payment Date" context="{'group_by':'payment_date'}"/>
