@@ -30,7 +30,7 @@ class AccountPayment(models.Model):
     def post(self):
         payments = self.filtered(
             lambda x: x.tax_withholding_id and not x.withholding_number)
-        if not payments:
+        if payments:
             raise UserError(_(
                 'No puede validar pagos con retenciones que no tengan número '
                 'de retención. Recomendamos agregar una secuencia a los '
