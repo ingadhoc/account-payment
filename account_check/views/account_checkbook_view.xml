@@ -35,6 +35,7 @@
                             <field name="range_to"/>
                             <field name="numerate_on_printing"/>
                             <!-- <field name="block_manual_number"/> -->
+                            <field name="report_template"/>
                         </group>
                     </sheet>
                 </form>

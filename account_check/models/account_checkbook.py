@@ -97,6 +97,13 @@ class AccountCheckbook(models.Model):
         help='No number will be assigne while creating payment, number will be'
         'assigned after printing check.'
     )
+    report_template = fields.Many2one(
+        'ir.actions.report.xml',
+        'Report',
+        domain="[('model', '=', 'account.payment')]",
+        context="{'default_model': 'account.payment'}",
+        help='Report to use when printing checks. If not report selected, '
+        'report with name "check_report" will be used')
 
     @api.multi
     @api.depends('sequence_id.number_next_actual')

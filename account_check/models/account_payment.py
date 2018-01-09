@@ -493,7 +493,9 @@ class AccountPayment(models.Model):
     @api.multi
     def do_print_checks(self):
         # si cambiamos nombre de check_report tener en cuenta en sipreco
-        check_report = self.env['report'].get_action(self, 'check_report')
+        report_name = self.checkbook_id.report_template.report_name \
+            or 'check_report'
+        check_report = self.env['report'].get_action(self, report_name)
         # ya el buscar el reporte da el error solo
         # if not check_report:
         #     raise UserError(_(
