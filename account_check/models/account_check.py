@@ -243,6 +243,19 @@ class AccountCheck(models.Model):
     )
 
     @api.multi
+    def onchange(self, values, field_name, field_onchange):
+        """
+        Con esto arreglamos el borrador del origin de una operacíón de deposito
+        (al menos depositos de v8 migrados), habría que ver si pasa en otros
+        casos y hay algo más que arreglar
+        # TODO si no pasa en v11 borrarlo
+        """
+        'operation_ids.origin' in field_onchange and field_onchange.pop(
+            'operation_ids.origin')
+        return super(AccountCheck, self).onchange(
+            values, field_name, field_onchange)
+
+    @api.multi
     @api.constrains('issue_date', 'payment_date')
     @api.onchange('issue_date', 'payment_date')
     def onchange_date(self):
