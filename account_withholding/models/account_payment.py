@@ -26,6 +26,18 @@ class AccountPayment(models.Model):
         states={'draft': [('readonly', False)]},
     )
 
+    @api.multi
+    def post(self):
+        payments = self.filtered(
+            lambda x: x.tax_withholding_id and not x.withholding_number)
+        if not payments:
+            raise UserError(_(
+                'No puede validar pagos con retenciones que no tengan número '
+                'de retención. Recomendamos agregar una secuencia a los '
+                'impuestos de retención correspondientes. Id de pagos: %s') % (
+                payments.ids))
+        return super(AccountPayment, self).post()
+
     def _get_liquidity_move_line_vals(self, amount):
         vals = super(AccountPayment, self)._get_liquidity_move_line_vals(
             amount)
