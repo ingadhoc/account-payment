@@ -61,6 +61,7 @@ class AccountPaymentGroup(models.Model):
         readonly=True,
         track_visibility='always',
         states={'draft': [('readonly', False)]},
+        ondelete='restrict',
     )
     document_type_id = fields.Many2one(
         related='receiptbook_id.document_type_id',
