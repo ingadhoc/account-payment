@@ -606,7 +606,7 @@ msgstr ""
 #: code:addons/account_payment_group/models/account_payment.py:129
 #, python-format
 msgid "Payments must be created from payments groups"
-msgstr "Los pagos deben ser creados desde grupos depago"
+msgstr "Los pagos deben ser creados desde grupos de pago"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_pop_up
