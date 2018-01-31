@@ -204,6 +204,11 @@ class AccountPayment(models.Model):
                 self.payment_type == 'inbound' and
                 self.journal_id.inbound_payment_method_ids or
                 self.journal_id.outbound_payment_method_ids)
+            # si es una transferencia y no hay payment method de origen,
+            # forzamos manual
+            if not payment_methods and self.payment_type == 'transfer':
+                payment_methods = self.env.ref(
+                    'account.account_payment_method_manual_out')
             self.payment_method_id = (
                 payment_methods and payment_methods[0] or False)
         #     # Set payment method domain
