@@ -5,6 +5,12 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
+class AccountPaymentMethod(models.Model):
+    _inherit = "account.payment.method"
+
+    name = fields.Char(translate=True)
+
+
 class AccountPayment(models.Model):
     _name = "account.payment"
     _inherit = ['mail.thread', 'account.payment']
