@@ -133,6 +133,7 @@ class AccountJournal(models.Model):
             'context': dict(
                 self.env.context,
                 search_default_checks_to_numerate=1,
+                search_default_journal_id=self.id,
                 journal_id=self.id,
                 default_journal_id=self.id,
                 default_payment_type='outbound',
