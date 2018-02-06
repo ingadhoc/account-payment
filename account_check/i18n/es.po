@@ -1,21 +1,23 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# 	* account_check
-#
+# * account_check
+# 
+# Translators:
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
+# Gonzalo Ruzafa <gr@ingadhoc.com>, 2017
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 9.0e\n"
+"Project-Id-Version: Odoo Server 9.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-02-06 12:19+0000\n"
-"PO-Revision-Date: 2018-02-06 09:26-0300\n"
-"Last-Translator: <>\n"
-"Language-Team: \n"
+"POT-Creation-Date: 2018-02-06 13:47+0000\n"
+"PO-Revision-Date: 2018-02-06 13:47+0000\n"
+"Last-Translator: Gonzalo Ruzafa <gr@ingadhoc.com>, 2017\n"
+"Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: \n"
+"Content-Transfer-Encoding: \n"
 "Language: es\n"
-"X-Generator: Poedit 1.8.7.1\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: account_check
 #: code:addons/account_check/models/account_checkbook.py:148
@@ -36,8 +38,16 @@ msgstr ""
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_check_create_form
-msgid "<b>IMPORTANTE:</b> las operaciones de cheques se crean automáticamente con los pagos, transferencias o los botones disponibles sobre el cheque.<br/><b>SOLO</b> debe crear o modificar operaciones para <b>carga de cheques inciales</b> o ajustes sobre <b>circuitos no convencionales.</b>"
-msgstr "<b>IMPORTANTE:</b> las operaciones de cheques se crean automáticamente con los pagos, transferencias o los botones disponibles sobre el cheque.<br/><b>SOLO</b> debe crear o modificar operaciones para <b>carga de cheques inciales</b> o ajustes sobre <b>circuitos no convencionales.</b>"
+msgid ""
+"<b>IMPORTANTE:</b> las operaciones de cheques se crean automáticamente con "
+"los pagos, transferencias o los botones disponibles sobre el "
+"cheque.<br/><b>SOLO</b> debe crear o modificar operaciones para <b>carga de "
+"cheques inciales</b> o ajustes sobre <b>circuitos no convencionales.</b>"
+msgstr ""
+"<b>IMPORTANTE:</b> las operaciones de cheques se crean automáticamente con "
+"los pagos, transferencias o los botones disponibles sobre el "
+"cheque.<br/><b>SOLO</b> debe crear o modificar operaciones para <b>carga de "
+"cheques inciales</b> o ajustes sobre <b>circuitos no convencionales.</b>"
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_payment_form_inherited
@@ -241,7 +251,8 @@ msgstr "Nro del Cheque (id): %s (%s)"
 #: code:addons/account_check/models/account_check.py:279
 #, python-format
 msgid "Check number (%s) can't be greater than %s on checkbook %s (%s)"
-msgstr "El número de cheque (%s) no puede ser mayor a %s en la chequera %s (%s)"
+msgstr ""
+"El número de cheque (%s) no puede ser mayor a %s en la chequera %s (%s)"
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.account_journal_dashboard_kanban_view_inherited
@@ -477,8 +488,12 @@ msgstr "Error not specified"
 #. module: account_check
 #: code:addons/account_check/models/account_payment.py:539
 #, python-format
-msgid "Está queriendo imprimir y enumerar cheques que ya han sido numerados. Seleccione solo cheques numerados o solo cheques sin número."
-msgstr "Está queriendo imprimir y enumerar cheques que ya han sido numerados. Seleccione solo cheques numerados o solo cheques sin número."
+msgid ""
+"Está queriendo imprimir y enumerar cheques que ya han sido numerados. "
+"Seleccione solo cheques numerados o solo cheques sin número."
+msgstr ""
+"Está queriendo imprimir y enumerar cheques que ya han sido numerados. "
+"Seleccione solo cheques numerados o solo cheques sin número."
 
 #. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_check_message_follower_ids
@@ -531,7 +546,9 @@ msgstr "Cuenta de Cheques en mano"
 #: model:ir.model.fields,help:account_check.field_account_chart_template_holding_check_account_id
 #: model:ir.model.fields,help:account_check.field_res_company_holding_check_account_id
 msgid "Holding Checks account for third checks, for eg. \"Holding Checks\""
-msgstr "Cuenta de Cheques en mano para cheques de terceros, por ej: \"Cheques en Mano\""
+msgstr ""
+"Cuenta de Cheques en mano para cheques de terceros, por ej: \"Cheques en "
+"Mano\""
 
 #. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_check_action_wizard_id
@@ -554,8 +571,12 @@ msgstr "Si está marcado, hay nuevos mensajes que requieren su atención."
 
 #. module: account_check
 #: model:ir.model.fields,help:account_check.field_account_checkbook_range_to
-msgid "If you set a number here, this checkbook will be automatically set as used when this number is raised."
-msgstr "Si establece un número aquí, esta chequera se establecerá automáticamente como usada cuando este número crezca."
+msgid ""
+"If you set a number here, this checkbook will be automatically set as used "
+"when this number is raised."
+msgstr ""
+"Si establece un número aquí, esta chequera se establecerá automáticamente "
+"como usada cuando este número crezca."
 
 #. module: account_check
 #: selection:account.checkbook,state:0
@@ -565,8 +586,11 @@ msgstr "En Uso"
 #. module: account_check
 #: code:addons/account_check/models/account_payment.py:513
 #, python-format
-msgid "In order to print multiple checks at once, they must belong to the same checkbook."
-msgstr "Para imprimir varios cheques a la vez, deben pertenecer a la misma chequera."
+msgid ""
+"In order to print multiple checks at once, they must belong to the same "
+"checkbook."
+msgstr ""
+"Para imprimir varios cheques a la vez, deben pertenecer a la misma chequera."
 
 #. module: account_check
 #: model:ir.model,name:account_check.model_account_invoice
@@ -611,33 +635,52 @@ msgstr "Fecha de Emisión"
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_check_form
-msgid "It will create a debit note from supplier in draft state and change check state"
-msgstr "Creará una nota de débito desde el proveedor en estado borrador y cambia el estado del cheque"
+msgid ""
+"It will create a debit note from supplier in draft state and change check "
+"state"
+msgstr ""
+"Creará una nota de débito desde el proveedor en estado borrador y cambia el "
+"estado del cheque"
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_check_form
 msgid "It will create a draft debit note from supplier and change check state"
-msgstr "Se va a crear una nota de debito del proveedor y cambiar el cheque de estado"
+msgstr ""
+"Se va a crear una nota de debito del proveedor y cambiar el cheque de estado"
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_check_form
 msgid "It will create a draft debit note to customer and change check state"
-msgstr "Se va a crear una nota de debito en borrador para el cliente y cambiar el cheque de estado"
+msgstr ""
+"Se va a crear una nota de debito en borrador para el cliente y cambiar el "
+"cheque de estado"
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_check_form
-msgid "It will create a journal entry from Deferred Check Account to bank account and change check state"
-msgstr "Creará un asiento contable desde la Cuenta de Cheques Diferidos a la cuenta del banco y cambia el estado del cheque"
+msgid ""
+"It will create a journal entry from Deferred Check Account to bank account "
+"and change check state"
+msgstr ""
+"Creará un asiento contable desde la Cuenta de Cheques Diferidos a la cuenta "
+"del banco y cambia el estado del cheque"
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_check_form
-msgid "It will create an account entry from bank account to company rejection account and change check state"
-msgstr "Creará un asiento contable desde la cuenta del banco a la cuenta de rechazo de la compañía y cambia el estado del cheque"
+msgid ""
+"It will create an account entry from bank account to company rejection "
+"account and change check state"
+msgstr ""
+"Creará un asiento contable desde la cuenta del banco a la cuenta de rechazo "
+"de la compañía y cambia el estado del cheque"
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_check_form
-msgid "It will create an account entry from cash account to company rejection account and change check state"
-msgstr "Creará un asiento contable desde la cuenta efectivo a la cuenta de rechazo de la compañía y cambia el estado del cheque"
+msgid ""
+"It will create an account entry from cash account to company rejection "
+"account and change check state"
+msgstr ""
+"Creará un asiento contable desde la cuenta efectivo a la cuenta de rechazo "
+"de la compañía y cambia el estado del cheque"
 
 #. module: account_check
 #: model:ir.model,name:account_check.model_account_journal
@@ -714,8 +757,12 @@ msgstr "No hay cuenta %s de cheques definida para la compañía %s"
 #. module: account_check
 #: model:ir.model.fields,help:account_check.field_account_checkbook_numerate_on_printing
 #: model:ir.model.fields,help:account_check.field_account_payment_checkbook_numerate_on_printing
-msgid "No number will be assigne while creating payment, number will beassigned after printing check."
-msgstr "No se asignará ningún número al crear el pago, se asignará el número después de imprimir el cheque."
+msgid ""
+"No number will be assigne while creating payment, number will beassigned "
+"after printing check."
+msgstr ""
+"No se asignará ningún número al crear el pago, se asignará el número después"
+" de imprimir el cheque."
 
 #. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_notes
@@ -812,14 +859,22 @@ msgstr ""
 #. module: account_check
 #: code:addons/account_check/models/account_bank_statement_line.py:58
 #, python-format
-msgid "Para registrar el debito de un cheque desde el extracto solo debe haber una linea de contrapartida"
-msgstr "Para registrar el debito de un cheque desde el extracto solo debe haber una linea de contrapartida"
+msgid ""
+"Para registrar el debito de un cheque desde el extracto solo debe haber una "
+"linea de contrapartida"
+msgstr ""
+"Para registrar el debito de un cheque desde el extracto solo debe haber una "
+"linea de contrapartida"
 
 #. module: account_check
 #: code:addons/account_check/models/account_bank_statement_line.py:53
 #, python-format
-msgid "Para registrar el debito de un cheque desde el extracto, el diario del cheque y del extracto deben ser los mismos"
-msgstr "Para registrar el debito de un cheque desde el extracto, el diario del cheque y del extracto deben ser los mismos"
+msgid ""
+"Para registrar el debito de un cheque desde el extracto, el diario del "
+"cheque y del extracto deben ser los mismos"
+msgstr ""
+"Para registrar el debito de un cheque desde el extracto, el diario del "
+"cheque y del extracto deben ser los mismos"
 
 #. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation_partner_id
@@ -850,8 +905,12 @@ msgstr "Pagos"
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.print_pre_numbered_checks_view
-msgid "Please enter the number of the first pre-printed check that you are about to print on."
-msgstr "Please enter the number of the first pre-printed check that you are about to print on."
+msgid ""
+"Please enter the number of the first pre-printed check that you are about to"
+" print on."
+msgstr ""
+"Please enter the number of the first pre-printed check that you are about to"
+" print on."
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.print_pre_numbered_checks_view
@@ -899,8 +958,16 @@ msgstr "Reclamado"
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.view_account_check_create_form
-msgid "Recuerde que los cheques se crean con los pagos.<br/><b>Solamente</b> debe crear cheques manualmente para realizar algún <b>ajuste</b> o para la <b>carga incial</b> de los mismos.<br/>Podrá cargar las operaciones correspondientes una vez que haya guardado el cheque."
-msgstr "Recuerde que los cheques se crean con los pagos.<br/><b>Solamente</b> debe crear cheques manualmente para realizar algún <b>ajuste</b> o para la <b>carga incial</b> de los mismos.<br/>Podrá cargar las operaciones correspondientes una vez que haya guardado el cheque."
+msgid ""
+"Recuerde que los cheques se crean con los pagos.<br/><b>Solamente</b> debe "
+"crear cheques manualmente para realizar algún <b>ajuste</b> o para la "
+"<b>carga incial</b> de los mismos.<br/>Podrá cargar las operaciones "
+"correspondientes una vez que haya guardado el cheque."
+msgstr ""
+"Recuerde que los cheques se crean con los pagos.<br/><b>Solamente</b> debe "
+"crear cheques manualmente para realizar algún <b>ajuste</b> o para la "
+"<b>carga incial</b> de los mismos.<br/>Podrá cargar las operaciones "
+"correspondientes una vez que haya guardado el cheque."
 
 #. module: account_check
 #: selection:account.check,state:0
@@ -936,8 +1003,12 @@ msgstr "Reporte"
 
 #. module: account_check
 #: model:ir.model.fields,help:account_check.field_account_checkbook_report_template
-msgid "Report to use when printing checks. If not report selected, report with name \"check_report\" will be used"
-msgstr "Report to use when printing checks. If not report selected, report with name \"check_report\" will be used"
+msgid ""
+"Report to use when printing checks. If not report selected, report with name"
+" \"check_report\" will be used"
+msgstr ""
+"Report to use when printing checks. If not report selected, report with name"
+" \"check_report\" will be used"
 
 #. module: account_check
 #: selection:account.check.operation,operation:0
@@ -1010,8 +1081,12 @@ msgstr "Plantillas de plan contable"
 #. module: account_check
 #: code:addons/account_check/models/account_check.py:551
 #, python-format
-msgid "The %s (id %s) operation has no partner linked.You will need to do it manually."
-msgstr "The %s (id %s) operation has no partner linked.You will need to do it manually."
+msgid ""
+"The %s (id %s) operation has no partner linked.You will need to do it "
+"manually."
+msgstr ""
+"The %s (id %s) operation has no partner linked.You will need to do it "
+"manually."
 
 #. module: account_check
 #: code:addons/account_check/models/account_check.py:435
@@ -1040,8 +1115,23 @@ msgstr ""
 #. module: account_check
 #: code:addons/account_check/models/account_check.py:586
 #, python-format
-msgid "The deposit operation is not linked to a payment.If you want to reject you need to do it manually."
-msgstr "The deposit operation is not linked to a payment.If you want to reject you need to do it manually."
+msgid ""
+"The deposit operation is not linked to a payment.If you want to reject you "
+"need to do it manually."
+msgstr ""
+"The deposit operation is not linked to a payment.If you want to reject you "
+"need to do it manually."
+
+#. module: account_check
+#: model:ir.model.fields,help:account_check.field_account_payment_check_number
+msgid ""
+"The selected journal is configured to print check numbers. If your pre-"
+"printed check paper already has numbers or if the current numbering is "
+"wrong, you can change it in the journal configuration page."
+msgstr ""
+"El diario seleccionado está configurado para imprimir números de cheque . Si"
+" sus cheques pre-impresos ya tienen números o si la numeración actual es "
+"incorrecta, puede cambiarla en la página de configuración del diario."
 
 #. module: account_check
 #: selection:account.check,type:0
@@ -1077,8 +1167,10 @@ msgstr ""
 
 #. module: account_check
 #: model:ir.ui.view,arch_db:account_check.print_pre_numbered_checks_view
-msgid "This will allow to save on payments the number of the corresponding check."
-msgstr "This will allow to save on payments the number of the corresponding check."
+msgid ""
+"This will allow to save on payments the number of the corresponding check."
+msgstr ""
+"This will allow to save on payments the number of the corresponding check."
 
 #. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_checkbook_range_to
