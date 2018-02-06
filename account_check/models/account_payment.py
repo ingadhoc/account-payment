@@ -493,7 +493,11 @@ class AccountPayment(models.Model):
     @api.multi
     def do_print_checks(self):
         # si cambiamos nombre de check_report tener en cuenta en sipreco
-        report_name = self.checkbook_id.report_template.report_name \
+        checkbook = self.mapped('checkbook_id')
+        # si todos los cheques son de la misma chequera entonces buscamos
+        # reporte específico para esa chequera
+        report_name = len(checkbook) == 1 and  \
+            checkbook.report_template.report_name \
             or 'check_report'
         check_report = self.env['report'].get_action(self, report_name)
         # ya el buscar el reporte da el error solo
