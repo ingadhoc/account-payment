@@ -112,6 +112,7 @@ class AccountPayment(models.Model):
                 # en transferencias
                 # ('at_least_one_inbound', '=', True),
                 ('company_id', '=', rec.journal_id.company_id.id),
+                ('id', '!=', rec.journal_id.id),
             ]
             rec.destination_journal_ids = rec.journal_ids.search(domain)
 
@@ -217,6 +218,9 @@ class AccountPayment(models.Model):
                     'account.account_payment_method_manual_out')
             self.payment_method_id = (
                 payment_methods and payment_methods[0] or False)
+            # si se eligió de origen el mismo diario de destino, lo resetiamos
+            if self.journal_id == self.destination_journal_id:
+                self.destination_journal_id = False
         #     # Set payment method domain
         #     # (restrict to methods enabled for the journal and to selected
         #     # payment type)
