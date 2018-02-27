@@ -119,10 +119,11 @@ class AccountInvoice(models.Model):
                 if not payment_method:
                     raise ValidationError(_(
                         'Pay now journal must have manual method!'))
-
                 payment_group = rec.env[
                     'account.payment.group'].with_context(
-                        pay_context).create({})
+                        pay_context).create({
+                            'payment_date': rec.date_invoice
+                        })
                 payment_group.payment_ids.create({
                     'payment_group_id': payment_group.id,
                     'payment_type': payment_type,
@@ -132,6 +133,7 @@ class AccountInvoice(models.Model):
                     'amount': payment_group.payment_difference,
                     'journal_id': pay_journal.id,
                     'payment_method_id': payment_method.id,
+                    'payment_date': rec.date_invoice,
                 })
                 # if validate_payment:
                 payment_group.post()
