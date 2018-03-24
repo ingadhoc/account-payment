@@ -6,7 +6,7 @@ cache:
     - $HOME/.cache/pip
 
 python:
-  - "2.7"
+  - "3.5"
 
 addons:
   apt:
@@ -28,12 +28,12 @@ addons:
 
 # set up an X server to run wkhtmltopdf.
 #before_install:
-#  - "export DISPLAY=:99.0"
+#  - "export DISPLAY=:911.0"
 #  - "sh -e /etc/init.d/xvfb start"
 
 env:
   global:
-  - VERSION="9.0" TESTS="0" LINT_CHECK="0" TRANSIFEX="0"
+  - VERSION="11.0" TESTS="0" LINT_CHECK="0" TRANSIFEX="0"
   - TRANSIFEX_USER='jjscarafia'
   # to get secure, run 'travis encrypt TRANSIFEX_PASSWORD=[transifex_password] -r [github_repo]'
   # example of github repo 'ingadhoc/odoo-infrastructure'
@@ -49,11 +49,9 @@ env:
 # it's not necessary (it is only necessary if modules in your repository can't
 # be installed in the same database. And you get a huge speed penalty in your
 # tests)
-#  - TESTS="1.0" ODOO_REPO="odoo/odoo" UNIT_TEST="1"
 #  - TESTS="1.0" ODOO_REPO="OCA/OCB" UNIT_TEST="1"
+#  - TESTS="1.0" ODOO_REPO="odoo/odoo" UNIT_TEST="1"
 
-virtualenv:
-  system_site_packages: true
 
 install:
   - git clone --depth=1 https://github.com/OCA/maintainer-quality-tools.git ${HOME}/maintainer-quality-tools
