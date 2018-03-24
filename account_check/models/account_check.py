@@ -100,7 +100,7 @@ class AccountCheckOperation(models.Model):
                     # origin_name = rec.origin.display_name
                 else:
                     origin_name = False
-            except Exception, e:
+            except Exception as e:
                 _logger.exception(
                     "Compute origin on checks exception: %s" % e)
                 # if we can get origin we clean it

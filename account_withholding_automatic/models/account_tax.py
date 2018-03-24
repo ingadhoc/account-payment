@@ -114,7 +114,7 @@ result = withholdable_base_amount * 0.10
         for rule in self.withholding_rule_ids:
             try:
                 domain = literal_eval(rule.domain)
-            except Exception, e:
+            except Exception as e:
                 raise ValidationError(_(
                     'Could not eval rule domain "%s".\n'
                     'This is what we get:\n%s' % (rule.domain, e)))
@@ -138,7 +138,7 @@ result = withholdable_base_amount * 0.10
                     tax.withholding_user_error_domain):
                 try:
                     domain = literal_eval(tax.withholding_user_error_domain)
-                except Exception, e:
+                except Exception as e:
                     raise ValidationError(_(
                         'Could not eval rule domain "%s".\n'
                         'This is what we get:\n%s' % (
