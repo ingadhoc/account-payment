@@ -3,10 +3,10 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from openerp import fields, models, _, api
-from openerp.exceptions import UserError
+from odoo import fields, models, _, api
+from odoo.exceptions import UserError
 import logging
-# import openerp.addons.decimal_precision as dp
+# import odoo.addons.decimal_precision as dp
 _logger = logging.getLogger(__name__)
 
 

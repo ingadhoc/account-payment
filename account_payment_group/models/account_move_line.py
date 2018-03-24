@@ -2,8 +2,8 @@
 # © 2016 ADHOC SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from openerp import models, fields, api
-# from openerp.exceptions import UserError, ValidationError
+from odoo import models, fields, api
+# from odoo.exceptions import UserError, ValidationError
 
 
 class AccountMoveLine(models.Model):

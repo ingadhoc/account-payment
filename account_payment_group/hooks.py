@@ -10,18 +10,18 @@ except ImportError:
     table_exists = None
     openupgrade = None
 import logging
-from openerp.api import Environment
-from openerp import _
-from openerp.exceptions import ValidationError
+from odoo.api import Environment
+from odoo import _
+from odoo.exceptions import ValidationError
 _logger = logging.getLogger(__name__)
 
 
 def post_init_hook(cr, registry):
     """Loaded after installing the module.
     This module's DB modifications will be available.
-    :param openerp.sql_db.Cursor cr:
+    :param odoo.sql_db.Cursor cr:
         Database cursor.
-    :param openerp.modules.registry.Registry registry:
+    :param odoo.modules.registry.Registry registry:
         Database registry, using v7 api.
     """
     _logger.info('running payment')

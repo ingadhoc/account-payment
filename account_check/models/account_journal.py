@@ -3,8 +3,8 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from openerp import models, fields, api, _
-from openerp.tools.misc import formatLang
+from odoo import models, fields, api, _
+from odoo.tools.misc import formatLang
 from ast import literal_eval
 
 

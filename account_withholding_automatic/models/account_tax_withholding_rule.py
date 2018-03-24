@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from openerp import models, fields
-import openerp.addons.decimal_precision as dp
+from odoo import models, fields
+import odoo.addons.decimal_precision as dp
 
 
 class AccountTaxWithholdingRule(models.Model):

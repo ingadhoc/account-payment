@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from openerp import models, fields, api, _
-import openerp.addons.decimal_precision as dp
-from openerp.exceptions import UserError, ValidationError
+from odoo import models, fields, api, _
+import odoo.addons.decimal_precision as dp
+from odoo.exceptions import UserError, ValidationError
 from ast import literal_eval
-from openerp.tools.safe_eval import safe_eval as eval
+from odoo.tools.safe_eval import safe_eval as eval
 from dateutil.relativedelta import relativedelta
 import datetime
 

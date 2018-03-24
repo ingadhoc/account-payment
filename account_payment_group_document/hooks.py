@@ -10,9 +10,9 @@ except ImportError:
 def post_init_hook(cr, registry):
     """Loaded after installing the module.
     This module's DB modifications will be available.
-    :param openerp.sql_db.Cursor cr:
+    :param odoo.sql_db.Cursor cr:
         Database cursor.
-    :param openerp.modules.registry.Registry registry:
+    :param odoo.modules.registry.Registry registry:
         Database registry, using v7 api.
     """
     payment_ids = registry['account.payment'].search(
