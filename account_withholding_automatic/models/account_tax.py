@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
-from openerp import models, fields, api, _
-import openerp.addons.decimal_precision as dp
-from openerp.exceptions import UserError, ValidationError
+from odoo import models, fields, api, _
+import odoo.addons.decimal_precision as dp
+from odoo.exceptions import UserError, ValidationError
 from ast import literal_eval
-from openerp.tools.safe_eval import safe_eval as eval
+from odoo.tools.safe_eval import safe_eval as eval
 from dateutil.relativedelta import relativedelta
 import datetime
 
@@ -114,7 +113,7 @@ result = withholdable_base_amount * 0.10
         for rule in self.withholding_rule_ids:
             try:
                 domain = literal_eval(rule.domain)
-            except Exception, e:
+            except Exception as e:
                 raise ValidationError(_(
                     'Could not eval rule domain "%s".\n'
                     'This is what we get:\n%s' % (rule.domain, e)))
@@ -138,7 +137,7 @@ result = withholdable_base_amount * 0.10
                     tax.withholding_user_error_domain):
                 try:
                     domain = literal_eval(tax.withholding_user_error_domain)
-                except Exception, e:
+                except Exception as e:
                     raise ValidationError(_(
                         'Could not eval rule domain "%s".\n'
                         'This is what we get:\n%s' % (

@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
 ##############################################################################
-# For copyright and license notices, see __openerp__.py file in root directory
+# For copyright and license notices, see __manifest__.py file in root directory
 ##############################################################################
-from openerp import api, fields, models, _
+from odoo import api, fields, models, _
 
 
 class AccountPaymentGroupInvoiceWizard(models.TransientModel):

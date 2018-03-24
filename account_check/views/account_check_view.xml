@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<openerp>
+<odoo>
     <data>
        
     <!--  Checks -->
@@ -230,4 +230,4 @@
             parent="account.menu_finance_bank_and_cash"/>   
 
     </data>
-</openerp>
+</odoo>

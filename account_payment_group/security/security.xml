@@ -1,4 +1,4 @@
-<openerp>
+<odoo>
 <data noupdate="1">
     <record model="ir.rule" id="account_payment_group_comp_rule">
         <field name="name">Account payment group company rule</field>
@@ -47,4 +47,4 @@
     </record>
 
 </data>
-</openerp>
+</odoo>

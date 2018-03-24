@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 {
     "name": "Payment Groups with Accounting Documents",
     "version": "9.0.1.2.0",
