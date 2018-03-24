@@ -32,7 +32,7 @@
         'account',
         'account_payment_fix',  # for payment method description
     ],
-    'installable': True,
+    'installable': False,
     'name': 'Withholdings on Payments',
     'test': [],
     'version': '9.0.1.1.0',
