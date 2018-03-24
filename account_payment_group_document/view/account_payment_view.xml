@@ -2,7 +2,7 @@
 <!-- © 2016 ADHOC SA
      License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
 
-<openerp>
+<odoo>
 <data>
 
 <record id="view_account_payment_form" model="ir.ui.view">
@@ -33,4 +33,4 @@
 </record>
 
 </data>
-</openerp>
+</odoo>

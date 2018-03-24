@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<openerp>
+<odoo>
     <data>
         <!-- TODO inherit other form views also (like check printing module) -->
         <record id="view_account_payment_form_inherited" model="ir.ui.view">
@@ -91,4 +91,4 @@
         </record>
 
     </data>
-</openerp>
+</odoo>
