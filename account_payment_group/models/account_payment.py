@@ -115,7 +115,7 @@ class AccountPayment(models.Model):
         # payment group for those test cases, we should fix it in another way
         # but perhups we use this parameter to allow this payments in some
         # cases
-        if literal_eval(self.env['ir.config_parameter'].get_param(
+        if literal_eval(self.env['ir.config_parameter'].sudo().get_param(
                 'enable_payments_without_payment_group', 'False')):
             return True
         for rec in self:
