@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from openupgradelib import openupgrade
 from odoo.exceptions import ValidationError
 from odoo.addons.account_check.models.account_check import AccountCheck
