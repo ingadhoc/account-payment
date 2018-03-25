@@ -5,6 +5,8 @@
 from openerp import models, fields, api, _
 from openerp.exceptions import ValidationError
 from ast import literal_eval
+import logging
+_logger = logging.getLogger(__name__)
 
 
 class AccountPayment(models.Model):
@@ -32,10 +34,31 @@ class AccountPayment(models.Model):
         string='Payment Amount',
         compute='compute_signed_amount',
     )
+    signed_amount_company_currency = fields.Monetary(
+        string='Payment Amount on Company Currency',
+        compute='compute_signed_amount',
+        currency_field='company_currency_id',
+    )
     amount_company_currency = fields.Monetary(
         string='Payment Amount on Company Currency',
         compute='_compute_amount_company_currency',
+        inverse='_inverse_amount_company_currency',
         currency_field='company_currency_id',
+    )
+    other_currency = fields.Boolean(
+        compute='_compute_other_currency',
+    )
+    force_amount_company_currency = fields.Monetary(
+        string='Payment Amount on Company Currency',
+        currency_field='company_currency_id',
+        copy=False,
+    )
+    exchange_rate = fields.Float(
+        string='Exchange Rate',
+        compute='_compute_exchange_rate',
+        # readonly=False,
+        # inverse='_inverse_exchange_rate',
+        digits=(16, 4),
     )
     company_currency_id = fields.Many2one(
         related='company_id.currency_id',
@@ -43,7 +66,8 @@ class AccountPayment(models.Model):
     )
 
     @api.multi
-    @api.depends('amount', 'payment_type', 'partner_type')
+    @api.depends(
+        'amount', 'payment_type', 'partner_type', 'amount_company_currency')
     def compute_signed_amount(self):
         for rec in self:
             sign = 1.0
@@ -54,26 +78,58 @@ class AccountPayment(models.Model):
                         rec.payment_type == 'outbound')):
                 sign = -1.0
             rec.signed_amount = rec.amount and rec.amount * sign
+            rec.signed_amount_company_currency = (
+                rec.amount_company_currency and
+                rec.amount_company_currency * sign)
 
-    @api.one
-    @api.depends('amount', 'currency_id', 'company_id.currency_id')
+    @api.multi
+    @api.depends('currency_id', 'company_currency_id')
+    def _compute_other_currency(self):
+        for rec in self:
+            if rec.company_currency_id and rec.currency_id and \
+                    rec.company_currency_id != rec.currency_id:
+                rec.other_currency = True
+
+    @api.multi
+    @api.depends(
+        'amount', 'other_currency', 'amount_company_currency')
+    def _compute_exchange_rate(self):
+        for rec in self.filtered('other_currency'):
+            rec.exchange_rate = rec.amount and (
+                rec.amount_company_currency / rec.amount) or 0.0
+
+    @api.multi
+    def _inverse_amount_company_currency(self):
+        _logger.info('Running inverse amount company currency')
+        for rec in self:
+            if rec.other_currency and rec.amount_company_currency != \
+                    rec.currency_id.with_context(
+                        date=rec.payment_date).compute(
+                        rec.amount, rec.company_id.currency_id):
+                force_amount_company_currency = rec.amount_company_currency
+            else:
+                force_amount_company_currency = False
+            rec.force_amount_company_currency = force_amount_company_currency
+
+    @api.multi
+    @api.depends('amount', 'other_currency', 'force_amount_company_currency')
     def _compute_amount_company_currency(self):
-        payment_currency = self.currency_id
-        company_currency = self.company_id.currency_id
-        if payment_currency and payment_currency != company_currency:
-            amount_company_currency = self.currency_id.with_context(
-                date=self.payment_date).compute(
-                    self.amount, self.company_id.currency_id)
-        else:
-            amount_company_currency = self.amount
-        sign = 1.0
-        if (
-                (self.partner_type == 'supplier' and
-                    self.payment_type == 'inbound') or
-                (self.partner_type == 'customer' and
-                    self.payment_type == 'outbound')):
-            sign = -1.0
-        self.amount_company_currency = amount_company_currency * sign
+        """
+        * Si las monedas son iguales devuelve 1
+        * si no, si hay force_amount_company_currency, devuelve ese valor
+        * sino, devuelve el amount convertido a la moneda de la cia
+        """
+        _logger.info('Computing amount company currency')
+        for rec in self:
+            if not rec.other_currency:
+                amount_company_currency = rec.amount
+            elif rec.force_amount_company_currency:
+                amount_company_currency = rec.force_amount_company_currency
+            else:
+                amount_company_currency = rec.currency_id.with_context(
+                    date=rec.payment_date).compute(
+                        rec.amount, rec.company_id.currency_id)
+            rec.amount_company_currency = amount_company_currency
 
     @api.multi
     @api.onchange('payment_type_copy')
@@ -164,3 +220,18 @@ class AccountPayment(models.Model):
             'res_id': self.id,
             'context': self._context,
         }
+
+    def _get_shared_move_line_vals(
+            self, debit, credit, amount_currency, move_id, invoice_id=False):
+        """
+        Si se esta forzando importe en moneda de cia, usamos este importe
+        para debito/credito
+        """
+        res = super(AccountPayment, self)._get_shared_move_line_vals(
+            debit, credit, amount_currency, move_id, invoice_id=invoice_id)
+        if self.force_amount_company_currency:
+            if res.get('debit', False):
+                res['debit'] = self.force_amount_company_currency
+            if res.get('credit', False):
+                res['credit'] = self.force_amount_company_currency
+        return res
