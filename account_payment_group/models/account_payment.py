@@ -220,3 +220,18 @@ class AccountPayment(models.Model):
             'res_id': self.id,
             'context': self._context,
         }
+
+    def _get_shared_move_line_vals(
+            self, debit, credit, amount_currency, move_id, invoice_id=False):
+        """
+        Si se esta forzando importe en moneda de cia, usamos este importe
+        para debito/credito
+        """
+        res = super(AccountPayment, self)._get_shared_move_line_vals(
+            debit, credit, amount_currency, move_id, invoice_id=invoice_id)
+        if self.force_amount_company_currency:
+            if res.get('debit', False):
+                res['debit'] = self.force_amount_company_currency
+            if res.get('credit', False):
+                res['credit'] = self.force_amount_company_currency
+        return res

@@ -74,13 +74,12 @@
 
             <!-- seccion para mejora pagos en otra moneda -->
             <div name="amount_div" position="after">
-                <field name="company_currency_id" invisible="0"/>
-                <field name="other_currency" invisible="0"/>
-                <field name="force_amount_company_currency" invisible="0"/>
+                <field name="company_currency_id" invisible="1"/>
+                <field name="other_currency" invisible="1"/>
+                <field name="force_amount_company_currency" invisible="1"/>
                 <label for="amount_company_currency" string="(on company currency)" attrs="{'invisible': [('other_currency', '=', False)]}"/>
                 <div name="amount_company_currency" class="o_row" attrs="{'invisible': [('other_currency', '=', False)]}">
-                        x <field name="exchange_rate"/> = 
-                    <field name="amount_company_currency" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                    x <field name="exchange_rate"/> = <field name="amount_company_currency" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                 </div>
             </div>
 
