@@ -42,8 +42,7 @@
             <!-- sum de este amount no tiene sentido por que puede ser distintas monedas -->
             <!-- <field name="amount"/> -->
             <field name="signed_amount"/>
-
-            <field name="amount_company_currency" sum="Total"/>
+            <field name="signed_amount_company_currency" sum="Total"/>
             <field name="state"/>
             <field name="currency_id" invisible="1"/>
             <field name="company_currency_id" invisible="1"/>
@@ -70,6 +69,18 @@
                 <!-- only show this field if we are not on a payment group -->
                 <div class="oe_title" name="payment_group_id" invisible="context.get('payment_group')">
                     <h1><field name="payment_group_id"/></h1>
+                </div>
+            </div>
+
+            <!-- seccion para mejora pagos en otra moneda -->
+            <div name="amount_div" position="after">
+                <field name="company_currency_id" invisible="0"/>
+                <field name="other_currency" invisible="0"/>
+                <field name="force_amount_company_currency" invisible="0"/>
+                <label for="amount_company_currency" string="(on company currency)" attrs="{'invisible': [('other_currency', '=', False)]}"/>
+                <div name="amount_company_currency" class="o_row" attrs="{'invisible': [('other_currency', '=', False)]}">
+                        x <field name="exchange_rate"/> = 
+                    <field name="amount_company_currency" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                 </div>
             </div>
 

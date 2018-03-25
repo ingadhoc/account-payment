@@ -432,11 +432,11 @@ class AccountPaymentGroup(models.Model):
             rec.payment_difference = rec.to_pay_amount - rec.payments_amount
 
     @api.multi
-    @api.depends('payment_ids.amount_company_currency')
+    @api.depends('payment_ids.signed_amount_company_currency')
     def _compute_payments_amount(self):
         for rec in self:
             rec.payments_amount = sum(rec.payment_ids.mapped(
-                'amount_company_currency'))
+                'signed_amount_company_currency'))
             # payments_amount = sum([
             #     x.payment_type == 'inbound' and
             #     x.amount_company_currency or -x.amount_company_currency for
