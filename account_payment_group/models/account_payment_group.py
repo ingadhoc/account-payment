@@ -142,7 +142,7 @@ class AccountPaymentGroup(models.Model):
         compute='_compute_selected_debt',
     )
     unreconciled_amount = fields.Monetary(
-        string='Adjusment / Advance',
+        string='Adjustment / Advance',
         readonly=True,
         states={'draft': [('readonly', False)]},
     )

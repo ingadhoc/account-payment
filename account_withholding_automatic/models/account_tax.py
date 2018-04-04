@@ -271,7 +271,26 @@ result = withholdable_base_amount * 0.10
         # voucher = self.voucher_id
         withholdable_invoiced_amount = payment_group.selected_debt_untaxed
         withholdable_advanced_amount = 0.0
-        if self.withholding_advances:
+        # if the unreconciled_amount is negative, then the user wants to make
+        # a partial payment. To get the right untaxed amount we need to know
+        # which invoice is going to be paid, the easier way is to ask the user
+        # to choose it. We make this no matter if withholding_advances is
+        # enabled or not
+        if payment_group.unreconciled_amount < 0.0:
+            withholdable_advanced_amount = 0.0
+            to_pay_line = payment_group.to_pay_move_line_ids
+            if len(to_pay_line) != 1:
+                raise ValidationError(_(
+                    'If you are going to make a partial payment (negative '
+                    '"Adjustment / Advance)" value, you need to select only '
+                    'one debt so that we can estimate the right withholding '
+                    'amounts.'))
+            # factor for total_untaxed
+            invoice_factor = to_pay_line.invoice_id and \
+                to_pay_line.invoice_id._get_tax_factor() or 1.0
+            withholdable_invoiced_amount = \
+                payment_group.to_pay_amount * invoice_factor
+        elif self.withholding_advances:
             withholdable_advanced_amount = payment_group.unreconciled_amount
 
         accumulated_amount = previous_withholding_amount = 0.0
