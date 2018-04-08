@@ -738,6 +738,7 @@ class AccountPaymentGroup(models.Model):
             # a conciliar era de misma moneda
             secondary_currency = rec.matched_move_line_ids.mapped(
                 'currency_id')
+            # TODO borrar en v11 ya que funciona bien
             no_currency = rec.matched_move_line_ids.filtered(
                 lambda x: not x.currency_id)
             if len(secondary_currency) > 1 or \
