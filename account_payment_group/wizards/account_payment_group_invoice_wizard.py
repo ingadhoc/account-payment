@@ -85,7 +85,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
             force_company=company.id).property_account_position_id.map_tax(
                 taxes)
 
-    @api.depends('amount_untaxed', 'tax_ids')
+    @api.onchange('amount_untaxed', 'tax_ids')
     def _inverse_amount_untaxed(self):
         self.ensure_one()
         if self.tax_ids:
@@ -97,7 +97,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
         else:
             self.amount_total = self.amount_untaxed
 
-    @api.onchange('tax_ids', 'amount_total')
+    @api.depends('tax_ids', 'amount_total')
     def _compute_amount_untaxed(self):
         """
         For now we implement inverse only for percent taxes. We could extend to
