@@ -186,5 +186,21 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
         invoice.write({'invoice_line_ids': [(0, 0, line_values)]})
         invoice.compute_taxes()
         invoice.signal_workflow('invoice_open')
+
+        # TODO this FIX is to be removed on v11. This is to fix reconcilation
+        # of the invoice with secondary_currency and the debit note without
+        # secondary_currency
+        secondary_currency = self.payment_group_id.to_pay_move_line_ids.mapped(
+            'currency_id')
+        if len(secondary_currency) == 1:
+            move_lines = invoice.move_id.line_ids.filtered(
+                lambda x: x.account_id == invoice.account_id)
+            # use _write because move is already posted
+            if not move_lines.mapped('currency_id'):
+                move_lines._write({
+                    'currency_id': secondary_currency.id,
+                    'amount_currency': 0.0,
+                })
+
         self.payment_group_id.to_pay_move_line_ids += (
             invoice.open_move_line_ids)
