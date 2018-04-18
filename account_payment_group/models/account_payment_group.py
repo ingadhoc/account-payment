@@ -177,17 +177,13 @@ class AccountPaymentGroup(models.Model):
     ], readonly=True, default='draft', copy=False, string="Status",
         track_visibility='onchange',
     )
-    move_lines_domain = (
-        "["
-        "('partner_id.commercial_partner_id', '=', commercial_partner_id),"
-        "('account_id.internal_type', '=', account_internal_type),"
-        "('account_id.reconcile', '=', True),"
-        "('reconciled', '=', False),"
-        "('company_id', '=', company_id),"
-        # '|',
-        # ('amount_residual', '!=', False),
-        # ('amount_residual_currency', '!=', False),
-        "]")
+    move_lines_domain = [
+        # ('partner_id.commercial_partner_id', '=', commercial_partner_id),
+        # ('account_id.internal_type', '=', account_internal_type),
+        ('account_id.reconcile', '=', True),
+        ('reconciled', '=', False),
+        # ('company_id', '=', company_id),
+    ]
     debt_move_line_ids = fields.Many2many(
         'account.move.line',
         # por alguna razon el related no funciona bien ni con states ni
