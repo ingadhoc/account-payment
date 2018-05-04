@@ -74,7 +74,7 @@ class AccountTax(models.Model):
         'Python Code',
         default='''
 # withholdable_base_amount
-# payment_group: account.payment.group object
+# payment: account.payment.group object
 # partner: res.partner object (commercial partner of payment group)
 # withholding_tax: account.tax.withholding object
 
