@@ -239,25 +239,36 @@ result = withholdable_base_amount * 0.10
         """
         to_date = fields.Date.from_string(
             payment_group.payment_date) or datetime.date.today()
-        previos_payment_groups_domain = [
+        common_previous_domain = [
             ('partner_id.commercial_partner_id', '=',
                 payment_group.commercial_partner_id.id),
-            ('state', '=', 'posted'),
-            ('id', '!=', payment_group.id),
         ]
         if self.withholding_accumulated_payments == 'month':
             from_relative_delta = relativedelta(day=1)
         elif self.withholding_accumulated_payments == 'year':
             from_relative_delta = relativedelta(day=1, month=1)
         from_date = to_date + from_relative_delta
-        previos_payment_groups_domain += [
+        common_previous_domain += [
             ('payment_date', '<=', to_date),
             ('payment_date', '>=', from_date),
         ]
-        return (
-            previos_payment_groups_domain,
-            previos_payment_groups_domain + [
-                ('tax_withholding_id', '=', self.id)])
+
+        previous_payment_groups_domain = common_previous_domain + [
+            ('state', 'not in', ['draft', 'cancel', 'confirmed']),
+            ('id', '!=', payment_group.id),
+        ]
+        # for compatibility with public_budget we check state not in and not
+        # state in posted. Just in case someone implements payments cancelled
+        # on posted payment group, we remove the cancel payments (not the
+        # draft ones as they are also considered by public_budget)
+        previous_payments_domain = common_previous_domain + [
+            ('payment_group_id.state', 'not in',
+                ['draft', 'cancel', 'confirmed']),
+            ('state', '!=', 'cancel'),
+            ('tax_withholding_id', '=', self.id),
+            ('payment_group_id.id', '!=', payment_group.id),
+        ]
+        return (previous_payment_groups_domain, previous_payments_domain)
 
     @api.multi
     def get_withholding_vals(self, payment_group):
@@ -300,13 +311,22 @@ result = withholdable_base_amount * 0.10
             same_period_payments = self.env['account.payment.group'].search(
                 previos_payment_groups_domain)
             for same_period_payment_group in same_period_payments:
-                # obtenemos importe acumulado sujeto a retencion de voucher
-                # anteriores
-                accumulated_amount += (
-                    same_period_payment_group.matched_amount)
-                if self.withholding_advances:
+                # obtenemos importe acumulado sujeto a retencion de pagos
+                # anteriores. Por compatibilidad con public_budget aceptamos
+                # pagos en otros estados no validados donde el matched y
+                # unmatched no se computaron, por eso agragamos la condición
+                if same_period_payment_group.state == 'posted':
                     accumulated_amount += (
-                        same_period_payment_group.unmatched_amount)
+                        same_period_payment_group.matched_amount)
+                    if self.withholding_advances:
+                        accumulated_amount += (
+                            same_period_payment_group.unmatched_amount)
+                else:
+                    accumulated_amount += (
+                        same_period_payment_group.to_pay_amount)
+                    if self.withholding_advances:
+                        accumulated_amount += (
+                            same_period_payment_group.unreconciled_amount)
             previous_withholding_amount = sum(
                 self.env['account.payment'].search(
                     previos_payments_domain).mapped('amount'))
