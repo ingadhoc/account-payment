@@ -141,7 +141,7 @@ class AccountPaymentGroup(models.Model):
         compute='_compute_selected_debt',
     )
     unreconciled_amount = fields.Monetary(
-        string='Adjusment / Advance',
+        string='Adjustment / Advance',
         readonly=True,
         states={'draft': [('readonly', False)]},
     )
@@ -176,17 +176,13 @@ class AccountPaymentGroup(models.Model):
     ], readonly=True, default='draft', copy=False, string="Status",
         track_visibility='onchange',
     )
-    move_lines_domain = (
-        "["
-        "('partner_id.commercial_partner_id', '=', commercial_partner_id),"
-        "('account_id.internal_type', '=', account_internal_type),"
-        "('account_id.reconcile', '=', True),"
-        "('reconciled', '=', False),"
-        "('company_id', '=', company_id),"
-        # '|',
-        # ('amount_residual', '!=', False),
-        # ('amount_residual_currency', '!=', False),
-        "]")
+    move_lines_domain = [
+        # ('partner_id.commercial_partner_id', '=', commercial_partner_id),
+        # ('account_id.internal_type', '=', account_internal_type),
+        ('account_id.reconcile', '=', True),
+        ('reconciled', '=', False),
+        # ('company_id', '=', company_id),
+    ]
     debt_move_line_ids = fields.Many2many(
         'account.move.line',
         # por alguna razon el related no funciona bien ni con states ni
@@ -431,11 +427,11 @@ class AccountPaymentGroup(models.Model):
             rec.payment_difference = rec.to_pay_amount - rec.payments_amount
 
     @api.multi
-    @api.depends('payment_ids.amount_company_currency')
+    @api.depends('payment_ids.signed_amount_company_currency')
     def _compute_payments_amount(self):
         for rec in self:
             rec.payments_amount = sum(rec.payment_ids.mapped(
-                'amount_company_currency'))
+                'signed_amount_company_currency'))
             # payments_amount = sum([
             #     x.payment_type == 'inbound' and
             #     x.amount_company_currency or -x.amount_company_currency for
@@ -706,11 +702,46 @@ class AccountPaymentGroup(models.Model):
             counterpart_aml = rec.payment_ids.mapped('move_line_ids').filtered(
                 lambda r: not r.reconciled and r.account_id.internal_type in (
                     'payable', 'receivable'))
+
+            # si estamos pagando algo en otra moneda entonces le agregamos
+            # a los apuntes de deuda sin moneda, que se está pagando en esa
+            # otra moneda como se hace cuando se machea desde facturas
+            secondary_currency = rec.to_pay_move_line_ids.mapped(
+                'currency_id')
+            if len(secondary_currency) == 1:
+                for credit_aml in counterpart_aml.filtered(
+                        lambda x: not x.currency_id):
+                    currency_vals = {
+                        'amount_currency':
+                            credit_aml.company_id.currency_id.with_context(
+                                date=credit_aml.date).compute(
+                                    credit_aml.balance, secondary_currency),
+                        'currency_id': secondary_currency.id}
+                    credit_aml.with_context(
+                        allow_amount_currency=True,
+                        check_move_validity=False).write(currency_vals)
+
             # porque la cuenta podria ser no recivible y ni conciliable
             # (por ejemplo en sipreco)
             if counterpart_aml and rec.to_pay_move_line_ids:
                 (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile(
                     writeoff_acc_id, writeoff_journal_id)
+
+            # si lo que se concilio es en mas de una moneda, entonces lo
+            # bloqueamos ya que no siempre se comporta bien. No lo hacemos
+            # antes para no mandar este error si al final no se lo que se iba
+            # a conciliar era de misma moneda
+            secondary_currency = rec.matched_move_line_ids.mapped(
+                'currency_id')
+            # TODO borrar en v11 ya que funciona bien
+            no_currency = rec.matched_move_line_ids.filtered(
+                lambda x: not x.currency_id)
+            if len(secondary_currency) > 1 or \
+                    len(secondary_currency) == 1 and no_currency:
+                raise ValidationError(_(
+                    'No puede conciliar en un solo pago deudas con distintas '
+                    'monedas'))
+
             rec.state = 'posted'
 
     # @api.multi
