@@ -19,7 +19,7 @@
 ##############################################################################
 {
     'name': 'Account Check Management',
-    'version': '9.0.1.23.0',
+    'version': '9.0.1.24.0',
     'category': 'Accounting',
     'summary': 'Accounting, Payment, Check, Third, Issue',
     'author': "OpenERP Team de Localizacion Argentina,"
