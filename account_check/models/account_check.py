@@ -31,6 +31,7 @@ class AccountCheckOperation(models.Model):
         required=True,
         ondelete='cascade',
         auto_join=True,
+        index=True
     )
     operation = fields.Selection([
         # from payments
@@ -522,6 +523,7 @@ class AccountCheck(models.Model):
         # buscamos operaciones anteriores a la fecha que definan este estado
         if not force_domain:
             force_domain = []
+
         operations = self.operation_ids.search([
             ('date', '<=', date),
             ('operation', '=', state)] + force_domain)
