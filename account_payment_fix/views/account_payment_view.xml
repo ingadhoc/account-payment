@@ -44,8 +44,7 @@
 <record id="account.menu_finance_reports" model="ir.ui.menu">
     <field name="sequence" eval="6"/>
 </record>
-<!-- TODO do not force account module and use name on english "Bank and Cash" -->
-<menuitem id="account.menu_finance_bank_and_cash" parent="account.menu_finance" sequence="4" groups="account.group_account_user" name="Banco y Caja"/>
+<menuitem id="account_payment_fix.menu_finance_bank_and_cash" parent="account.menu_finance" sequence="4" groups="account.group_account_user" name="Bank and Cash"/>
 
 
 <!-- backport -->

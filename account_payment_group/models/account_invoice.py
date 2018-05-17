@@ -57,9 +57,6 @@ class AccountInvoice(models.Model):
         if self.state != 'open':
             raise ValidationError(_(
                 'You can only register payment if invoice is open'))
-        # target = 'new'
-        # if self.company_id.double_validation:
-        #     target = 'current'
         return {
             'name': _('Register Payment'),
             'view_type': 'form',
@@ -67,9 +64,7 @@ class AccountInvoice(models.Model):
             'res_model': 'account.payment.group',
             'view_id': False,
             'target': 'current',
-            # 'target': target,
             'type': 'ir.actions.act_window',
-            # 'domain': [('id', 'in', aml.ids)],
             'context': {
                 'to_pay_move_line_ids': self.open_move_line_ids.ids,
                 'pop_up': True,

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
 
 <record id="view_account_invoice_tree" model="ir.ui.view">
     <field name="name">account.invoice.tree</field>
@@ -79,5 +78,4 @@
     </field>
 </record>
 
-</data>
 </odoo>

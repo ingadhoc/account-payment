@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
 
 <!-- Journal Items -->
 <record id="view_move_line_tree" model="ir.ui.view">
@@ -38,5 +37,4 @@
     </field>
 </record>
 
-    </data>
 </odoo>

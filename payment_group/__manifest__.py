@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 ##############################################################################
 #
 #    Copyright (C) 2015  ADHOC SA  (http://www.adhoc.com.ar)
@@ -18,21 +19,19 @@
 #
 ##############################################################################
 {
-    'author': 'ADHOC SA,Odoo Community Association (OCA)',
+    'name': 'Payment Acquirer Groups',
+    'version': '9.0.1.0.0',
+    'author': 'ADHOC SA',
     'website': 'www.adhoc.com.ar',
     'license': 'AGPL-3',
     'category': 'Accounting & Finance',
-    'data': [
-        'views/account_tax_view.xml',
-        'views/account_payment_view.xml',
-        'data/account_payment_method_data.xml',
-    ],
     'depends': [
-        'account',
-        'account_payment_fix',  # for payment method description
+        'payment'
     ],
-    'installable': False,
-    'name': 'Withholdings on Payments',
+    'data': [
+        'views/payment_acquirer_view.xml',
+    ],
+    'demo': [],
     'test': [],
-    'version': '10.0.1.0.0',
+    'installable': False,
 }

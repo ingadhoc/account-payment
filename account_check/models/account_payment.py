@@ -215,7 +215,6 @@ class AccountPayment(models.Model):
             [('check_owner_vat', '=', self.check_owner_vat)],
             limit=1).check_owner_name
 
-    @api.one
     @api.onchange('partner_id', 'payment_method_code')
     def onchange_partner_check(self):
         commercial_partner = self.partner_id.commercial_partner_id

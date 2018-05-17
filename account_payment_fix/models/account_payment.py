@@ -232,7 +232,7 @@ class AccountPayment(models.Model):
         #                 ('id', 'in', payment_methods.ids)]}}
         # return {}
 
-    @api.one
+    @api.multi
     @api.depends('invoice_ids', 'payment_type', 'partner_type', 'partner_id')
     def _compute_destination_account_id(self):
         """
@@ -241,7 +241,8 @@ class AccountPayment(models.Model):
         only works sending it on partner
         """
         res = super(AccountPayment, self)._compute_destination_account_id()
-        if not self.invoice_ids and self.payment_type != 'transfer':
+        for rec in self.filtered(
+                lambda x: not x.invoice_ids and x.payment_type != 'transfer'):
             partner = self.partner_id.with_context(
                 force_company=self.company_id.id)
             if self.partner_type == 'customer':
