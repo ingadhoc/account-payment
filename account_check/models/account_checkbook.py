@@ -122,19 +122,20 @@ class AccountCheckbook(models.Model):
             rec._create_sequence()
         return rec
 
-    @api.one
+    @api.multi
     def _create_sequence(self):
         """ Create a check sequence for the checkbook """
-        self.sequence_id = self.env['ir.sequence'].sudo().create({
-            'name': '%s - %s' % (self.journal_id.name, self.name),
-            'implementation': 'no_gap',
-            'padding': 8,
-            'number_increment': 1,
-            'code': 'issue_check',
-            # si no lo pasamos, en la creacion se setea 1
-            'number_next_actual': self.next_number,
-            'company_id': self.journal_id.company_id.id,
-        })
+        for rec in self:
+            rec.sequence_id = rec.env['ir.sequence'].sudo().create({
+                'name': '%s - %s' % (rec.journal_id.name, rec.name),
+                'implementation': 'no_gap',
+                'padding': 8,
+                'number_increment': 1,
+                'code': 'issue_check',
+                # si no lo pasamos, en la creacion se setea 1
+                'number_next_actual': rec.next_number,
+                'company_id': rec.journal_id.company_id.id,
+            })
 
     @api.multi
     def _compute_name(self):
@@ -147,9 +148,9 @@ class AccountCheckbook(models.Model):
                 name += _(' up to %s') % rec.range_to
             rec.name = name
 
-    @api.one
+    @api.multi
     def unlink(self):
-        if self.issue_check_ids:
+        if self.mapped('issue_check_ids'):
             raise ValidationError(
                 _('You can drop a checkbook if it has been used on checks!'))
         return super(AccountCheckbook, self).unlink()

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
        
     <!--  Checks -->
         <record model="ir.ui.view" id="view_account_check_tree">
@@ -211,7 +210,7 @@
             action="action_third_check"
             id="menu_third_check"
             sequence="40"
-            parent="account.menu_finance_bank_and_cash"/> 
+            parent="account_payment_fix.menu_finance_bank_and_cash"/> 
 
         <!-- Issued Check Menu -->
         <record model="ir.actions.act_window" id="action_issue_check">
@@ -227,7 +226,6 @@
             action="action_issue_check"
             id="menu_issue_check"
             sequence="50"
-            parent="account.menu_finance_bank_and_cash"/>   
+            parent="account_payment_fix.menu_finance_bank_and_cash"/>   
 
-    </data>
 </odoo>

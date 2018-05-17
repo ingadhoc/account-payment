@@ -14,20 +14,7 @@ class AccountPayment(models.Model):
     _name = "account.payment"
     _inherit = ['mail.thread', 'account.payment']
 
-    # inicio backport commit d19cf48499b42fbd24e6a7ec283433a577362666
-    state = fields.Selection([
-        ('draft', 'Draft'),
-        ('posted', 'Posted'),
-        ('sent', 'Sent'),
-        ('reconciled', 'Reconciled'),
-        ('cancel', 'Cancelled')],
-        readonly=True,
-        default='draft',
-        copy=False,
-        string="Status",
-        track_visibility='always',
-
-    )
+    state = fields.Selection(track_visibility='always')
     amount = fields.Monetary(track_visibility='always')
     partner_id = fields.Many2one(track_visibility='always')
     journal_id = fields.Many2one(track_visibility='always')
@@ -46,19 +33,6 @@ class AccountPayment(models.Model):
         for rec in self:
             rec.payment_method_description = rec.payment_method_id.display_name
 
-    # backport
-    @api.multi
-    def cancel(self):
-        res = super(AccountPayment, self).cancel()
-        self.write({'state': 'cancel'})
-        return res
-
-    @api.multi
-    def action_draft(self):
-        return self.write({'state': 'draft'})
-
-    # fin backport
-
     # nuevo campo funcion para definir dominio de los metodos
     payment_method_ids = fields.Many2many(
         'account.payment.method',
@@ -75,27 +49,6 @@ class AccountPayment(models.Model):
         'account.journal',
         compute='_compute_destination_journals'
     )
-
-    @api.multi
-    def onchange(self, values, field_name, field_onchange):
-        """
-        Idea obtenida de aca
-        https://github.com/odoo/odoo/issues/16072#issuecomment-289833419
-        por el cambio que se introdujo en esa mimsa conversación, TODO en v11
-        no haría mas falta, simplemente domain="[('id', 'in', x2m_field)]"
-        Otras posibilidades que probamos pero no resultaron del todo fue:
-        * agregar onchange sobre campos calculados y que devuelvan un dict con
-        domain. El tema es que si se entra a un registro guardado el onchange
-        no se ejecuta
-        * usae el modulo de web_domain_field que esta en un pr a la oca
-        """
-        for field in field_onchange.keys():
-            if field.startswith((
-                    'payment_method_ids.',
-                    'destination_journal_ids.', 'journal_ids.')):
-                del field_onchange[field]
-        return super(AccountPayment, self).onchange(
-            values, field_name, field_onchange)
 
     @api.multi
     @api.depends(
@@ -232,7 +185,7 @@ class AccountPayment(models.Model):
         #                 ('id', 'in', payment_methods.ids)]}}
         # return {}
 
-    @api.one
+    @api.multi
     @api.depends('invoice_ids', 'payment_type', 'partner_type', 'partner_id')
     def _compute_destination_account_id(self):
         """
@@ -241,7 +194,8 @@ class AccountPayment(models.Model):
         only works sending it on partner
         """
         res = super(AccountPayment, self)._compute_destination_account_id()
-        if not self.invoice_ids and self.payment_type != 'transfer':
+        for rec in self.filtered(
+                lambda x: not x.invoice_ids and x.payment_type != 'transfer'):
             partner = self.partner_id.with_context(
                 force_company=self.company_id.id)
             if self.partner_type == 'customer':

@@ -40,7 +40,7 @@ To use this module, you need to:
 Known issues / Roadmap
 ======================
 
-* ...
+* N/A
 
 Bug Tracker
 ===========

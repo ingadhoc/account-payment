@@ -18,7 +18,7 @@
 #
 ##############################################################################
 {
-    'author': 'ADHOC SA',
+    'author': 'ADHOC SA,Odoo Community Association (OCA)',
     'website': 'www.adhoc.com.ar',
     'license': 'AGPL-3',
     'category': 'Accounting & Finance',
@@ -34,5 +34,5 @@
     'installable': False,
     'name': 'Withholdings on Payments',
     'test': [],
-    'version': '9.0.1.1.0',
+    'version': '10.0.1.0.0',
 }

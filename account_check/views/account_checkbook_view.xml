@@ -1,46 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
 
-        <record id="view_account_checkbook_tree" model="ir.ui.view">
-            <field name="name">account.checkbook.tree</field>
-            <field name="model">account.checkbook</field>
-            <field name="arch" type="xml">
-                <tree string="Checkbooks" colors="blue:state == 'draft';black:state in ('active');red:state == 'hrejected';gray:state == 'used'" editable="bottom">
-                    <field name="issue_check_subtype"/>
-                    <field name="name"/>
-                    <field name="next_number"/>
-                    <field name="range_to"/>
-                    <field name="numerate_on_printing"/>
-                    <!-- <field name="block_manual_number"/> -->
-                    <field name="state"/>
-                </tree>
-            </field>
-        </record>
+    <record id="view_account_checkbook_tree" model="ir.ui.view">
+        <field name="name">account.checkbook.tree</field>
+        <field name="model">account.checkbook</field>
+        <field name="arch" type="xml">
+            <tree string="Checkbooks" colors="blue:state == 'draft';black:state in ('active');red:state == 'hrejected';gray:state == 'used'" editable="bottom">
+                <field name="issue_check_subtype"/>
+                <field name="name"/>
+                <field name="next_number"/>
+                <field name="range_to"/>
+                <field name="numerate_on_printing"/>
+                <!-- <field name="block_manual_number"/> -->
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
 
-        <record id="view_account_checkbook_form" model="ir.ui.view">
-            <field name="name">account.checkbook.form</field>
-            <field name="model">account.checkbook</field>
-            <field name="arch" type="xml">
-                <form string="Checkbooks"> 
-                    <header string="Checkbooks">
-                        <field name="state" widget="statusbar" clickable="True"/>
-                    </header>
-                    <sheet string="Checkbooks">
-                        <group>
-                            <field name="name" invisible="1"/>
-                            <field name="sequence_id" groups="base.group_no_one"/>
-                            <field name="next_number"/>
-                            <field name="issue_check_subtype"/>
-                            <field name="range_to"/>
-                            <field name="numerate_on_printing"/>
-                            <!-- <field name="block_manual_number"/> -->
-                            <field name="report_template"/>
-                        </group>
-                    </sheet>
-                </form>
-            </field>
-        </record>
- 
-    </data>
-</odoo>        
+    <record id="view_account_checkbook_form" model="ir.ui.view">
+        <field name="name">account.checkbook.form</field>
+        <field name="model">account.checkbook</field>
+        <field name="arch" type="xml">
+            <form string="Checkbooks"> 
+                <header string="Checkbooks">
+                    <field name="state" widget="statusbar" clickable="True"/>
+                </header>
+                <sheet string="Checkbooks">
+                    <group>
+                        <field name="name" invisible="1"/>
+                        <field name="sequence_id" groups="base.group_no_one"/>
+                        <field name="next_number"/>
+                        <field name="issue_check_subtype"/>
+                        <field name="range_to"/>
+                        <field name="numerate_on_printing"/>
+                        <!-- <field name="block_manual_number"/> -->
+                        <field name="report_template"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

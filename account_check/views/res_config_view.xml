@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.inherit</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <div id="bank_cash">
+                <label for="id" string="Checks Configuration"/>
+                <div name="checks_configuration">
+                    <div>
+                        <label for="rejected_check_account_id" string="Rejected Account"/>
+                        <field name="rejected_check_account_id" class="oe_inline"/>
+                    </div>
+                    <div>
+                        <label for="deferred_check_account_id" string="Deferred Account"/>
+                        <field name="deferred_check_account_id" class="oe_inline"/>
+                    </div>
+                    <!-- la ocultamos porque la idea es depreciarla y que si se usa cheques de terceros y manual en mismo diario, siempre se use la misma cuenta, la dejamos por compatibilidad para clientes que ya la tienen en uso -->
+                    <!-- <div>
+                        <label for="holding_check_account_id"/>
+                        <field name="holding_check_account_id" class="oe_inline"/>
+                    </div> -->
+                </div>
+            </div>
+        </field>
+    </record>
+</odoo>

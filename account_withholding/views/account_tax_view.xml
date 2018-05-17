@@ -1,48 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data> 
 
-        <record id="view_account_tax_search" model="ir.ui.view">
-            <field name="name">account.tax.search</field>
-            <field name="model">account.tax</field>
-            <field name="inherit_id" ref="account.view_account_tax_search"/>
-            <field name="arch" type="xml">
-                <filter name="purchase" position="after">
-                    <filter string="Customer Payment" name="customer" domain="[('type_tax_use','=','customer')]" />
-                    <filter string="Supplier Payment" name="supplier" domain="[('type_tax_use','=','supplier')]" />
-                </filter>
+    <record id="view_account_tax_search" model="ir.ui.view">
+        <field name="name">account.tax.search</field>
+        <field name="model">account.tax</field>
+        <field name="inherit_id" ref="account.view_account_tax_search"/>
+        <field name="arch" type="xml">
+            <filter name="purchase" position="after">
+                <filter string="Customer Payment" name="customer" domain="[('type_tax_use','=','customer')]" />
+                <filter string="Supplier Payment" name="supplier" domain="[('type_tax_use','=','supplier')]" />
+            </filter>
+        </field>
+    </record>
+
+
+    <record id="view_tax_form" model="ir.ui.view">
+        <field name="name">account.tax.form</field>
+        <field name="model">account.tax</field>
+        <field name="inherit_id" ref="account.view_tax_form"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="withholding_sequence_id" attrs="{'invisible': [('type_tax_use', 'not in', ['supplier', 'customer'])]}"/>
             </field>
-        </record>
+            <group name="advanced_booleans" position="attributes">
+                <attribute name="attrs">{'invisible': [('type_tax_use', 'in', ['supplier', 'customer'])]}</attribute>
+            </group>
+            <xpath expr="//page/group/group" position="attributes">
+                <attribute name="attrs">{'invisible': [('type_tax_use', 'in', ['supplier', 'customer'])]}</attribute>
+            </xpath>
+        </field>
+    </record>
 
+    <record id="action_withholding_tax_form" model="ir.actions.act_window">
+        <field name="name">Withholding Taxes</field>
+        <field name="res_model">account.tax</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain" eval="False"/>
+        <field name="context">{'search_default_customer': True, 'search_default_supplier': True, 'default_type_tax_use': 'supplier'}</field>
+        <field name="view_id" ref="account.view_tax_tree"/>
+    </record>
 
-        <record id="view_tax_form" model="ir.ui.view">
-            <field name="name">account.tax.form</field>
-            <field name="model">account.tax</field>
-            <field name="inherit_id" ref="account.view_tax_form"/>
-            <field name="arch" type="xml">
-                <field name="name" position="after">
-                    <field name="withholding_sequence_id" attrs="{'invisible': [('type_tax_use', 'not in', ['supplier', 'customer'])]}"/>
-                </field>
-                <group name="advanced_booleans" position="attributes">
-                    <attribute name="attrs">{'invisible': [('type_tax_use', 'in', ['supplier', 'customer'])]}</attribute>
-                </group>
-                <xpath expr="//page/group/group" position="attributes">
-                    <attribute name="attrs">{'invisible': [('type_tax_use', 'in', ['supplier', 'customer'])]}</attribute>
-                </xpath>
-            </field>
-        </record>
+    <menuitem action="action_withholding_tax_form" id="menu_withholding_tax_form" parent="account.account_account_menu" sequence="1"/>
 
-        <record id="action_withholding_tax_form" model="ir.actions.act_window">
-            <field name="name">Withholding Taxes</field>
-            <field name="res_model">account.tax</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">tree,form</field>
-            <field name="domain" eval="False"/>
-            <field name="context">{'search_default_customer': True, 'search_default_supplier': True, 'default_type_tax_use': 'supplier'}</field>
-            <field name="view_id" ref="account.view_tax_tree"/>
-        </record>
-
-        <menuitem action="action_withholding_tax_form" id="menu_withholding_tax_form" parent="account.account_account_menu" sequence="1"/>
-
-    </data>
 </odoo>
