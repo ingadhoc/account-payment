@@ -1,93 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
-        <record id="view_account_payment_form" model="ir.ui.view">
-            <field name="name">account.payment.form</field>
-            <field name="model">account.payment</field>
-            <field name="inherit_id" ref="account.view_account_payment_form"/>
-            <field name="arch" type="xml">
-                <form>
-                    <field name="payment_method_ids" invisible="1"/>
-                    <field name="journal_ids" invisible="1"/>
-                    <field name="destination_journal_ids" invisible="1"/>
-                </form>
-                <field name="journal_id" position="attributes">
-                    <attribute name="domain">[('id', 'in', journal_ids and journal_ids[0][2] or [])]</attribute>
-                </field>
-                <field name="destination_journal_id" position="attributes">
-                    <attribute name="domain">[('id', 'in', destination_journal_ids and destination_journal_ids[0][2] or [])]</attribute>
-                </field>
-                <field name="payment_method_id" position="attributes">
-                    <attribute name="domain">[('id', 'in', payment_method_ids and payment_method_ids[0][2] or [])]</attribute>
-                </field>
-                <field name="partner_id" position="attributes">
-                    <attribute name="domain">[(partner_type, '=', True)]</attribute>
-                </field>
 
-                <!-- backport -->
-                <button name="post" position="after">
-                    <button name="action_draft" states="cancel" string="Set to Draft" type="object"/>
-                </button>
-                <!-- fin backport -->
-                <sheet position="after">
-                    <div class="oe_chatter">
-                        <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
-                        <field name="message_ids" widget="mail_thread"/>
-                    </div>
-                </sheet>
+    <record id="view_account_payment_form" model="ir.ui.view">
+        <field name="name">account.payment.form</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="arch" type="xml">
+            <form>
+                <field name="payment_method_ids" invisible="1"/>
+                <field name="journal_ids" invisible="1"/>
+                <field name="destination_journal_ids" invisible="1"/>
+            </form>
+            <field name="journal_id" position="attributes">
+                <attribute name="domain">[('id', 'in', journal_ids)]</attribute>
             </field>
-        </record>
+            <field name="destination_journal_id" position="attributes">
+                <attribute name="domain">[('id', 'in', destination_journal_ids)]</attribute>
+            </field>
+            <field name="payment_method_id" position="attributes">
+                <attribute name="domain">[('id', 'in', payment_method_ids)]</attribute>
+            </field>
+            <field name="partner_id" position="attributes">
+                <attribute name="domain">[(partner_type, '=', True)]</attribute>
+            </field>
 
-<record id="account.menu_finance_entries" model="ir.ui.menu">
-    <field name="sequence" eval="5"/>
-</record>
-<record id="account.menu_finance_reports" model="ir.ui.menu">
-    <field name="sequence" eval="6"/>
-</record>
-<menuitem id="account_payment_fix.menu_finance_bank_and_cash" parent="account.menu_finance" sequence="4" groups="account.group_account_user" name="Bank and Cash"/>
-
-
-<!-- backport -->
-<record id="view_account_payment_tree" model="ir.ui.view">
-    <field name="name">payment.tree.inherit</field>
-    <field name="model">account.payment</field>
-    <field name="inherit_id" ref="account.view_account_payment_tree"/>
-    <field name="arch" type="xml">
-        <field name="payment_method_id" position="attributes">
-            <attribute name="invisible">1</attribute>
         </field>
-        <field name="payment_method_id" position="after">
-            <field name="payment_method_description"/>
+    </record>
+
+    <record id="account.menu_finance_entries" model="ir.ui.menu">
+        <field name="sequence" eval="5"/>
+    </record>
+    <record id="account.menu_finance_reports" model="ir.ui.menu">
+        <field name="sequence" eval="6"/>
+    </record>
+    <menuitem id="account_payment_fix.menu_finance_bank_and_cash" parent="account.menu_finance" sequence="4" groups="account.group_account_user" name="Bank and Cash"/>
+
+
+    <record id="view_account_payment_tree" model="ir.ui.view">
+        <field name="name">payment.tree.inherit</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_tree"/>
+        <field name="arch" type="xml">
+            <field name="payment_method_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="payment_method_id" position="after">
+                <field name="payment_method_description"/>
+            </field>
         </field>
-        <tree position="attributes">
-            <attribute name="decoration-muted">state in ['reconciled', 'cancel']</attribute>
-        </tree>
-    </field>
-</record>
+    </record>
 
-<record id="view_account_supplier_payment_tree" model="ir.ui.view">
-    <field name="name">payment.tree.inherit</field>
-    <field name="model">account.payment</field>
-    <field name="inherit_id" ref="account.view_account_supplier_payment_tree"/>
-    <field name="arch" type="xml">
-        <tree position="attributes">
-            <attribute name="decoration-muted">state in ['reconciled', 'cancel']</attribute>
-        </tree>
-    </field>
-</record>
-
-<record id="payment_cancel_form_inherit" model="ir.ui.view">
-    <field name="name">payment.cancel.form.inherit</field>
-    <field name="model">account.payment</field>
-    <field name="inherit_id" ref="account_cancel.payment_cancel_form_inherit"/>
-    <field name="arch" type="xml">
-        <button name="cancel" position="attributes">
-            <attribute name="attrs"></attribute>
-            <attribute name="states">posted,sent,reconciled</attribute>
-        </button>
-    </field>
-</record>
-<!-- fin backport -->
-
-    </data>
 </odoo>
