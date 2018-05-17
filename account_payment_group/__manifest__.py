@@ -17,7 +17,6 @@
         "account_cancel",
         "account_financial_amount",
         "account_payment_fix",  # for fixes related to domains on payments
-        # "account",
     ],
     "data": [
         'security/security.xml',
@@ -29,14 +28,8 @@
         'views/account_payment_group_view.xml',
         'views/account_invoice_view.xml',
         'views/account_journal_dashboard_view.xml',
-        'views/res_config_view.xml',
-        # "views/assets.xml",
-        # "views/report_name.xml",
-        # "views/res_partner_view.xml",
-        # "wizard/wizard_model_view.xml",
     ],
     "demo": [
-        # "demo/res_partner_demo.xml",
         'demo/ir_config_parameter_demo.xml',
     ],
     'post_init_hook': 'post_init_hook',

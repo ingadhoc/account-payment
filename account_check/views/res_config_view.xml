@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="view_account_config_settings_inherit" model="ir.ui.view">
-        <field name="name">account.config.settings.inherit</field>
-        <field name="model">account.config.settings</field>
-        <field name="inherit_id" ref="account.view_account_config_settings"/>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.inherit</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
         <field name="arch" type="xml">
-            <group name="bank_cash">
+            <div id="bank_cash">
                 <label for="id" string="Checks Configuration"/>
                 <div name="checks_configuration">
                     <div>
@@ -22,7 +22,7 @@
                         <field name="holding_check_account_id" class="oe_inline"/>
                     </div> -->
                 </div>
-            </group>
+            </div>
         </field>
     </record>
 </odoo>
