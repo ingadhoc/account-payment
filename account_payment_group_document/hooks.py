@@ -1,4 +1,4 @@
-# Copyright <YEAR(S)> <AUTHOR(S)>
+# -*- coding: utf-8 -*-
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 import logging
 from openerp import api, SUPERUSER_ID
@@ -6,12 +6,6 @@ _logger = logging.getLogger(__name__)
 
 
 def post_init_hook(cr, registry):
-    """Loaded after installing the module.
-    This module's DB modifications will be available.
-    :param odoo.sql_db.Cursor cr:
-        Database cursor.
-    :param odoo.modules.registry.Registry registry:
-        Database registry, using v7 api.
     """
     Add document number from payments on install
     """
