@@ -154,7 +154,6 @@ class AccountPayment(models.Model):
                 ('company_id', '=', self.payment_group_company_id.id))
         return domain
 
-    @api.multi
     @api.onchange('payment_type')
     def _onchange_payment_type(self):
         """

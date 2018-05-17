@@ -351,6 +351,8 @@ class AccountPaymentGroup(models.Model):
                 ('debit_move_id', 'in', payment_lines.ids)])
             lines |= reconciles.mapped('credit_move_id')
 
+            rec.matched_move_line_ids = lines - payment_lines
+
     payment_difference = fields.Monetary(
         compute='_compute_payment_difference',
         # TODO rename field or remove string
