@@ -22,7 +22,7 @@
     'version': '11.0.1.0.0',
     'category': 'Accounting',
     'summary': 'Accounting, Payment, Check, Third, Issue',
-    'author': 'ADHOC SA,Odoo Community Association (OCA)',
+    'author': 'ADHOC SA',
     'license': 'AGPL-3',
     'images': [
     ],

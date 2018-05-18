@@ -10,6 +10,7 @@
                 <field name="payment_method_ids" invisible="1"/>
                 <field name="journal_ids" invisible="1"/>
                 <field name="destination_journal_ids" invisible="1"/>
+                <field name="company_id" invisible="1"/>
             </form>
             <field name="journal_id" position="attributes">
                 <attribute name="domain">[('id', 'in', journal_ids)]</attribute>

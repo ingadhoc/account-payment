@@ -18,7 +18,7 @@
 #
 ##############################################################################
 {
-    'author': 'ADHOC SA,Odoo Community Association (OCA)',
+    'author': 'ADHOC SA',
     'website': 'www.adhoc.com.ar',
     'license': 'AGPL-3',
     'category': 'Accounting & Finance',
@@ -29,10 +29,11 @@
     ],
     'depends': [
         'account',
-        'account_payment_fix',  # for payment method description
+        # for payment method description and company_id field on form view
+        'account_payment_fix',
     ],
-    'installable': False,
+    'installable': True,
     'name': 'Withholdings on Payments',
     'test': [],
-    'version': '10.0.1.0.0',
+    'version': '11.0.1.0.0',
 }

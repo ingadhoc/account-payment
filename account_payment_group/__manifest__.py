@@ -16,7 +16,8 @@
     "depends": [
         "account_cancel",
         "account_financial_amount",
-        "account_payment_fix",  # for fixes related to domains on payments
+        # for fixes related to domains and company_id field on form view
+        "account_payment_fix",
     ],
     "data": [
         'security/security.xml',
