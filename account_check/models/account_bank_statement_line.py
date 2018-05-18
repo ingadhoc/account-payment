@@ -20,10 +20,10 @@ class AccountBankStatementLine(models.Model):
             for move in st_line.journal_entry_ids:
                 if self.env['account.check.operation'].search(
                         [('origin', '=', 'account.move,%s' % move.id)]):
-                    move.write({'statement_line_id': False})
+                    move.update({'statement_line_id': False})
                     move.line_ids.filtered(
                         lambda x: x.statement_id == st_line.statement_id
-                    ).write({'statement_id': False})
+                    ).update({'statement_id': False})
                     self -= st_line
         return super(
             AccountBankStatementLine, self).button_cancel_reconciliation()

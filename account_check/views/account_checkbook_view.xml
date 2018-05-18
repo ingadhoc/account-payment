@@ -21,7 +21,7 @@
         <field name="name">account.checkbook.form</field>
         <field name="model">account.checkbook</field>
         <field name="arch" type="xml">
-            <form string="Checkbooks"> 
+            <form string="Checkbooks">
                 <header string="Checkbooks">
                     <field name="state" widget="statusbar" clickable="True"/>
                 </header>
