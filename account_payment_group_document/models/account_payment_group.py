@@ -12,18 +12,13 @@ class AccountPaymentGroup(models.Model):
     _inherit = "account.payment.group"
     _order = "payment_date desc, document_number desc, id desc"
 
-    # document_number = fields.Char(
-    #     string=_('Document Number'),
-    #     related='move_id.document_number',
-    #     readonly=True,
-    #     store=True,
-    #     )
     document_number = fields.Char(
         string='Document Number',
         copy=False,
         readonly=True,
         states={'draft': [('readonly', False)]},
         track_visibility='always',
+        index=True,
     )
     document_sequence_id = fields.Many2one(
         related='receiptbook_id.sequence_id',
@@ -61,6 +56,7 @@ class AccountPaymentGroup(models.Model):
         track_visibility='always',
         states={'draft': [('readonly', False)]},
         ondelete='restrict',
+        auto_join=True,
     )
     document_type_id = fields.Many2one(
         related='receiptbook_id.document_type_id',
@@ -75,6 +71,7 @@ class AccountPaymentGroup(models.Model):
         compute='_compute_name',
         string='Document Reference',
         store=True,
+        index=True,
     )
 
     _sql_constraints = [
@@ -170,7 +167,7 @@ class AccountPaymentGroup(models.Model):
             # usa sipreco. Ademas limpiamos receiptbooks que se pueden
             # haber seteado en el pago
             if not rec.receiptbook_id:
-                rec.payment_ids.write({
+                rec.payment_ids.update({
                     'receiptbook_id': False,
                 })
                 continue
@@ -182,7 +179,7 @@ class AccountPaymentGroup(models.Model):
                         'document number.'))
                 rec.document_number = (
                     rec.receiptbook_id.sequence_id.next_by_id())
-            rec.payment_ids.write({
+            rec.payment_ids.update({
                 'document_number': rec.document_number,
                 'receiptbook_id': rec.receiptbook_id.id,
             })
