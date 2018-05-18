@@ -24,6 +24,7 @@ class AccountCheckOperation(models.Model):
         default=fields.Date.context_today,
         # default=lambda self: fields.Datetime.now(),
         required=True,
+        index=True,
     )
     check_id = fields.Many2one(
         'account.check',
@@ -31,7 +32,7 @@ class AccountCheckOperation(models.Model):
         required=True,
         ondelete='cascade',
         auto_join=True,
-        index=True
+        index=True,
     )
     operation = fields.Selection([
         # from payments
@@ -58,6 +59,7 @@ class AccountCheckOperation(models.Model):
         ('cancel', 'Cancel'),
     ],
         required=True,
+        index=True,
     )
     origin_name = fields.Char(
         compute='_compute_origin_name'
@@ -129,36 +131,44 @@ class AccountCheck(models.Model):
     operation_ids = fields.One2many(
         'account.check.operation',
         'check_id',
+        auto_join=True,
     )
     name = fields.Char(
         required=True,
         readonly=True,
         copy=False,
         states={'draft': [('readonly', False)]},
+        index=True,
     )
     number = fields.Integer(
         required=True,
         readonly=True,
         states={'draft': [('readonly', False)]},
-        copy=False
+        copy=False,
+        index=True,
     )
     checkbook_id = fields.Many2one(
         'account.checkbook',
         'Checkbook',
         readonly=True,
         states={'draft': [('readonly', False)]},
+        auto_join=True,
+        index=True,
     )
     issue_check_subtype = fields.Selection(
-        related='checkbook_id.issue_check_subtype'
+        related='checkbook_id.issue_check_subtype',
+        readonly=True,
     )
     type = fields.Selection(
         [('issue_check', 'Issue Check'), ('third_check', 'Third Check')],
         readonly=True,
+        index=True,
     )
     partner_id = fields.Many2one(
         related='operation_ids.partner_id',
         readonly=True,
-        store=True
+        store=True,
+        index=True,
     )
     state = fields.Selection([
         ('draft', 'Draft'),
@@ -181,6 +191,7 @@ class AccountCheck(models.Model):
         copy=False,
         compute='_compute_state',
         store=True,
+        index=True,
     )
     issue_date = fields.Date(
         'Issue Date',
@@ -222,7 +233,8 @@ class AccountCheck(models.Model):
     )
     payment_date = fields.Date(
         readonly=True,
-        states={'draft': [('readonly', False)]}
+        states={'draft': [('readonly', False)]},
+        index=True,
     )
     journal_id = fields.Many2one(
         'account.journal',
@@ -230,7 +242,8 @@ class AccountCheck(models.Model):
         required=True,
         domain=[('type', 'in', ['cash', 'bank'])],
         readonly=True,
-        states={'draft': [('readonly', False)]}
+        states={'draft': [('readonly', False)]},
+        index=True,
     )
     company_id = fields.Many2one(
         related='journal_id.company_id',

@@ -14,6 +14,7 @@ class AccountJournal(models.Model):
         'account.checkbook',
         'journal_id',
         'Checkbooks',
+        auto_join=True,
     )
 
     @api.model
@@ -61,18 +62,14 @@ class AccountJournal(models.Model):
     @api.multi
     def get_journal_dashboard_datas(self):
         domain_holding_third_checks = [
-            # ('payment_method_id.code', '=', 'received_third_check'),
             ('type', '=', 'third_check'),
             ('journal_id', '=', self.id),
-            # ('check_state', '=', 'holding')
             ('state', '=', 'holding')
         ]
         domain_handed_issue_checks = [
-            # ('payment_method_id.code', '=', 'issue_check'),
             ('type', '=', 'issue_check'),
             ('journal_id', '=', self.id),
             ('state', '=', 'handed')
-            # ('check_state', '=', 'handed')
         ]
         handed_checks = self.env['account.check'].search(
             domain_handed_issue_checks)

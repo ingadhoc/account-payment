@@ -15,20 +15,17 @@ class ResCompany(models.Model):
         'account.account',
         'Rejected Check Account',
         help='Rejection Checks account, for eg. "Rejected Checks"',
-        # domain=[('type', 'in', ['other'])],
     )
     deferred_check_account_id = fields.Many2one(
         'account.account',
         'Deferred Check Account',
         help='Deferred Checks account, for eg. "Deferred Checks"',
-        # domain=[('type', 'in', ['other'])],
     )
     holding_check_account_id = fields.Many2one(
         'account.account',
         'Holding Check Account',
         help='Holding Checks account for third checks, '
         'for eg. "Holding Checks"',
-        # domain=[('type', 'in', ['other'])],
     )
 
     @api.multi

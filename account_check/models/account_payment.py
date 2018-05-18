@@ -18,7 +18,8 @@ class AccountPayment(models.Model):
         string='Checks',
         copy=False,
         readonly=True,
-        states={'draft': [('readonly', '=', False)]}
+        states={'draft': [('readonly', '=', False)]},
+        auto_join=True,
     )
     # only for v8 comatibility where more than one check could be received
     # or issued
@@ -66,7 +67,7 @@ class AccountPayment(models.Model):
         'Check Number',
         readonly=True,
         states={'draft': [('readonly', False)]},
-        copy=False
+        copy=False,
     )
     check_issue_date = fields.Date(
         'Check Issue Date',
@@ -79,13 +80,14 @@ class AccountPayment(models.Model):
         'Check Payment Date',
         readonly=True,
         help="Only if this check is post dated",
-        states={'draft': [('readonly', False)]}
+        states={'draft': [('readonly', False)]},
     )
     checkbook_id = fields.Many2one(
         'account.checkbook',
         'Checkbook',
         readonly=True,
         states={'draft': [('readonly', False)]},
+        auto_join=True,
     )
     check_subtype = fields.Selection(
         related='checkbook_id.issue_check_subtype',
@@ -96,7 +98,8 @@ class AccountPayment(models.Model):
         'Check Bank',
         readonly=True,
         copy=False,
-        states={'draft': [('readonly', False)]}
+        states={'draft': [('readonly', False)]},
+        auto_join=True,
     )
     check_owner_vat = fields.Char(
         'Check Owner Vat',

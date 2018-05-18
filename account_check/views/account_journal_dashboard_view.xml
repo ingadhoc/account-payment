@@ -5,7 +5,7 @@
         <field name="model">account.journal</field>
         <field name="inherit_id" ref="account.account_journal_dashboard_kanban_view" />
         <field name="arch" type="xml">
-            <xpath expr="//t[@t-name='JournalBodyBankCash']//div[contains(@class, 'o_kanban_primary_right')]" position="inside">
+            <xpath expr="//t[@t-name='JournalBodyBankCash']//div[hasclass('o_kanban_primary_right')]" position="inside">
                 <div t-if="dashboard.show_third_checks">
                     <div class="row">
                         <div class="col-xs-6">
@@ -19,33 +19,27 @@
                         </div>
                     </div>
                 </div>
-                <!-- not so usefull -->
-<!--                         <div class="row">
-                    <div class="col-xs-12">
-                        <a type="object" name="open_transfer_money">Checks Deposits</a>
-                    </div>
-                </div> -->
-            </div>
-            <div t-if="dashboard.show_issue_checks">
-                <div class="row">
-                    <div class="col-xs-6">
-                        <a type="object" name="open_action_checks" context="{'check_type': 'issue_check'}">
-                            <t t-esc="dashboard.num_handed_issue_checks"/>
-                            <t>Issue Check(s) handed</t>
-                        </a>
-                    </div>
-                    <div class="col-xs-6 text-right">
-                        <span><t t-esc="dashboard.handed_amount"/></span>
-                    </div>
-                </div>
-                <div t-if="dashboard.num_checks_to_numerate">
+                <div t-if="dashboard.show_issue_checks">
                     <div class="row">
-                        <div class="col-xs-12">
-                            <a type="object" name="action_checks_to_numerate">
-                                <t t-esc="dashboard.num_checks_to_numerate"/>
-                                <t t-if="dashboard.num_checks_to_numerate == 1">Check to print and numerate</t>
-                                <t t-if="dashboard.num_checks_to_numerate != 1">Checks to print and numerate</t>
+                        <div class="col-xs-6">
+                            <a type="object" name="open_action_checks" context="{'check_type': 'issue_check'}">
+                                <t t-esc="dashboard.num_handed_issue_checks"/>
+                                <t>Issue Check(s) handed</t>
                             </a>
+                        </div>
+                        <div class="col-xs-6 text-right">
+                            <span><t t-esc="dashboard.handed_amount"/></span>
+                        </div>
+                    </div>
+                    <div t-if="dashboard.num_checks_to_numerate">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <a type="object" name="action_checks_to_numerate">
+                                    <t t-esc="dashboard.num_checks_to_numerate"/>
+                                    <t t-if="dashboard.num_checks_to_numerate == 1">Check to print and numerate</t>
+                                    <t t-if="dashboard.num_checks_to_numerate != 1">Checks to print and numerate</t>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

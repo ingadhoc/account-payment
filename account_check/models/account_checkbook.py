@@ -23,17 +23,13 @@ class AccountCheckbook(models.Model):
         domain=[('code', '=', 'issue_check')],
         help="Checks numbering sequence.",
         context={'default_code': 'issue_check'},
-        # sacamos lo de states ya que molesta más que ayudar
-        # readonly=True,
-        # states={'draft': [('readonly', False)]},
     )
     next_number = fields.Integer(
         'Next Number',
+        # usamos compute y no related para poder usar sudo cuando se setea
+        # secuencia sin necesidad de dar permiso en ir.sequence
         compute='_compute_next_number',
         inverse='_inverse_next_number',
-        # usamos compute para poder usar sudo cuando se setea secuencia sin
-        # necesidad de dar permiso en ir.sequence
-        # related='sequence_id.number_next_actual',
     )
     issue_check_subtype = fields.Selection(
         [('deferred', 'Deferred'), ('currents', 'Currents')],
@@ -47,8 +43,6 @@ class AccountCheckbook(models.Model):
         'contra la cuenta definida para tal fin en la compañía, luego será '
         'necesario el asiento de débito que se puede generar desde el extracto'
         ' o desde el cheque.',
-        # readonly=True,
-        # states={'draft': [('readonly', False)]}
     )
     journal_id = fields.Many2one(
         'account.journal', 'Journal',
@@ -58,7 +52,8 @@ class AccountCheckbook(models.Model):
         domain=[('type', '=', 'bank')],
         ondelete='cascade',
         context={'default_type': 'bank'},
-        states={'draft': [('readonly', False)]}
+        states={'draft': [('readonly', False)]},
+        auto_join=True,
     )
     range_to = fields.Integer(
         'To Number',
@@ -78,7 +73,7 @@ class AccountCheckbook(models.Model):
         string='State',
         # readonly=True,
         default='draft',
-        copy=False
+        copy=False,
     )
     # TODO depreciar esta funcionalidad que no estamos usando
     block_manual_number = fields.Boolean(
@@ -97,12 +92,13 @@ class AccountCheckbook(models.Model):
         'assigned after printing check.'
     )
     report_template = fields.Many2one(
-        'ir.actions.report.xml',
+        'ir.actions.report',
         'Report',
         domain="[('model', '=', 'account.payment')]",
         context="{'default_model': 'account.payment'}",
         help='Report to use when printing checks. If not report selected, '
-        'report with name "check_report" will be used')
+        'report with name "check_report" will be used',
+    )
 
     @api.multi
     @api.depends('sequence_id.number_next_actual')
