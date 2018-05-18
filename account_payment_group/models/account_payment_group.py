@@ -49,6 +49,7 @@ class AccountPaymentGroup(models.Model):
         states={'draft': [('readonly', False)]},
         track_visibility='always',
         change_default=True,
+        index=True,
     )
     commercial_partner_id = fields.Many2one(
         related='partner_id.commercial_partner_id',
@@ -70,6 +71,7 @@ class AccountPaymentGroup(models.Model):
         copy=False,
         readonly=True,
         states={'draft': [('readonly', False)]},
+        index=True,
     )
     communication = fields.Char(
         string='Memo',
@@ -117,7 +119,6 @@ class AccountPaymentGroup(models.Model):
         states={'draft': [('readonly', False)]},
         track_visibility='always',
     )
-
     payments_amount = fields.Monetary(
         compute='_compute_payments_amount',
         string='Amount',
@@ -130,8 +131,13 @@ class AccountPaymentGroup(models.Model):
         # ('sent', 'Sent'),
         # ('reconciled', 'Reconciled')
         ('cancel', 'Cancelled'),
-    ], readonly=True, default='draft', copy=False, string="Status",
+    ],
+        readonly=True,
+        default='draft',
+        copy=False,
+        string="Status",
         track_visibility='onchange',
+        index=True,
     )
     move_lines_domain = [
         # ('partner_id.commercial_partner_id', '=', commercial_partner_id),
@@ -189,7 +195,6 @@ class AccountPaymentGroup(models.Model):
         compute='_compute_payment_pop_up',
         default=lambda x: x._context.get('pop_up', False),
     )
-
     payment_difference = fields.Monetary(
         compute='_compute_payment_difference',
         # TODO rename field or remove string
@@ -209,14 +214,19 @@ class AccountPaymentGroup(models.Model):
         states={
             'draft': [('readonly', False)],
             'confirmed': [('readonly', False)]},
-    )
-    move_line_ids = fields.One2many(
-        related='payment_ids.move_line_ids',
-        readonly=True,
-        copy=False,
+        auto_join=True,
     )
     account_internal_type = fields.Char(
         compute='_compute_account_internal_type'
+    )
+    move_line_ids = fields.Many2many(
+        'account.move.line',
+        # related o2m a o2m solo toma el primer o2m y le hace o2m, por eso
+        # hacemos computed
+        # related='payment_ids.move_line_ids',
+        compute='_compute_move_lines',
+        readonly=True,
+        copy=False,
     )
 
     @api.multi
@@ -237,22 +247,6 @@ class AccountPaymentGroup(models.Model):
                     payment_group_id=rec.id).mapped(
                         'payment_group_matched_amount'))
             rec.unmatched_amount = rec.payments_amount - rec.matched_amount
-
-    @api.multi
-    def onchange(self, values, field_name, field_onchange):
-        """
-        En este caso es distinto el fix al uso que le damos para domains [0][2]
-        de campos x2many en vista. En este caso lo necesitamos porque la mejora
-        que hicieron de vistas de alguna menra molesta y hace pensar que
-        estamos escribiendo los move lines, con esto se soluciona
-        """
-        for field in field_onchange.keys():
-            if field.startswith((
-                    'to_pay_move_line_ids.',
-                    'debt_move_line_ids.')):
-                del field_onchange[field]
-        return super(AccountPaymentGroup, self).onchange(
-            values, field_name, field_onchange)
 
     @api.multi
     @api.depends('to_pay_move_line_ids')
@@ -352,53 +346,6 @@ class AccountPaymentGroup(models.Model):
             lines |= reconciles.mapped('credit_move_id')
 
             rec.matched_move_line_ids = lines - payment_lines
-
-    payment_difference = fields.Monetary(
-        compute='_compute_payment_difference',
-        # TODO rename field or remove string
-        # string='Remaining Residual',
-        readonly=True,
-        string="Payments Difference",
-        help="Difference between selected debt (or to pay amount) and "
-        "payments amount"
-    )
-    # TODO por ahora no implementamos
-    # payment_difference_handling = fields.Selection(
-    #     [('open', 'Keep open'), ('reconcile', 'Mark invoice as fully paid')],
-    #     default='open',
-    #     string="Payment Difference",
-    #     copy=False
-    # )
-    # TODO add journal?
-    # writeoff_account_id = fields.Many2one(
-    #     'account.account',
-    #     string="Difference Account",
-    #     domain=[('deprecated', '=', False)],
-    #     copy=False
-    # )
-    payment_ids = fields.One2many(
-        'account.payment',
-        'payment_group_id',
-        string='Payment Lines',
-        ondelete='cascade',
-        copy=False,
-        readonly=True,
-        states={
-            'draft': [('readonly', False)],
-            'confirmed': [('readonly', False)]},
-    )
-    move_line_ids = fields.Many2many(
-        'account.move.line',
-        # related o2m a o2m solo toma el primer o2m y le hace o2m, por eso
-        # hacemos computed
-        # related='payment_ids.move_line_ids',
-        compute='_compute_move_lines',
-        readonly=True,
-        copy=False,
-    )
-    account_internal_type = fields.Char(
-        compute='_compute_account_internal_type'
-    )
 
     @api.multi
     @api.depends('payment_ids.move_line_ids')
@@ -568,8 +515,8 @@ class AccountPaymentGroup(models.Model):
     def unreconcile(self):
         for rec in self:
             rec.payment_ids.unreconcile()
-            # TODO en alguos casos setear sent como en payment?
-            rec.write({'state': 'posted'})
+        # TODO en alguos casos setear sent como en payment?
+        self.write({'state': 'posted'})
 
     @api.multi
     def cancel(self):
@@ -581,7 +528,7 @@ class AccountPaymentGroup(models.Model):
                 # if rec.to_pay_move_line_ids:
                 #     move.line_ids.remove_move_reconcile()
             rec.payment_ids.cancel()
-            rec.state = 'cancel'
+        self.write({'state': 'cancel'})
 
     @api.multi
     def action_draft(self):
@@ -602,7 +549,7 @@ class AccountPaymentGroup(models.Model):
             if len(accounts) > 1:
                 raise ValidationError(_(
                     'To Pay Lines must be of the same account!'))
-            rec.state = 'confirmed'
+        self.write({'state': 'confirmed'})
 
     @api.multi
     def post(self):
@@ -647,7 +594,7 @@ class AccountPaymentGroup(models.Model):
                         'currency_id': secondary_currency.id}
                     credit_aml.with_context(
                         allow_amount_currency=True,
-                        check_move_validity=False).write(currency_vals)
+                        check_move_validity=False).update(currency_vals)
 
             # porque la cuenta podria ser no recivible y ni conciliable
             # (por ejemplo en sipreco)
