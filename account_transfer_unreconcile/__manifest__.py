@@ -2,13 +2,13 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 {
     "name": "Unreconcile Moves on Transfer Cancellation",
-    "version": "9.0.1.0.0",
+    "version": "11.0.1.0.0",
     "category": "Accounting",
     "website": "www.adhoc.com.ar",
     "author": "ADHOC SA, Odoo Community Association (OCA)",
     "license": "AGPL-3",
     "application": False,
-    'installable': False,
+    'installable': True,
     "external_dependencies": {
         "python": [],
         "bin": [],
