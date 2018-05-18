@@ -24,6 +24,7 @@ class AccountCheckOperation(models.Model):
         default=fields.Date.context_today,
         # default=lambda self: fields.Datetime.now(),
         required=True,
+        index=True,
     )
     check_id = fields.Many2one(
         'account.check',
@@ -31,7 +32,7 @@ class AccountCheckOperation(models.Model):
         required=True,
         ondelete='cascade',
         auto_join=True,
-        index=True
+        index=True,
     )
     operation = fields.Selection([
         # from payments
@@ -58,6 +59,7 @@ class AccountCheckOperation(models.Model):
         ('cancel', 'Cancel'),
     ],
         required=True,
+        index=True,
     )
     origin_name = fields.Char(
         compute='_compute_origin_name'
