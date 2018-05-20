@@ -23,10 +23,10 @@
     'license': 'AGPL-3',
     'category': 'Accounting & Finance',
     'data': [
+        'wizards/res_config_settings_views.xml',
         'views/account_tax_view.xml',
         'views/account_payment_group_view.xml',
         'views/account_payment_view.xml',
-        'views/res_company_view.xml',
         'security/ir.model.access.csv',
     ],
     'demo': [
@@ -36,8 +36,8 @@
         'account_payment_group',
         'account_withholding',
     ],
-    'installable': False,
+    'installable': True,
     'name': 'Automatic Withholdings on Payments',
     'test': [],
-    'version': '9.0.1.1.0',
+    'version': '11.0.1.0.0',
 }
