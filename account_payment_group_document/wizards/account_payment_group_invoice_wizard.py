@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 ##############################################################################
 # For copyright and license notices, see __manifest__.py file in root directory
 ##############################################################################
@@ -30,25 +29,6 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
         compute='_compute_available_journal_document_types',
         string='Available Journal Document Types',
     )
-
-    @api.multi
-    def onchange(self, values, field_name, field_onchange):
-        """
-        Idea obtenida de aca
-        https://github.com/odoo/odoo/issues/16072#issuecomment-289833419
-        por el cambio que se introdujo en esa mimsa conversación, TODO en v11
-        no haría mas falta, simplemente domain="[('id', 'in', x2m_field)]"
-        Otras posibilidades que probamos pero no resultaron del todo fue:
-        * agregar onchange sobre campos calculados y que devuelvan un dict con
-        domain. El tema es que si se entra a un registro guardado el onchange
-        no se ejecuta
-        * usae el modulo de web_domain_field que esta en un pr a la oca
-        """
-        for field in field_onchange.keys():
-            if field.startswith('available_journal_document_type_ids.'):
-                del field_onchange[field]
-        return super(AccountPaymentGroupInvoiceWizard, self).onchange(
-            values, field_name, field_onchange)
 
     @api.multi
     @api.depends('journal_id')
