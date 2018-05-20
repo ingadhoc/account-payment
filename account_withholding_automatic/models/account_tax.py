@@ -92,17 +92,18 @@ result = withholdable_base_amount * 0.10
     #     help="For taxes of type percentage, enter % ratio between 0-1."
     #     )
 
-    @api.one
+    @api.multi
     @api.constrains(
         'withholding_non_taxable_amount',
         'withholding_non_taxable_minimum')
     def check_withholding_non_taxable_amounts(self):
-        if (
-                self.withholding_non_taxable_amount >
-                self.withholding_non_taxable_minimum):
-            raise ValidationError(_(
-                'Non-taxable Amount can not be greater than Non-taxable '
-                'Minimum'))
+        for rec in self:
+            if (
+                    rec.withholding_non_taxable_amount >
+                    rec.withholding_non_taxable_minimum):
+                raise ValidationError(_(
+                    'Non-taxable Amount can not be greater than Non-taxable '
+                    'Minimum'))
 
     @api.multi
     def _get_rule(self, voucher):
