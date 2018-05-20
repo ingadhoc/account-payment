@@ -520,6 +520,7 @@ class AccountCheck(models.Model):
                 account |= rec.company_id._get_check_account('holding')
         if len(account) != 1:
             raise ValidationError(_('Error not specified'))
+        print ('account', account)
         return account
 
     @api.model

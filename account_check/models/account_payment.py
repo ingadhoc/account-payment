@@ -472,6 +472,7 @@ class AccountPayment(models.Model):
                     rec.partner_type,
                     rec.payment_method_code,
                     rec.destination_journal_id.type)))
+        print ('vals', vals)
         return vals
 
     @api.multi
