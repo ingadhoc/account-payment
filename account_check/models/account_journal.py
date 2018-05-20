@@ -77,7 +77,7 @@ class AccountJournal(models.Model):
             domain_holding_third_checks)
 
         num_checks_to_numerate = False
-        if self.env['ir.actions.report.xml'].search(
+        if self.env['ir.actions.report'].search(
                 [('report_name', '=', 'check_report')]):
             num_checks_to_numerate = self.env['account.payment'].search_count([
                 ('journal_id', '=', self.id),

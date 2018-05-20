@@ -74,7 +74,7 @@
                         <field name="amount"/>
                         <field name="amount_currency" attrs="{'invisible': [('amount_currency', '=', 0.0)]}"/>
                     </group>
-                    <group>    
+                    <group>
                         <field name="state"/>
                         <field name="owner_name" attrs="{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}"/>
                         <field name="owner_vat" attrs="{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}"/>
