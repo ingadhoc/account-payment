@@ -7,5 +7,5 @@ class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
     automatic_withholdings = fields.Boolean(
-        related='company_id.double_validation'
+        related='company_id.automatic_withholdings'
     )
