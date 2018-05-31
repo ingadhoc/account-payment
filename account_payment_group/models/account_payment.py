@@ -233,3 +233,14 @@ class AccountPayment(models.Model):
             if res.get('credit', False):
                 res['credit'] = self.force_amount_company_currency
         return res
+
+    def _get_move_vals(self, journal=None):
+        """If we have a communication on payment group append it before
+        payment communication
+        """
+        vals = super(AccountPayment, self)._get_move_vals(journal=journal)
+        if self.payment_group_id.communication:
+            vals['ref'] = "%s%s" % (
+                self.payment_group_id.communication,
+                self.communication and ": %s" % self.communication or "")
+        return vals
