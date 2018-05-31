@@ -106,8 +106,22 @@ class AccountInvoice(models.Model):
                     'default_partner_type': partner_type,
                 }
 
-                # factura de proveedor o reembolso a cliente, es saliente
-                if rec.type in ['in_invoice', 'out_refund']:
+                payment_group = rec.env[
+                    'account.payment.group'].with_context(
+                        pay_context).create({
+                            'payment_date': rec.date_invoice
+                        })
+                # el difference es positivo para facturas (de cliente o
+                # proveedor) pero negativo para NC.
+                # para factura de proveedor o NC de cliente es outbound
+                # para factura de cliente o NC de proveedor es inbound
+                # igualmente lo hacemos con el difference y no con el type
+                # por las dudas de que facturas en negativo
+                if (
+                        partner_type == 'supplier' and
+                        payment_group.payment_difference >= 0.0 or
+                        partner_type == 'customer' and
+                        payment_group.payment_difference < 0.0):
                     payment_type = 'outbound'
                     payment_methods = pay_journal.outbound_payment_method_ids
                 else:
@@ -119,18 +133,14 @@ class AccountInvoice(models.Model):
                 if not payment_method:
                     raise ValidationError(_(
                         'Pay now journal must have manual method!'))
-                payment_group = rec.env[
-                    'account.payment.group'].with_context(
-                        pay_context).create({
-                            'payment_date': rec.date_invoice
-                        })
+
                 payment_group.payment_ids.create({
                     'payment_group_id': payment_group.id,
                     'payment_type': payment_type,
                     'partner_type': partner_type,
                     'company_id': rec.company_id.id,
                     'partner_id': payment_group.partner_id.id,
-                    'amount': payment_group.payment_difference,
+                    'amount': abs(payment_group.payment_difference),
                     'journal_id': pay_journal.id,
                     'payment_method_id': payment_method.id,
                     'payment_date': rec.date_invoice,
