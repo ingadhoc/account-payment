@@ -432,6 +432,24 @@ class AccountPaymentGroup(models.Model):
             # not sure why but state field is false on payments so they can
             # not be unliked, this fix that
             rec.invalidate_cache(['payment_ids'])
+            rec.payment_ids.unlink()
+            rec.add_all()
+
+    @api.multi
+    def onchange(self, values, field_name, field_onchange):
+        """Necesitamos hacer esto porque los onchange que agregan lineas,
+        cuando se va a guardar el registro, terminan creando registros.
+        """
+        fields = []
+        for field in field_onchange.keys():
+            if field.startswith((
+                    'to_pay_move_line_ids.',
+                    'debt_move_line_ids.')):
+                fields.append(field)
+        for field in fields:
+            del field_onchange[field]
+        return super(AccountPaymentGroup, self).onchange(
+            values, field_name, field_onchange)
 
     @api.multi
     def _get_to_pay_move_lines_domain(self):
