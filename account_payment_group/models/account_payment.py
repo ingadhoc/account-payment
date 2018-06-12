@@ -98,6 +98,11 @@ class AccountPayment(models.Model):
                 rec.amount_company_currency / rec.amount) or 0.0
 
     @api.multi
+    # this onchange is necesary because odoo, sometimes, re-compute
+    # and overwrites amount_company_currency. That happends due to an issue
+    # with rounding of amount field (amount field is not change but due to
+    # rouding odoo believes amount has changed)
+    @api.onchange('amount_company_currency')
     def _inverse_amount_company_currency(self):
         _logger.info('Running inverse amount company currency')
         for rec in self:
