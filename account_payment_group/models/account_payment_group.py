@@ -4,6 +4,7 @@
 
 from openerp import models, api, fields, _
 from openerp.exceptions import ValidationError
+from ast import literal_eval
 
 
 MAP_PARTNER_TYPE_ACCOUNT_TYPE = {
@@ -684,6 +685,18 @@ class AccountPaymentGroup(models.Model):
         # and with other users, error with block date of accounting
         # TODO we should look for a better way to solve this
         self = self.with_context({})
+
+        icp = self.env['ir.config_parameter'].sudo()
+        sec_currency_customer = literal_eval(icp.get_param(
+            'account_payment_group.customer_force_secondary_currency', 'False'
+        ))
+        sec_currency_supplier = literal_eval(icp.get_param(
+            'account_payment_group.supplier_force_secondary_currency', 'False'
+        ))
+        dont_allow_different_currencies = literal_eval(icp.get_param(
+            'account_payment_group.dont_allow_different_currencies', 'False'
+        ))
+
         for rec in self:
             # TODO if we want to allow writeoff then we can disable this
             # constrain and send writeoff_journal_id and writeoff_acc_id
@@ -704,12 +717,19 @@ class AccountPaymentGroup(models.Model):
                 lambda r: not r.reconciled and r.account_id.internal_type in (
                     'payable', 'receivable'))
 
+            # lo hacemos opcional ahora
             # si estamos pagando algo en otra moneda entonces le agregamos
             # a los apuntes de deuda sin moneda, que se está pagando en esa
             # otra moneda como se hace cuando se machea desde facturas
-            secondary_currency = rec.to_pay_move_line_ids.mapped(
-                'currency_id')
-            if len(secondary_currency) == 1:
+            if rec.partner_type == 'customer' and sec_currency_customer \
+                    or rec.partner_type == 'supplier' and \
+                    sec_currency_supplier:
+                secondary_currency = rec.to_pay_move_line_ids.mapped(
+                    'currency_id')
+            else:
+                secondary_currency = False
+
+            if secondary_currency and len(secondary_currency) == 1:
                 for credit_aml in counterpart_aml.filtered(
                         lambda x: not x.currency_id):
                     currency_vals = {
@@ -727,21 +747,27 @@ class AccountPaymentGroup(models.Model):
             if counterpart_aml and rec.to_pay_move_line_ids:
                 (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile(
                     writeoff_acc_id, writeoff_journal_id)
+                # (counterpart_aml + (rec.to_pay_move_line_ids)).with_context(
+                #     skip_full_reconcile_check='amount_currency_excluded',
+                #     manual_full_reconcile_currency=secondary_currency.id
+                #     ).reconcile(writeoff_acc_id, writeoff_journal_id)
+                # compute_full_after_batch_reconcile
 
             # si lo que se concilio es en mas de una moneda, entonces lo
             # bloqueamos ya que no siempre se comporta bien. No lo hacemos
             # antes para no mandar este error si al final no se lo que se iba
             # a conciliar era de misma moneda
-            secondary_currency = rec.matched_move_line_ids.mapped(
-                'currency_id')
-            # TODO borrar en v11 ya que funciona bien
-            no_currency = rec.matched_move_line_ids.filtered(
-                lambda x: not x.currency_id)
-            if len(secondary_currency) > 1 or \
-                    len(secondary_currency) == 1 and no_currency:
+            # TODO borrar en v11 ya que funciona bien???
+            secondary_currency = dont_allow_different_currencies and \
+                rec.matched_move_line_ids.mapped('currency_id')
+            if secondary_currency and (
+                    len(secondary_currency) > 1 or
+                    len(secondary_currency) == 1 and
+                    rec.matched_move_line_ids.filtered(
+                        lambda x: not x.currency_id)):
                 raise ValidationError(_(
-                    'No puede conciliar en un solo pago deudas con distintas '
-                    'monedas'))
+                    'No puede conciliar en un solo pago deudas con distintas'
+                    ' monedas'))
 
             rec.state = 'posted'
 
