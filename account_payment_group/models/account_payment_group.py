@@ -586,43 +586,10 @@ class AccountPaymentGroup(models.Model):
                 lambda r: not r.reconciled and r.account_id.internal_type in (
                     'payable', 'receivable'))
 
-            # si estamos pagando algo en otra moneda entonces le agregamos
-            # a los apuntes de deuda sin moneda, que se está pagando en esa
-            # otra moneda como se hace cuando se machea desde facturas
-            secondary_currency = rec.to_pay_move_line_ids.mapped(
-                'currency_id')
-            if len(secondary_currency) == 1:
-                for credit_aml in counterpart_aml.filtered(
-                        lambda x: not x.currency_id):
-                    currency_vals = {
-                        'amount_currency':
-                            credit_aml.company_id.currency_id.with_context(
-                                date=credit_aml.date).compute(
-                                    credit_aml.balance, secondary_currency),
-                        'currency_id': secondary_currency.id}
-                    credit_aml.with_context(
-                        allow_amount_currency=True,
-                        check_move_validity=False).update(currency_vals)
-
             # porque la cuenta podria ser no recivible y ni conciliable
             # (por ejemplo en sipreco)
             if counterpart_aml and rec.to_pay_move_line_ids:
                 (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile(
                     writeoff_acc_id, writeoff_journal_id)
-
-            # si lo que se concilio es en mas de una moneda, entonces lo
-            # bloqueamos ya que no siempre se comporta bien. No lo hacemos
-            # antes para no mandar este error si al final no se lo que se iba
-            # a conciliar era de misma moneda
-            secondary_currency = rec.matched_move_line_ids.mapped(
-                'currency_id')
-            # TODO borrar en v11 ya que funciona bien
-            no_currency = rec.matched_move_line_ids.filtered(
-                lambda x: not x.currency_id)
-            if len(secondary_currency) > 1 or \
-                    len(secondary_currency) == 1 and no_currency:
-                raise ValidationError(_(
-                    'No puede conciliar en un solo pago deudas con distintas '
-                    'monedas'))
 
             rec.state = 'posted'
