@@ -500,7 +500,8 @@ class AccountPayment(models.Model):
         report_name = len(checkbook) == 1 and  \
             checkbook.report_template.report_name \
             or 'check_report'
-        check_report = self.env['report'].get_action(self, report_name)
+        check_report = self.env['ir.actions.report'].search(
+            [('report_name', '=', report_name)], limit=1).report_action(self)
         # ya el buscar el reporte da el error solo
         # if not check_report:
         #     raise UserError(_(
