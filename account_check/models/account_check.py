@@ -616,7 +616,7 @@ class AccountCheck(models.Model):
             name = 'Rechazo cheque "%s"' % (self.name)
         # si pedimos la de holding es una devolucion
         elif operation == 'returned':
-            name = 'Devolución cheque "%s"' % (self.name)
+            name = u'Devolución cheque "%s"' % (self.name)
         else:
             raise ValidationError(_(
                 'Debit note for operation %s not implemented!' % (
