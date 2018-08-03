@@ -18,6 +18,8 @@ class AccountPayment(models.Model):
     withholding_number = fields.Char(
         readonly=True,
         states={'draft': [('readonly', False)]},
+        help="If you don't set a number we will add a number automatically "
+        "from a sequence that should be configured on the Withholding Tax"
     )
     withholding_base_amount = fields.Monetary(
         string='Withholding Base Amount',
@@ -27,14 +29,23 @@ class AccountPayment(models.Model):
 
     @api.multi
     def post(self):
-        payments = self.filtered(
+        without_number = self.filtered(
             lambda x: x.tax_withholding_id and not x.withholding_number)
-        if payments:
+
+        without_sequence = without_number.filtered(
+            lambda x: not x.tax_withholding_id.withholding_sequence_id)
+        if without_sequence:
             raise UserError(_(
                 'No puede validar pagos con retenciones que no tengan número '
                 'de retención. Recomendamos agregar una secuencia a los '
                 'impuestos de retención correspondientes. Id de pagos: %s') % (
-                payments.ids))
+                without_sequence.ids))
+
+        # a los que tienen secuencia les setamos el numero desde secuencia
+        for payment in (without_number - without_sequence):
+            payment.withholding_number = \
+                payment.tax_withholding_id.withholding_sequence_id.next_by_id()
+
         return super(AccountPayment, self).post()
 
     def _get_liquidity_move_line_vals(self, amount):
@@ -62,14 +73,6 @@ class AccountPayment(models.Model):
             #         'Accounts not configured on tax %s' % (
             #             self.tax_withholding_id.name)))
         return vals
-
-    @api.onchange('tax_withholding_id')
-    def onchange_tax_withholding(self):
-        sequence = self.tax_withholding_id.withholding_sequence_id
-        if sequence:
-            # por ahora lo hacemos simple, no como en cheques que si no
-            # se guarda no consume
-            self.withholding_number = sequence.next_by_id()
 
     @api.multi
     def _compute_payment_method_description(self):
