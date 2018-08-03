@@ -369,13 +369,6 @@ result = withholdable_base_amount * 0.10
                 (total_amount > withholding_non_taxable_minimum) and (
                     withholdable_base_amount * percentage + fix_amount) or 0.0)
 
-        if self.withholding_sequence_id:
-            # por ahora lo hacemos simple, no como en cheques que si no
-            # se guarda no consume
-            withholding_number = self.withholding_sequence_id.next_by_id()
-        else:
-            withholding_number = False
-
         return {
             'withholdable_invoiced_amount': withholdable_invoiced_amount,
             'withholdable_advanced_amount': withholdable_advanced_amount,
@@ -390,5 +383,4 @@ result = withholdable_base_amount * 0.10
             'tax_withholding_id': self.id,
             'automatic': True,
             'comment': comment,
-            'withholding_number': withholding_number,
         }
