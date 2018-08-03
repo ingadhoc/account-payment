@@ -284,23 +284,38 @@ result = withholdable_base_amount * 0.10
         withholdable_advanced_amount = 0.0
         # if the unreconciled_amount is negative, then the user wants to make
         # a partial payment. To get the right untaxed amount we need to know
-        # which invoice is going to be paid, the easier way is to ask the user
-        # to choose it. We make this no matter if withholding_advances is
-        # enabled or not
+        # which invoice is going to be paid, we only allow partial payment
+        # on last invoice
         if payment_group.unreconciled_amount < 0.0:
             withholdable_advanced_amount = 0.0
-            to_pay_line = payment_group.to_pay_move_line_ids
-            if len(to_pay_line) != 1:
+
+            sign = payment_group.partner_type == 'supplier' and -1.0 or 1.0
+            sorted_to_pay_lines = sorted(
+                payment_group.to_pay_move_line_ids,
+                key=lambda a: a.date_maturity or a.date)
+
+            # last line to be reconciled
+            partial_line = sorted_to_pay_lines[-1]
+            if sign * partial_line.amount_residual < \
+                    sign * payment_group.unreconciled_amount:
                 raise ValidationError(_(
-                    'If you are going to make a partial payment (negative '
-                    '"Adjustment / Advance)" value, you need to select only '
-                    'one debt so that we can estimate the right withholding '
-                    'amounts.'))
-            # factor for total_untaxed
-            invoice_factor = to_pay_line.invoice_id and \
-                to_pay_line.invoice_id._get_tax_factor() or 1.0
-            withholdable_invoiced_amount = \
-                payment_group.to_pay_amount * invoice_factor
+                    'Seleccionó deuda por %s pero aparentente desea pagar '
+                    ' %s. En la deuda seleccionada hay algunos comprobantes de'
+                    ' mas que no van a poder ser pagados (%s). Deberá quitar '
+                    ' dichos comprobantes de la deuda seleccionada para poder '
+                    'hacer el correcto cálculo de las retenciones.' % (
+                        payment_group.selected_debt,
+                        payment_group.to_pay_amount,
+                        partial_line.move_id.display_name,
+                        )))
+
+            invoice_factor = partial_line.invoice_id and \
+                partial_line.invoice_id._get_tax_factor() or 1.0
+
+            # le descontamos de la base imponible el saldo que no se esta
+            # pagando descontado de iva
+            withholdable_invoiced_amount -= (
+                sign * payment_group.unreconciled_amount * invoice_factor)
         elif self.withholding_advances:
             withholdable_advanced_amount = payment_group.unreconciled_amount
 
