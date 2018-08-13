@@ -19,7 +19,7 @@ class AccountPayment(models.Model):
         string='Checks',
         copy=False,
         readonly=True,
-        states={'draft': [('readonly', '=', False)]}
+        states={'draft': [('readonly', False)]}
     )
     # only for v8 comatibility where more than one check could be received
     # or issued
