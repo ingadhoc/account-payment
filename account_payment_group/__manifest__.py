@@ -31,7 +31,6 @@
         'views/account_journal_dashboard_view.xml',
     ],
     "demo": [
-        'demo/ir_config_parameter_demo.xml',
     ],
     'post_init_hook': 'post_init_hook',
 }
