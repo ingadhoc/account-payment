@@ -1,6 +1,0 @@
-<odoo>
-    <record id="enable_payments_without_payment_group" model="ir.config_parameter">
-        <field name="key">enable_payments_without_payment_group</field>
-        <field name="value">True</field>
-    </record>
-</odoo>

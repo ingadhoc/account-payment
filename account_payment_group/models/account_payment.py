@@ -3,7 +3,6 @@
 
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
-from ast import literal_eval
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -163,30 +162,47 @@ class AccountPayment(models.Model):
     def _onchange_payment_type(self):
         """
         we disable change of partner_type if we came from a payment_group
+        but we still reset the journal
         """
         if not self._context.get('payment_group'):
             return super(AccountPayment, self)._onchange_payment_type()
+        self.journal_id = False
 
     @api.multi
     @api.constrains('payment_group_id', 'payment_type')
     def check_payment_group(self):
-        # TODO check this
-        # we add this key mainly for odoo test that are gives error because no
-        # payment group for those test cases, we should fix it in another way
-        # but perhups we use this parameter to allow this payments in some
-        # cases
-        if literal_eval(self.env['ir.config_parameter'].sudo().get_param(
-                'enable_payments_without_payment_group', 'False')):
+        # odoo tests don't create payments with payment gorups
+        if self.env.registry.in_test_mode():
             return True
         for rec in self:
-            if rec.payment_type == 'transfer':
-                if rec.payment_group_id:
-                    raise ValidationError(_(
-                        'Payments must be created from payments groups'))
-            else:
-                if not rec.payment_group_id:
-                    raise ValidationError(_(
-                        'Payments must be created from payments groups'))
+            if rec.partner_type and not rec.payment_group_id:
+                raise ValidationError(_(
+                    'Payments with partners must be created from '
+                    'payments groups'))
+            # transfers or payments from bank reconciliation without partners
+            elif not rec.partner_type and rec.payment_group_id:
+                raise ValidationError(_(
+                    "Payments without partners (usually transfers) cant't "
+                    "have a related payment group"))
+
+    @api.model
+    def create(self, vals):
+        # when payments are created from bank reconciliation create the
+        # payment group before creating payment to aboid raising error
+        if vals.get('state') == 'reconciled' and vals.get('partner_type'):
+            company_id = self.env['account.journal'].browse(
+                vals.get('journal_id')).company_id.id
+            payment_group = self.env['account.payment.group'].create({
+                'company_id': company_id,
+                'partner_type': vals.get('partner_type'),
+                'partner_id': vals.get('partner_id'),
+                'payment_date': vals.get('payment_date'),
+                'communication': vals.get('communication'),
+                'state': 'posted',
+            })
+            vals['payment_group_id'] = payment_group.id
+        payment = super(AccountPayment, self).create(vals)
+        return payment
 
     @api.multi
     @api.depends('invoice_ids', 'payment_type', 'partner_type', 'partner_id')

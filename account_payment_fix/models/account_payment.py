@@ -130,6 +130,11 @@ class AccountPayment(models.Model):
                 self.partner_type = 'customer'
             elif self.payment_type == 'outbound':
                 self.partner_type = 'supplier'
+            else:
+                self.partner_type = False
+            # limpiamos journal ya que podria no estar disponible para la nueva
+            # operacion y ademas para que se limpien los payment methods
+            self.journal_id = False
         # # Set payment method domain
         # res = self._onchange_journal()
         # if not res.get('domain', {}):
@@ -148,11 +153,26 @@ class AccountPayment(models.Model):
         """
         return True
 
+    def _onchange_amount(self):
+        """
+        Anulamos este onchange que termina cambiando el domain de journals
+        y no es compatible con multicia y se pierde al guardar.
+        TODO: ver que odoo con este onchange llama a
+        _compute_journal_domain_and_types quien devolveria un journal generico
+        cuando el importe sea cero, imagino que para hacer ajustes por
+        diferencias de cambio
+        """
+        return True
+
     @api.onchange('journal_id')
     def _onchange_journal(self):
         """
         Sobre escribimos y desactivamos la parte del dominio de la funcion
         original ya que se pierde si se vuelve a entrar
+        TODO: ver que odoo con este onchange llama a
+        _compute_journal_domain_and_types quien devolveria un journal generico
+        cuando el importe sea cero, imagino que para hacer ajustes por
+        diferencias de cambio
         """
         if self.journal_id:
             self.currency_id = (
