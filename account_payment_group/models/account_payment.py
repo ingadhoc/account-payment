@@ -163,9 +163,11 @@ class AccountPayment(models.Model):
     def _onchange_payment_type(self):
         """
         we disable change of partner_type if we came from a payment_group
+        but we still reset the journal
         """
         if not self._context.get('payment_group'):
             return super(AccountPayment, self)._onchange_payment_type()
+        self.journal_id = False
 
     @api.multi
     @api.constrains('payment_group_id', 'payment_type')
