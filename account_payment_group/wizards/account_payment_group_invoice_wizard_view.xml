@@ -15,7 +15,7 @@
                             <field name="amount_untaxed"/>
                             <field name="tax_ids" widget="many2many_tags" options="{'no_create': True}"/>
                             <field name="amount_total"/>
-                            <field name="account_analytic_id" groups="analytic.group_analytic_accounting" domain="[('company_id', '=', company_id), ('account_type', '=', 'normal')]"/>
+                            <field name="account_analytic_id" groups="analytic.group_analytic_accounting" domain="[('company_id', '=', company_id)]"/>
                             <field name="description"/>
                          </group>
                          <group>
