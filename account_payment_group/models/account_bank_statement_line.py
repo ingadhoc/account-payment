@@ -23,8 +23,7 @@ class AccountBankStatementLine(models.Model):
                     #  maximum one created by the line itself
                     aml_to_cancel |= line
                     payment_to_cancel |= line.payment_id
-        if payment_to_cancel:
-            payment_groups = payment_to_cancel.mapped('payment_group_id')
+        payment_groups = payment_to_cancel.mapped('payment_group_id')
         res = super(
             AccountBankStatementLine, self).button_cancel_reconciliation()
         if payment_groups:
