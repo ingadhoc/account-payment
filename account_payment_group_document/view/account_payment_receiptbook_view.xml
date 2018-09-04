@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_receipt_receiptbook_form" model="ir.ui.view">
+        <field name="name">account.payment.receiptbook.form</field>
+        <field name="model">account.payment.receiptbook</field>
+        <field name="inherit_id" ref="account_document.view_receipt_receiptbook_form"/>
+        <field name="arch" type="xml">
+            <field name="prefix" position="after">
+                <field name="mail_template_id"  context="{'default_model': 'account.payment.group'}"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>
