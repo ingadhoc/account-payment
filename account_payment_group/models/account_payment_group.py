@@ -565,6 +565,8 @@ class AccountPaymentGroup(models.Model):
         # break behaviour, for eg. with demo user error writing account.account
         # and with other users, error with block date of accounting
         # TODO we should look for a better way to solve this
+
+        create_from_website = self._context.get('create_from_website', False)
         self = self.with_context({})
         for rec in self:
             # TODO if we want to allow writeoff then we can disable this
@@ -581,7 +583,9 @@ class AccountPaymentGroup(models.Model):
             writeoff_acc_id = False
             writeoff_journal_id = False
 
-            rec.payment_ids.post()
+            if not create_from_website:
+                rec.payment_ids.filtered(lambda x: x.state == 'draft').post()
+
             counterpart_aml = rec.payment_ids.mapped('move_line_ids').filtered(
                 lambda r: not r.reconciled and r.account_id.internal_type in (
                     'payable', 'receivable'))

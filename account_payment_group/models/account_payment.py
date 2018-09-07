@@ -3,6 +3,7 @@
 
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
+
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -186,10 +187,70 @@ class AccountPayment(models.Model):
                     "have a related payment group"))
 
     @api.model
+    def infer_partner_info(self, vals, counterpart_aml_data):
+        """ Odoo way to to interpret the partner_id, partner_type is not
+        usefull for us because in some time they leave this ones empty and
+        we need them in order to create the payment group.
+
+        In this method will try to improve infer when it has a debt related
+        taking into account the account type of the line to concile, and
+        computing the partner if this ones is not setted when concile
+        operation.
+
+        return dictionary with keys (partner_id, partner_type)
+        """
+        res = {}
+        # Get related amls
+        amls = self.env['account.move.line']
+        counterpart_aml = [
+            item.get('move_line')
+            for item in counterpart_aml_data
+            if item.get('move_line', False)
+        ]
+        for aml in counterpart_aml:
+            amls = amls | aml
+
+        if not amls:
+            return res
+
+        # odoo manda partner type segun si el pago es positivo o no, nosotros
+        # mejoramos infiriendo a partir de que tipo de deuda se esta pagando
+        partner_type = False
+        internal_type = amls.mapped('account_id.internal_type')
+        if len(internal_type) == 1:
+            if internal_type == ['payable']:
+                partner_type = 'supplier'
+            elif internal_type == ['receivable']:
+                partner_type = 'customer'
+            if partner_type:
+                res.update({'partner_type': partner_type})
+
+        # por mas que el usuario no haya selecccionado partner, si esta pagando
+        # deuda usamos el partner de esa deuda
+        partner_id = vals.get('partner_id', False)
+        if not partner_id and len(amls.mapped('partner_id')) == 1:
+            partner_id = amls.mapped('partner_id').id
+            res.update({'partner_id': partner_id})
+
+        return res
+
+    @api.model
     def create(self, vals):
-        # when payments are created from bank reconciliation create the
-        # payment group before creating payment to aboid raising error
-        if vals.get('state') == 'reconciled' and vals.get('partner_type'):
+        """
+        When payments are created from bank reconciliation create the
+        Payment group before creating payment to avoid raising error
+        """
+        # Si viene counterpart_aml entonces estamos viniendo de una
+        # conciliacion desde el wizard
+        counterpart_aml_data = self._context.get('counterpart_aml_dicts', [])
+        if counterpart_aml_data:
+            vals.update(self.infer_partner_info(vals, counterpart_aml_data))
+
+        create_from_website = self._context.get('create_from_website', False)
+        create_payment_group = (
+            counterpart_aml_data and vals.get('partner_type')
+            ) or create_from_website
+        if create_payment_group:
             company_id = self.env['account.journal'].browse(
                 vals.get('journal_id')).company_id.id
             payment_group = self.env['account.payment.group'].create({
@@ -198,10 +259,11 @@ class AccountPayment(models.Model):
                 'partner_id': vals.get('partner_id'),
                 'payment_date': vals.get('payment_date'),
                 'communication': vals.get('communication'),
-                'state': 'posted',
             })
             vals['payment_group_id'] = payment_group.id
         payment = super(AccountPayment, self).create(vals)
+        if create_payment_group:
+            payment.payment_group_id.post()
         return payment
 
     @api.multi

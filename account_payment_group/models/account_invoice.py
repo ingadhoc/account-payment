@@ -161,3 +161,12 @@ class AccountInvoice(models.Model):
             result['views'] = [(res and res.id or False, 'form')]
             result['res_id'] = self.payment_group_ids.id
         return result
+
+    @api.multi
+    def pay_and_reconcile(self, pay_journal, pay_amount=None, date=None,
+                          writeoff_acc=None):
+        res = super(AccountInvoice, self.with_context(
+            create_from_website=True)).pay_and_reconcile(
+                pay_journal, pay_amount=pay_amount, date=date,
+                writeoff_acc=writeoff_acc)
+        return res
