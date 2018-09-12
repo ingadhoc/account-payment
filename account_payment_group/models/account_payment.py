@@ -175,6 +175,15 @@ class AccountPayment(models.Model):
         # odoo tests don't create payments with payment gorups
         if self.env.registry.in_test_mode():
             return True
+
+        counterpart_aml_dicts = self._context.get('counterpart_aml_dicts', [])
+        new_aml_dicts = self._context.get('new_aml_dicts', [])
+
+        # Not need to create payment group if create one new aml from
+        # reconcilation wizard.
+        if not counterpart_aml_dicts and new_aml_dicts:
+            return
+
         for rec in self:
             if rec.partner_type and not rec.payment_group_id:
                 raise ValidationError(_(
