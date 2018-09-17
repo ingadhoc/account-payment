@@ -225,3 +225,98 @@ class AccountPayment(models.Model):
                 self.destination_account_id = (
                     partner.property_account_payable_id.id)
         return res
+
+    @api.model
+    def get_amls(self):
+        """ Review parameters of process_reconciliation() method and transform
+        them to amls recordset. this one is return to recompute the payment
+        values
+
+        context keys(
+            'counterpart_aml_dicts', 'new_aml_dicts', 'payment_aml_rec')
+
+        :return: account move line recorset
+        """
+        counterpart_aml_data = self._context.get('counterpart_aml_dicts', [])
+        new_aml_data = self._context.get('new_aml_dicts', [])
+
+        counterpart_aml = self.env['account.move.line']
+        if counterpart_aml_data:
+            for item in counterpart_aml_data:
+                counterpart_aml |= item.get(
+                    'move_line', self.env['account.move.line'])
+
+        new_aml = self.env['account.move.line']
+        if new_aml_data:
+            for aml_values in new_aml_data:
+                new_aml = new_aml | new_aml.new(aml_values)
+
+        return counterpart_aml, new_aml
+
+    @api.model
+    def fix_payment_info(self, values):
+        """ Conciliation wiget infer some data to create the payment.
+        This method improve the way tha info is compute and update
+        (partner_type, partner_id, account_id) when needed
+
+        1. If not partner given will try to find the partner from the related
+        account move lines.
+
+        2. If trying to validate one one line will set the accoun_id taking
+        into acocunt the partner type supplier/customer payable/receivable
+        respectively.
+
+        3. payment_type will not be computed by the amount sign, will be
+        compute from the related account type.
+
+        If we can infer or fix any of the missing/wrong parameter will return
+        a dictionary with the fixed values: posible keys
+
+                (partner_id, partner_type, payment_type)
+
+        If not will return an empty dictionary.
+
+        return dictionary
+        """
+        res = {}
+
+        counterpart_aml, new_aml = self.get_amls()
+
+        if not any([counterpart_aml, new_aml]):
+            return res
+
+        # por mas que el usuario no haya selecccionado partner, si esta
+        # pagando deuda usamos el partner de esa deuda
+        partner_id = values.get('partner_id', False)
+        if counterpart_aml and not partner_id and \
+           len(counterpart_aml.mapped('partner_id')) == 1:
+            partner_id = counterpart_aml.mapped('partner_id').id
+            res.update({'partner_id': partner_id})
+
+        # corregir la cuenta a usar, si estoy validando una linea sola. si soy
+        # partner proveedor usar cuenta de proveedores del partner (pagable).
+        # si soy partner cliente usar cuenta deudora por venta (a cobrar)
+        if new_aml and partner_id:
+            self.fix_widget_account(res)
+            if 'account_id' in res:
+                new_aml.account_id = res.get('account_id')
+
+        # odoo manda partner type segun si el pago es positivo o no,
+        # nosotros mejoramos infiriendo a partir de que tipo de deuda se
+        # esta pagando
+        partner_type = False
+        amls = counterpart_aml | new_aml
+        internal_type = amls.mapped('account_id.internal_type')
+        if len(internal_type) == 1:
+            if internal_type == ['payable']:
+                partner_type = 'supplier'
+            elif internal_type == ['receivable']:
+                partner_type = 'customer'
+            if partner_type:
+                res.update({'partner_type': partner_type})
+        return res
+
+    @api.model
+    def create(self, values):
+        values.update(self.fix_payment_info(values))
+        return super(AccountPayment, self).create(values)
