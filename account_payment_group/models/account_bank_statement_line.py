@@ -39,6 +39,8 @@ class AccountBankStatementLine(models.Model):
         """
         return super(AccountBankStatementLine, self.with_context(
             counterpart_aml_dicts=counterpart_aml_dicts,
+            new_aml_dicts=new_aml_dicts,
+            create_from_statement=True,
             )).process_reconciliation(
                 counterpart_aml_dicts=counterpart_aml_dicts,
                 payment_aml_rec=payment_aml_rec, new_aml_dicts=new_aml_dicts)
