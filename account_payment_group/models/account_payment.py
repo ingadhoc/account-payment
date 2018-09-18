@@ -187,7 +187,28 @@ class AccountPayment(models.Model):
                     "have a related payment group"))
 
     @api.model
-    def infer_partner_info(self, vals, counterpart_aml_data):
+    def get_amls(self):
+        """ Review parameters of process_reconciliation() method and transform
+        them to amls recordset. this one is return to recompute the payment
+        values
+         context keys(
+            'counterpart_aml_dicts', 'new_aml_dicts', 'payment_aml_rec')
+         :return: account move line recorset
+        """
+        counterpart_aml_data = self._context.get('counterpart_aml_dicts', [])
+        new_aml_data = self._context.get('new_aml_dicts', [])
+        amls = self.env['account.move.line']
+        if counterpart_aml_data:
+            for item in counterpart_aml_data:
+                amls |= item.get(
+                    'move_line', self.env['account.move.line'])
+        if new_aml_data:
+            for aml_values in new_aml_data:
+                amls |= amls.new(aml_values)
+        return amls
+
+    @api.model
+    def infer_partner_info(self, vals):
         """ Odoo way to to interpret the partner_id, partner_type is not
         usefull for us because in some time they leave this ones empty and
         we need them in order to create the payment group.
@@ -201,15 +222,7 @@ class AccountPayment(models.Model):
         """
         res = {}
         # Get related amls
-        amls = self.env['account.move.line']
-        counterpart_aml = [
-            item.get('move_line')
-            for item in counterpart_aml_data
-            if item.get('move_line', False)
-        ]
-        for aml in counterpart_aml:
-            amls = amls | aml
-
+        amls = self.get_amls()
         if not amls:
             return res
 
@@ -242,13 +255,16 @@ class AccountPayment(models.Model):
         """
         # Si viene counterpart_aml entonces estamos viniendo de una
         # conciliacion desde el wizard
+        create_from_statement = self._context.get(
+            'create_from_statement', False)
+        new_aml_dicts = self._context.get('new_aml_dicts', [])
         counterpart_aml_data = self._context.get('counterpart_aml_dicts', [])
-        if counterpart_aml_data:
-            vals.update(self.infer_partner_info(vals, counterpart_aml_data))
+        if counterpart_aml_data or new_aml_dicts:
+            vals.update(self.infer_partner_info(vals))
 
         create_from_website = self._context.get('create_from_website', False)
         create_payment_group = (
-            counterpart_aml_data and vals.get('partner_type')
+            create_from_statement and vals.get('partner_type')
             ) or create_from_website
         if create_payment_group:
             company_id = self.env['account.journal'].browse(
