@@ -8,7 +8,8 @@
             <field name="inherit_id" ref="account.res_config_settings_view_form"/>
             <field name="arch" type="xml">
                 <div id="bank_cash">
-                    <div class="col-xs-12 col-md-6 o_setting_box" title="Used if you want let user choose payment type (inbound or outbound) when registering a payment from a payment group">
+                    <!-- this option is not so common, we only enable it for tec features -->
+                    <div class="col-xs-12 col-md-6 o_setting_box" title="Used if you want let user choose payment type (inbound or outbound) when registering a payment from a payment group" groups="base.group_no_one">
                         <div class="o_setting_left_pane">
                             <field name="group_choose_payment_type" widget="upgrade_boolean"/>
                         </div>
