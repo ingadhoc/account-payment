@@ -566,7 +566,10 @@ class AccountPaymentGroup(models.Model):
         # and with other users, error with block date of accounting
         # TODO we should look for a better way to solve this
 
-        create_from_website = self._context.get('create_from_website', False)
+        create_from_website = self._context.get(
+            'create_from_website', False)
+        create_from_statement = self._context.get(
+            'create_from_statement', False)
         self = self.with_context({})
         for rec in self:
             # TODO if we want to allow writeoff then we can disable this
@@ -575,14 +578,18 @@ class AccountPaymentGroup(models.Model):
                 raise ValidationError(_(
                     'You can not confirm a payment group without payment '
                     'lines!'))
+            # si el pago se esta posteando desde statements y hay doble
+            # validacion no verificamos que haya deuda seleccionada
             if (rec.payment_subtype == 'double_validation' and
-                    rec.payment_difference):
+                    rec.payment_difference and not create_from_statement):
                 raise ValidationError(_(
                     'To Pay Amount and Payment Amount must be equal!'))
 
             writeoff_acc_id = False
             writeoff_journal_id = False
 
+            # al crear desde website odoo crea primero el pago y lo postea
+            # y no debemos re-postearlo
             if not create_from_website:
                 rec.payment_ids.filtered(lambda x: x.state == 'draft').post()
 
