@@ -30,6 +30,7 @@
                         </div>
                         <div class="o_setting_right_pane">
                             <label for="double_validation"/>
+                            <span class="fa fa-lg fa-building-o" title="Values set here are company-specific." groups="base.group_multi_company"/>
                             <div class="text-muted">
                                 Use two steps validation on payments to suppliers.
                             </div>

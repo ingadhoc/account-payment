@@ -10,6 +10,7 @@
                     <div class="o_setting_left_pane"/>
                     <div class="o_setting_right_pane">
                         <label string="Checks Accounts"/>
+                        <span class="fa fa-lg fa-building-o" title="Values set here are company-specific." groups="base.group_multi_company"/>
                         <div class="text-muted">
                             Accounts used on checks operations
                         </div>
