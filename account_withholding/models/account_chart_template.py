@@ -41,6 +41,7 @@ class WizardMultiChartsAccounts(models.TransientModel):
             })
             # we dont want this journal to have accounts and we can not inherit
             # to avoid creation, so we delete it
-            journal.default_credit_account_id.unlink()
+            journal.default_credit_account_id.with_context(
+                force_unlink=True).unlink()
 
         return res
