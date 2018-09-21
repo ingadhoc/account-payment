@@ -170,3 +170,7 @@ class AccountInvoice(models.Model):
                 pay_journal, pay_amount=pay_amount, date=date,
                 writeoff_acc=writeoff_acc)
         return res
+
+    @api.onchange('company_id')
+    def _onchange_company_id(self):
+        self.pay_now_journal_id = False
