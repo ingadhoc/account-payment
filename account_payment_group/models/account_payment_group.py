@@ -497,7 +497,8 @@ class AccountPaymentGroup(models.Model):
             if len(internal_type) != 1:
                 raise ValidationError(_(
                     'You can not send to pay lines from different partners'))
-            rec['partner_id'] = partner[0].id
+            rec['partner_id'] = self._context.get(
+                'default_partner_id', partner[0].id)
             rec['partner_type'] = MAP_ACCOUNT_TYPE_PARTNER_TYPE[
                 internal_type[0]]
             # rec['currency_id'] = invoice['currency_id'][0]

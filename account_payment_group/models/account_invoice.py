@@ -66,6 +66,11 @@ class AccountInvoice(models.Model):
             'target': 'current',
             'type': 'ir.actions.act_window',
             'context': {
+                # si bien el partner se puede adivinar desde los apuntes
+                # con el default de payment group, preferimos mandar por aca
+                # ya que puede ser un contacto y no el commercial partner (y
+                # en los apuntes solo hay commercial partner)
+                'default_partner_id': self.partner_id.id,
                 'to_pay_move_line_ids': self.open_move_line_ids.ids,
                 'pop_up': True,
                 'default_company_id': self.company_id.id,
