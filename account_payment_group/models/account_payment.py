@@ -176,7 +176,8 @@ class AccountPayment(models.Model):
         if self.env.registry.in_test_mode():
             return True
         for rec in self:
-            if rec.partner_type and not rec.payment_group_id:
+            if rec.partner_type and rec.partner_id and \
+               not rec.payment_group_id:
                 raise ValidationError(_(
                     'Payments with partners must be created from '
                     'payments groups'))
@@ -263,9 +264,11 @@ class AccountPayment(models.Model):
             vals.update(self.infer_partner_info(vals))
 
         create_from_website = self._context.get('create_from_website', False)
+        # NOTE: This is required at least from POS when we do not have
+        # partner_id and we do not want a payment group in tha case.
         create_payment_group = (
             create_from_statement and vals.get('partner_type')
-            ) or create_from_website
+            and vals.get('partner_id')) or create_from_website
         if create_payment_group:
             company_id = self.env['account.journal'].browse(
                 vals.get('journal_id')).company_id.id
