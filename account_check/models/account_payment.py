@@ -52,6 +52,7 @@ class AccountPayment(models.Model):
             # if len of checks is 1
             if rec.payment_method_code in (
                     'received_third_check',
+                    'rejected_third_check',
                     'issue_check',) and len(rec.check_ids) == 1:
                 rec.check_id = rec.check_ids[0].id
 
@@ -139,6 +140,7 @@ class AccountPayment(models.Model):
                 rec.check_type = 'issue_check'
             elif rec.payment_method_code in [
                     'received_third_check',
+                    'rejected_third_check',
                     'delivered_third_check']:
                 rec.check_type = 'third_check'
 
@@ -146,7 +148,8 @@ class AccountPayment(models.Model):
     def _compute_payment_method_description(self):
         check_payments = self.filtered(
             lambda x: x.payment_method_code in
-            ['issue_check', 'received_third_check', 'delivered_third_check'])
+            ['issue_check', 'received_third_check', 'delivered_third_check',
+             'rejected_third_check'])
         for rec in check_payments:
             if rec.check_ids:
                 checks_desc = ', '.join(rec.check_ids.mapped('name'))
@@ -461,6 +464,13 @@ class AccountPayment(models.Model):
             # if self.check_subtype == 'deferred':
             #     vals['account_id'] = self.company_id._get_check_account(
             #         'deferred').id
+        elif (
+                rec.payment_method_code == 'rejected_third_check' and
+                rec.payment_type == 'outbound'):
+            if cancel:
+                _logger.info('Rejected Check')
+                rec.check_ids._del_operation(self)
+                return None
         else:
             raise UserError(_(
                 'This operatios is not implemented for checks:\n'

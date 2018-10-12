@@ -603,6 +603,7 @@ class AccountCheck(models.Model):
             'payment_type': 'outbound',
             'partner_type': 'customer',
             'payment_method_id': reject_check_method.id,
+            'check_ids': [(4, self.id, False)],
         }
 
     @api.multi
