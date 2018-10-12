@@ -17,13 +17,16 @@ class AccountBankStatementLine(models.Model):
         Avoid deletion of move if it was a debit created from checks
         """
         for st_line in self:
-            for move in st_line.journal_entry_ids:
-                if self.env['account.check.operation'].search(
-                        [('origin', '=', 'account.move,%s' % move.id)]):
-                    move.update({'statement_line_id': False})
+            moves = st_line.journal_entry_ids.mapped('move_id')
+            for move in moves:
+                check_operation = self.env['account.check.operation'].search(
+                    [('origin', '=', 'account.move,%s' % move.id)])
+                if check_operation:
+                    check_operation.check_id._del_operation(move)
+                    move.line_ids.write({'statement_line_id': False})
                     move.line_ids.filtered(
                         lambda x: x.statement_id == st_line.statement_id
-                    ).update({'statement_id': False})
+                    ).write({'statement_id': False})
                     self -= st_line
         return super(
             AccountBankStatementLine, self).button_cancel_reconciliation()
