@@ -586,6 +586,25 @@ class AccountCheck(models.Model):
                 'returned', 'customer', operation.partner_id,
                 self.get_third_check_account())
 
+    @api.model
+    def get_values_rejected_check_payment(self, journal):
+        """ return dictionary with the values to create the reject check
+        payment record.
+        """
+        reject_check_method = self.env.ref(
+            'account_check.account_payment_method_rejected_third_check')
+        action_date = self._context.get('action_date', fields.Date.today())
+        return {
+            'name': _('Check "%s" rejection') % (self.name),
+            'amount': self.amount,
+            'currency_id': self.currency_id.id,
+            'journal_id': journal.id,
+            'payment_date': action_date,
+            'payment_type': 'outbound',
+            'partner_type': 'customer',
+            'payment_method_id': reject_check_method.id,
+        }
+
     @api.multi
     def reject(self):
         self.ensure_one()
@@ -600,13 +619,10 @@ class AccountCheck(models.Model):
                 raise ValidationError(_(
                     'The deposit operation is not linked to a payment.'
                     'If you want to reject you need to do it manually.'))
-            vals = self.get_bank_vals(
-                'bank_reject', journal)
-            action_date = self._context.get('action_date')
-            vals['date'] = action_date
-            move = self.env['account.move'].create(vals)
-            move.post()
-            self._add_operation('rejected', move, date=action_date)
+            payment_vals = self.get_values_rejected_check_payment(journal)
+            payment = self.env['account.payment'].create(payment_vals)
+            payment.post()
+            self._add_operation('rejected', payment, date=payment.payment_date)
         elif self.state == 'delivered':
             operation = self._get_operation(self.state, True)
             return self.action_create_debit_note(
@@ -702,13 +718,6 @@ class AccountCheck(models.Model):
             # la contrapartida es la cuenta que reemplazamos en el pago
             debit_account = self.company_id._get_check_account('deferred')
             name = _('Check "%s" debit') % (self.name)
-        elif action == 'bank_reject':
-            # al transferir a un banco se usa esta. al volver tiene que volver
-            # por la opuesta
-            # self.destination_journal_id.default_credit_account_id
-            credit_account = journal.default_debit_account_id
-            debit_account = self.company_id._get_check_account('rejected')
-            name = _('Check "%s" rejection') % (self.name)
         else:
             raise ValidationError(_(
                 'Action %s not implemented for checks!') % action)

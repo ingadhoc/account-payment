@@ -13,6 +13,12 @@
         <field name="payment_type">outbound</field>
     </record>
 
+    <record id="account_payment_method_rejected_third_check" model="account.payment.method">
+        <field name="name">Rejected Third Check</field>
+        <field name="code">rejected_third_check</field>
+        <field name="payment_type">outbound</field>
+    </record>
+
     <record id="account_payment_method_issue_check" model="account.payment.method">
         <field name="name">Issue Check</field>
         <field name="code">issue_check</field>

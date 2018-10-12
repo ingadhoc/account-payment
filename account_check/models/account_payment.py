@@ -544,3 +544,13 @@ class AccountPayment(models.Model):
                     ' cheques sin número.'))
         else:
             return self.do_print_checks()
+
+    @api.depends('invoice_ids', 'payment_type', 'partner_type', 'partner_id')
+    def _compute_destination_account_id(self):
+        super(AccountPayment, self)._compute_destination_account_id()
+        reject_check_method = self.env.ref(
+            'account_check.account_payment_method_rejected_third_check')
+        rejected_check_account = self.company_id._get_check_account('rejected')
+        for rec in self.filtered(
+                lambda x: x.payment_method_id == reject_check_method):
+            rec.destination_account_id = rejected_check_account.id,
