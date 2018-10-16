@@ -563,4 +563,4 @@ class AccountPayment(models.Model):
         rejected_check_account = self.company_id._get_check_account('rejected')
         for rec in self.filtered(
                 lambda x: x.payment_method_id == reject_check_method):
-            rec.destination_account_id = rejected_check_account.id,
+            rec.destination_account_id = rejected_check_account.id
