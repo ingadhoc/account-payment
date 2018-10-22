@@ -179,3 +179,10 @@ class AccountInvoice(models.Model):
     @api.onchange('company_id')
     def _onchange_company_id(self):
         self.pay_now_journal_id = False
+
+    @api.multi
+    def action_cancel(self):
+        self.filtered(
+            lambda x: x.state == 'open' and x.pay_now_journal_id).write(
+                {'pay_now_journal_id': False})
+        return super(AccountInvoice, self).action_cancel()
