@@ -167,3 +167,10 @@ class AccountInvoice(models.Model):
             result['views'] = [(res and res.id or False, 'form')]
             result['res_id'] = self.payment_group_ids.id
         return result
+
+    @api.multi
+    def action_cancel(self):
+        self.filtered(
+            lambda x: x.state == 'open' and x.pay_now_journal_id).write(
+                {'pay_now_journal_id': False})
+        super(AccountInvoice, self).action_cancel()
