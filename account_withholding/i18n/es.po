@@ -3,15 +3,14 @@
 # * account_withholding
 # 
 # Translators:
-# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
-# emiquinodoz <eq@ingadhoc.com>, 2017
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2018
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 9.0c\n"
+"Project-Id-Version: Odoo Server 11.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-08-11 18:15+0000\n"
-"PO-Revision-Date: 2017-08-11 18:15+0000\n"
-"Last-Translator: emiquinodoz <eq@ingadhoc.com>, 2017\n"
+"POT-Creation-Date: 2018-09-25 00:09+0000\n"
+"PO-Revision-Date: 2018-09-25 00:09+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2018\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -23,6 +22,29 @@ msgstr ""
 #: model:ir.ui.view,arch_db:account_withholding.view_account_tax_search
 msgid "Customer Payment"
 msgstr "Pago de Cliente"
+
+#. module: account_withholding
+#: model:ir.model.fields,help:account_withholding.field_account_tax_withholding_sequence_id
+msgid ""
+"If no sequence provided then it will be required for you to enter "
+"withholding number when registering one."
+msgstr ""
+
+#. module: account_withholding
+#: model:ir.model.fields,help:account_withholding.field_account_payment_withholding_number
+msgid ""
+"If you don't set a number we will add a number automatically from a sequence"
+" that should be configured on the Withholding Tax"
+msgstr ""
+
+#. module: account_withholding
+#: code:addons/account_withholding/models/account_payment.py:38
+#, python-format
+msgid ""
+"No puede validar pagos con retenciones que no tengan nÃºmero de retenciÃ³n. "
+"Recomendamos agregar una secuencia a los impuestos de retenciÃ³n "
+"correspondientes. Id de pagos: %s"
+msgstr ""
 
 #. module: account_withholding
 #: model:ir.model,name:account_withholding.model_account_payment
@@ -45,9 +67,25 @@ msgid "Templates for Taxes"
 msgstr "Plantillas para Impuestos"
 
 #. module: account_withholding
+#: model:account.payment.method,name:account_withholding.account_payment_method_in_withholding
+#: model:account.payment.method,name:account_withholding.account_payment_method_out_withholding
+msgid "Withholding"
+msgstr ""
+
+#. module: account_withholding
 #: model:ir.model.fields,field_description:account_withholding.field_account_payment_withholding_base_amount
 msgid "Withholding Base Amount"
 msgstr "Importe Base de Retención"
+
+#. module: account_withholding
+#: model:ir.model.fields,field_description:account_withholding.field_account_payment_withholding_number
+msgid "Withholding Number"
+msgstr ""
+
+#. module: account_withholding
+#: model:ir.model.fields,field_description:account_withholding.field_account_tax_withholding_sequence_id
+msgid "Withholding Number Sequence"
+msgstr ""
 
 #. module: account_withholding
 #: model:ir.model.fields,field_description:account_withholding.field_account_payment_tax_withholding_id
@@ -66,12 +104,7 @@ msgid "Withholding data"
 msgstr "Datos de la Retención"
 
 #. module: account_withholding
-#: model:ir.model.fields,field_description:account_withholding.field_account_payment_withholding_number
-msgid "Withholding number"
-msgstr "Número de la Retención"
-
-#. module: account_withholding
-#: code:addons/account_withholding/models/account_payment.py:34
+#: code:addons/account_withholding/models/account_payment.py:56
 #, python-format
 msgid "You can not use withholdings on transfers!"
 msgstr "¡No puede usar retenciones en las transferencias!"
