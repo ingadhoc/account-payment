@@ -173,4 +173,4 @@ class AccountInvoice(models.Model):
         self.filtered(
             lambda x: x.state == 'open' and x.pay_now_journal_id).write(
                 {'pay_now_journal_id': False})
-        super(AccountInvoice, self).action_cancel()
+        return super(AccountInvoice, self).action_cancel()
