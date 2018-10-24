@@ -601,7 +601,6 @@ class AccountCheck(models.Model):
             'journal_id': journal.id,
             'payment_date': action_date,
             'payment_type': 'outbound',
-            'partner_type': 'customer',
             'payment_method_id': reject_check_method.id,
             'check_ids': [(4, self.id, False)],
         }
@@ -622,7 +621,13 @@ class AccountCheck(models.Model):
                     'If you want to reject you need to do it manually.'))
             payment_vals = self.get_values_rejected_check_payment(journal)
             payment = self.env['account.payment'].create(payment_vals)
-            payment.post()
+
+            # payment.post()
+            # no usamos post porque no puede obtener secuencia, hacemos
+            # parecido a los statements donde odoo ya lo genera posteado
+            move = payment._create_payment_entry(payment.amount)
+            payment.write({'state': 'posted', 'move_name': move.name})
+
             self._add_operation('rejected', payment, date=payment.payment_date)
         elif self.state == 'delivered':
             operation = self._get_operation(self.state, True)
