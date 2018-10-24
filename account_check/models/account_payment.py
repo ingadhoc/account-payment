@@ -544,3 +544,11 @@ class AccountPayment(models.Model):
                     ' cheques sin número.'))
         else:
             return self.do_print_checks()
+
+    def _get_counterpart_move_line_vals(self, invoice=False):
+        vals = super(AccountPayment, self)._get_counterpart_move_line_vals(
+            invoice=invoice)
+        force_account_id = self._context.get('force_account_id')
+        if force_account_id:
+            vals['account_id'] = force_account_id
+        return vals

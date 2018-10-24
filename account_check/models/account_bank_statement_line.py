@@ -13,18 +13,15 @@ class AccountBankStatementLine(models.Model):
 
     @api.multi
     def button_cancel_reconciliation(self):
+        """ Delete operation of checks that are debited from statement
         """
-        Avoid deletion of move if it was a debit created from checks
-        """
-        for st_line in self:
-            for move in st_line.journal_entry_ids:
-                if self.env['account.check.operation'].search(
-                        [('origin', '=', 'account.move,%s' % move.id)]):
-                    move.update({'statement_line_id': False})
-                    move.line_ids.filtered(
-                        lambda x: x.statement_id == st_line.statement_id
-                    ).update({'statement_id': False})
-                    self -= st_line
+        for st_line in self.filtered('move_name'):
+            if st_line.journal_entry_ids.filtered(
+                    lambda x:
+                    x.payment_id.payment_reference == st_line.move_name):
+                check_operation = self.env['account.check.operation'].search(
+                    [('origin', '=', 'account.bank.statement.line,%s' % st_line.id)])
+                check_operation.check_id._del_operation(st_line)
         return super(
             AccountBankStatementLine, self).button_cancel_reconciliation()
 
@@ -57,5 +54,5 @@ class AccountBankStatementLine(models.Model):
                 raise ValidationError(_(
                     'Para registrar el debito de un cheque desde el extracto '
                     'solo debe haber una linea de contrapartida'))
-            check._add_operation('debited', moves, date=moves.date)
+            check._add_operation('debited', self, date=self.date)
         return moves
