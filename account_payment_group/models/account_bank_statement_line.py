@@ -27,7 +27,7 @@ class AccountBankStatementLine(models.Model):
         res = super(
             AccountBankStatementLine, self).button_cancel_reconciliation()
         if payment_groups:
-            payment_groups.update({'state': 'draft'})
+            payment_groups.write({'state': 'draft'})
             payment_groups.unlink()
         return res
 

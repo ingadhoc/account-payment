@@ -49,7 +49,7 @@ class AccountChartTemplate(models.Model):
             # TODO we should send it in the context and overwrite with
             # lower hierichy values
             if account_field:
-                company.update({field: account_ref[account_field.id]})
+                company[field] = account_ref[account_field.id]
         return account_ref, taxes_ref
 
 

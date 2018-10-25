@@ -167,7 +167,7 @@ class AccountPaymentGroup(models.Model):
             # usa sipreco. Ademas limpiamos receiptbooks que se pueden
             # haber seteado en el pago
             if not rec.receiptbook_id:
-                rec.payment_ids.update({
+                rec.payment_ids.write({
                     'receiptbook_id': False,
                 })
                 continue
@@ -179,7 +179,7 @@ class AccountPaymentGroup(models.Model):
                         'document number.'))
                 rec.document_number = (
                     rec.receiptbook_id.sequence_id.next_by_id())
-            rec.payment_ids.update({
+            rec.payment_ids.write({
                 'document_number': rec.document_number,
                 'receiptbook_id': rec.receiptbook_id.id,
             })
