@@ -601,6 +601,10 @@ class AccountCheck(models.Model):
     def get_payment_values(self, journal):
         """ return dictionary with the values to create the reject check
         payment record.
+        We create an outbound payment instead of a transfer because:
+        1. It is easier to inherit
+        2. Outbound payment withot partner type and partner is not seen by user
+        and we don't want to confuse them with this payments
         """
         action_date = self._context.get('action_date', fields.Date.today())
         return {
