@@ -22,6 +22,13 @@ A new security group "See Payments Menu" is created and native odoo payments men
 
 We also add a pay now functionality on invoices so that payment can be automatically created if you choose a journal on the invoice. You need to enable this on accounting configuration.
 
+Account Payment groups are created from:
+
+* sale order payments
+* reconciliation wizard (statements)
+* website payments
+* after expense validation when posting journal items.
+
 Installation
 ============
 

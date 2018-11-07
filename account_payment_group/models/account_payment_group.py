@@ -591,7 +591,7 @@ class AccountPaymentGroup(models.Model):
 
             # al crear desde website odoo crea primero el pago y lo postea
             # y no debemos re-postearlo
-            if not create_from_website:
+            if not create_from_website and not create_from_expense:
                 rec.payment_ids.filtered(lambda x: x.state == 'draft').post()
 
             counterpart_aml = rec.payment_ids.mapped('move_line_ids').filtered(
