@@ -20,7 +20,8 @@ class AccountBankStatementLine(models.Model):
                     lambda x:
                     x.payment_id.payment_reference == st_line.move_name):
                 check_operation = self.env['account.check.operation'].search(
-                    [('origin', '=', 'account.bank.statement.line,%s' % st_line.id)])
+                    [('origin', '=',
+                      'account.bank.statement.line,%s' % st_line.id)])
                 check_operation.check_id._del_operation(st_line)
         return super(
             AccountBankStatementLine, self).button_cancel_reconciliation()
