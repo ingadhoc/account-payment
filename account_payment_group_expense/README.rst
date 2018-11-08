@@ -10,45 +10,29 @@
    :target: https://www.gnu.org/licenses/agpl
    :alt: License: AGPL-3
 
-==============
-Payment Groups
-==============
+=============================
+Account Payment Group Expense
+=============================
 
-This module extends the functionality of payments to suport paying with multiple payment methods at once.
-
-By default payments are managed on one step, if you want, you can use two steps to confirm payments on supplier payments. This option is available per company.
-
-A new security group "See Payments Menu" is created and native odoo payments menus are assigned to that group.
-
-We also add a pay now functionality on invoices so that payment can be automatically created if you choose a journal on the invoice. You need to enable this on accounting configuration.
-
-Account Payment groups are created from:
-
-* sale order payments
-* reconciliation wizard (statements)
-* website payments
-* after expense validation when posting journal items.
+This module let to indentify when a account payment is created from a expense. This is accomplish by adding a context value "create_from_expense" that can be reuse then
+to create the proper account payment group from the `account_payment_group` module
 
 Installation
 ============
 
 To install this module, you need to:
 
-#. Do this ...
+#. Only need to install the module
 
 Configuration
 =============
 
 To configure this module, you need to:
 
-#. Go to ...
+#. Nothing to configure
 
 Usage
 =====
-
-To use this module, you need to:
-
-#. Go to ...
 
 .. image:: https://odoo-community.org/website/image/ir.attachment/5784_f2813bd/datas
    :alt: Try me on Runbot

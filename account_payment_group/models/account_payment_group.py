@@ -571,6 +571,7 @@ class AccountPaymentGroup(models.Model):
             'create_from_website', False)
         create_from_statement = self._context.get(
             'create_from_statement', False)
+        create_from_expense = self._context.get('create_from_expense', False)
         self = self.with_context({})
         for rec in self:
             # TODO if we want to allow writeoff then we can disable this
@@ -582,7 +583,8 @@ class AccountPaymentGroup(models.Model):
             # si el pago se esta posteando desde statements y hay doble
             # validacion no verificamos que haya deuda seleccionada
             if (rec.payment_subtype == 'double_validation' and
-                    rec.payment_difference and not create_from_statement):
+                    rec.payment_difference and (not create_from_statement and
+                                                not create_from_expense)):
                 raise ValidationError(_(
                     'To Pay Amount and Payment Amount must be equal!'))
 
@@ -591,7 +593,7 @@ class AccountPaymentGroup(models.Model):
 
             # al crear desde website odoo crea primero el pago y lo postea
             # y no debemos re-postearlo
-            if not create_from_website:
+            if not create_from_website and not create_from_expense:
                 rec.payment_ids.filtered(lambda x: x.state == 'draft').post()
 
             counterpart_aml = rec.payment_ids.mapped('move_line_ids').filtered(
