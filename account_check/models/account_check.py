@@ -510,6 +510,9 @@ class AccountCheck(models.Model):
         # TODO la idea es depreciar esto y que si se usa cheques de terceros
         se use la misma cuenta que la del diario y no la cuenta configurada en
         la cia, lo dejamos por ahora por nosotros y 4 clientes que estan asi
+        (cro, ncool, bog).
+        Esto era cuando permitíamos o usabamos diario de efectivo con cash y
+        cheques
         """
         # self.ensure_one()
         # desde los pagos, pueden venir mas de un cheque pero para que
