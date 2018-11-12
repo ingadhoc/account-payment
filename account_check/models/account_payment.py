@@ -252,6 +252,9 @@ class AccountPayment(models.Model):
         elif self.checkbook_id:
             # TODO ver si interesa implementar volver atras numeracion
             self.checkbook_id = False
+        # si cambiamos metodo de pago queremos refrescar listado de cheques
+        # seleccionados
+        self.check_ids = False
 
     @api.onchange('checkbook_id')
     def onchange_checkbook(self):
