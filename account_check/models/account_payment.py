@@ -479,9 +479,15 @@ class AccountPayment(models.Model):
 
     @api.multi
     def post(self):
-        for rec in self.filtered(
-                lambda x: x.payment_method_code == 'issue_check'):
-            if not rec.check_number or not rec.check_name:
+        for rec in self:
+            if rec.check_ids and sum(
+                    rec.check_ids.mapped('amount')) != rec.amount:
+                raise UserError(_(
+                    'La suma del pago no coincide con la suma de los cheques '
+                    'seleccionados. Por favor intente eliminar y volver a '
+                    'agregar un cheque.'))
+            if rec.payment_method_code == 'issue_check' and (
+                    not rec.check_number or not rec.check_name):
                 raise UserError(_(
                     'Para mandar a proceso de firma debe definir número '
                     'de cheque en cada línea de pago.\n'
