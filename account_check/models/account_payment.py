@@ -4,6 +4,7 @@
 ##############################################################################
 from odoo import fields, models, _, api
 from odoo.exceptions import UserError
+from odoo.tools import float_compare
 import logging
 # import odoo.addons.decimal_precision as dp
 _logger = logging.getLogger(__name__)
@@ -480,8 +481,8 @@ class AccountPayment(models.Model):
     @api.multi
     def post(self):
         for rec in self:
-            if rec.check_ids and sum(
-                    rec.check_ids.mapped('amount')) != rec.amount:
+            if rec.check_ids and not rec.currency_id.is_zero(
+                    sum(rec.check_ids.mapped('amount')) - rec.amount):
                 raise UserError(_(
                     'La suma del pago no coincide con la suma de los cheques '
                     'seleccionados. Por favor intente eliminar y volver a '
