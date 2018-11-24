@@ -1,4 +1,4 @@
-from odoo import models, fields
+from odoo import models, fields, api
 
 
 class AccountTaxTemplate(models.Model):
@@ -39,3 +39,19 @@ class AccountTax(models.Model):
         # 'default_prefix': 'x-', 'default_padding': 8}",
         copy=False
     )
+
+    @api.model
+    def create(self, vals):
+        tax = super(AccountTax, self).create(vals)
+        if tax.type_tax_use == 'supplier' and not tax.withholding_sequence_id:
+            tax.withholding_sequence_id = self.withholding_sequence_id.\
+                sudo().create({
+                    'name': tax.name,
+                    'implementation': 'no_gap',
+                    # 'prefix': False,
+                    'padding': 8,
+                    'number_increment': 1,
+                    'code': 'account.tax.withholding',
+                    'company_id': tax.company_id.id,
+                }).id
+        return tax
