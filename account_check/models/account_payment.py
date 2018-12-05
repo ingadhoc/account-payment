@@ -44,6 +44,14 @@ class AccountPayment(models.Model):
         compute='_compute_check',
         string='Check',
     )
+    check_deposit_type = fields.Selection(
+        [('consolidated', 'Consolidated'),
+         ('detailed', 'Detailed')],
+        default='detailed',
+        help="This option is relevant if you use bank statements. Detailed is"
+        " used when the bank credits one by one the checks, consolidated is"
+        " for when the bank credits all the checks in a single movement",
+    )
 
     @api.multi
     @api.depends('check_ids')
@@ -562,3 +570,57 @@ class AccountPayment(models.Model):
         if force_account_id:
             vals['account_id'] = force_account_id
         return vals
+
+    @api.multi
+    def _split_aml_line_per_check(self, move):
+        """ Take an account mvoe, find the move lines related to check and
+        split them one per earch check related to the payment
+        """
+        self.ensure_one()
+        res = self.env['account.move.line']
+        move.button_cancel()
+        checks = self.check_ids
+        aml = move.line_ids.with_context(check_move_validity=False).filtered(
+            lambda x: x.name != self.name)
+        if len(aml) > 1:
+            raise UserError(
+                _('Seems like this move has been already splited'))
+        elif len(aml) == 0:
+            raise UserError(
+                _('There is not move lines to split'))
+
+        amount_field = 'credit' if aml.credit else 'debit'
+        new_name = _('Deposit check %s') if aml.credit else \
+            aml.name + _(' check %s')
+        aml.write({
+            'name': new_name % checks[0].name,
+            amount_field: checks[0].amount})
+        res |= aml
+        checks -= checks[0]
+        for check in checks:
+            res |= aml.copy({
+                'name': new_name % check.name,
+                amount_field: check.amount,
+                'payment_id': self.id,
+            })
+        move.post()
+        return res
+
+    @api.multi
+    def _create_payment_entry(self, amount):
+        move = super(AccountPayment, self)._create_payment_entry(amount)
+        if self.filtered(lambda x:
+           (x.payment_method_code, x.check_type, x.check_deposit_type) ==
+           ('delivered_third_check', 'third_check', 'detailed')):
+            self._split_aml_line_per_check(move)
+        return move
+
+    @api.multi
+    def _create_transfer_entry(self, amount):
+        transfer_debit_aml = super(
+            AccountPayment, self)._create_transfer_entry(amount)
+        if self.filtered(lambda x:
+           (x.payment_method_code, x.check_type, x.check_deposit_type) ==
+           ('delivered_third_check', 'third_check', 'detailed')):
+            self._split_aml_line_per_check(transfer_debit_aml.move_id)
+        return transfer_debit_aml

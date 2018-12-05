@@ -12,12 +12,6 @@
                 <field name="checkbook_numerate_on_printing" invisible="1"/>
             </form>
             <!-- TODO ver si para una v10 implementamos algo parecido a los batch deposit y tal vez directamente hacemos que los pagos sean uno a uno con los cheques total se pueden agregar varios pagosen un payment group, tal vez para transfers usamos tambien payments groups -->
-            <sheet position="before">
-                <p class="alert alert-info" role="alert" style="margin-bottom:0px;" attrs="{'invisible': ['|', '|', ('state', '!=', 'draft'), ('payment_type', '!=', 'transfer'), ('payment_method_code', '!=', 'delivered_third_check')]}">
-                    <b>Importante:</b> Recomendamos que <b>solo</b> deposite <b>varios cheques</b> a la vez si no utiliza los extractos bancarios o si el banco acredita los cheques en una sola línea.<br/>
-                    Para el resto de los casos recomendamos que registre <b>una transferencia para cada cheque</b>.
-                </p>
-            </sheet>
             <field name='communication' position="after">
                 <div colspan="2" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'delivered_third_check', 'issue_check'])]}">
                     <group name="checks">
@@ -70,6 +64,9 @@
             <div name="amount_div" position="attributes">
                 <attribute name="attrs">{'invisible': [('payment_method_code', '=', 'delivered_third_check')]}</attribute>
             </div>
+            <field name="payment_method_id" position="after">
+                <field name="check_deposit_type" widget="radio" attrs="{'invisible': ['|', ('payment_type', '!=', 'transfer'), ('payment_method_code', '!=', 'delivered_third_check')]}"/>
+            </field>
         </field>
     </record>
 
