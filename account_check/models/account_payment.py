@@ -4,7 +4,6 @@
 ##############################################################################
 from odoo import fields, models, _, api
 from odoo.exceptions import UserError
-from odoo.tools import float_compare
 import logging
 # import odoo.addons.decimal_precision as dp
 _logger = logging.getLogger(__name__)
