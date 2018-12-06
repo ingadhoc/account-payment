@@ -191,7 +191,8 @@
             <pivot string="Check">
                 <field name="payment_date" type="row" interval="month"/>
                 <field name="payment_date" type="row" interval="week"/>
-                <field name="amount" type="measure"/>
+                 <!-- pylint:disable=duplicate-xml-fields -->
+               <field name="amount" type="measure"/>
             </pivot>
         </field>
     </record>
