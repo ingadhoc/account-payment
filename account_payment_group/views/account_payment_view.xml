@@ -38,8 +38,9 @@
             <!-- <field name="payment_method_id"/> -->
             <field name="payment_method_description"/>
 
+            <!-- lo agregamos para que al usar guardar y nuevo se ejecute onchange en la form y previsualice bien importe en la tree -->
+            <field name="amount" invisible="1"/>
             <!-- sum de este amount no tiene sentido por que puede ser distintas monedas -->
-            <!-- <field name="amount"/> -->
             <field name="signed_amount"/>
             <field name="signed_amount_company_currency" sum="Total"/>
             <field name="state"/>
@@ -88,6 +89,8 @@
             </form>
             <form>
                 <field name="payment_group_company_id" invisible="1"/>
+                <!-- agregamos este campo para que ejecute el onchange y lo actualice al en la tree -->
+                <field name="signed_amount_company_currency" invisible="1"/>
                 <field name="signed_amount" invisible="1"/>
             </form>
             <!-- ahora lo hicimos con el fix -->
