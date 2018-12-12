@@ -608,9 +608,10 @@ class AccountPayment(models.Model):
     @api.multi
     def _create_payment_entry(self, amount):
         move = super(AccountPayment, self)._create_payment_entry(amount)
-        if self.filtered(lambda x:
-           (x.payment_method_code, x.check_type, x.check_deposit_type) ==
-           ('delivered_third_check', 'third_check', 'detailed')):
+        if self.filtered(
+            lambda x: x.payment_type == 'transfer' and
+                x.payment_method_code == 'delivered_third_check' and
+                x.check_deposit_type == 'detailed'):
             self._split_aml_line_per_check(move)
         return move
 
@@ -618,8 +619,9 @@ class AccountPayment(models.Model):
     def _create_transfer_entry(self, amount):
         transfer_debit_aml = super(
             AccountPayment, self)._create_transfer_entry(amount)
-        if self.filtered(lambda x:
-           (x.payment_method_code, x.check_type, x.check_deposit_type) ==
-           ('delivered_third_check', 'third_check', 'detailed')):
+        if self.filtered(
+            lambda x: x.payment_type == 'transfer' and
+                x.payment_method_code == 'delivered_third_check' and
+                x.check_deposit_type == 'detailed'):
             self._split_aml_line_per_check(transfer_debit_aml.move_id)
         return transfer_debit_aml
