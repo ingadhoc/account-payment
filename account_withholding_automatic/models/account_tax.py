@@ -317,7 +317,8 @@ result = withholdable_base_amount * 0.10
             withholdable_invoiced_amount -= (
                 sign * payment_group.unreconciled_amount * invoice_factor)
         elif self.withholding_advances:
-            withholdable_advanced_amount = payment_group.unreconciled_amount
+            withholdable_advanced_amount = \
+                payment_group.withholdable_advanced_amount
 
         accumulated_amount = previous_withholding_amount = 0.0
         if self.withholding_accumulated_payments:
