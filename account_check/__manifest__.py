@@ -19,7 +19,7 @@
 ##############################################################################
 {
     'name': 'Account Check Management',
-    'version': '11.0.1.4.1',
+    'version': '11.0.1.4.2',
     'category': 'Accounting',
     'summary': 'Accounting, Payment, Check, Third, Issue',
     'author': 'ADHOC SA',

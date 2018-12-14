@@ -3,7 +3,7 @@
 # directory
 ##############################################################################
 from odoo import fields, models, _, api
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 import logging
 # import odoo.addons.decimal_precision as dp
 _logger = logging.getLogger(__name__)
@@ -165,6 +165,16 @@ class AccountPayment(models.Model):
         return super(
             AccountPayment,
             (self - check_payments))._compute_payment_method_description()
+
+    @api.constrains('check_ids')
+    def _check_checks(self):
+        currency = self.check_ids.mapped('currency_id')
+        if len(currency) > 1:
+            raise ValidationError(_(
+                'You are trying to deposit checks of difference'
+                ' currencies, this functionality is not supported'))
+        elif len(currency) == 1:
+            self.currency_id = currency.id
 
 # on change methods
 
@@ -500,7 +510,14 @@ class AccountPayment(models.Model):
                     'Para mandar a proceso de firma debe definir número '
                     'de cheque en cada línea de pago.\n'
                     '* ID del pago: %s') % rec.id)
-        return super(AccountPayment, self).post()
+        res = super(AccountPayment, self).post()
+        # Update the received check amount_company_currency when the payment
+        # has been post in order save the amout used for the aml in the check
+        for rec in self.filtered(lambda x:
+            x.payment_type == 'inbound' and
+            x.payment_method_code == 'received_third_check'):
+            rec.check_ids.amount_company_currency = rec.amount_company_currency
+        return res
 
     def _get_liquidity_move_line_vals(self, amount):
         vals = super(AccountPayment, self)._get_liquidity_move_line_vals(
@@ -591,15 +608,23 @@ class AccountPayment(models.Model):
         amount_field = 'credit' if aml.credit else 'debit'
         new_name = _('Deposit check %s') if aml.credit else \
             aml.name + _(' check %s')
+
+        check_amount = checks[0].amount \
+            if checks[0].currency_id == aml.company_currency_id \
+            else checks[0].amount_company_currency
+
         aml.write({
             'name': new_name % checks[0].name,
-            amount_field: checks[0].amount})
+            amount_field: check_amount})
         res |= aml
         checks -= checks[0]
         for check in checks:
+            check_amount = check.amount \
+                if check.currency_id == aml.company_currency_id \
+                else check.amount_company_currency
             res |= aml.copy({
                 'name': new_name % check.name,
-                amount_field: check.amount,
+                amount_field: check_amount,
                 'payment_id': self.id,
             })
         move.post()
@@ -617,11 +642,30 @@ class AccountPayment(models.Model):
 
     @api.multi
     def _create_transfer_entry(self, amount):
-        transfer_debit_aml = super(
+        transfer_credit_aml = super(
             AccountPayment, self)._create_transfer_entry(amount)
         if self.filtered(
             lambda x: x.payment_type == 'transfer' and
                 x.payment_method_code == 'delivered_third_check' and
                 x.check_deposit_type == 'detailed'):
-            self._split_aml_line_per_check(transfer_debit_aml.move_id)
-        return transfer_debit_aml
+            self._fix_transfer_debit_line(transfer_credit_aml.move_id)
+            self._split_aml_line_per_check(transfer_credit_aml.move_id)
+        return transfer_credit_aml
+
+    @api.multi
+    def _fix_transfer_debit_line(self, move):
+        """ Transfer debit line do not take into account the payment currency
+        only the journal destination currency. We need to reflect this behavior
+        on the transfers debit lines related to checks
+        """
+        self.ensure_one()
+        if not self.other_currency:
+            return
+        move.button_cancel()
+        aml = move.line_ids.filtered('debit')
+        if not aml:
+            return
+        aml.write({
+            'currency_id': self.currency_id.id,
+            'amount_currency': self.amount,
+        })

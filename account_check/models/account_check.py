@@ -227,6 +227,9 @@ class AccountCheck(models.Model):
         readonly=True,
         states={'draft': [('readonly', False)]},
     )
+    amount_company_currency = fields.Float(
+        readonly=True,
+    )
     currency_id = fields.Many2one(
         'res.currency',
         readonly=True,
