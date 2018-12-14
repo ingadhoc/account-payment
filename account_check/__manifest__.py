@@ -30,6 +30,7 @@
         # 'account',
         # for bank and cash menu and also for better usability
         'account_payment_fix',
+        'account_payment_group',
     ],
     'data': [
         'data/account_payment_method_data.xml',

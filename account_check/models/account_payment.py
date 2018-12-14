@@ -669,3 +669,11 @@ class AccountPayment(models.Model):
             'currency_id': self.currency_id.id,
             'amount_currency': self.amount,
         })
+
+    @api.depends('currency_id', 'company_currency_id')
+    def _compute_other_currency(self):
+        super(AccountPayment, self)._compute_other_currency()
+        for rec in self:
+            if rec.payment_type == 'transfer' and \
+               rec.payment_method_code == 'delivered_third_check':
+                rec.other_currency = False
