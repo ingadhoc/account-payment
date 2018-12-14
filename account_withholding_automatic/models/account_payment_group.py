@@ -12,6 +12,16 @@ class AccountPaymentGroup(models.Model):
     withholdings_amount = fields.Monetary(
         compute='_compute_withholdings_amount'
     )
+    withholdable_advanced_amount = fields.Monetary(
+        'Importe a cuenta sujeto a retencion',
+        readonly=True,
+        states={'draft': [('readonly', False)]},
+    )
+
+    @api.onchange('unreconciled_amount')
+    def set_withholdable_advanced_amount(self):
+        for rec in self:
+            rec.withholdable_advanced_amount = rec.unreconciled_amount
 
     @api.multi
     @api.depends(

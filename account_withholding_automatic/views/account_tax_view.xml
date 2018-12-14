@@ -15,8 +15,8 @@
                             <div>
                                 <field name="withholding_type" class="oe_inline"/>
                             </div>
-                            <field name="withholding_python_compute" attrs="{'invisible': [('withholding_type', '!=', 'code')]}" class="oe_inline" nolabel="1" colspan="2"/>
-                            <field name="withholding_rule_ids" attrs="{'invisible': [('withholding_type', '!=', 'based_on_rule')]}" class="oe_inline" nolabel="1" colspan="2">
+                            <field name="withholding_python_compute" attrs="{'invisible': [('withholding_type', '!=', 'code')]}" nolabel="1" colspan="2"/>
+                            <field name="withholding_rule_ids" attrs="{'invisible': [('withholding_type', '!=', 'based_on_rule')]}" nolabel="1" colspan="2">
                                 <tree editable="bottom">
                                     <field name="sequence" widget="handle"/>
                                     <field name="domain"/>

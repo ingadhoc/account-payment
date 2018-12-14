@@ -20,8 +20,12 @@
                     <!-- <button name="compute_withholdings" string="Compute Withholdings" type="object" states="confirmed"/> -->
                     <button name="compute_withholdings" string="Compute Withholdings" type="object" attrs="{'invisible': ['|', ('partner_type', '!=', 'supplier'), ('state', 'not in', ['draft', 'confirmed'])]}"/>
                 </button>
+
+                <field name="unreconciled_amount" position="after">
+                    <field name="withholdable_advanced_amount" options="{'currency_field': 'currency_id'}" attrs="{'invisible': ['|', ('partner_type', '!=', 'supplier'), ('state', 'not in', ['draft', 'confirmed'])]}"/>
+                </field>
             </field>
         </record>
-          
+
     </data>
 </odoo>
