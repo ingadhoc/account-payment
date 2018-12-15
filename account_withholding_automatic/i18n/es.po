@@ -4,12 +4,13 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2018
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 11.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-25 00:09+0000\n"
-"PO-Revision-Date: 2018-09-25 00:09+0000\n"
+"POT-Creation-Date: 2018-12-14 15:18+0000\n"
+"PO-Revision-Date: 2018-05-20 17:05+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2018\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
@@ -145,6 +146,7 @@ msgid "If none is selected, then payments are not accumulated"
 msgstr "Si ninguna se selecciona, entonces los pagos no son acumulados"
 
 #. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_group_withholdable_advanced_amount
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_withholdable_advanced_amount
 msgid "Importe a cuenta sujeto a retencion"
 msgstr ""
@@ -309,12 +311,6 @@ msgstr "Impuesto de Retención"
 #: model:ir.model.fields,help:account_withholding_automatic.field_account_tax_withholding_type
 msgid "The computation method for the tax amount."
 msgstr "Método de cálculo para el importe del impuesto."
-
-#. module: account_withholding_automatic
-#: code:addons/account_withholding_automatic/models/res_company.py:22
-#, python-format
-msgid "To use automatic withholdings double validation is required"
-msgstr "Para usar retenciones automáticas es requerida la doble validación"
 
 #. module: account_withholding_automatic
 #: selection:account.tax,withholding_amount_type:0
