@@ -4,7 +4,7 @@
 # directory
 ##############################################################################
 from openerp import fields, models, _, api
-from openerp.exceptions import UserError
+from openerp.exceptions import UserError, ValidationError
 import logging
 # import openerp.addons.decimal_precision as dp
 _logger = logging.getLogger(__name__)
@@ -158,12 +158,47 @@ class AccountPayment(models.Model):
 
 # on change methods
 
-    # @api.constrains('check_ids')
+    @api.onchange('amount_company_currency')
+    def _inverse_amount_company_currency(self):
+        # en v9 tenemos algun tipo de error en el orden en que se llama
+        # el inverse asi que lo desactivamos para cheques
+        self = self.filtered(
+            lambda x: x.payment_method_code != 'delivered_third_check')
+        return super(AccountPayment, self)._inverse_amount_company_currency()
+
+    @api.constrains('check_ids')
+    def set_checks_amounts(self):
+        for rec in self:
+            if rec.payment_method_code == 'delivered_third_check':
+                currency = rec.check_ids.mapped('currency_id')
+                if len(currency) > 1:
+                    raise ValidationError(_(
+                        'You are trying to deposit checks of difference'
+                        ' currencies, this functionality is not supported'))
+                elif len(currency) == 1:
+                    rec.currency_id = currency.id
+                # si es una entrega de cheques de terceros y es en otra moneda
+                # a la de la cia, forzamos el importe en moneda de cia de los
+                # cheques originales
+                # por mismo error comentado en _inverse_amount_company_currency
+                # en v9 lo hacemos asi
+                if rec.currency_id != rec.company_currency_id:
+                    rec.force_amount_company_currency = sum(
+                        rec.check_ids.mapped('amount_company_currency'))
+
     @api.onchange('check_ids', 'payment_method_code')
     def onchange_checks(self):
-        # we only overwrite if payment method is delivered
-        if self.payment_method_code == 'delivered_third_check':
-            self.amount = sum(self.check_ids.mapped('amount'))
+        for rec in self:
+            # we only overwrite if payment method is delivered
+            if rec.payment_method_code == 'delivered_third_check':
+                rec.amount = sum(rec.check_ids.mapped('amount'))
+                currency = rec.check_ids.mapped('currency_id')
+                if len(currency) > 1:
+                    raise ValidationError(_(
+                        'You are trying to deposit checks of difference'
+                        ' currencies, this functionality is not supported'))
+                elif len(currency) == 1:
+                    rec.currency_id = currency.id
 
     @api.multi
     @api.onchange('check_number')
@@ -287,10 +322,10 @@ class AccountPayment(models.Model):
             'journal_id': self.journal_id.id,
             'amount': self.amount,
             'payment_date': self.check_payment_date,
-            # TODO arreglar que monto va de amount y cual de amount currency
-            # 'amount_currency': self.amount,
             'currency_id': self.currency_id.id,
+            'amount_company_currency': self.amount_company_currency,
         }
+
         check = self.env['account.check'].create(check_vals)
         self.check_ids = [(4, check.id, False)]
         check._add_operation(
@@ -482,7 +517,8 @@ class AccountPayment(models.Model):
                     'Para mandar a proceso de firma debe definir número '
                     'de cheque en cada línea de pago.\n'
                     '* ID del pago: %s') % rec.id)
-        return super(AccountPayment, self).post()
+        res = super(AccountPayment, self).post()
+        return res
 
     def _get_liquidity_move_line_vals(self, amount):
         vals = super(AccountPayment, self)._get_liquidity_move_line_vals(
