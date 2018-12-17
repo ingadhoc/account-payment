@@ -3,7 +3,7 @@
 # directory
 ##############################################################################
 from odoo import fields, models, _, api
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 import logging
 # import odoo.addons.decimal_precision as dp
 _logger = logging.getLogger(__name__)
@@ -168,12 +168,26 @@ class AccountPayment(models.Model):
 
 # on change methods
 
-    # @api.constrains('check_ids')
+    @api.constrains('check_ids')
     @api.onchange('check_ids', 'payment_method_code')
     def onchange_checks(self):
-        # we only overwrite if payment method is delivered
-        if self.payment_method_code == 'delivered_third_check':
-            self.amount = sum(self.check_ids.mapped('amount'))
+        for rec in self:
+            # we only overwrite if payment method is delivered
+            if rec.payment_method_code == 'delivered_third_check':
+                rec.amount = sum(rec.check_ids.mapped('amount'))
+                # si es una entrega de cheques de terceros y es en otra moneda
+                # a la de la cia, forzamos el importe en moneda de cia de los
+                # cheques originales
+                if rec.currency_id != rec.company_currency_id:
+                    rec.amount_company_currency = sum(
+                        rec.check_ids.mapped('amount_company_currency'))
+                currency = rec.check_ids.mapped('currency_id')
+                if len(currency) > 1:
+                    raise ValidationError(_(
+                        'You are trying to deposit checks of difference'
+                        ' currencies, this functionality is not supported'))
+                elif len(currency) == 1:
+                    rec.currency_id = currency.id
 
     @api.multi
     @api.onchange('check_number')
@@ -299,10 +313,10 @@ class AccountPayment(models.Model):
             'journal_id': self.journal_id.id,
             'amount': self.amount,
             'payment_date': self.check_payment_date,
-            # TODO arreglar que monto va de amount y cual de amount currency
-            # 'amount_currency': self.amount,
             'currency_id': self.currency_id.id,
+            'amount_company_currency': self.amount_company_currency,
         }
+
         check = self.env['account.check'].create(check_vals)
         self.check_ids = [(4, check.id, False)]
         check._add_operation(
@@ -500,7 +514,8 @@ class AccountPayment(models.Model):
                     'Para mandar a proceso de firma debe definir número '
                     'de cheque en cada línea de pago.\n'
                     '* ID del pago: %s') % rec.id)
-        return super(AccountPayment, self).post()
+        res = super(AccountPayment, self).post()
+        return res
 
     def _get_liquidity_move_line_vals(self, amount):
         vals = super(AccountPayment, self)._get_liquidity_move_line_vals(
@@ -591,16 +606,24 @@ class AccountPayment(models.Model):
         amount_field = 'credit' if aml.credit else 'debit'
         new_name = _('Deposit check %s') if aml.credit else \
             aml.name + _(' check %s')
+
+        # if the move line has currency then we are delivering checks on a
+        # different currency than company one
+        currency = aml.currency_id
+        currency_sign = amount_field == 'debit' and 1.0 or -1.0
         aml.write({
             'name': new_name % checks[0].name,
-            amount_field: checks[0].amount})
+            amount_field: checks[0].amount_company_currency,
+            'amount_currency': currency and currency_sign * checks[0].amount,
+        })
         res |= aml
         checks -= checks[0]
         for check in checks:
             res |= aml.copy({
                 'name': new_name % check.name,
-                amount_field: check.amount,
+                amount_field: check.amount_company_currency,
                 'payment_id': self.id,
+                'amount_currency': currency and currency_sign * check.amount,
             })
         move.post()
         return res

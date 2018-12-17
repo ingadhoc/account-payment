@@ -21,6 +21,7 @@
                 <field name="company_id" groups="base.group_multi_company"/>
                 <field name="state"/>
                 <field name="owner_name" invisible="context.get('default_type',False) != 'third_check'"/>
+                <field name="currency_id" invisible="1"/>
             </tree>
         </field>
     </record>
@@ -72,7 +73,7 @@
                         <field name="bank_id"/>
                         <field name="number"/>
                         <field name="amount"/>
-                        <field name="amount_currency" attrs="{'invisible': [('amount_currency', '=', 0.0)]}"/>
+                        <field name="amount_company_currency"/>
                     </group>
                     <group>
                         <field name="state"/>

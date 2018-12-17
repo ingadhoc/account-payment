@@ -216,14 +216,13 @@ class AccountCheck(models.Model):
         readonly=True,
         states={'draft': [('readonly', False)]}
     )
-
     amount = fields.Monetary(
-        currency_field='company_currency_id',
+        currency_field='currency_id',
         readonly=True,
         states={'draft': [('readonly', False)]}
     )
-    amount_currency = fields.Monetary(
-        currency_field='currency_id',
+    amount_company_currency = fields.Monetary(
+        currency_field='company_currency_id',
         readonly=True,
         states={'draft': [('readonly', False)]},
     )
@@ -435,12 +434,11 @@ class AccountCheck(models.Model):
             raise ValidationError(_(
                 'You can not "%s" a check from state "%s"!\n'
                 'Check nbr (id): %s (%s)') % (
-                    self.operation_ids._fields[
-                        'operation'].convert_to_export(
-                            operation, self.env),
-                    self._fields['state'].convert_to_export(
-                        old_state, self.env),
-                    self.name, self.id))
+                    self.operation_ids._fields['operation'].convert_to_export(
+                        operation, self),
+                    self._fields['state'].convert_to_export(old_state, self),
+                    self.name,
+                    self.id))
 
     @api.multi
     def unlink(self):
@@ -690,8 +688,7 @@ class AccountCheck(models.Model):
             # 'product_id': self.product_id.id,
             'name': name,
             'account_id': account.id,
-            'price_unit': (
-                self.amount_currency and self.amount_currency or self.amount),
+            'price_unit': self.amount,
             # 'invoice_id': invoice.id,
         }
 
