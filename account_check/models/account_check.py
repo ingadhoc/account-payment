@@ -216,19 +216,15 @@ class AccountCheck(models.Model):
         readonly=True,
         states={'draft': [('readonly', False)]}
     )
-
     amount = fields.Monetary(
-        currency_field='company_currency_id',
+        currency_field='currency_id',
         readonly=True,
         states={'draft': [('readonly', False)]}
     )
-    amount_currency = fields.Monetary(
-        currency_field='currency_id',
+    amount_company_currency = fields.Monetary(
+        currency_field='company_currency_id',
         readonly=True,
         states={'draft': [('readonly', False)]},
-    )
-    amount_company_currency = fields.Float(
-        readonly=True,
     )
     currency_id = fields.Many2one(
         'res.currency',
@@ -693,8 +689,7 @@ class AccountCheck(models.Model):
             # 'product_id': self.product_id.id,
             'name': name,
             'account_id': account.id,
-            'price_unit': (
-                self.amount_currency and self.amount_currency or self.amount),
+            'price_unit': self.self.amount,
             # 'invoice_id': invoice.id,
         }
 

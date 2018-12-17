@@ -184,6 +184,12 @@ class AccountPayment(models.Model):
         # we only overwrite if payment method is delivered
         if self.payment_method_code == 'delivered_third_check':
             self.amount = sum(self.check_ids.mapped('amount'))
+            # si es una entrega de cheques de terceros y es en otra moneda
+            # a la de la cia, forzamos el importe en moneda de cia de los
+            # cheques originales
+            if self.currency_id != self.company_currency_id:
+                self.amount_company_currency = sum(
+                    self.check_ids.mapped('amount_company_currency'))
 
     @api.multi
     @api.onchange('check_number')
@@ -309,10 +315,10 @@ class AccountPayment(models.Model):
             'journal_id': self.journal_id.id,
             'amount': self.amount,
             'payment_date': self.check_payment_date,
-            # TODO arreglar que monto va de amount y cual de amount currency
-            # 'amount_currency': self.amount,
             'currency_id': self.currency_id.id,
+            'amount_company_currency': self.amount_company_currency,
         }
+
         check = self.env['account.check'].create(check_vals)
         self.check_ids = [(4, check.id, False)]
         check._add_operation(
@@ -511,12 +517,6 @@ class AccountPayment(models.Model):
                     'de cheque en cada línea de pago.\n'
                     '* ID del pago: %s') % rec.id)
         res = super(AccountPayment, self).post()
-        # Update the received check amount_company_currency when the payment
-        # has been post in order save the amout used for the aml in the check
-        for rec in self.filtered(lambda x:
-            x.payment_type == 'inbound' and
-            x.payment_method_code == 'received_third_check'):
-            rec.check_ids.amount_company_currency = rec.amount_company_currency
         return res
 
     def _get_liquidity_move_line_vals(self, amount):
@@ -609,23 +609,21 @@ class AccountPayment(models.Model):
         new_name = _('Deposit check %s') if aml.credit else \
             aml.name + _(' check %s')
 
-        check_amount = checks[0].amount \
-            if checks[0].currency_id == aml.company_currency_id \
-            else checks[0].amount_company_currency
-
+        currency_id = aml.currency_id
+        currency_sign = amount_field == 'debit' and 1.0 or -1.0
         aml.write({
             'name': new_name % checks[0].name,
-            amount_field: check_amount})
+            amount_field: checks[0].amount_company_currency,
+            'amount_currency': currency_id and currency_sign * checks[0].amount,
+        })
         res |= aml
         checks -= checks[0]
         for check in checks:
-            check_amount = check.amount \
-                if check.currency_id == aml.company_currency_id \
-                else check.amount_company_currency
             res |= aml.copy({
                 'name': new_name % check.name,
-                amount_field: check_amount,
+                amount_field: check.amount_company_currency,
                 'payment_id': self.id,
+                'amount_currency': currency_id and currency_sign * check.amount,
             })
         move.post()
         return res
@@ -642,38 +640,11 @@ class AccountPayment(models.Model):
 
     @api.multi
     def _create_transfer_entry(self, amount):
-        transfer_credit_aml = super(
+        transfer_debit_aml = super(
             AccountPayment, self)._create_transfer_entry(amount)
         if self.filtered(
             lambda x: x.payment_type == 'transfer' and
                 x.payment_method_code == 'delivered_third_check' and
                 x.check_deposit_type == 'detailed'):
-            self._fix_transfer_debit_line(transfer_credit_aml.move_id)
-            self._split_aml_line_per_check(transfer_credit_aml.move_id)
-        return transfer_credit_aml
-
-    @api.multi
-    def _fix_transfer_debit_line(self, move):
-        """ Transfer debit line do not take into account the payment currency
-        only the journal destination currency. We need to reflect this behavior
-        on the transfers debit lines related to checks
-        """
-        self.ensure_one()
-        if not self.other_currency:
-            return
-        move.button_cancel()
-        aml = move.line_ids.filtered('debit')
-        if not aml:
-            return
-        aml.write({
-            'currency_id': self.currency_id.id,
-            'amount_currency': self.amount,
-        })
-
-    @api.depends('currency_id', 'company_currency_id')
-    def _compute_other_currency(self):
-        super(AccountPayment, self)._compute_other_currency()
-        for rec in self:
-            if rec.payment_type == 'transfer' and \
-               rec.payment_method_code == 'delivered_third_check':
-                rec.other_currency = False
+            self._split_aml_line_per_check(transfer_debit_aml.move_id)
+        return transfer_debit_aml
