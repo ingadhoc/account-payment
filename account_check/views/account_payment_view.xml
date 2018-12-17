@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
     <data>
+
+        <record id="view_account_payment2_form_inherited" model="ir.ui.view">
+            <field name="name">account.payment.form.inherited</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account_payment_group.view_account_payment_form" />
+            <field name="arch" type="xml">
+                <label for="amount_company_currency" position="attributes">
+                    <attribute name="attrs">{'invisible': ['|', ('other_currency', '=', False), ('payment_method_code', '=', 'delivered_third_check')]}</attribute>
+                </label>
+                <div name="amount_company_currency" position="attributes">
+                    <attribute name="attrs">{'invisible': ['|', ('other_currency', '=', False), ('payment_method_code', '=', 'delivered_third_check')]}</attribute>
+                </div>
+            </field>
+        </record>
+
         <!-- TODO inherit other form views also (like check printing module) -->
         <record id="view_account_payment_form_inherited" model="ir.ui.view">
             <field name="name">account.payment.form.inherited</field>
@@ -32,6 +47,7 @@
                                     <field name="payment_date"/>
                                     <field name="amount" sum="Total"/>
                                     <field name="state" invisible="1"/>
+                                    <field name="currency_id" invisible="1"/>
                                 </tree>
                             </field>
                             <field name="check_ids"
@@ -43,6 +59,7 @@
                                     <field name="payment_date"/>
                                     <field name="amount" sum="Total"/>
                                     <field name="state" invisible="1"/>
+                                    <field name="currency_id" invisible="1"/>
                                 </tree>
                             </field>
                         </group>

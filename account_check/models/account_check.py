@@ -421,11 +421,12 @@ class AccountCheck(models.Model):
             raise ValidationError(_(
                 'You can not "%s" a check from state "%s"!\n'
                 'Check nbr (id): %s (%s)') % (
-                    self.operation_ids._fields['operation'].convert_to_export(
-                        operation, self),
-                    self._fields['state'].convert_to_export(old_state, self),
-                    self.name,
-                    self.id))
+                    self.operation_ids._fields[
+                        'operation'].convert_to_export(
+                            operation, self.env),
+                    self._fields['state'].convert_to_export(
+                        old_state, self.env),
+                    self.name, self.id))
 
     @api.multi
     def unlink(self):

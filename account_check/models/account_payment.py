@@ -158,19 +158,40 @@ class AccountPayment(models.Model):
 
 # on change methods
 
+    @api.onchange('amount_company_currency')
+    def _inverse_amount_company_currency(self):
+        # en v9 tenemos algun tipo de error en el orden en que se llama
+        # el inverse asi que lo desactivamos para cheques
+        self = self.filtered(
+            lambda x: x.payment_method_code != 'delivered_third_check')
+        return super(AccountPayment, self)._inverse_amount_company_currency()
+
     @api.constrains('check_ids')
+    def set_checks_amounts(self):
+        for rec in self:
+            if rec.payment_method_code == 'delivered_third_check':
+                currency = rec.check_ids.mapped('currency_id')
+                if len(currency) > 1:
+                    raise ValidationError(_(
+                        'You are trying to deposit checks of difference'
+                        ' currencies, this functionality is not supported'))
+                elif len(currency) == 1:
+                    rec.currency_id = currency.id
+                # si es una entrega de cheques de terceros y es en otra moneda
+                # a la de la cia, forzamos el importe en moneda de cia de los
+                # cheques originales
+                # por mismo error comentado en _inverse_amount_company_currency
+                # en v9 lo hacemos asi
+                if rec.currency_id != rec.company_currency_id:
+                    rec.force_amount_company_currency = sum(
+                        rec.check_ids.mapped('amount_company_currency'))
+
     @api.onchange('check_ids', 'payment_method_code')
     def onchange_checks(self):
         for rec in self:
             # we only overwrite if payment method is delivered
             if rec.payment_method_code == 'delivered_third_check':
                 rec.amount = sum(rec.check_ids.mapped('amount'))
-                # si es una entrega de cheques de terceros y es en otra moneda
-                # a la de la cia, forzamos el importe en moneda de cia de los
-                # cheques originales
-                if rec.currency_id != rec.company_currency_id:
-                    rec.amount_company_currency = sum(
-                        rec.check_ids.mapped('amount_company_currency'))
                 currency = rec.check_ids.mapped('currency_id')
                 if len(currency) > 1:
                     raise ValidationError(_(
