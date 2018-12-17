@@ -73,7 +73,7 @@
                         <field name="bank_id"/>
                         <field name="number"/>
                         <field name="amount"/>
-                        <field name="amount_company_currency" attrs="{'invisible': [('amount_company_currency', '=', 0.0)]}"/>
+                        <field name="amount_company_currency"/>
                     </group>
                     <group>
                         <field name="state"/>

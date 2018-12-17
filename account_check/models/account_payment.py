@@ -166,30 +166,28 @@ class AccountPayment(models.Model):
             AccountPayment,
             (self - check_payments))._compute_payment_method_description()
 
-    @api.constrains('check_ids')
-    def _check_checks(self):
-        currency = self.check_ids.mapped('currency_id')
-        if len(currency) > 1:
-            raise ValidationError(_(
-                'You are trying to deposit checks of difference'
-                ' currencies, this functionality is not supported'))
-        elif len(currency) == 1:
-            self.currency_id = currency.id
-
 # on change methods
 
-    # @api.constrains('check_ids')
+    @api.constrains('check_ids')
     @api.onchange('check_ids', 'payment_method_code')
     def onchange_checks(self):
-        # we only overwrite if payment method is delivered
-        if self.payment_method_code == 'delivered_third_check':
-            self.amount = sum(self.check_ids.mapped('amount'))
-            # si es una entrega de cheques de terceros y es en otra moneda
-            # a la de la cia, forzamos el importe en moneda de cia de los
-            # cheques originales
-            if self.currency_id != self.company_currency_id:
-                self.amount_company_currency = sum(
-                    self.check_ids.mapped('amount_company_currency'))
+        for rec in self:
+            # we only overwrite if payment method is delivered
+            if rec.payment_method_code == 'delivered_third_check':
+                rec.amount = sum(rec.check_ids.mapped('amount'))
+                # si es una entrega de cheques de terceros y es en otra moneda
+                # a la de la cia, forzamos el importe en moneda de cia de los
+                # cheques originales
+                if rec.currency_id != rec.company_currency_id:
+                    rec.amount_company_currency = sum(
+                        rec.check_ids.mapped('amount_company_currency'))
+                currency = rec.check_ids.mapped('currency_id')
+                if len(currency) > 1:
+                    raise ValidationError(_(
+                        'You are trying to deposit checks of difference'
+                        ' currencies, this functionality is not supported'))
+                elif len(currency) == 1:
+                    rec.currency_id = currency.id
 
     @api.multi
     @api.onchange('check_number')
@@ -609,12 +607,14 @@ class AccountPayment(models.Model):
         new_name = _('Deposit check %s') if aml.credit else \
             aml.name + _(' check %s')
 
-        currency_id = aml.currency_id
+        # if the move line has currency then we are delivering checks on a
+        # different currency than company one
+        currency = aml.currency_id
         currency_sign = amount_field == 'debit' and 1.0 or -1.0
         aml.write({
             'name': new_name % checks[0].name,
             amount_field: checks[0].amount_company_currency,
-            'amount_currency': currency_id and currency_sign * checks[0].amount,
+            'amount_currency': currency and currency_sign * checks[0].amount,
         })
         res |= aml
         checks -= checks[0]
@@ -623,7 +623,7 @@ class AccountPayment(models.Model):
                 'name': new_name % check.name,
                 amount_field: check.amount_company_currency,
                 'payment_id': self.id,
-                'amount_currency': currency_id and currency_sign * check.amount,
+                'amount_currency': currency and currency_sign * check.amount,
             })
         move.post()
         return res
