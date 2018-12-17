@@ -20,7 +20,7 @@
 ##############################################################################
 {
     'name': 'Account Check Management',
-    'version': '9.0.1.25.0',
+    'version': '9.0.1.26.0',
     'category': 'Accounting',
     'summary': 'Accounting, Payment, Check, Third, Issue',
     'author': "OpenERP Team de Localizacion Argentina,"
@@ -32,6 +32,10 @@
         # 'account',
         # for bank and cash menu and also for better usability
         'account_payment_fix',
+        # TODO we should move field amount_company_currency to
+        # account_payment_fix so that we dont need to depend on
+        # account_payment_group
+        'account_payment_group',
     ],
     'data': [
         'data/account_payment_method_data.xml',
