@@ -704,7 +704,7 @@ class AccountCheck(models.Model):
             'account_id': debit_account.id,
             # 'partner_id': partner,
             'debit': self.amount,
-            'amount_currency': self.amount_currency,
+            'amount_currency': self.amount,
             'currency_id': self.currency_id.id,
             # 'ref': ref,
         }
@@ -713,7 +713,7 @@ class AccountCheck(models.Model):
             'account_id': credit_account.id,
             # 'partner_id': partner,
             'credit': self.amount,
-            'amount_currency': self.amount_currency,
+            'amount_currency': self.amount,
             'currency_id': self.currency_id.id,
             # 'ref': ref,
         }
