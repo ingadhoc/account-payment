@@ -703,18 +703,20 @@ class AccountCheck(models.Model):
             'name': name,
             'account_id': debit_account.id,
             # 'partner_id': partner,
-            'debit': self.amount,
-            'amount_currency': self.amount,
-            'currency_id': self.currency_id.id,
+            'debit': self.amount_company_currency,
+            # en realidad no esta implementado esto
+            # 'amount_currency': self.amount,
+            # 'currency_id': self.currency_id.id,
             # 'ref': ref,
         }
         credit_line_vals = {
             'name': name,
             'account_id': credit_account.id,
             # 'partner_id': partner,
-            'credit': self.amount,
-            'amount_currency': self.amount,
-            'currency_id': self.currency_id.id,
+            'credit': self.amount_company_currency,
+            # en realidad no esta implementado esto
+            # 'amount_currency': self.amount,
+            # 'currency_id': self.currency_id.id,
             # 'ref': ref,
         }
         return {
