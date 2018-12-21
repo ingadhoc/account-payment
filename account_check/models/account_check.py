@@ -230,6 +230,7 @@ class AccountCheck(models.Model):
         'res.currency',
         readonly=True,
         states={'draft': [('readonly', False)]},
+        default=lambda self: self.env.user.company_id.currency_id.id,
     )
     payment_date = fields.Date(
         readonly=True,
