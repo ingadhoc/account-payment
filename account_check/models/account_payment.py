@@ -175,19 +175,36 @@ class AccountPayment(models.Model):
             # we only overwrite if payment method is delivered
             if rec.payment_method_code == 'delivered_third_check':
                 rec.amount = sum(rec.check_ids.mapped('amount'))
-                # si es una entrega de cheques de terceros y es en otra moneda
-                # a la de la cia, forzamos el importe en moneda de cia de los
-                # cheques originales
-                if rec.currency_id != rec.company_currency_id:
-                    rec.amount_company_currency = sum(
-                        rec.check_ids.mapped('amount_company_currency'))
                 currency = rec.check_ids.mapped('currency_id')
+
                 if len(currency) > 1:
                     raise ValidationError(_(
                         'You are trying to deposit checks of difference'
                         ' currencies, this functionality is not supported'))
                 elif len(currency) == 1:
                     rec.currency_id = currency.id
+
+                # si es una entrega de cheques de terceros y es en otra moneda
+                # a la de la cia, forzamos el importe en moneda de cia de los
+                # cheques originales
+                # escribimos force_amount_company_currency directamente en vez
+                # de amount_company_currency por lo explicado en 
+                # _inverse_amount_company_currency
+                if rec.currency_id != rec.company_currency_id:
+                    rec.force_amount_company_currency = sum(
+                        rec.check_ids.mapped('amount_company_currency'))
+
+    @api.onchange('amount_company_currency')
+    def _inverse_amount_company_currency(self):
+        # el metodo _inverse_amount_company_currency tiene un parche feo de
+        # un onchange sobre si mismo que termina haciendo que se vuelva a
+        # ejecutar y entonces no siempre guarde el importe en otra moneda
+        # habria que eliminar ese onchange, por el momento anulando
+        # eso para los cheques de terceros y escribiendo directamente
+        # force_amount_company_currency, lo solucionamos
+        self = self.filtered(
+            lambda x: x.payment_method_code != 'delivered_third_check')
+        return super(AccountPayment, self)._inverse_amount_company_currency()
 
     @api.multi
     @api.onchange('check_number')
