@@ -231,6 +231,7 @@ class AccountCheck(models.Model):
         readonly=True,
         states={'draft': [('readonly', False)]},
         default=lambda self: self.env.user.company_id.currency_id.id,
+        required=True,
     )
     payment_date = fields.Date(
         readonly=True,
@@ -611,6 +612,7 @@ class AccountCheck(models.Model):
         action_date = self._context.get('action_date', fields.Date.today())
         return {
             'amount': self.amount,
+            # compatibility for checks from v11 that could came without currency
             'currency_id': self.currency_id.id,
             'journal_id': journal.id,
             'payment_date': action_date,
