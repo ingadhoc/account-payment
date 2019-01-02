@@ -431,9 +431,12 @@ class AccountPaymentGroup(models.Model):
         for rec in self:
             # not sure why but state field is false on payments so they can
             # not be unliked, this fix that
-            rec.invalidate_cache(['payment_ids'])
-            rec.payment_ids.unlink()
+            # rec.invalidate_cache(['payment_ids'])
+            # rec.payment_ids.unlink()
             rec.add_all()
+            rec.payment_ids = [
+                (1, item, {'partner_id': rec.partner_id.id})
+                for item in rec.payment_ids.ids]
 
     @api.multi
     def onchange(self, values, field_name, field_onchange):
