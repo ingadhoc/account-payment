@@ -97,11 +97,11 @@ class AccountJournal(models.Model):
                 self.outbound_payment_method_ids.mapped('code')),
             num_handed_issue_checks=len(handed_checks),
             handed_amount=formatLang(
-                self.env, sum(handed_checks.mapped('amount')),
-                currency_obj=self.currency_id or self.company_id.currency_id),
+                self.env, sum(handed_checks.mapped('amount_company_currency')),
+                currency_obj=self.company_id.currency_id),
             holding_amount=formatLang(
-                self.env, sum(holding_checks.mapped('amount')),
-                currency_obj=self.currency_id or self.company_id.currency_id),
+                self.env, sum(holding_checks.mapped('amount_company_currency')),
+                currency_obj=self.company_id.currency_id),
         )
 
     @api.multi
