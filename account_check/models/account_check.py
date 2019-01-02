@@ -612,7 +612,6 @@ class AccountCheck(models.Model):
         action_date = self._context.get('action_date', fields.Date.today())
         return {
             'amount': self.amount,
-            # compatibility for checks from v11 that could came without currency
             'currency_id': self.currency_id.id,
             'journal_id': journal.id,
             'payment_date': action_date,
