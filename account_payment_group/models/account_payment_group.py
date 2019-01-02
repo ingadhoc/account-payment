@@ -534,6 +534,7 @@ class AccountPaymentGroup(models.Model):
                 # if rec.to_pay_move_line_ids:
                 #     move.line_ids.remove_move_reconcile()
             rec.payment_ids.cancel()
+            rec.payment_ids.write({'invoice_ids': [(5, 0, 0)]})
         self.write({'state': 'cancel'})
 
     @api.multi
