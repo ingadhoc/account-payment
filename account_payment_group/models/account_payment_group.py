@@ -417,6 +417,7 @@ class AccountPaymentGroup(models.Model):
             rec.to_pay_amount = rec.selected_debt + rec.unreconciled_amount
 
     @api.multi
+    @api.onchange('to_pay_amount')
     def _inverse_to_pay_amount(self):
         for rec in self:
             rec.unreconciled_amount = rec.to_pay_amount - rec.selected_debt
