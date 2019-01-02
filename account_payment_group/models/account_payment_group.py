@@ -429,10 +429,7 @@ class AccountPaymentGroup(models.Model):
         if self._context.get('pop_up'):
             return
         for rec in self:
-            # not sure why but state field is false on payments so they can
-            # not be unliked, this fix that
-            rec.invalidate_cache(['payment_ids'])
-            rec.payment_ids.unlink()
+            rec.payment_ids = [(2, item.id, 0) for item in rec.payment_ids]
             rec.add_all()
 
     @api.multi

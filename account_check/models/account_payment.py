@@ -188,7 +188,7 @@ class AccountPayment(models.Model):
                 # a la de la cia, forzamos el importe en moneda de cia de los
                 # cheques originales
                 # escribimos force_amount_company_currency directamente en vez
-                # de amount_company_currency por lo explicado en 
+                # de amount_company_currency por lo explicado en
                 # _inverse_amount_company_currency
                 if rec.currency_id != rec.company_currency_id:
                     rec.force_amount_company_currency = sum(
