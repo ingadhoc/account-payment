@@ -100,7 +100,8 @@ class AccountJournal(models.Model):
                 self.env, sum(handed_checks.mapped('amount_company_currency')),
                 currency_obj=self.company_id.currency_id),
             holding_amount=formatLang(
-                self.env, sum(holding_checks.mapped('amount_company_currency')),
+                self.env, sum(holding_checks.mapped(
+                    'amount_company_currency')),
                 currency_obj=self.company_id.currency_id),
         )
 

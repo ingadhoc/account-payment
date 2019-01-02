@@ -115,11 +115,11 @@ class AccountCheckbook(models.Model):
     def create(self, vals):
         rec = super(AccountCheckbook, self).create(vals)
         if not rec.sequence_id:
-            rec._create_sequence()
+            rec._create_sequence(vals.get('next_number', 0))
         return rec
 
     @api.multi
-    def _create_sequence(self):
+    def _create_sequence(self, next_number):
         """ Create a check sequence for the checkbook """
         for rec in self:
             rec.sequence_id = rec.env['ir.sequence'].sudo().create({
@@ -129,7 +129,7 @@ class AccountCheckbook(models.Model):
                 'number_increment': 1,
                 'code': 'issue_check',
                 # si no lo pasamos, en la creacion se setea 1
-                'number_next_actual': rec.next_number,
+                'number_next_actual': next_number,
                 'company_id': rec.journal_id.company_id.id,
             })
 

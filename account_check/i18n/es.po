@@ -1,11 +1,11 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # * account_check
-# 
+#
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2018
 # Katherine Zaoral <katherine.zaoral@gmail.com>, 2018
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 11.0\n"
@@ -30,7 +30,7 @@ msgstr " cheque %s"
 #: code:addons/account_check/models/account_checkbook.py:144
 #, python-format
 msgid " up to %s"
-msgstr "hasta %s"
+msgstr " hasta %s"
 
 #. module: account_check
 #: model:ir.model.fields,help:account_check.field_account_check_issue_check_subtype
