@@ -271,7 +271,8 @@ result = withholdable_base_amount * 0.10
         return (previous_payment_groups_domain, previous_payments_domain)
 
     @api.multi
-    def get_withholding_vals(self, payment_group):
+    def get_withholding_vals(
+            self, payment_group, force_withholding_amount_type=None):
         """
         If you wan to inherit and implement your own type, the most important
         value tu return are period_withholding_amount and
@@ -279,8 +280,12 @@ result = withholdable_base_amount * 0.10
         will be calculated.
         """
         self.ensure_one()
-        # voucher = self.voucher_id
-        withholdable_invoiced_amount = payment_group.selected_debt_untaxed
+        withholding_amount_type = force_withholding_amount_type or \
+            self.withholding_amount_type
+        if withholding_amount_type == 'untaxed_amount':
+            withholdable_invoiced_amount = payment_group.selected_debt_untaxed
+        else:
+            withholdable_invoiced_amount = payment_group.selected_debt
         withholdable_advanced_amount = 0.0
         # if the unreconciled_amount is negative, then the user wants to make
         # a partial payment. To get the right untaxed amount we need to know
@@ -309,8 +314,11 @@ result = withholdable_base_amount * 0.10
                         partial_line.move_id.display_name,
                         )))
 
-            invoice_factor = partial_line.invoice_id and \
-                partial_line.invoice_id._get_tax_factor() or 1.0
+            if withholding_amount_type == 'untaxed_amount' and \
+                    partial_line.invoice_id:
+                invoice_factor = partial_line.invoice_id._get_tax_factor()
+            else:
+                invoice_factor = 1.0
 
             # le descontamos de la base imponible el saldo que no se esta
             # pagando descontado de iva
@@ -321,6 +329,7 @@ result = withholdable_base_amount * 0.10
                 payment_group.withholdable_advanced_amount
 
         accumulated_amount = previous_withholding_amount = 0.0
+
         if self.withholding_accumulated_payments:
             previos_payment_groups_domain, previos_payments_domain = (
                 self.get_period_payments_domain(payment_group))
