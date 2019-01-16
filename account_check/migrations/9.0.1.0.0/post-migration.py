@@ -376,8 +376,21 @@ def get_payment(env, voucher_id):
                     '* Payments: %s\n'
                     '* Domain: %s' % (payment, domain))
         else:
-            raise ValidationError(
-                'Error de cheque al querer vincular con pago')
+            # raise ValidationError(
+            #     'Error de cheque al querer vincular con pago')
+            print (
+                'Error de cheque al querer vincular con pago. move_id %s, '
+                'state %s, voucher id %s' % (move_id, state ,voucher_id))
+            payment = env['account.payment'].create({
+                'state': 'cancel', 'partner_id': partner_id,
+                'amount': abs(amount), 'journal_id': journal_id,
+                'payment_reference':
+                'Creado por error en v8, pago sin asiento, '
+                'necesario para cheque',
+                'payment_method_id': env.ref(
+                    'account.account_payment_method_manual_in').id,
+                'payment_type': amount > 0 and 'inbound' or 'outbound',
+                'partner_type': False, 'payment_date': create_date})
         return payment
     return False
 
