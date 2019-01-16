@@ -186,7 +186,8 @@ class AccountPayment(models.Model):
                     raise ValidationError(_(
                         'Payments must be created from payments groups'))
             else:
-                if not rec.payment_group_id:
+                if not rec.payment_group_id and \
+                        rec.partner_type and rec.partner_id:
                     raise ValidationError(_(
                         'Payments must be created from payments groups'))
 
