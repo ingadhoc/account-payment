@@ -3,15 +3,15 @@
 # * account_payment_group_document
 # 
 # Translators:
-# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2016
-# emiquinodoz <eq@ingadhoc.com>, 2017
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2019
+# 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 9.0c\n"
+"Project-Id-Version: Odoo Server 11.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-08-11 18:15+0000\n"
-"PO-Revision-Date: 2017-08-11 18:15+0000\n"
-"Last-Translator: emiquinodoz <eq@ingadhoc.com>, 2017\n"
+"POT-Creation-Date: 2019-01-16 15:29+0000\n"
+"PO-Revision-Date: 2018-05-18 20:21+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2019\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -23,6 +23,11 @@ msgstr ""
 #: model:ir.ui.view,arch_db:account_payment_group_document.view_account_payment_group_form
 msgid "- Next Number:"
 msgstr "- Próximo número:"
+
+#. module: account_payment_group_document
+#: model:ir.model,name:account_payment_group_document.model_account_payment_receiptbook
+msgid "Account payment Receiptbook"
+msgstr "Talonario de Recibo"
 
 #. module: account_payment_group_document
 #: model:ir.model.fields,field_description:account_payment_group_document.field_account_payment_group_invoice_wizard_available_journal_document_type_ids
@@ -57,10 +62,15 @@ msgid "Document number must be unique per receiptbook!"
 msgstr "¡El Número de Documento debe ser único por talonario de recibo!"
 
 #. module: account_payment_group_document
-#: code:addons/account_payment_group_document/models/account_payment_group.py:135
+#: code:addons/account_payment_group_document/models/account_payment_group.py:132
 #, python-format
 msgid "Draft Payment"
 msgstr "Pago borrador"
+
+#. module: account_payment_group_document
+#: model:ir.model.fields,field_description:account_payment_group_document.field_account_payment_receiptbook_mail_template_id
+msgid "Email Template"
+msgstr "Plantillas de correo electrónico"
 
 #. module: account_payment_group_document
 #: model:ir.model.fields,field_description:account_payment_group_document.field_account_payment_group_document_sequence_id
@@ -69,7 +79,7 @@ msgid "Entry Sequence"
 msgstr "Secuencia de Entrada"
 
 #. module: account_payment_group_document
-#: code:addons/account_payment_group_document/models/account_payment_group.py:173
+#: code:addons/account_payment_group_document/models/account_payment_group.py:176
 #, python-format
 msgid ""
 "Error!. Please define sequence on the receiptbook related documents to this "
@@ -77,6 +87,15 @@ msgid ""
 msgstr ""
 "¡Error! Por favor defina una secuencia en los documentos asociados al "
 "talonario o establezca un número de documento."
+
+#. module: account_payment_group_document
+#: model:ir.model.fields,help:account_payment_group_document.field_account_payment_receiptbook_mail_template_id
+msgid ""
+"If set an email will be sent to the customer when the related "
+"account.payment.group has been posted."
+msgstr ""
+"Si se configura, se enviará un correo electrónico al cliente / proveedor "
+"cuando se haya validado un Recibo / Pago."
 
 #. module: account_payment_group_document
 #: model:ir.model.fields,field_description:account_payment_group_document.field_account_payment_group_localization
@@ -99,7 +118,7 @@ msgid "ReceiptBook"
 msgstr "Talonario de Recibo"
 
 #. module: account_payment_group_document
-#: code:addons/account_payment_group_document/models/account_payment_group.py:193
+#: code:addons/account_payment_group_document/models/account_payment_group.py:201
 #, python-format
 msgid "The company of the receiptbook and of the payment must be the same!"
 msgstr ""

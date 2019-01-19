@@ -4,13 +4,15 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2018
+# Mariana Luz Torres <mt@adhoc.com.ar>, 2019
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 11.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-25 00:09+0000\n"
-"PO-Revision-Date: 2018-09-25 00:09+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2018\n"
+"POT-Creation-Date: 2019-01-16 15:29+0000\n"
+"PO-Revision-Date: 2018-05-17 22:03+0000\n"
+"Last-Translator: Mariana Luz Torres <mt@adhoc.com.ar>, 2019\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -21,7 +23,7 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_form
 msgid "(on company currency)"
-msgstr ""
+msgstr "(en la moneda de la compañía)"
 
 #. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
@@ -34,9 +36,18 @@ msgid "+ Debit Note"
 msgstr "+ Nota de Débito"
 
 #. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.res_config_settings_view_form
+msgid ""
+"<span class=\"fa fa-lg fa-building-o\" title=\"Values set here are company-"
+"specific.\" groups=\"base.group_multi_company\"/>"
+msgstr ""
+"<span class=\"fa fa-lg fa-building-o\" title=\"Values set here are company-"
+"specific.\" groups=\"base.group_multi_company\"/>"
+
+#. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_account_internal_type
 msgid "Account Internal Type"
-msgstr ""
+msgstr "Tipo interno de cuenta"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_date
@@ -51,7 +62,7 @@ msgstr "Añadir Todo / Refrescar"
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_unreconciled_amount
 msgid "Adjustment / Advance"
-msgstr ""
+msgstr "Ajuste / Avance"
 
 #. module: account_payment_group
 #: model:res.groups,name:account_payment_group.group_pay_now_customer_invoices
@@ -76,17 +87,21 @@ msgstr "Permitir pago directo en facturas de proveedor?"
 #. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.res_config_settings_view_form
 msgid "Allow to choose inbound/outbound on payment lines."
-msgstr ""
+msgstr "Permitir elegir entrada / salida en líneas de pago."
 
 #. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.res_config_settings_view_form
 msgid "Allow to pay customer invoices automatically on invoice validation."
 msgstr ""
+"Permitir pagar facturas de clientes automáticamente en la validación de "
+"facturas."
 
 #. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.res_config_settings_view_form
 msgid "Allow to pay vendor invoices automatically on invoice validation."
 msgstr ""
+"Permitir pagar facturas de proveedores automáticamente en la validación de "
+"facturas."
 
 #. module: account_payment_group
 #: model:ir.model.fields,help:account_payment_group.field_res_config_settings_group_pay_now_vendor_invoices
@@ -268,12 +283,12 @@ msgstr "Borrador"
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_exchange_rate
 msgid "Exchange Rate"
-msgstr ""
+msgstr "Tipo de cambio"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_has_outstanding
 msgid "Has Outstanding"
-msgstr ""
+msgstr "Tiene Cuenta por Pagar"
 
 #. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
@@ -383,12 +398,12 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_matched_amount
 msgid "Matched Amount"
-msgstr ""
+msgstr "Monto Conciliado"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_matched_move_line_ids
 msgid "Matched Move Line"
-msgstr ""
+msgstr "Apunte contable conciliado"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_communication
@@ -398,16 +413,16 @@ msgstr "Memo"
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_move_line_ids
 msgid "Move Line"
-msgstr ""
+msgstr "Apunte contable"
 
 #. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 msgid "Not Cancelled"
-msgstr ""
+msgstr "No cancelado"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:289
-#: code:addons/account_payment_group/models/account_payment_group.py:293
+#: code:addons/account_payment_group/models/account_payment_group.py:291
+#: code:addons/account_payment_group/models/account_payment_group.py:295
 #, python-format
 msgid "Not implemented yet"
 msgstr "No implementado todavía"
@@ -421,12 +436,12 @@ msgstr "Notas"
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_invoice_open_move_line_ids
 msgid "Open Move Line"
-msgstr ""
+msgstr "Apunte contable no conciliado"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_other_currency
 msgid "Other Currency"
-msgstr ""
+msgstr "Otra Moneda"
 
 #. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
@@ -447,7 +462,7 @@ msgstr "Partner"
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_partner_type
 msgid "Partner Type"
-msgstr ""
+msgstr "Tipo de Empresa"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_invoice_pay_now_journal_id
@@ -487,7 +502,7 @@ msgstr "Grupo de Pago"
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_move_line_payment_group_matched_amount
 msgid "Payment Group Matched Amount"
-msgstr ""
+msgstr "Grupo de pago conciliado"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_invoice_payment_group_ids
@@ -496,7 +511,7 @@ msgid "Payment Groups"
 msgstr "Grupos de Pago"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment.py:311
+#: code:addons/account_payment_group/models/account_payment.py:316
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_payment_ids
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #, python-format
@@ -511,12 +526,12 @@ msgstr "Método de Pago"
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_payment_methods
 msgid "Payment Methods"
-msgstr ""
+msgstr "Métodos de pago"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_payment_subtype
 msgid "Payment Subtype"
-msgstr ""
+msgstr "Subtipo de pago"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_payment_type_copy
@@ -569,23 +584,25 @@ msgstr ""
 "Puede procesar esos pagos por sus propios medios o utilizando los servicios instalados."
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment.py:180
+#: code:addons/account_payment_group/models/account_payment.py:181
 #, python-format
 msgid "Payments with partners must be created from payments groups"
-msgstr ""
+msgstr "Los pagos con empresas deben crearse desde grupos de pagos."
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment.py:185
+#: code:addons/account_payment_group/models/account_payment.py:186
 #, python-format
 msgid ""
 "Payments without partners (usually transfers) cant't have a related payment "
 "group"
 msgstr ""
+"Los pagos sin empresas (generalmente transferencias) no pueden tener un "
+"grupo de pago relacionado"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_pop_up
 msgid "Pop Up"
-msgstr ""
+msgstr "Pestaña emergente"
 
 #. module: account_payment_group
 #: selection:account.payment.group,state:0
@@ -602,7 +619,7 @@ msgstr "Imprimir"
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_product_id
 msgid "Product"
-msgstr ""
+msgstr "Producto"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_description
@@ -706,7 +723,7 @@ msgstr "Pagos de Proveedor"
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_tax_ids
 msgid "Taxes"
-msgstr ""
+msgstr "Impuestos"
 
 #. module: account_payment_group
 #: model:ir.model.fields,help:account_payment_group.field_account_payment_group_to_pay_move_line_ids
@@ -719,7 +736,7 @@ msgid "To Pay Amount"
 msgstr "Importe a pagar"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:586
+#: code:addons/account_payment_group/models/account_payment_group.py:589
 #, python-format
 msgid "To Pay Amount and Payment Amount must be equal!"
 msgstr "¡El Importe a pagar y el Importe de Pago deben ser iguales!"
@@ -731,8 +748,8 @@ msgid "To Pay Lines"
 msgstr "Líneas a Pagar"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment.py:296
-#: code:addons/account_payment_group/models/account_payment_group.py:559
+#: code:addons/account_payment_group/models/account_payment.py:301
+#: code:addons/account_payment_group/models/account_payment_group.py:560
 #, python-format
 msgid "To Pay Lines must be of the same account!"
 msgstr "Las líneas a pagar deben ser de la misma cuenta!"
@@ -764,7 +781,7 @@ msgstr "Transferencias"
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_unmatched_amount
 msgid "Unmatched Amount"
-msgstr ""
+msgstr "Monto no conciliado"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_amount_untaxed
@@ -780,7 +797,7 @@ msgstr "Usar 2 pasos de validación en pagos a proveedores"
 #. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.res_config_settings_view_form
 msgid "Use two steps validation on payments to suppliers."
-msgstr ""
+msgstr "Utilice 2 pasos de validación en los pagos a proveedores."
 
 #. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.res_config_settings_view_form
@@ -808,13 +825,13 @@ msgid "View Payments"
 msgstr "Ver pagos"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:579
+#: code:addons/account_payment_group/models/account_payment_group.py:581
 #, python-format
 msgid "You can not confirm a payment group without payment lines!"
 msgstr "¡No puede confirmar un grupo de pagos sin líneas de pago!"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:550
+#: code:addons/account_payment_group/models/account_payment_group.py:551
 #, python-format
 msgid "You can not delete a payment that is already posted"
 msgstr "No puede eliminar un pago que ya ha sido publicado"
@@ -837,6 +854,8 @@ msgstr "Solamente puede registrar un pago si la factura está abierta"
 #, python-format
 msgid "You can only set amount total if taxes are of type percentage"
 msgstr ""
+"Solo puede establecer el importe total si los impuestos son de tipo "
+"porcentaje"
 
 #. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_account_payment_group_invoice_wizard
@@ -846,4 +865,4 @@ msgstr "account.payment.group.invoice.wizard"
 #. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_res_config_settings
 msgid "res.config.settings"
-msgstr ""
+msgstr "res.config.settings"
