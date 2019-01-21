@@ -13,7 +13,8 @@ class AccountPaymentGroup(models.Model):
         compute='_compute_withholdings_amount'
     )
     withholdable_advanced_amount = fields.Monetary(
-        'Importe a cuenta sujeto a retencion',
+        'Adjustment / Advance (untaxed)',
+        help='Sometimes used for withholdings calculation',
         readonly=True,
         states={'draft': [('readonly', False)]},
     )

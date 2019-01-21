@@ -11,29 +11,20 @@
                     <field name="automatic" invisible="1"/>
                     <field name="withholding_accumulated_payments" invisible="1"/>
                 </form>
-                <!-- <h1 position="after"> -->
-                    <!-- <group string="Calculation" attrs="{'invisible': [('automatic', '=', False)]}"> -->
                     <group name="withholding_data">
-                    <!-- <field name='communication' position="after"> -->
-                        <!-- <group> -->
-                            <field name="withholdable_invoiced_amount"/>
-                            <field name="withholdable_advanced_amount"/>
-                            <field name="accumulated_amount" attrs="{'invisible': [('withholding_accumulated_payments', '=', False)]}"/>
-                            <field name="total_amount"/>
-                            <field name="withholding_non_taxable_minimum"/>
-                            <field name="withholding_non_taxable_amount"/>
-                        <!-- </group> -->
-                        <!-- <group> -->
-                            <field name="withholdable_base_amount"/>
-                            <field name="period_withholding_amount" attrs="{'invisible': [('withholding_accumulated_payments', '=', False)]}"/>
-                            <field name="previous_withholding_amount" attrs="{'invisible': [('withholding_accumulated_payments', '=', False)]}"/>
-                            <field name="computed_withholding_amount"/>
-                        </group>
-                        <!-- </group> -->
-                    <!-- </group> -->
-                <!-- </h1> -->
+                        <field name="withholdable_invoiced_amount" attrs="{'invisible': [('automatic', '=', False)]}"/>
+                        <field name="withholdable_advanced_amount" attrs="{'invisible': [('automatic', '=', False)]}"/>
+                        <field name="accumulated_amount" attrs="{'invisible': [('withholding_accumulated_payments', '=', False)]}"/>
+                        <field name="total_amount" attrs="{'invisible': [('automatic', '=', False)]}"/>
+                        <field name="withholding_non_taxable_minimum" attrs="{'invisible': [('automatic', '=', False)]}"/>
+                        <field name="withholding_non_taxable_amount" attrs="{'invisible': [('automatic', '=', False)]}"/>
+                        <field name="withholdable_base_amount" attrs="{'invisible': [('automatic', '=', False)]}"/>
+                        <field name="period_withholding_amount" attrs="{'invisible': [('withholding_accumulated_payments', '=', False)]}"/>
+                        <field name="previous_withholding_amount" attrs="{'invisible': [('withholding_accumulated_payments', '=', False)]}"/>
+                        <field name="computed_withholding_amount" attrs="{'invisible': [('automatic', '=', False)]}"/>
+                    </group>
             </field>
-        </record>   
+        </record>
 
     </data>
 </odoo>
