@@ -286,7 +286,8 @@ result = withholdable_base_amount * 0.10
         # a partial payment. To get the right untaxed amount we need to know
         # which invoice is going to be paid, we only allow partial payment
         # on last invoice
-        if payment_group.unreconciled_amount < 0.0:
+        if payment_group.unreconciled_amount < 0.0 and \
+                payment_group.to_pay_move_line_ids:
             withholdable_advanced_amount = 0.0
 
             sign = payment_group.partner_type == 'supplier' and -1.0 or 1.0
