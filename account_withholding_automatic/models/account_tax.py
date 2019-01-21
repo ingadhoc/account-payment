@@ -291,7 +291,8 @@ result = withholdable_base_amount * 0.10
         # a partial payment. To get the right untaxed amount we need to know
         # which invoice is going to be paid, we only allow partial payment
         # on last invoice
-        if payment_group.unreconciled_amount < 0.0:
+        if payment_group.withholdable_advanced_amount < 0.0 and \
+                payment_group.to_pay_move_line_ids:
             withholdable_advanced_amount = 0.0
 
             sign = payment_group.partner_type == 'supplier' and -1.0 or 1.0
@@ -302,7 +303,7 @@ result = withholdable_base_amount * 0.10
             # last line to be reconciled
             partial_line = sorted_to_pay_lines[-1]
             if sign * partial_line.amount_residual < \
-                    sign * payment_group.unreconciled_amount:
+                    sign * payment_group.withholdable_advanced_amount:
                 raise ValidationError(_(
                     'Seleccionó deuda por %s pero aparentente desea pagar '
                     ' %s. En la deuda seleccionada hay algunos comprobantes de'
@@ -323,7 +324,7 @@ result = withholdable_base_amount * 0.10
             # le descontamos de la base imponible el saldo que no se esta
             # pagando descontado de iva
             withholdable_invoiced_amount -= (
-                sign * payment_group.unreconciled_amount * invoice_factor)
+                sign * payment_group.withholdable_advanced_amount * invoice_factor)
         elif self.withholding_advances:
             withholdable_advanced_amount = \
                 payment_group.withholdable_advanced_amount
