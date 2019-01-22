@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 11.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-16 15:29+0000\n"
+"POT-Creation-Date: 2019-01-21 20:03+0000\n"
 "PO-Revision-Date: 2018-05-20 17:05+0000\n"
 "Last-Translator: Mariana Luz Torres <mt@adhoc.com.ar>, 2019\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
@@ -39,6 +39,11 @@ msgstr "Monto Acumulado"
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_accumulated_payments
 msgid "Accumulated Payments"
 msgstr "Pagos Acumulados"
+
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_group_withholdable_advanced_amount
+msgid "Adjustment / Advance (untaxed)"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_advances
@@ -156,7 +161,6 @@ msgid "If none is selected, then payments are not accumulated"
 msgstr "Si ninguna se selecciona, entonces los pagos no son acumulados"
 
 #. module: account_withholding_automatic
-#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_group_withholdable_advanced_amount
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_withholdable_advanced_amount
 msgid "Importe a cuenta sujeto a retencion"
 msgstr "Importe a cuenta sujeto a retención"
@@ -293,7 +297,7 @@ msgid "Rules"
 msgstr "Reglas"
 
 #. module: account_withholding_automatic
-#: code:addons/account_withholding_automatic/models/account_tax.py:311
+#: code:addons/account_withholding_automatic/models/account_tax.py:312
 #, python-format
 msgid ""
 "SeleccionÃ³ deuda por %s pero aparentente desea pagar  %s. En la deuda "
@@ -310,6 +314,11 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule_sequence
 msgid "Sequence"
 msgstr "Secuencia"
+
+#. module: account_withholding_automatic
+#: model:ir.model.fields,help:account_withholding_automatic.field_account_payment_group_withholdable_advanced_amount
+msgid "Sometimes used for withholdings calculation"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model,name:account_withholding_automatic.model_account_tax
