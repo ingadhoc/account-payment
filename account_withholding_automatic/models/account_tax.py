@@ -324,7 +324,8 @@ result = withholdable_base_amount * 0.10
             # le descontamos de la base imponible el saldo que no se esta
             # pagando descontado de iva
             withholdable_invoiced_amount -= (
-                sign * payment_group.withholdable_advanced_amount * invoice_factor)
+                sign * payment_group.withholdable_advanced_amount
+                * invoice_factor)
         elif self.withholding_advances:
             withholdable_advanced_amount = \
                 payment_group.withholdable_advanced_amount
