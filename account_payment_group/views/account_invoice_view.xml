@@ -33,9 +33,9 @@
     <field name="model">account.invoice</field>
     <field name="inherit_id" ref="account.invoice_form"/>
     <field name="arch" type="xml">
-        <field name="date_due" position="before">
+        <field name="date_due" position="after">
             <!-- only allow pay now if manual method available -->
-            <field name="pay_now_journal_id" domain="[('company_id', '=', company_id), ('type', 'in', ['bank', 'cash']), ('inbound_payment_method_ids.code', '=', 'manual')]" groups="account_payment_group.group_pay_now_customer_invoices"/>
+            <field name="pay_now_journal_id" options="{'no_create': True}" domain="[('company_id', '=', company_id), ('type', 'in', ['bank', 'cash']), ('inbound_payment_method_ids.code', '=', 'manual')]" groups="account_payment_group.group_pay_now_customer_invoices"/>
         </field>
 
         <button name="%(account.action_account_invoice_payment)d" position="attributes">
@@ -58,9 +58,9 @@
     <field name="model">account.invoice</field>
     <field name="inherit_id" ref="account.invoice_supplier_form"/>
     <field name="arch" type="xml">
-        <field name="date_due" position="before">
+        <field name="date_due" position="after">
             <!-- only allow pay now if manual method available -->
-            <field name="pay_now_journal_id" domain="[('company_id', '=', company_id), ('type', 'in', ['bank', 'cash']), ('outbound_payment_method_ids.code', '=', 'manual')]" groups="account_payment_group.group_pay_now_vendor_invoices"/>
+            <field name="pay_now_journal_id" options="{'no_create': True}" domain="[('company_id', '=', company_id), ('type', 'in', ['bank', 'cash']), ('outbound_payment_method_ids.code', '=', 'manual')]" groups="account_payment_group.group_pay_now_vendor_invoices"/>
         </field>
 
         <button name="%(account.action_account_invoice_payment)d" position="attributes">
