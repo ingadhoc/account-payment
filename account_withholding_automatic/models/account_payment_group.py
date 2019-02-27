@@ -2,7 +2,8 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import models, api, fields
+from odoo import models, api, fields, _
+from odoo.exceptions import ValidationError
 
 
 class AccountPaymentGroup(models.Model):
@@ -56,3 +57,59 @@ class AccountPaymentGroup(models.Model):
             if rec.company_id.automatic_withholdings:
                 rec.compute_withholdings()
         return res
+
+    def _get_withholdable_amounts(
+            self, withholding_amount_type, withholding_advances):
+        """ Method to help on getting withholding amounts from account.tax
+        TODO when payment is validated we should get amounts from matched
+        amounts and not from selected debt
+        """
+        self.ensure_one()
+        if withholding_amount_type == 'untaxed_amount':
+            withholdable_invoiced_amount = self.selected_debt_untaxed
+        else:
+            withholdable_invoiced_amount = self.selected_debt
+        withholdable_advanced_amount = 0.0
+        # if the unreconciled_amount is negative, then the user wants to make
+        # a partial payment. To get the right untaxed amount we need to know
+        # which invoice is going to be paid, we only allow partial payment
+        # on last invoice
+        if self.withholdable_advanced_amount < 0.0 and \
+                self.to_pay_move_line_ids:
+            withholdable_advanced_amount = 0.0
+
+            sign = self.partner_type == 'supplier' and -1.0 or 1.0
+            sorted_to_pay_lines = sorted(
+                self.to_pay_move_line_ids,
+                key=lambda a: a.date_maturity or a.date)
+
+            # last line to be reconciled
+            partial_line = sorted_to_pay_lines[-1]
+            if sign * partial_line.amount_residual < \
+                    sign * self.withholdable_advanced_amount:
+                raise ValidationError(_(
+                    'Seleccionó deuda por %s pero aparentente desea pagar '
+                    ' %s. En la deuda seleccionada hay algunos comprobantes de'
+                    ' mas que no van a poder ser pagados (%s). Deberá quitar '
+                    ' dichos comprobantes de la deuda seleccionada para poder '
+                    'hacer el correcto cálculo de las retenciones.' % (
+                        self.selected_debt,
+                        self.to_pay_amount,
+                        partial_line.move_id.display_name,
+                        )))
+
+            if withholding_amount_type == 'untaxed_amount' and \
+                    partial_line.invoice_id:
+                invoice_factor = partial_line.invoice_id._get_tax_factor()
+            else:
+                invoice_factor = 1.0
+
+            # le descontamos de la base imponible el saldo que no se esta
+            # pagando descontado de iva
+            withholdable_invoiced_amount -= (
+                sign * self.withholdable_advanced_amount
+                * invoice_factor)
+        elif withholding_advances:
+            withholdable_advanced_amount = \
+                self.withholdable_advanced_amount
+        return (withholdable_advanced_amount, withholdable_invoiced_amount)
