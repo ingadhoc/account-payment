@@ -282,53 +282,9 @@ result = withholdable_base_amount * 0.10
         self.ensure_one()
         withholding_amount_type = force_withholding_amount_type or \
             self.withholding_amount_type
-        if withholding_amount_type == 'untaxed_amount':
-            withholdable_invoiced_amount = payment_group.selected_debt_untaxed
-        else:
-            withholdable_invoiced_amount = payment_group.selected_debt
-        withholdable_advanced_amount = 0.0
-        # if the unreconciled_amount is negative, then the user wants to make
-        # a partial payment. To get the right untaxed amount we need to know
-        # which invoice is going to be paid, we only allow partial payment
-        # on last invoice
-        if payment_group.withholdable_advanced_amount < 0.0 and \
-                payment_group.to_pay_move_line_ids:
-            withholdable_advanced_amount = 0.0
-
-            sign = payment_group.partner_type == 'supplier' and -1.0 or 1.0
-            sorted_to_pay_lines = sorted(
-                payment_group.to_pay_move_line_ids,
-                key=lambda a: a.date_maturity or a.date)
-
-            # last line to be reconciled
-            partial_line = sorted_to_pay_lines[-1]
-            if sign * partial_line.amount_residual < \
-                    sign * payment_group.withholdable_advanced_amount:
-                raise ValidationError(_(
-                    'Seleccionó deuda por %s pero aparentente desea pagar '
-                    ' %s. En la deuda seleccionada hay algunos comprobantes de'
-                    ' mas que no van a poder ser pagados (%s). Deberá quitar '
-                    ' dichos comprobantes de la deuda seleccionada para poder '
-                    'hacer el correcto cálculo de las retenciones.' % (
-                        payment_group.selected_debt,
-                        payment_group.to_pay_amount,
-                        partial_line.move_id.display_name,
-                        )))
-
-            if withholding_amount_type == 'untaxed_amount' and \
-                    partial_line.invoice_id:
-                invoice_factor = partial_line.invoice_id._get_tax_factor()
-            else:
-                invoice_factor = 1.0
-
-            # le descontamos de la base imponible el saldo que no se esta
-            # pagando descontado de iva
-            withholdable_invoiced_amount -= (
-                sign * payment_group.withholdable_advanced_amount
-                * invoice_factor)
-        elif self.withholding_advances:
-            withholdable_advanced_amount = \
-                payment_group.withholdable_advanced_amount
+        withholdable_advanced_amount, withholdable_invoiced_amount = \
+            payment_group._get_withholdable_amounts(
+                withholding_amount_type, self.withholding_advances)
 
         accumulated_amount = previous_withholding_amount = 0.0
 
@@ -337,23 +293,13 @@ result = withholdable_base_amount * 0.10
                 self.get_period_payments_domain(payment_group))
             same_period_payments = self.env['account.payment.group'].search(
                 previos_payment_groups_domain)
+
             for same_period_payment_group in same_period_payments:
-                # obtenemos importe acumulado sujeto a retencion de pagos
-                # anteriores. Por compatibilidad con public_budget aceptamos
-                # pagos en otros estados no validados donde el matched y
-                # unmatched no se computaron, por eso agragamos la condición
-                if same_period_payment_group.state == 'posted':
-                    accumulated_amount += (
-                        same_period_payment_group.matched_amount)
-                    if self.withholding_advances:
-                        accumulated_amount += (
-                            same_period_payment_group.unmatched_amount)
-                else:
-                    accumulated_amount += (
-                        same_period_payment_group.to_pay_amount)
-                    if self.withholding_advances:
-                        accumulated_amount += (
-                            same_period_payment_group.unreconciled_amount)
+                same_period_amounts = \
+                    same_period_payment_group._get_withholdable_amounts(
+                        withholding_amount_type, self.withholding_advances)
+                accumulated_amount += \
+                    same_period_amounts[0] + same_period_amounts[1]
             previous_withholding_amount = sum(
                 self.env['account.payment'].search(
                     previos_payments_domain).mapped('amount'))
