@@ -22,7 +22,7 @@
                 </button>
 
                 <field name="unreconciled_amount" position="after">
-                    <field name="withholdable_advanced_amount" options="{'currency_field': 'currency_id'}" attrs="{'invisible': ['|', ('partner_type', '!=', 'supplier'), ('state', 'not in', ['draft', 'confirmed'])]}"/>
+                    <field name="withholdable_advanced_amount" options="{'currency_field': 'currency_id'}" attrs="{'invisible': ['|', '|', ('unreconciled_amount', '&lt;=', 0.0), ('partner_type', '!=', 'supplier'), ('state', 'not in', ['draft', 'confirmed'])]}"/>
                 </field>
             </field>
         </record>

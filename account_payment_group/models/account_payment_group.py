@@ -89,6 +89,10 @@ class AccountPaymentGroup(models.Model):
         compute='_compute_matched_amounts',
         currency_field='currency_id',
     )
+    matched_amount_untaxed = fields.Monetary(
+        compute='_compute_matched_amount_untaxed',
+        currency_field='currency_id',
+    )
     selected_finacial_debt = fields.Monetary(
         string='Selected Financial Debt',
         compute='_compute_selected_debt',
@@ -249,6 +253,23 @@ class AccountPaymentGroup(models.Model):
                     payment_group_id=rec.id).mapped(
                         'payment_group_matched_amount'))
             rec.unmatched_amount = rec.payments_amount - rec.matched_amount
+
+    @api.multi
+    def _compute_matched_amount_untaxed(self):
+        """ Lo separamos en otro metodo ya que es un poco mas costoso y no se
+        usa en conjunto con matched_amount
+        """
+        for rec in self:
+            if rec.state != 'posted':
+                continue
+            matched_amount_untaxed = 0.0
+            sign = rec.partner_type == 'supplier' and -1.0 or 1.0
+            for line in rec.matched_move_line_ids.with_context(
+                    payment_group_id=rec.id):
+                invoice = line.invoice_id
+                factor = invoice and invoice._get_tax_factor() or 1.0
+                matched_amount_untaxed += line.payment_group_matched_amount * factor
+            rec.matched_amount_untaxed = sign * matched_amount_untaxed
 
     @api.multi
     @api.depends('to_pay_move_line_ids')

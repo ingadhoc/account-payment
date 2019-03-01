@@ -39,5 +39,5 @@
     'installable': True,
     'name': 'Automatic Withholdings on Payments',
     'test': [],
-    'version': '11.0.1.4.0',
+    'version': '11.0.1.5.0',
 }

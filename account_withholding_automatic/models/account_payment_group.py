@@ -65,10 +65,21 @@ class AccountPaymentGroup(models.Model):
         amounts and not from selected debt
         """
         self.ensure_one()
-        if withholding_amount_type == 'untaxed_amount':
-            withholdable_invoiced_amount = self.selected_debt_untaxed
+        # Por compatibilidad con public_budget aceptamos
+        # pagos en otros estados no validados donde el matched y
+        # unmatched no se computaron, por eso agragamos la condición
+        if self.state == 'posted':
+            untaxed_field = 'matched_amount_untaxed'
+            total_field = 'matched_amount'
         else:
-            withholdable_invoiced_amount = self.selected_debt
+            untaxed_field = 'selected_debt_untaxed'
+            total_field = 'selected_debt'
+
+        if withholding_amount_type == 'untaxed_amount':
+            withholdable_invoiced_amount = self[untaxed_field]
+        else:
+            withholdable_invoiced_amount = self[total_field]
+
         withholdable_advanced_amount = 0.0
         # if the unreconciled_amount is negative, then the user wants to make
         # a partial payment. To get the right untaxed amount we need to know
@@ -104,12 +115,11 @@ class AccountPaymentGroup(models.Model):
             else:
                 invoice_factor = 1.0
 
-            # le descontamos de la base imponible el saldo que no se esta
-            # pagando descontado de iva
+            # si el adelanto es negativo estamos pagando parcialmente una
+            # factura y ocultamos el campo sin impuesto ya que lo sacamos por
+            # el proporcional descontando de el iva a lo que se esta pagando
             withholdable_invoiced_amount -= (
-                sign * self.withholdable_advanced_amount
-                * invoice_factor)
+                sign * self.unreconciled_amount * invoice_factor)
         elif withholding_advances:
-            withholdable_advanced_amount = \
-                self.withholdable_advanced_amount
+            withholdable_advanced_amount = self.withholdable_advanced_amount
         return (withholdable_advanced_amount, withholdable_invoiced_amount)
