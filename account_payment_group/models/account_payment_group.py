@@ -268,7 +268,8 @@ class AccountPaymentGroup(models.Model):
                     payment_group_id=rec.id):
                 invoice = line.invoice_id
                 factor = invoice and invoice._get_tax_factor() or 1.0
-                matched_amount_untaxed += line.payment_group_matched_amount * factor
+                matched_amount_untaxed += \
+                    line.payment_group_matched_amount * factor
             rec.matched_amount_untaxed = sign * matched_amount_untaxed
 
     @api.multi
