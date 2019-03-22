@@ -234,6 +234,12 @@ class AccountPaymentGroup(models.Model):
         readonly=True,
         copy=False,
     )
+    sent = fields.Boolean(
+        readonly=True,
+        default=False,
+        copy=False,
+        help="It indicates that the receipt has been sent."
+    )
 
     @api.multi
     @api.depends(
@@ -310,10 +316,12 @@ class AccountPaymentGroup(models.Model):
 
     @api.multi
     def action_payment_sent(self):
+        # self.sent = True
         raise ValidationError(_('Not implemented yet'))
 
     @api.multi
     def payment_print(self):
+        # self.sent = True
         raise ValidationError(_('Not implemented yet'))
 
     @api.multi
