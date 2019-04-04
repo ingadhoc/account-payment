@@ -165,11 +165,20 @@ class AccountCheck(models.Model):
         readonly=True,
         index=True,
     )
+    # TODO BORRAR EN V12
+    # lo mantenemos pero invisible por si alguien lo llega a necesitar
     partner_id = fields.Many2one(
         related='operation_ids.partner_id',
         readonly=True,
         store=True,
         index=True,
+    )
+    first_partner_id = fields.Many2one(
+        'res.partner',
+        compute='_compute_first_partner',
+        string='Partner',
+        readonly=True,
+        store=True,
     )
     state = fields.Selection([
         ('draft', 'Draft'),
@@ -256,6 +265,11 @@ class AccountCheck(models.Model):
         related='company_id.currency_id',
         readonly=True,
     )
+
+    @api.depends('operation_ids.partner_id')
+    def _compute_first_partner(self):
+        for rec in self.filtered('operation_ids'):
+            rec.first_partner_id = rec.operation_ids[-1].partner_id
 
     @api.multi
     def onchange(self, values, field_name, field_onchange):
