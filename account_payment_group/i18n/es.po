@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 11.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-16 15:29+0000\n"
+"POT-Creation-Date: 2019-04-04 14:38+0000\n"
 "PO-Revision-Date: 2018-05-17 22:03+0000\n"
 "Last-Translator: Mariana Luz Torres <mt@adhoc.com.ar>, 2019\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
@@ -281,6 +281,11 @@ msgid "Draft"
 msgstr "Borrador"
 
 #. module: account_payment_group
+#: model:ir.model,name:account_payment_group.model_mail_compose_message
+msgid "Email composition wizard"
+msgstr ""
+
+#. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_exchange_rate
 msgid "Exchange Rate"
 msgstr "Tipo de cambio"
@@ -349,6 +354,11 @@ msgid "Invoice"
 msgstr "Factura"
 
 #. module: account_payment_group
+#: model:ir.model.fields,help:account_payment_group.field_account_payment_group_sent
+msgid "It indicates that the receipt has been sent."
+msgstr ""
+
+#. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_account_journal
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_journal_id
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
@@ -361,7 +371,7 @@ msgid "Journal Item"
 msgstr "Apunte Contable"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:514
+#: code:addons/account_payment_group/models/account_payment_group.py:544
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
 #, python-format
@@ -401,6 +411,11 @@ msgid "Matched Amount"
 msgstr "Monto Conciliado"
 
 #. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_matched_amount_untaxed
+msgid "Matched Amount Untaxed"
+msgstr ""
+
+#. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_matched_move_line_ids
 msgid "Matched Move Line"
 msgstr "Apunte contable conciliado"
@@ -421,8 +436,8 @@ msgid "Not Cancelled"
 msgstr "No cancelado"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:291
-#: code:addons/account_payment_group/models/account_payment_group.py:295
+#: code:addons/account_payment_group/models/account_payment_group.py:320
+#: code:addons/account_payment_group/models/account_payment_group.py:325
 #, python-format
 msgid "Not implemented yet"
 msgstr "No implementado todavía"
@@ -694,6 +709,7 @@ msgid "Sended Money"
 msgstr "Dinero Enviado"
 
 #. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_sent
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
 msgid "Sent"
 msgstr "Enviado"
@@ -736,7 +752,7 @@ msgid "To Pay Amount"
 msgstr "Importe a pagar"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:589
+#: code:addons/account_payment_group/models/account_payment_group.py:619
 #, python-format
 msgid "To Pay Amount and Payment Amount must be equal!"
 msgstr "¡El Importe a pagar y el Importe de Pago deben ser iguales!"
@@ -749,7 +765,7 @@ msgstr "Líneas a Pagar"
 
 #. module: account_payment_group
 #: code:addons/account_payment_group/models/account_payment.py:301
-#: code:addons/account_payment_group/models/account_payment_group.py:560
+#: code:addons/account_payment_group/models/account_payment_group.py:590
 #, python-format
 msgid "To Pay Lines must be of the same account!"
 msgstr "Las líneas a pagar deben ser de la misma cuenta!"
@@ -825,20 +841,20 @@ msgid "View Payments"
 msgstr "Ver pagos"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:581
+#: code:addons/account_payment_group/models/account_payment_group.py:611
 #, python-format
 msgid "You can not confirm a payment group without payment lines!"
 msgstr "¡No puede confirmar un grupo de pagos sin líneas de pago!"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:551
+#: code:addons/account_payment_group/models/account_payment_group.py:581
 #, python-format
 msgid "You can not delete a payment that is already posted"
 msgstr "No puede eliminar un pago que ya ha sido publicado"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:492
-#: code:addons/account_payment_group/models/account_payment_group.py:498
+#: code:addons/account_payment_group/models/account_payment_group.py:522
+#: code:addons/account_payment_group/models/account_payment_group.py:528
 #, python-format
 msgid "You can not send to pay lines from different partners"
 msgstr "No puede enviar a pagar líneas de diferentes partners"
