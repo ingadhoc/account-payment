@@ -151,11 +151,11 @@
                 <filter name="to_cash" string="Ready to Cash" domain="[['state', '=', 'holding'], ['payment_date', '&lt;=', context_today().strftime('%Y-%m-%d')]]"/>
                 <filter name="to_expire" string="Soon to Expire" domain="[['state', '=', 'holding'], ['payment_date', '&lt;=', (context_today()-datetime.timedelta(days=15)).strftime('%Y-%m-%d')]]"/>
                 <group expand="0" string="Group By...">
-                    <filter string="Issue Date" context="{'group_by':'issue_date'}"/>
-                    <filter string="Payment Date" context="{'group_by':'payment_date'}"/>
-                    <filter string="Journal" context="{'group_by':'journal_id'}"/>
-                    <filter string="State" context="{'group_by':'state'}"/>
-                    <filter string="Partner" context="{'group_by':'first_partner_id'}"/>
+                    <filter name="issue_date" string="Issue Date" context="{'group_by':'issue_date'}"/>
+                    <filter name="payment_date" string="Payment Date" context="{'group_by':'payment_date'}"/>
+                    <filter name="journal_id" string="Journal" context="{'group_by':'journal_id'}"/>
+                    <filter name="state" string="State" context="{'group_by':'state'}"/>
+                    <filter name="partner_id" string="Partner" context="{'group_by':'partner_id'}"/>
                 </group>
             </search>
         </field>
@@ -212,7 +212,7 @@
         action="action_third_check"
         id="menu_third_check"
         sequence="40"
-        parent="account_payment_fix.menu_finance_bank_and_cash"/> 
+        parent="account_payment_fix.menu_finance_bank_and_cash"/>
 
     <!-- Issued Check Menu -->
     <record model="ir.actions.act_window" id="action_issue_check">

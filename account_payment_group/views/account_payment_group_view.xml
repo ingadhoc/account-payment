@@ -58,10 +58,10 @@
             <!-- <filter string="Sent" domain="[('state','=','sent')]" name='state_sent'/> -->
             <!-- <filter string="Reconciled" domain="[('state','=','reconciled')]"/> -->
             <separator/>
-            <filter string="Partner" domain="[]" context="{'group_by': 'partner_id'}"/>
-            <filter string="State" domain="[]" context="{'group_by': 'state'}"/>
-            <filter string="Currency" domain="[]" context="{'group_by': 'currency_id'}" groups="base.group_multi_currency"/>
-            <filter string="Company" domain="[]" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+            <filter name="partner_id" string="Partner" domain="[]" context="{'group_by': 'partner_id'}"/>
+            <filter name="state" string="State" domain="[]" context="{'group_by': 'state'}"/>
+            <filter name="currency_id" string="Currency" domain="[]" context="{'group_by': 'currency_id'}" groups="base.group_multi_currency"/>
+            <filter name="company_id" string="Company" domain="[]" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
         </search>
     </field>
 </record>
@@ -257,7 +257,7 @@
     </field>
 </record>
 
-<menuitem action="action_account_payments_group" id="menu_action_account_payments_group_receivable" parent="account.menu_finance_receivables_documents" sequence="20"/>
-<menuitem action="action_account_payments_group_payable" id="menu_action_account_payments_group_payable" parent="account.menu_finance_payables_documents" sequence="20"/>
+<menuitem action="action_account_payments_group" id="menu_action_account_payments_group_receivable" parent="account.menu_finance_receivables" sequence="20"/>
+<menuitem action="action_account_payments_group_payable" id="menu_action_account_payments_group_payable" parent="account.menu_finance_payables" sequence="20"/>
 
 </odoo>
