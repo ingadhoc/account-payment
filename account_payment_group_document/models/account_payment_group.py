@@ -162,6 +162,7 @@ class AccountPaymentGroup(models.Model):
 
     @api.multi
     def post(self):
+        res = super(AccountPaymentGroup, self).post()
         for rec in self:
             # si no ha receiptbook no exigimos el numero, esto por ej. lo
             # usa sipreco. Ademas limpiamos receiptbooks que se pueden
@@ -187,7 +188,7 @@ class AccountPaymentGroup(models.Model):
                 rec.message_post_with_template(
                     rec.receiptbook_id.mail_template_id.id,
                 )
-        return super(AccountPaymentGroup, self).post()
+        return res
 
     @api.multi
     @api.constrains('receiptbook_id', 'company_id')
