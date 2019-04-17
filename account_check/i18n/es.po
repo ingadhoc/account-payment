@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 11.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-05 14:51+0000\n"
+"POT-Creation-Date: 2019-04-17 00:31+0000\n"
 "PO-Revision-Date: 2018-05-18 12:59+0000\n"
 "Last-Translator: Mariana Luz Torres <mt@adhoc.com.ar>, 2019\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
@@ -22,7 +22,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:625
+#: code:addons/account_check/models/account_payment.py:626
 #, python-format
 msgid " check %s"
 msgstr " cheque %s"
@@ -448,7 +448,7 @@ msgid "Deliver"
 msgstr "Endosar"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:456
+#: code:addons/account_check/models/account_payment.py:457
 #, python-format
 msgid "Deliver checks %s"
 msgstr "Entregar cheques %s"
@@ -469,13 +469,13 @@ msgid "Deposit"
 msgstr "Depositar"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:624
+#: code:addons/account_check/models/account_payment.py:625
 #, python-format
 msgid "Deposit check %s"
 msgstr "Cheque depositado %s"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:438
+#: code:addons/account_check/models/account_payment.py:439
 #, python-format
 msgid "Deposit checks %s"
 msgstr "Depositar cheques %s"
@@ -511,7 +511,7 @@ msgid "Error not specified"
 msgstr "Error not specified"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:590
+#: code:addons/account_check/models/account_payment.py:591
 #, python-format
 msgid ""
 "EstÃ¡ queriendo imprimir y enumerar cheques que ya han sido numerados. "
@@ -531,7 +531,7 @@ msgid "Hand"
 msgstr "Entregar"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:485
+#: code:addons/account_check/models/account_payment.py:486
 #, python-format
 msgid "Hand check %s"
 msgstr "Cheque entregado %s"
@@ -590,7 +590,7 @@ msgid "In Use"
 msgstr "En Uso"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:564
+#: code:addons/account_check/models/account_payment.py:565
 #, python-format
 msgid ""
 "In order to print multiple checks at once, they must belong to the same "
@@ -697,7 +697,7 @@ msgid "Journal where it is going to be used"
 msgstr "Diario en el cual va  a ser utilizado"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:524
+#: code:addons/account_check/models/account_payment.py:525
 #, python-format
 msgid ""
 "La suma del pago no coincide con la suma de los cheques seleccionados. Por "
@@ -829,7 +829,7 @@ msgid "Owner Vat"
 msgstr "CUIT del Propietario"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:530
+#: code:addons/account_check/models/account_payment.py:531
 #, python-format
 msgid ""
 "Para mandar a proceso de firma debe definir nÃºmero de cheque en cada lÃ­nea de pago.\n"
@@ -902,7 +902,7 @@ msgid "Print Checks"
 msgstr "Imprimir Cheques"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:575
+#: code:addons/account_check/models/account_payment.py:576
 #: model:ir.model,name:account_check.model_print_prenumbered_checks
 #: model:ir.ui.view,arch_db:account_check.print_pre_numbered_checks_view
 #, python-format
@@ -1011,7 +1011,7 @@ msgid "Returned"
 msgstr "Devuelto"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:618
+#: code:addons/account_check/models/account_payment.py:619
 #, python-format
 msgid "Seems like this move has been already splited"
 msgstr "Parece ser que el asiento ya ha sido previamente dividido"
@@ -1027,7 +1027,7 @@ msgid "Sell Rejection"
 msgstr "Rechazo de la Venta"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:425
+#: code:addons/account_check/models/account_payment.py:426
 #, python-format
 msgid "Sell check %s"
 msgstr "Cheque vendido %s"
@@ -1125,7 +1125,7 @@ msgstr ""
 "incorrecta, puede cambiarla en la página de configuración del diario."
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:621
+#: code:addons/account_check/models/account_payment.py:622
 #, python-format
 msgid "There is not move lines to split"
 msgstr "No hay apuntes contables a dividir"
@@ -1147,7 +1147,7 @@ msgid "Third Checks"
 msgstr "Cheque de Terceros"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:512
+#: code:addons/account_check/models/account_payment.py:513
 #, python-format
 msgid ""
 "This operatios is not implemented for checks:\n"
@@ -1201,10 +1201,10 @@ msgid "Transfer"
 msgstr "transferir"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:413
+#: code:addons/account_check/models/account_payment.py:414
 #, python-format
-msgid "Transfer checks %s"
-msgstr "Transferir Cheques %s"
+msgid "Transfer checksaaa %s"
+msgstr ""
 
 #. module: account_check
 #: selection:account.check,state:0
@@ -1238,7 +1238,7 @@ msgstr ""
 "*Journal items: %s"
 
 #. module: account_check
-#: code:addons/account_check/models/account_payment.py:498
+#: code:addons/account_check/models/account_payment.py:499
 #, python-format
 msgid "Withdraw with checks %s"
 msgstr "Extracción con Cheques %s"
