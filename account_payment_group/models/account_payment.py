@@ -64,7 +64,7 @@ class AccountPayment(models.Model):
         readonly=True,
     )
 
-    @api.multi
+    #@api.multi
     @api.depends(
         'amount', 'payment_type', 'partner_type', 'amount_company_currency')
     def _compute_signed_amount(self):
@@ -80,31 +80,38 @@ class AccountPayment(models.Model):
             rec.signed_amount_company_currency = (
                 rec.amount_company_currency and
                 rec.amount_company_currency * sign)
+            if (len(self)==1):
+                self.signed_amount = rec.signed_amount
+                self.signed_amount_company_currency = rec.signed_amount_company_currency
 
-    @api.multi
+    #@api.multi
     @api.depends('currency_id', 'company_currency_id')
     def _compute_other_currency(self):
         for rec in self:
-            if rec.company_currency_id and rec.currency_id and \
-                    rec.company_currency_id != rec.currency_id:
+            rec.other_currency = False
+            if rec.company_currency_id and rec.currency_id and rec.company_currency_id != rec.currency_id:
                 rec.other_currency = True
+        if (len(self)==1):
+            self.other_currency = rec.other_currency
 
-    @api.multi
+    #@api.multi
     @api.depends(
         'amount', 'other_currency', 'amount_company_currency')
     def _compute_exchange_rate(self):
         for rec in self.filtered('other_currency'):
             rec.exchange_rate = rec.amount and (
                 rec.amount_company_currency / rec.amount) or 0.0
+            if (len(self)==1):
+                self.exchange_rate = rec.exchange_rate
 
-    @api.multi
+
+    #@api.multi
     # this onchange is necesary because odoo, sometimes, re-compute
     # and overwrites amount_company_currency. That happends due to an issue
     # with rounding of amount field (amount field is not change but due to
     # rouding odoo believes amount has changed)
     @api.onchange('amount_company_currency')
     def _inverse_amount_company_currency(self):
-        _logger.info('Running inverse amount company currency')
         for rec in self:
             if rec.other_currency and rec.amount_company_currency != \
                     rec.currency_id.with_context(
@@ -114,8 +121,10 @@ class AccountPayment(models.Model):
             else:
                 force_amount_company_currency = False
             rec.force_amount_company_currency = force_amount_company_currency
+            if (len(self)==1):
+                self.force_amount_company_currency = rec.force_amount_company_currency
 
-    @api.multi
+    #@api.multi
     @api.depends('amount', 'other_currency', 'force_amount_company_currency')
     def _compute_amount_company_currency(self):
         """
@@ -123,7 +132,6 @@ class AccountPayment(models.Model):
         * si no, si hay force_amount_company_currency, devuelve ese valor
         * sino, devuelve el amount convertido a la moneda de la cia
         """
-        _logger.info('Computing amount company currency')
         for rec in self:
             if not rec.other_currency:
                 amount_company_currency = rec.amount
@@ -134,22 +142,29 @@ class AccountPayment(models.Model):
                     date=rec.payment_date).compute(
                         rec.amount, rec.company_id.currency_id)
             rec.amount_company_currency = amount_company_currency
+            if (len(self)==1):
+                self.amount_company_currency = rec.amount_company_currency
 
-    @api.multi
+
+    #@api.multi
     @api.onchange('payment_type_copy')
     def _inverse_payment_type_copy(self):
         for rec in self:
             # if false, then it is a transfer
             rec.payment_type = (
                 rec.payment_type_copy and rec.payment_type_copy or 'transfer')
+        if (len(self)==1):
+            self.payment_type = rec.payment_type
 
-    @api.multi
+    #@api.multi
     @api.depends('payment_type')
     def _compute_payment_type_copy(self):
         for rec in self:
             if rec.payment_type == 'transfer':
                 continue
             rec.payment_type_copy = rec.payment_type
+        if (len(self)==1):
+            self.payment_type_copy = rec.payment_type_copy
 
     @api.multi
     def get_journals_domain(self):
