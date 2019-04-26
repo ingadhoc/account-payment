@@ -162,7 +162,6 @@ class AccountPaymentGroup(models.Model):
 
     @api.multi
     def post(self):
-        res = super(AccountPaymentGroup, self).post()
         for rec in self:
             # si no ha receiptbook no exigimos el numero, esto por ej. lo
             # usa sipreco. Ademas limpiamos receiptbooks que se pueden
@@ -184,6 +183,12 @@ class AccountPaymentGroup(models.Model):
                 'document_number': rec.document_number,
                 'receiptbook_id': rec.receiptbook_id.id,
             })
+
+        # hacemos el llamado acá y no arriba para primero hacer los checks
+        # y ademas primero limpiar o copiar talonario antes de postear.
+        # lo hacemos antes de mandar email asi sale correctamente numerado
+        res = super(AccountPaymentGroup, self).post()
+        for rec in self:
             if rec.receiptbook_id.mail_template_id:
                 rec.message_post_with_template(
                     rec.receiptbook_id.mail_template_id.id,
