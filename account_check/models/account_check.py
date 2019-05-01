@@ -165,18 +165,17 @@ class AccountCheck(models.Model):
         readonly=True,
         index=True,
     )
-    # TODO BORRAR EN V12
-    # lo mantenemos pero invisible por si alguien lo llega a necesitar
     partner_id = fields.Many2one(
         related='operation_ids.partner_id',
         readonly=True,
         store=True,
         index=True,
+        string='Last operation partner',
     )
     first_partner_id = fields.Many2one(
         'res.partner',
         compute='_compute_first_partner',
-        string='Partner',
+        string='First operation partner',
         readonly=True,
         store=True,
     )
