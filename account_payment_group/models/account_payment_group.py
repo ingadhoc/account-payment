@@ -295,7 +295,8 @@ class AccountPaymentGroup(models.Model):
                 rec.has_outstanding = True
 
     def _search_payment_methods(self, operator, value):
-        return [('payment_ids.journal_id.name', operator, value)]
+        recs = self.search([('payment_ids.journal_id.name', operator, value)])
+        return [('id', 'in', recs.ids)]
 
     @api.multi
     def _compute_payment_methods(self):
