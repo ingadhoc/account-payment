@@ -411,7 +411,7 @@ class AccountPayment(models.Model):
                     'holding', rec, False, date=rec.payment_date)
                 rec.check_ids.write({
                     'journal_id': rec.destination_journal_id.id})
-                vals['name'] = _('Transfer checksaaa %s') % ', '.join(
+                vals['name'] = _('Transfer checks %s') % ', '.join(
                     rec.check_ids.mapped('name'))
             elif rec.destination_journal_id.type == 'cash':
                 if cancel:
