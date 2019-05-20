@@ -8,7 +8,7 @@
     "author": "ADHOC SA, Odoo Community Association (OCA)",
     "license": "AGPL-3",
     "application": False,
-    'installable': False,
+    'installable': True,
     "external_dependencies": {
         "python": [],
         "bin": [],
