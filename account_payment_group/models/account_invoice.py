@@ -73,6 +73,10 @@ class AccountInvoice(models.Model):
                 'default_partner_id': self.partner_id.id,
                 'to_pay_move_line_ids': self.open_move_line_ids.ids,
                 'pop_up': True,
+                # We set this because if became from other view and in the
+                # context has 'create=False' you can't crate payment lines
+                #  (for ej: subscription)
+                'create': True,
                 'default_company_id': self.company_id.id,
             },
         }
