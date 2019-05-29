@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 11.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-03 21:02+0000\n"
+"POT-Creation-Date: 2019-05-28 19:00+0000\n"
 "PO-Revision-Date: 2018-05-18 12:59+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2019\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
@@ -514,11 +514,9 @@ msgstr "Error not specified"
 #: code:addons/account_check/models/account_payment.py:591
 #, python-format
 msgid ""
-"EstÃ¡ queriendo imprimir y enumerar cheques que ya han sido numerados. "
-"Seleccione solo cheques numerados o solo cheques sin nÃºmero."
-msgstr ""
 "Está queriendo imprimir y enumerar cheques que ya han sido numerados. "
 "Seleccione solo cheques numerados o solo cheques sin número."
+msgstr ""
 
 #. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_check_first_partner_id
@@ -844,11 +842,9 @@ msgstr "CUIT del Propietario"
 #: code:addons/account_check/models/account_payment.py:531
 #, python-format
 msgid ""
-"Para mandar a proceso de firma debe definir nÃºmero de cheque en cada lÃ­nea de pago.\n"
+"Para mandar a proceso de firma debe definir número de cheque en cada línea de pago.\n"
 "* ID del pago: %s"
 msgstr ""
-"Para mandar a proceso de firma debe definir número de cheque en cada lí­nea de pago.\n"
-"* ID del pago: %s"
 
 #. module: account_check
 #: code:addons/account_check/models/account_bank_statement_line.py:55
