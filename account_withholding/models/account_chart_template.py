@@ -10,6 +10,7 @@ _logger = logging.getLogger(__name__)
 class AccountChartTemplate(models.Model):
     _inherit = "account.chart.template"
 
+    @api.multi
     def _create_bank_journals(self, company, acc_template_ref):
         """
         Bank - Cash journals are created with this method
@@ -17,6 +18,7 @@ class AccountChartTemplate(models.Model):
         journals. This is because usually will be installed before chart loaded
         and they will be disable by default
         """
+
         res = super(
             AccountChartTemplate, self)._create_bank_journals(
             company, acc_template_ref)
@@ -54,13 +56,11 @@ class WizardMultiChartsAccounts(models.TransientModel):
 
     @api.multi
     def _create_bank_journals_from_o2m(self, company, acc_template_ref):
-        """
-"""        Bank - Cash journals are created with this method
+        Bank - Cash journals are created with this method
         Inherit this function in order to add checks to cash and bank
         journals. This is because usually will be installed before chart loaded
         and they will be disable by default
-        """
-"""        res = super(
+        res = super(
             WizardMultiChartsAccounts, self)._create_bank_journals_from_o2m(
             company, acc_template_ref)
 

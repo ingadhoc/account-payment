@@ -8,4 +8,4 @@ from . import account_invoice
 from . import res_company
 from . import account_journal_dashboard
 from . import account_bank_statement_line
-from . import mail_compose_message
+#from . import mail_compose_message
