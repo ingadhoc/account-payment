@@ -84,7 +84,8 @@ class AccountPayment(models.Model):
     def _compute_other_currency(self):
         for rec in self:
             rec.other_currency = False
-            if rec.company_currency_id and rec.currency_id and rec.company_currency_id != rec.currency_id:
+            if rec.company_currency_id and rec.currency_id and \
+               rec.company_currency_id != rec.currency_id:
                 rec.other_currency = True
 
     @api.depends(
@@ -93,7 +94,6 @@ class AccountPayment(models.Model):
         for rec in self.filtered('other_currency'):
             rec.exchange_rate = rec.amount and (
                 rec.amount_company_currency / rec.amount) or 0.0
-
 
     # this onchange is necesary because odoo, sometimes, re-compute
     # and overwrites amount_company_currency. That happends due to an issue
@@ -128,7 +128,6 @@ class AccountPayment(models.Model):
                     date=rec.payment_date).compute(
                         rec.amount, rec.company_id.currency_id)
             rec.amount_company_currency = amount_company_currency
-
 
     @api.onchange('payment_type_copy')
     def _inverse_payment_type_copy(self):

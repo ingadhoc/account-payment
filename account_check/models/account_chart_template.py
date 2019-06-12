@@ -37,7 +37,7 @@ class AccountChartTemplate(models.Model):
         account_ref, taxes_ref = super(
             AccountChartTemplate, self)._load_template(
                 company,
-                code_digits=code_digits,                
+                code_digits=code_digits,
                 account_ref=account_ref,
                 taxes_ref=taxes_ref)
         for field in [
