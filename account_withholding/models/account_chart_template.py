@@ -7,19 +7,20 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
-class WizardMultiChartsAccounts(models.TransientModel):
-    _inherit = 'wizard.multi.charts.accounts'
+class AccountChartTemplate(models.Model):
+    _inherit = "account.chart.template"
 
     @api.multi
-    def _create_bank_journals_from_o2m(self, company, acc_template_ref):
+    def _create_bank_journals(self, company, acc_template_ref):
         """
         Bank - Cash journals are created with this method
         Inherit this function in order to add checks to cash and bank
         journals. This is because usually will be installed before chart loaded
         and they will be disable by default
         """
+
         res = super(
-            WizardMultiChartsAccounts, self)._create_bank_journals_from_o2m(
+            AccountChartTemplate, self)._create_bank_journals(
             company, acc_template_ref)
 
         # each chart of account / localization should send this key if

@@ -1,6 +1,6 @@
 {
     "name": "Payment Groups with Accounting Documents",
-    "version": "11.0.1.1.0",
+    "version": "12.0.1.0.0",
     "author": "ADHOC SA,Odoo Community Association (OCA)",
     "license": "AGPL-3",
     "category": "Accounting",
@@ -18,7 +18,7 @@
     ],
     'images': [
     ],
-    'installable': False,
+    'installable': True,
     'auto_install': True,
     'post_init_hook': 'post_init_hook',
 }

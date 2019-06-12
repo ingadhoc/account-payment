@@ -47,7 +47,7 @@
             <field name="currency_id" invisible="1"/>
             <field name="company_currency_id" invisible="1"/>
             <field name="partner_type" invisible="1"/>
-            <button icon="fa-pencil" type="object" states="draft" name="show_details" />
+            <button icon="fa-pencil" type="object" states="draft" name="show_details" string="Details"/>
         </tree>
     </field>
 </record>
@@ -107,7 +107,7 @@
                 <attribute name="groups">base.group_no_one</attribute>
                 <attribute name="confirm">IMPORTANTE: La validación de la línea de pago se debe hacer desde el recibo. La validación manual de una línea de pago se usa solo para correcciones y usos avanzados. Seguro desea continuar?</attribute>
             </button>
-             
+
             <button name="cancel" position="attributes">
                 <!-- al final lo hacemos visible para poder hacer ajustes sin cancelar todo el payment group, pero solo si no transfer, con tec group y un confirm -->
                 <!-- <attribute name="invisible">1</attribute> -->
@@ -177,7 +177,7 @@
                 <attribute name="confirm"></attribute>
                 <attribute name="groups"></attribute>
             </button>
-             
+
             <!-- sacamos confirm y groups en transfers -->
             <button name="cancel" position="attributes">
                 <attribute name="confirm"></attribute>
@@ -218,14 +218,14 @@
                 <filter string="Draft" domain="[('state','=','draft')]" name='state_draft'/>
                 <filter string="Posted" domain="[('state','=','posted')]" name='state_posted'/>
                 <filter string="Sent" domain="[('state','=','sent')]" name='state_sent'/>
-                <filter string="Reconciled" domain="[('state','=','reconciled')]"/>
+                <filter name="reconciled" string="Reconciled" domain="[('state','=','reconciled')]"/>
                 <separator/>
-                <filter string="Journal" domain="[]" context="{'group_by': 'journal_id'}"/>
-                <filter string="Transfer To" domain="[]" context="{'group_by': 'destination_journal_id'}"/>
-                <filter string="Payment Method" domain="[]" context="{'group_by': 'payment_method_id'}"/>
-                <filter string="State" domain="[]" context="{'group_by': 'state'}"/>
-                <filter string="Currency" domain="[]" context="{'group_by': 'currency_id'}" groups="base.group_multi_currency"/>
-                <filter string="Company" domain="[]" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                <filter name="journal_id" string="Journal" domain="[]" context="{'group_by': 'journal_id'}"/>
+                <filter name="destination_journal_id" string="Transfer To" domain="[]" context="{'group_by': 'destination_journal_id'}"/>
+                <filter name="payment_method_id" string="Payment Method" domain="[]" context="{'group_by': 'payment_method_id'}"/>
+                <filter name="state" string="State" domain="[]" context="{'group_by': 'state'}"/>
+                <filter name="currency_id" string="Currency" domain="[]" context="{'group_by': 'currency_id'}" groups="base.group_multi_currency"/>
+                <filter name="company_id" string="Company" domain="[]" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
             </search>
         </field>
     </record>

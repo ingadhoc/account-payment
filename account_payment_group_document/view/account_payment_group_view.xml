@@ -18,7 +18,7 @@
 
             <h1>
                 <field name="display_name" attrs="{'invisible': [('display_name', '=', False)]}" class="oe_inline"/>
-                <label string="- Next Number: " attrs="{'invisible': [('next_number', 'in', (0, False))]}" class="oe_inline"/>
+                <label for="next_number" string="- Next Number: " attrs="{'invisible': [('next_number', 'in', (0, False))]}" class="oe_inline"/>
                 <field name="next_number" attrs="{'invisible': [('next_number', 'in', (0, False))]}" class="oe_inline"/>
             </h1>
         </field>

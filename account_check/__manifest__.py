@@ -19,7 +19,7 @@
 ##############################################################################
 {
     'name': 'Account Check Management',
-    'version': '11.0.1.7.0',
+    'version': '12.0.1.0.0',
     'category': 'Accounting',
     'summary': 'Accounting, Payment, Check, Third, Issue',
     'author': 'ADHOC SA',
@@ -54,7 +54,7 @@
     ],
     'test': [
     ],
-    'installable': False,
+    'installable': True,
     'auto_install': False,
     'application': True,
 }

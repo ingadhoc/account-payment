@@ -32,13 +32,12 @@ class AccountChartTemplate(models.Model):
 
     @api.multi
     def _load_template(
-            self, company, code_digits=None, transfer_account_id=None,
+            self, company, code_digits=None,
             account_ref=None, taxes_ref=None):
         account_ref, taxes_ref = super(
             AccountChartTemplate, self)._load_template(
                 company,
                 code_digits=code_digits,
-                transfer_account_id=transfer_account_id,
                 account_ref=account_ref,
                 taxes_ref=taxes_ref)
         for field in [
@@ -52,12 +51,8 @@ class AccountChartTemplate(models.Model):
                 company[field] = account_ref[account_field.id]
         return account_ref, taxes_ref
 
-
-class WizardMultiChartsAccounts(models.TransientModel):
-    _inherit = 'wizard.multi.charts.accounts'
-
     @api.multi
-    def _create_bank_journals_from_o2m(self, company, acc_template_ref):
+    def _create_bank_journals(self, company, acc_template_ref):
         """
         Bank - Cash journals are created with this method
         Inherit this function in order to add checks to cash and bank
@@ -66,7 +61,7 @@ class WizardMultiChartsAccounts(models.TransientModel):
         """
 
         res = super(
-            WizardMultiChartsAccounts, self)._create_bank_journals_from_o2m(
+            AccountChartTemplate, self)._create_bank_journals(
             company, acc_template_ref)
 
         # creamos diario para cheques de terceros
