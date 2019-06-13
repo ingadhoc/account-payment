@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 11.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-27 20:18+0000\n"
+"POT-Creation-Date: 2019-05-28 19:01+0000\n"
 "PO-Revision-Date: 2018-05-20 17:05+0000\n"
 "Last-Translator: Mariana Luz Torres <mt@adhoc.com.ar>, 2019\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
@@ -297,18 +297,14 @@ msgid "Rules"
 msgstr "Reglas"
 
 #. module: account_withholding_automatic
-#: code:addons/account_withholding_automatic/models/account_payment_group.py:95
+#: code:addons/account_withholding_automatic/models/account_payment_group.py:106
 #, python-format
 msgid ""
-"SeleccionÃ³ deuda por %s pero aparentente desea pagar  %s. En la deuda "
+"Seleccionó deuda por %s pero aparentente desea pagar  %s. En la deuda "
 "seleccionada hay algunos comprobantes de mas que no van a poder ser pagados "
-"(%s). DeberÃ¡ quitar  dichos comprobantes de la deuda seleccionada para "
-"poder hacer el correcto cÃ¡lculo de las retenciones."
+"(%s). Deberá quitar  dichos comprobantes de la deuda seleccionada para poder"
+" hacer el correcto cálculo de las retenciones."
 msgstr ""
-"Seleccionó deuda por %s pero aparentemente desea pagar  %s. En la deuda "
-"seleccionada hay algunos comprobantes de mas que no van a poder ser pagados "
-"(%s). Debería quitar  dichos comprobantes de la deuda seleccionada para "
-"poder hacer el correcto cálculo de las retenciones."
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule_sequence

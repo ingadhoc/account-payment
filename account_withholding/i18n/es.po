@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 11.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-16 15:29+0000\n"
+"POT-Creation-Date: 2019-05-28 19:01+0000\n"
 "PO-Revision-Date: 2018-05-18 11:13+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2019\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
@@ -46,13 +46,10 @@ msgstr ""
 #: code:addons/account_withholding/models/account_payment.py:38
 #, python-format
 msgid ""
-"No puede validar pagos con retenciones que no tengan nÃºmero de retenciÃ³n. "
-"Recomendamos agregar una secuencia a los impuestos de retenciÃ³n "
+"No puede validar pagos con retenciones que no tengan número de retención. "
+"Recomendamos agregar una secuencia a los impuestos de retención "
 "correspondientes. Id de pagos: %s"
 msgstr ""
-"No puede validar pagos con retenciones que no tengan nÃºmero de retenciÃ³n. "
-"Recomendamos agregar una secuencia a los impuestos de retenciÃ³n "
-"correspondientes. Id de pagos: %s"
 
 #. module: account_withholding
 #: model:ir.model,name:account_withholding.model_account_payment
