@@ -127,7 +127,7 @@ class AccountCheck(models.Model):
     _name = 'account.check'
     _description = 'Account Check'
     _order = "id desc"
-    _inherit = ['mail.thread']
+    _inherit = ['mail.thread', 'mail.activity.mixin']
 
     operation_ids = fields.One2many(
         'account.check.operation',
