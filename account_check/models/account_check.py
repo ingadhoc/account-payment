@@ -634,6 +634,20 @@ class AccountCheck(models.Model):
             # 'check_ids': [(4, self.id, False)],
         }
 
+    @api.constrains('currency_id', 'amount', 'amount_company_currency')
+    def _check_amounts(self):
+        for rec in self.filtered(
+                lambda x: not x.amount or not x.amount_company_currency):
+            if rec.currency_id != rec.company_currency_id:
+                raise ValidationError(_(
+                    'If you create a check with different currency thant the '
+                    'company currency, you must provide "Amount" and "Amount '
+                    'Company Currency"'))
+            elif not rec.amount:
+                rec.amount = rec.amount_company_currency
+            elif not rec.amount_company_currency:
+                rec.amount_company_currency = rec.amount
+
     @api.multi
     def reject(self):
         self.ensure_one()
