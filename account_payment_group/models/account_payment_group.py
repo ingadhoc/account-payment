@@ -638,3 +638,11 @@ class AccountPaymentGroup(models.Model):
                     writeoff_acc_id, writeoff_journal_id)
 
             rec.state = 'posted'
+
+    @api.multi
+    @api.returns('mail.message', lambda value: value.id)
+    def message_post(self, **kwargs):
+        if self.env.context.get('mark_payment_as_sent'):
+            self.filtered(lambda rec: not rec.sent).write({'sent': True})
+        return super(AccountPaymentGroup, self.with_context(
+            mail_post_autofollow=True)).message_post(**kwargs)
