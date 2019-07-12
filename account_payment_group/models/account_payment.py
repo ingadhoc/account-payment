@@ -32,6 +32,7 @@ class AccountPayment(models.Model):
     signed_amount = fields.Monetary(
         string='Payment Amount',
         compute='_compute_signed_amount',
+	store=True,
     )
     signed_amount_company_currency = fields.Monetary(
         string='Payment Amount on Company Currency',
@@ -46,6 +47,7 @@ class AccountPayment(models.Model):
     )
     other_currency = fields.Boolean(
         compute='_compute_other_currency',
+	store=True,
     )
     force_amount_company_currency = fields.Monetary(
         string='Payment Amount on Company Currency',
@@ -64,6 +66,7 @@ class AccountPayment(models.Model):
         readonly=True,
     )
 
+    @api.multi
     @api.depends(
         'amount', 'payment_type', 'partner_type', 'amount_company_currency')
     def _compute_signed_amount(self):
