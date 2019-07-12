@@ -377,17 +377,17 @@ class AccountCheck(models.Model):
             rec._check_state_change(operation)
             # agregamos validacion de fechas
             date = date or fields.Datetime.now()
-            if rec.operation_ids and rec.operation_ids[0].date > date:
-                raise ValidationError(_(
-                    'The date of a new check operation can not be minor than '
-                    'last operation date.\n'
-                    '* Check Id: %s\n'
-                    '* Check Number: %s\n'
-                    '* Operation: %s\n'
-                    '* Operation Date: %s\n'
-                    '* Last Operation Date: %s') % (
-                    rec.id, rec.name, operation, date,
-                    rec.operation_ids[0].date))
+            #if rec.operation_ids and rec.operation_ids[0].date and rec.operation_ids[0].date > date:
+            #    raise ValidationError(_(
+            #        'The date of a new check operation can not be minor than '
+            #        'last operation date.\n'
+            #        '* Check Id: %s\n'
+            #        '* Check Number: %s\n'
+            #        '* Operation: %s\n'
+            #        '* Operation Date: %s\n'
+            #        '* Last Operation Date: %s') % (
+            #        rec.id, rec.name, operation, date,
+            #        rec.operation_ids[0].date))
             vals = {
                 'operation': operation,
                 'date': date,
@@ -430,7 +430,7 @@ class AccountCheck(models.Model):
             'holding': [
                 'draft', 'deposited', 'selled', 'delivered', 'transfered'],
             'delivered': ['holding'],
-            'deposited': ['holding', 'rejected'],
+            'deposited': ['deposited','holding', 'rejected'],
             'selled': ['holding'],
             'handed': ['draft'],
             'transfered': ['holding'],
