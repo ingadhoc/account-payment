@@ -10,7 +10,7 @@
     'depends': [
         'account',
     ],
-    'installable': True,
+    'installable': False,
     'name': 'Account Payment Fix',
     'test': [],
     'version': '12.0.1.0.0',
