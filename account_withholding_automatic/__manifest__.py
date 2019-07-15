@@ -39,9 +39,5 @@
     'installable': False,
     'name': 'Automatic Withholdings on Payments',
     'test': [],
-<<<<<<< Updated upstream
-    'version': '12.0.1.5.0',
-=======
     'version': '12.0.1.0.0',
->>>>>>> Stashed changes
 }
