@@ -15,9 +15,5 @@
     ],
     "application": False,
     "auto_install": True,
-<<<<<<< Updated upstream
-    'installable': False,
-=======
     "installable": False,
->>>>>>> Stashed changes
 }
