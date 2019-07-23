@@ -74,7 +74,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
     @api.onchange('product_id')
     def change_product(self):
         self.ensure_one()
-        if self.payment_group_id.partner_type == 'purchase':
+        if self.payment_group_id.partner_type == 'supplier':
             taxes = self.product_id.supplier_taxes_id
         else:
             taxes = self.product_id.taxes_id
@@ -125,7 +125,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
     def change_payment_group(self):
         journal_type = 'sale'
         type_tax_use = 'sale'
-        if self.payment_group_id.partner_type == 'purchase':
+        if self.payment_group_id.partner_type == 'supplier':
             journal_type = 'purchase'
             type_tax_use = 'purchase'
         journal_domain = [
