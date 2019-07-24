@@ -599,18 +599,16 @@ class AccountCheck(models.Model):
         self.ensure_one()
         if self.state in ['rejected'] and self.type == 'third_check':
             # anulamos la operación en la que lo recibimos
-            operation = self._get_operation('holding', True)
             return self.action_create_debit_note(
-                'reclaimed', 'customer', operation.partner_id,
+                'reclaimed', 'customer', self.first_partner_id,
                 self.company_id._get_check_account('rejected'))
 
     @api.multi
     def customer_return(self):
         self.ensure_one()
         if self.state in ['holding'] and self.type == 'third_check':
-            operation = self._get_operation('holding', True)
             return self.action_create_debit_note(
-                'returned', 'customer', operation.partner_id,
+                'returned', 'customer', self.first_partner_id,
                 self.get_third_check_account())
 
     @api.model
