@@ -392,9 +392,7 @@ class AccountCheck(models.Model):
                 'date': date,
                 'check_id': rec.id,
                 'origin': '%s,%i' % (origin._name, origin.id),
-                'partner_id': partner and partner.id or
-                rec.operation_ids and rec.operation_ids[0].partner_id.id
-                or False,
+                'partner_id': partner and partner.id or False,
             }
             rec.operation_ids.create(vals)
 
