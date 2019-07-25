@@ -159,7 +159,7 @@
                         <button name="remove_all" string="Remove All" states="draft" type="object"/>
                         <button name="%(action_account_payment_group_invoice_wizard)d" string="+ Debit Note" states="draft" type="action"/>
                         <button name="%(action_account_payment_group_invoice_wizard)d" string="+ Credit Note" states="draft" context="{'refund': True}" type="action"/>
-                        <field name="to_pay_move_line_ids" context="{'tree_view_ref': 'account_payment_group.view_move_line_tree'}" domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.internal_type', '=', account_internal_type),('account_id.reconcile', '=', True),('reconciled', '=', False),('company_id', '=', company_id)]"/>
+                        <field name="to_pay_move_line_ids" context="{'tree_view_ref': 'account_payment_group.view_move_line_tree'}" domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.internal_type', '=', account_internal_type),('account_id.reconcile', '=', True),('reconciled', '=', False),('full_reconcile_id', '=', False),('company_id', '=', company_id)]"/>
                     </page>
                     <!-- no las pudimos hacer invisibles porque nos da error al venir de una factura y querer hacer las to pay lines tmb invisibles. lo bueno de hacerlas invisibles era que al confirmar se pasaba a las payment lines automaticamente -->
                     <page string="Payment Lines" attrs="{'invisible': [('payment_subtype', '=', 'double_validation'), ('state', '=', 'draft')]}">
@@ -177,7 +177,7 @@
                         <button name="remove_all" string="Remove All" states="draft" type="object"/>
                         <button name="%(action_account_payment_group_invoice_wizard)d" string="+ Debit Note" states="draft" type="action" context="{'internal_type': 'debit_note'}"/>
                         <button name="%(action_account_payment_group_invoice_wizard)d" string="+ Credit Note" states="draft" context="{'refund': True}" type="action"/>
-                        <field name="debt_move_line_ids" context="{'tree_view_ref': 'account_payment_group.view_move_line_tree'}" domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.internal_type', '=', account_internal_type),('account_id.reconcile', '=', True),('reconciled', '=', False),('company_id', '=', company_id)]"/>
+                        <field name="debt_move_line_ids" context="{'tree_view_ref': 'account_payment_group.view_move_line_tree'}" domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.internal_type', '=', account_internal_type),('account_id.reconcile', '=', True),('reconciled', '=', False), ('full_reconcile_id', '=', False),('company_id', '=', company_id)]"/>
                     </page>
                     <page string="Paid" states="posted">
                         <field name="matched_move_line_ids" context="{'payment_group_id': id, 'matched_lines': True, 'tree_view_ref': 'account_payment_group.view_move_line_tree'}"/>

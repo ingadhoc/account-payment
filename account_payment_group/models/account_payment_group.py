@@ -148,6 +148,7 @@ class AccountPaymentGroup(models.Model):
         # ('account_id.internal_type', '=', account_internal_type),
         ('account_id.reconcile', '=', True),
         ('reconciled', '=', False),
+        ('full_reconcile_id', '=', False),
         # ('company_id', '=', company_id),
     ]
     debt_move_line_ids = fields.Many2many(
@@ -492,6 +493,7 @@ class AccountPaymentGroup(models.Model):
                 self.account_internal_type),
             ('account_id.reconcile', '=', True),
             ('reconciled', '=', False),
+            ('full_reconcile_id', '=', False),
             ('company_id', '=', self.company_id.id),
             # '|',
             # ('amount_residual', '!=', False),
