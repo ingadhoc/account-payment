@@ -161,7 +161,6 @@
                     <filter name="payment_date" string="Payment Date" context="{'group_by':'payment_date'}"/>
                     <filter name="journal_id" string="Journal" context="{'group_by':'journal_id'}"/>
                     <filter name="state" string="State" context="{'group_by':'state'}"/>
-                    <filter name="partner_id" string="Partner" context="{'group_by':'partner_id'}"/>
                     <filter name="first_partner_id" string="First operation partner" context="{'group_by':'first_partner_id'}"/>
                     <filter name="last_partner_id" string="Last operation partner" context="{'group_by':'partner_id'}"/>
                 </group>
