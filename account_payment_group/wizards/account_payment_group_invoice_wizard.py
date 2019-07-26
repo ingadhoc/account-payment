@@ -74,7 +74,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
     @api.onchange('product_id')
     def change_product(self):
         self.ensure_one()
-        if self.payment_group_id.partner_type == 'purchase':
+        if self.payment_group_id.partner_type == 'supplier':
             taxes = self.product_id.supplier_taxes_id
         else:
             taxes = self.product_id.taxes_id
@@ -104,12 +104,20 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
         then restoring tax.price_include = False.
         """
         self.ensure_one()
-        if any(x.amount_type != 'percent' for x in self.tax_ids):
-            raise ValidationError(_(
-                'You can only set amount total if taxes are of type '
-                'percentage'))
-        tax_percent = sum(
-            [x.amount for x in self.tax_ids if not x.price_include])
+        tax_percent = 0.0
+        for tax in self.tax_ids.filtered(
+                lambda x: not x.price_include):
+            if tax.amount_type == 'percent':
+                tax_percent += tax.amount
+            elif tax.amount_type == 'partner_tax':
+                # ugly compatibility with l10n_ar l10n_ar_account_withholding
+                tax_percent += tax.get_partner_alicuot(
+                    self.payment_group_id.partner_id,
+                    fields.Date.context_today(self)).alicuota_percepcion
+            else:
+                raise ValidationError(_(
+                    'You can only set amount total if taxes are of type '
+                    'percentage'))
         total_percent = (1 + tax_percent / 100) or 1.0
         self.amount_untaxed = self.amount_total / total_percent
 
@@ -117,7 +125,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
     def change_payment_group(self):
         journal_type = 'sale'
         type_tax_use = 'sale'
-        if self.payment_group_id.partner_type == 'purchase':
+        if self.payment_group_id.partner_type == 'supplier':
             journal_type = 'purchase'
             type_tax_use = 'purchase'
         journal_domain = [
@@ -185,21 +193,6 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
         invoice.write({'invoice_line_ids': [(0, 0, line_values)]})
         invoice.compute_taxes()
         invoice.action_invoice_open()
-
-        # TODO this FIX is to be removed on v11. This is to fix reconcilation
-        # of the invoice with secondary_currency and the debit note without
-        # secondary_currency
-        secondary_currency = self.payment_group_id.to_pay_move_line_ids.mapped(
-            'currency_id')
-        if len(secondary_currency) == 1:
-            move_lines = invoice.move_id.line_ids.filtered(
-                lambda x: x.account_id == invoice.account_id)
-            # use _write because move is already posted
-            if not move_lines.mapped('currency_id'):
-                move_lines._write({
-                    'currency_id': secondary_currency.id,
-                    'amount_currency': 0.0,
-                })
 
         self.payment_group_id.to_pay_move_line_ids += (
             invoice.open_move_line_ids)

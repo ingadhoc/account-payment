@@ -7,19 +7,32 @@
         <field name="inherit_id" ref="account.view_account_payment_form"/>
         <field name="arch" type="xml">
             <form>
+                <!-- hide save and new button because it breaks onchange (for eg. on checks) and also do not update the amount -->
+                <style>
+                    .btn-primary:nth-child(2){
+                        display:none !important;
+                    }
+                </style>
                 <field name="payment_method_ids" invisible="1"/>
                 <field name="journal_ids" invisible="1"/>
                 <field name="destination_journal_ids" invisible="1"/>
                 <field name="company_id" invisible="1"/>
             </form>
+            <!-- we use m2o widget because selecion domains do not work if we edit an already created record -->
             <field name="journal_id" position="attributes">
                 <attribute name="domain">[('id', 'in', journal_ids)]</attribute>
+                <attribute name="widget">many2one</attribute>
+                <attribute name="options">{'no_create': True, 'no_open': True}</attribute>
             </field>
             <field name="destination_journal_id" position="attributes">
                 <attribute name="domain">[('id', 'in', destination_journal_ids)]</attribute>
+                <attribute name="widget">many2one</attribute>
+                <attribute name="options">{'no_create': True, 'no_open': True}</attribute>
             </field>
             <field name="payment_method_id" position="attributes">
                 <attribute name="domain">[('id', 'in', payment_method_ids)]</attribute>
+                <attribute name="widget">many2one</attribute>
+                <attribute name="options">{'no_create': True, 'no_open': True}</attribute>
             </field>
             <field name="partner_id" position="attributes">
                 <attribute name="domain">[(partner_type, '=', True)]</attribute>

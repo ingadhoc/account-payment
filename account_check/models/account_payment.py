@@ -403,13 +403,14 @@ class AccountPayment(models.Model):
                     return None
 
                 _logger.info('Transfer Check')
+                # get the account before changing the journal on the check
+                vals['account_id'] = rec.check_ids.get_third_check_account().id
                 rec.check_ids._add_operation(
                     'transfered', rec, False, date=rec.payment_date)
                 rec.check_ids._add_operation(
                     'holding', rec, False, date=rec.payment_date)
                 rec.check_ids.write({
                     'journal_id': rec.destination_journal_id.id})
-                vals['account_id'] = rec.check_ids.get_third_check_account().id
                 vals['name'] = _('Transfer checks %s') % ', '.join(
                     rec.check_ids.mapped('name'))
             elif rec.destination_journal_id.type == 'cash':
