@@ -61,8 +61,6 @@ class AccountPaymentGroup(models.Model):
     def _get_withholdable_amounts(
             self, withholding_amount_type, withholding_advances):
         """ Method to help on getting withholding amounts from account.tax
-        TODO when payment is validated we should get amounts from matched
-        amounts and not from selected debt
         """
         self.ensure_one()
         # Por compatibilidad con public_budget aceptamos
@@ -84,9 +82,11 @@ class AccountPaymentGroup(models.Model):
         # if the unreconciled_amount is negative, then the user wants to make
         # a partial payment. To get the right untaxed amount we need to know
         # which invoice is going to be paid, we only allow partial payment
-        # on last invoice
+        # on last invoice.
+        # If the payment is posted the withholdable_invoiced_amount is
+        # the matched amount
         if self.withholdable_advanced_amount < 0.0 and \
-                self.to_pay_move_line_ids:
+                self.to_pay_move_line_ids and self.state != 'posted':
             withholdable_advanced_amount = 0.0
 
             sign = self.partner_type == 'supplier' and -1.0 or 1.0
@@ -121,5 +121,21 @@ class AccountPaymentGroup(models.Model):
             withholdable_invoiced_amount -= (
                 sign * self.unreconciled_amount * invoice_factor)
         elif withholding_advances:
-            withholdable_advanced_amount = self.withholdable_advanced_amount
+            # si el pago esta publicado obtenemos los valores de los importes
+            # conciliados (porque el pago pudo prepararse como adelanto
+            # pero luego haberse conciliado y en ese caso lo estariamos sumando
+            # dos veces si lo usamos como base de otros pagos). Si estan los
+            # campos withholdable_advanced_amount y unreconciled_amount le
+            # sacamos el proporcional correspondiente
+            if self.state == 'posted':
+                if self.unreconciled_amount and \
+                   self.withholdable_advanced_amount:
+                    withholdable_advanced_amount = self.unmatched_amount * (
+                        self.withholdable_advanced_amount /
+                        self.unreconciled_amount)
+                else:
+                    withholdable_advanced_amount = self.unmatched_amount
+            else:
+                withholdable_advanced_amount = \
+                    self.withholdable_advanced_amount
         return (withholdable_advanced_amount, withholdable_invoiced_amount)

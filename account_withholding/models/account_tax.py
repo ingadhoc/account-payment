@@ -25,7 +25,7 @@ class AccountTax(models.Model):
         ],
     )
     amount = fields.Float(
-        required=False
+        default=0.0,
     )
     withholding_sequence_id = fields.Many2one(
         'ir.sequence',

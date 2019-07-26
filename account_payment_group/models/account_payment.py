@@ -66,7 +66,6 @@ class AccountPayment(models.Model):
         readonly=True,
     )
 
-    @api.multi
     @api.depends(
         'amount', 'payment_type', 'partner_type', 'amount_company_currency')
     def _compute_signed_amount(self):
@@ -95,10 +94,9 @@ class AccountPayment(models.Model):
         #_logger.info("_compute_other_currency")
         ocur = False
         for rec in self:
-            _logger.info(rec.other_currency)
             rec.other_currency = False
-            #ret["account.payment.other_currency"][rec.id] = rec.other_currency
-            if rec.company_currency_id and rec.currency_id and rec.company_currency_id != rec.currency_id:
+            if rec.company_currency_id and rec.currency_id and \
+               rec.company_currency_id != rec.currency_id:
                 rec.other_currency = True
                 ocur = rec.other_currency
                 #_logger.info("Is other currency:")
