@@ -4,8 +4,8 @@
         <field name="name">Print Checks</field>
         <field name="model_id" ref="account.model_account_payment"/>
         <field name="code">
-            if context.get('active_model') == 'account.payment' and context.get('active_ids'):
-                action = self.pool['account.payment'].print_checks(cr, uid, context['active_ids'], context=context)
+if records:
+    action = records.print_checks()
         </field>
         <field name="state">code</field>
         <field name="binding_type">report</field>
