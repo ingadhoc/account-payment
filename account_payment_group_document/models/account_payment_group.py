@@ -22,11 +22,9 @@ class AccountPaymentGroup(models.Model):
     )
     document_sequence_id = fields.Many2one(
         related='receiptbook_id.sequence_id',
-        readonly=True,
     )
     localization = fields.Selection(
         related='company_id.localization',
-        readonly=True,
     )
     # por ahora no agregamos esto, vamos a ver si alguien lo pide
     # manual_prefix = fields.Char(
@@ -60,7 +58,6 @@ class AccountPaymentGroup(models.Model):
     )
     document_type_id = fields.Many2one(
         related='receiptbook_id.document_type_id',
-        readonly=True,
     )
     next_number = fields.Integer(
         # related='receiptbook_id.sequence_id.number_next_actual',

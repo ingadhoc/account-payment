@@ -22,5 +22,6 @@ class ResConfigSettings(models.TransientModel):
         implied_group='account_payment_group.group_pay_now_vendor_invoices',
     )
     double_validation = fields.Boolean(
-        related='company_id.double_validation'
+        related='company_id.double_validation',
+        readonly=False,
     )

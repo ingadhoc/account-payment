@@ -53,7 +53,6 @@ class AccountPaymentGroup(models.Model):
     )
     commercial_partner_id = fields.Many2one(
         related='partner_id.commercial_partner_id',
-        readonly=True,
     )
     currency_id = fields.Many2one(
         'res.currency',
