@@ -25,15 +25,12 @@ class AccountPayment(models.Model):
     # or issued
     check_ids_copy = fields.Many2many(
         related='check_ids',
-        readonly=True,
     )
     readonly_currency_id = fields.Many2one(
         related='currency_id',
-        readonly=True,
     )
     readonly_amount = fields.Monetary(
         related='amount',
-        readonly=True,
     )
     # we add this field for better usability on issue checks and received
     # checks. We keep m2m field for backward compatibility where we allow to
@@ -99,7 +96,6 @@ class AccountPayment(models.Model):
     )
     check_subtype = fields.Selection(
         related='checkbook_id.issue_check_subtype',
-        readonly=True,
     )
     check_bank_id = fields.Many2one(
         'res.bank',
@@ -127,7 +123,6 @@ class AccountPayment(models.Model):
     )
     checkbook_numerate_on_printing = fields.Boolean(
         related='checkbook_id.numerate_on_printing',
-        readonly=True,
     )
     # TODO borrar, esto estaria depreciado
     # checkbook_block_manual_number = fields.Boolean(

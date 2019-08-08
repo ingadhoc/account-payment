@@ -158,7 +158,6 @@ class AccountCheck(models.Model):
     )
     issue_check_subtype = fields.Selection(
         related='checkbook_id.issue_check_subtype',
-        readonly=True,
     )
     type = fields.Selection(
         [('issue_check', 'Issue Check'), ('third_check', 'Third Check')],
@@ -167,7 +166,6 @@ class AccountCheck(models.Model):
     )
     partner_id = fields.Many2one(
         related='operation_ids.partner_id',
-        readonly=True,
         store=True,
         index=True,
         string='Last operation partner',
@@ -257,12 +255,10 @@ class AccountCheck(models.Model):
     )
     company_id = fields.Many2one(
         related='journal_id.company_id',
-        readonly=True,
         store=True,
     )
     company_currency_id = fields.Many2one(
         related='company_id.currency_id',
-        readonly=True,
     )
 
     @api.depends('operation_ids.partner_id')

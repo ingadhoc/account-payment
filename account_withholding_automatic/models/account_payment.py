@@ -16,7 +16,6 @@ class AccountPayment(models.Model):
     )
     withholding_accumulated_payments = fields.Selection(
         related='tax_withholding_id.withholding_accumulated_payments',
-        readonly=True,
     )
     withholdable_invoiced_amount = fields.Float(
         'Importe imputado sujeto a retencion',

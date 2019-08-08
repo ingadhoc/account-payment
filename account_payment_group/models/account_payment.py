@@ -20,7 +20,7 @@ class AccountPayment(models.Model):
     # we add this field so company can be send in context when adding payments
     # before payment group is saved
     payment_group_company_id = fields.Many2one(
-        related='payment_group_id.company_id', readonly=True,)
+        related='payment_group_id.company_id',)
     # we make a copy without transfer option, we try with related but it
     # does not works
     payment_type_copy = fields.Selection(
@@ -61,7 +61,6 @@ class AccountPayment(models.Model):
     )
     company_currency_id = fields.Many2one(
         related='company_id.currency_id',
-        readonly=True,
     )
 
     @api.depends(
