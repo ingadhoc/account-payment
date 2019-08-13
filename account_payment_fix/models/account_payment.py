@@ -4,15 +4,8 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
-class AccountPaymentMethod(models.Model):
-    _inherit = "account.payment.method"
-
-    name = fields.Char(translate=True)
-
-
 class AccountPayment(models.Model):
-    _name = "account.payment"
-    _inherit = ['mail.thread', 'account.payment']
+    _inherit = "account.payment"
 
     state = fields.Selection(track_visibility='always')
     amount = fields.Monetary(track_visibility='always')
@@ -117,6 +110,14 @@ class AccountPayment(models.Model):
             else:
                 methods = rec.journal_id.inbound_payment_method_ids
             rec.payment_method_ids = methods
+
+    @api.onchange('paymencurrency_idt_type')
+    def _onchange_currency(self):
+        """ Anulamos metodo nativo que pisa el monto remanente que pasamos
+        por contexto TODO ver si podemos re-incorporar esto y hasta extender
+        _compute_payment_amount para que el monto se calcule bien aun usando
+        el save and new"""
+        return True
 
     @api.onchange('payment_type')
     def _onchange_payment_type(self):
