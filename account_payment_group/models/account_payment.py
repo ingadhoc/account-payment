@@ -79,7 +79,10 @@ class AccountPayment(models.Model):
                 rec.amount_company_currency and
                 rec.amount_company_currency * sign)
 
-    @api.depends('currency_id', 'company_currency_id')
+    # TODO check why we get error with depend on company_id and fix it
+    # (recursive dependency?). The error is on paymentrs tree/form view
+    # @api.depends('currency_id', 'company_id')
+    @api.depends('currency_id')
     def _compute_other_currency(self):
         for rec in self:
             rec.other_currency = False
@@ -87,8 +90,7 @@ class AccountPayment(models.Model):
                rec.company_currency_id != rec.currency_id:
                 rec.other_currency = True
 
-    @api.depends(
-        'amount', 'other_currency', 'amount_company_currency')
+    @api.depends('amount', 'other_currency', 'amount_company_currency')
     def _compute_exchange_rate(self):
         for rec in self.filtered('other_currency'):
             rec.exchange_rate = rec.amount and (
@@ -102,9 +104,9 @@ class AccountPayment(models.Model):
     def _inverse_amount_company_currency(self):
         for rec in self:
             if rec.other_currency and rec.amount_company_currency != \
-                    rec.currency_id.with_context(
-                        date=rec.payment_date).compute(
-                        rec.amount, rec.company_id.currency_id):
+                    rec.currency_id._convert(
+                        rec.amount, rec.company_id.currency_id,
+                        rec.company_id, rec.payment_date):
                 force_amount_company_currency = rec.amount_company_currency
             else:
                 force_amount_company_currency = False
@@ -123,9 +125,9 @@ class AccountPayment(models.Model):
             elif rec.force_amount_company_currency:
                 amount_company_currency = rec.force_amount_company_currency
             else:
-                amount_company_currency = rec.currency_id.with_context(
-                    date=rec.payment_date).compute(
-                        rec.amount, rec.company_id.currency_id)
+                amount_company_currency = rec.currency_id._convert(
+                    rec.amount, rec.company_id.currency_id,
+                    rec.company_id, rec.payment_date)
             rec.amount_company_currency = amount_company_currency
 
     @api.onchange('payment_type_copy')
