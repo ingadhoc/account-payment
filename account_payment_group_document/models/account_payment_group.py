@@ -91,9 +91,7 @@ class AccountPaymentGroup(models.Model):
             if not sequence.use_date_range:
                 payment.next_number = sequence.number_next_actual
             else:
-                dt = fields.Date.today()
-                if self.env.context.get('ir_sequence_date'):
-                    dt = self.env.context.get('ir_sequence_date')
+                dt = self.payment_date or fields.Date.today()
                 seq_date = self.env['ir.sequence.date_range'].search([
                     ('sequence_id', '=', sequence.id),
                     ('date_from', '<=', dt),
@@ -175,7 +173,9 @@ class AccountPaymentGroup(models.Model):
                         ' related documents to this payment or set the '
                         'document number.'))
                 rec.document_number = (
-                    rec.receiptbook_id.sequence_id.next_by_id())
+                    rec.receiptbook_id.with_context(
+                        ir_sequence_date=rec.payment_date
+                        ).sequence_id.next_by_id())
             rec.payment_ids.write({
                 'document_number': rec.document_number,
                 'receiptbook_id': rec.receiptbook_id.id,
