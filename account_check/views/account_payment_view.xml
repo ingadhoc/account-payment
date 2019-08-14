@@ -33,7 +33,7 @@
                         <field name="check_id" attrs="{'invisible': [('check_id', '=', False)]}"/>
                         <!-- no usamos el widget many2many_tags porque les interesa filtrar y buscar por montos y demas -->
                         <!-- creamos un campo copy por compatibilidad con mig de v8 donde se podia mas de un cheque por payment, igualmente se podria unir todo en chekc_ids pero era medio complicada la consulta -->
-                        <field name="check_ids_copy" attrs="{'invisible': ['|',  '|', ('check_ids_copy', '=', []), ('check_id', '!=', False), ('payment_method_code', 'not in', ['received_third_check', 'issue_check'])]}">
+                        <field name="check_ids" attrs="{'invisible': ['|',  '|', ('check_ids', '=', []), ('check_id', '!=', False), ('payment_method_code', 'not in', ['received_third_check', 'issue_check'])]}">
                             <tree edit="false" create="false">
                                 <field name="name"/>
                                 <field name="payment_date"/>
@@ -71,10 +71,10 @@
                 </div>
             </field>
             <label for="amount" position="before">
-                <label for="readonly_amount" attrs="{'invisible': [('payment_method_code', '!=', 'delivered_third_check')]}"/>
+                <label for="amount" attrs="{'invisible': [('payment_method_code', '!=', 'delivered_third_check')]}"/>
                 <div name="readonly_amount_div" class="o_row" attrs="{'invisible': [('payment_method_code', '!=', 'delivered_third_check')]}">
-                    <field name="readonly_amount"/>
-                    <field name="readonly_currency_id" groups="base.group_multi_currency" attrs="{'invisible': [('other_currency', '=', False)]}"/>
+                    <field name="amount" readonly="True"/>
+                    <field name="currency_id" readonly="True" groups="base.group_multi_currency" attrs="{'invisible': [('other_currency', '=', False)]}"/>
                 </div>
             </label>
             <label for="amount" position="attributes">

@@ -7,6 +7,7 @@ from openerp.exceptions import ValidationError
 
 class AccountPaymentGroupInvoiceWizard(models.TransientModel):
     _name = "account.payment.group.invoice.wizard"
+    _description = "account.payment.group.invoice.wizard"
 
     @api.model
     def default_payment_group(self):

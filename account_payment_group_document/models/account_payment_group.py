@@ -134,7 +134,7 @@ class AccountPaymentGroup(models.Model):
             'Document number must be unique per receiptbook!')]
 
     @api.multi
-    @api.constrains('company_id', 'partner_type')
+    @api.constrains('journal_id', 'partner_type')
     def _force_receiptbook(self):
         # we add cosntrins to fix odoo tests and also help in inmpo of data
         for rec in self:

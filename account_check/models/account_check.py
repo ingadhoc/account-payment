@@ -11,6 +11,7 @@ _logger = logging.getLogger(__name__)
 class AccountCheckOperation(models.Model):
 
     _name = 'account.check.operation'
+    _description = 'account.check.operation'
     _rec_name = 'operation'
     _order = 'date desc, id desc'
     # _order = 'create_date desc'
@@ -259,6 +260,7 @@ class AccountCheck(models.Model):
     )
     company_currency_id = fields.Many2one(
         related='company_id.currency_id',
+        string='Company currency',
     )
 
     @api.depends('operation_ids.partner_id')

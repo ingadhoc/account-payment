@@ -4,6 +4,7 @@ import odoo.addons.decimal_precision as dp
 
 class AccountTaxWithholdingRule(models.Model):
     _name = "account.tax.withholding.rule"
+    _description = "account.tax.withholding.rule"
     _order = "sequence"
 
     sequence = fields.Integer(

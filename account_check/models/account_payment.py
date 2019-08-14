@@ -21,17 +21,6 @@ class AccountPayment(models.Model):
         states={'draft': [('readonly', False)]},
         auto_join=True,
     )
-    # only for v8 comatibility where more than one check could be received
-    # or issued
-    check_ids_copy = fields.Many2many(
-        related='check_ids',
-    )
-    readonly_currency_id = fields.Many2one(
-        related='currency_id',
-    )
-    readonly_amount = fields.Monetary(
-        related='amount',
-    )
     # we add this field for better usability on issue checks and received
     # checks. We keep m2m field for backward compatibility where we allow to
     # use more than one check per payment

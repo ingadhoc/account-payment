@@ -29,7 +29,8 @@ class AccountPayment(models.Model):
     # nuevo campo funcion para definir dominio de los metodos
     payment_method_ids = fields.Many2many(
         'account.payment.method',
-        compute='_compute_payment_methods'
+        compute='_compute_payment_methods',
+        string='Available payment methods',
     )
     journal_ids = fields.Many2many(
         'account.journal',
@@ -111,7 +112,7 @@ class AccountPayment(models.Model):
                 methods = rec.journal_id.inbound_payment_method_ids
             rec.payment_method_ids = methods
 
-    @api.onchange('paymencurrency_idt_type')
+    @api.onchange('currency_id')
     def _onchange_currency(self):
         """ Anulamos metodo nativo que pisa el monto remanente que pasamos
         por contexto TODO ver si podemos re-incorporar esto y hasta extender

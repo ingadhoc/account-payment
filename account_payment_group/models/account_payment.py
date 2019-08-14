@@ -20,17 +20,19 @@ class AccountPayment(models.Model):
     # we add this field so company can be send in context when adding payments
     # before payment group is saved
     payment_group_company_id = fields.Many2one(
-        related='payment_group_id.company_id',)
+        related='payment_group_id.company_id',
+        string='Payment Group Company',
+    )
     # we make a copy without transfer option, we try with related but it
     # does not works
     payment_type_copy = fields.Selection(
         selection=[('outbound', 'Send Money'), ('inbound', 'Receive Money')],
         compute='_compute_payment_type_copy',
         inverse='_inverse_payment_type_copy',
-        string='Payment Type'
+        string='Payment Type (without transfer)'
     )
     signed_amount = fields.Monetary(
-        string='Payment Amount',
+        string='Amount',
         compute='_compute_signed_amount',
     )
     signed_amount_company_currency = fields.Monetary(
@@ -39,7 +41,7 @@ class AccountPayment(models.Model):
         currency_field='company_currency_id',
     )
     amount_company_currency = fields.Monetary(
-        string='Payment Amount on Company Currency',
+        string='Amount on Company Currency',
         compute='_compute_amount_company_currency',
         inverse='_inverse_amount_company_currency',
         currency_field='company_currency_id',
@@ -48,7 +50,7 @@ class AccountPayment(models.Model):
         compute='_compute_other_currency',
     )
     force_amount_company_currency = fields.Monetary(
-        string='Payment Amount on Company Currency',
+        string='Forced Amount on Company Currency',
         currency_field='company_currency_id',
         copy=False,
     )
@@ -61,6 +63,7 @@ class AccountPayment(models.Model):
     )
     company_currency_id = fields.Many2one(
         related='company_id.currency_id',
+        string='Company currency',
     )
 
     @api.depends(

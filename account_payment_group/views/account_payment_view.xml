@@ -116,7 +116,7 @@
             </button>
 
             <field name="payment_type" position="after">
-                <field name="payment_type_copy" widget="radio" attrs="{'readonly': [('state', '!=', 'draft')]}" groups="account_payment_group.group_choose_payment_type"/>
+                <field name="payment_type_copy" string="Payment Type" widget="radio" attrs="{'readonly': [('state', '!=', 'draft')]}" groups="account_payment_group.group_choose_payment_type"/>
             </field>
 
             <field name="payment_type" position="attributes">
