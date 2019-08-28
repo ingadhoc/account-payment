@@ -642,6 +642,9 @@ class AccountCheck(models.Model):
                     'company currency, you must provide "Amount" and "Amount '
                     'Company Currency"'))
             elif not rec.amount:
+                if not rec.amount_company_currency:
+                    raise ValidationError(_(
+                        'No puede crear un cheque sin importe'))
                 rec.amount = rec.amount_company_currency
             elif not rec.amount_company_currency:
                 rec.amount_company_currency = rec.amount
