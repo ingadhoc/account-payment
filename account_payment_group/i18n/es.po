@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 11.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-04 14:38+0000\n"
+"POT-Creation-Date: 2019-08-28 19:43+0000\n"
 "PO-Revision-Date: 2018-05-17 22:03+0000\n"
 "Last-Translator: Mariana Luz Torres <mt@adhoc.com.ar>, 2019\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
@@ -371,7 +371,7 @@ msgid "Journal Item"
 msgstr "Apunte Contable"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:544
+#: code:addons/account_payment_group/models/account_payment_group.py:547
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
 #, python-format
@@ -436,8 +436,8 @@ msgid "Not Cancelled"
 msgstr "No cancelado"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:320
-#: code:addons/account_payment_group/models/account_payment_group.py:325
+#: code:addons/account_payment_group/models/account_payment_group.py:322
+#: code:addons/account_payment_group/models/account_payment_group.py:327
 #, python-format
 msgid "Not implemented yet"
 msgstr "No implementado todavía"
@@ -464,7 +464,7 @@ msgid "Paid"
 msgstr "Comp. Imputados"
 
 #. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
+#: model:ir.ui.view,arch_db:account_payment_group.view_move_line_with_matched_tree
 msgid "Paid Amount"
 msgstr "Importe imputado"
 
@@ -485,7 +485,7 @@ msgid "Pay now Journal"
 msgstr "Diario de Pago Directo"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_invoice.py:133
+#: code:addons/account_payment_group/models/account_invoice.py:137
 #, python-format
 msgid "Pay now journal must have manual method!"
 msgstr "El diario de pago directo debe tener método manual!"
@@ -554,7 +554,7 @@ msgid "Payment Type"
 msgstr "Tipo de Pago"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/wizards/account_payment_group_invoice_wizard.py:157
+#: code:addons/account_payment_group/wizards/account_payment_group_invoice_wizard.py:165
 #, python-format
 msgid "Payment id %s"
 msgstr "Id del Pago %s"
@@ -752,7 +752,7 @@ msgid "To Pay Amount"
 msgstr "Importe a pagar"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:619
+#: code:addons/account_payment_group/models/account_payment_group.py:622
 #, python-format
 msgid "To Pay Amount and Payment Amount must be equal!"
 msgstr "¡El Importe a pagar y el Importe de Pago deben ser iguales!"
@@ -765,7 +765,7 @@ msgstr "Líneas a Pagar"
 
 #. module: account_payment_group
 #: code:addons/account_payment_group/models/account_payment.py:301
-#: code:addons/account_payment_group/models/account_payment_group.py:590
+#: code:addons/account_payment_group/models/account_payment_group.py:593
 #, python-format
 msgid "To Pay Lines must be of the same account!"
 msgstr "Las líneas a pagar deben ser de la misma cuenta!"
@@ -774,6 +774,7 @@ msgstr "Las líneas a pagar deben ser de la misma cuenta!"
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_from_group_tree
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_tree
 #: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
+#: model:ir.ui.view,arch_db:account_payment_group.view_move_line_with_matched_tree
 msgid "Total"
 msgstr "Total"
 
@@ -841,20 +842,20 @@ msgid "View Payments"
 msgstr "Ver pagos"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:611
+#: code:addons/account_payment_group/models/account_payment_group.py:614
 #, python-format
 msgid "You can not confirm a payment group without payment lines!"
 msgstr "¡No puede confirmar un grupo de pagos sin líneas de pago!"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:581
+#: code:addons/account_payment_group/models/account_payment_group.py:584
 #, python-format
 msgid "You can not delete a payment that is already posted"
 msgstr "No puede eliminar un pago que ya ha sido publicado"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:522
-#: code:addons/account_payment_group/models/account_payment_group.py:528
+#: code:addons/account_payment_group/models/account_payment_group.py:525
+#: code:addons/account_payment_group/models/account_payment_group.py:531
 #, python-format
 msgid "You can not send to pay lines from different partners"
 msgstr "No puede enviar a pagar líneas de diferentes partners"
@@ -866,7 +867,7 @@ msgid "You can only register payment if invoice is open"
 msgstr "Solamente puede registrar un pago si la factura está abierta"
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/wizards/account_payment_group_invoice_wizard.py:108
+#: code:addons/account_payment_group/wizards/account_payment_group_invoice_wizard.py:118
 #, python-format
 msgid "You can only set amount total if taxes are of type percentage"
 msgstr ""
