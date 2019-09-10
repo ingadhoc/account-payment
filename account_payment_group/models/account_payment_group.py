@@ -160,7 +160,7 @@ class AccountPaymentGroup(models.Model):
         # no podemos ordenar por due date porque esta hardecodeado en
         # funcion _get_pair_to_reconcile
         help="Payment will be automatically matched with the oldest lines of "
-        "this list (by date, no by maturity date). You can remove any line you"
+        "this list (by maturity date). You can remove any line you"
         " dont want to be matched.",
         domain=move_lines_domain,
         readonly=True,

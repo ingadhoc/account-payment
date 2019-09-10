@@ -171,7 +171,7 @@
                     </page>
                     <page string="Debts" attrs="{'invisible': ['|', '|', ('pop_up', '=', True), ('payment_subtype', '!=', 'simple'), ('state', '!=', 'draft')]}">
                         <p>
-                            Payment will be automatically matched with the oldest lines of this list (by date, no by maturity date). You can remove any line you dont want to be matched.
+                            Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched.
                         </p>
                         <button name="add_all" string="Add All / Refresh" states="draft" type="object"/>
                         <button name="remove_all" string="Remove All" states="draft" type="object"/>
