@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 11.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-28 19:43+0000\n"
+"POT-Creation-Date: 2019-09-10 17:32+0000\n"
 "PO-Revision-Date: 2018-05-17 22:03+0000\n"
 "Last-Translator: Mariana Luz Torres <mt@adhoc.com.ar>, 2019\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
@@ -564,12 +564,8 @@ msgstr "Id del Pago %s"
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid ""
 "Payment will be automatically matched with the oldest lines of this list (by"
-" date, no by maturity date). You can remove any line you dont want to be "
-"matched."
+" maturity date). You can remove any line you dont want to be matched."
 msgstr ""
-"El pago será automáticamente imputado con la línea más antigua de la lista "
-"(por fecha, no por fecha de vencimiento). Puede eliminar cualquier línea que"
-" no quiera que sea imputado."
 
 #. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_account_payment
