@@ -118,7 +118,7 @@ class AccountPayment(models.Model):
         por contexto TODO ver si podemos re-incorporar esto y hasta extender
         _compute_payment_amount para que el monto se calcule bien aun usando
         el save and new"""
-        return True
+        return False
 
     @api.onchange('payment_type')
     def _onchange_payment_type(self):
@@ -153,7 +153,7 @@ class AccountPayment(models.Model):
         Agregasmos dominio en vista ya que se pierde si se vuelve a entrar
         Anulamos funcion original porque no haria falta
         """
-        return True
+        return False
 
     def _onchange_amount(self):
         """
