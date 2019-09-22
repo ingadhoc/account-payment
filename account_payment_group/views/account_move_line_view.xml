@@ -20,12 +20,10 @@
             <!-- <field name="analytic_account_id" groups="analytic.group_analytic_accounting"/> -->
             <!-- <field name="reconciled"/> -->
             <field name="balance" string="Amount"/>
-            <field name="amount_residual" sum="Total" invisible="context.get('matched_lines')"/>
-            <field name="payment_group_matched_amount" string="Paid Amount" sum="Total" invisible="not context.get('matched_lines')"/>
+            <field name="amount_residual" sum="Total"/>
             <!-- TODO si activamos este monto ver si queremos poner la currency, probamos el widget pero no anduvo -->
             <field name="amount_currency" groups="base.group_multi_currency"/>
-            <field name="amount_residual_currency" groups="base.group_multi_currency" invisible="context.get('matched_lines')"/>
-            <field name="financial_amount_residual" sum="Total" groups="account_financial_amount.account_use_financial_amounts" invisible="context.get('matched_lines')"/>
+            <field name="amount_residual_currency" groups="base.group_multi_currency"/>
             <!-- <field name="debit" sum="Total Debit"/> -->
             <!-- <field name="credit" sum="Total Credit"/> -->
             <!-- <field name="amount_currency" readonly="True" groups="base.group_multi_currency"/> -->
@@ -34,6 +32,23 @@
             <field name="company_id" invisible="1"/>
             <field name="invoice_id" invisible="1"/>
         </tree>
+    </field>
+</record>
+
+<!-- Journal Items -->
+<record id="view_move_line_with_matched_tree" model="ir.ui.view">
+    <field name="name">account.move.line.tree</field>
+    <field name="model">account.move.line</field>
+    <field eval="99" name="priority"/>
+    <field name="mode">primary</field>
+    <field name="inherit_id" ref="account_payment_group.view_move_line_tree"/>
+    <field name="arch" type="xml">
+        <field name="amount_residual" position="replace">
+            <field name="payment_group_matched_amount" string="Paid Amount" sum="Total"/>
+        </field>
+        <field name="amount_residual_currency" position="replace">
+            <field name="financial_amount_residual" sum="Total" groups="account_financial_amount.account_use_financial_amounts"/>
+        </field>
     </field>
 </record>
 
