@@ -176,7 +176,11 @@ class AccountPayment(models.Model):
         if self.env.registry.in_test_mode():
             return True
         for rec in self:
-            if rec.partner_type and rec.partner_id and \
+            receivable_payable = all([
+                x['move_line'].account_id.internal_type in [
+                    'receivable', 'payable']
+                for x in self._context.get('counterpart_aml_dicts', [])])
+            if rec.partner_type and rec.partner_id and receivable_payable and \
                not rec.payment_group_id:
                 raise ValidationError(_(
                     'Payments with partners must be created from '
@@ -250,27 +254,28 @@ class AccountPayment(models.Model):
 
     @api.model
     def create(self, vals):
-        """
-        When payments are created from bank reconciliation create the
-        Payment group before creating payment to avoid raising error
-        """
+        """ When payments are created from bank reconciliation create the
+        Payment group before creating payment to avoid raising error, only
+        apply when the all the counterpart account are receivable/payable """
         # Si viene counterpart_aml entonces estamos viniendo de una
         # conciliacion desde el wizard
-        create_from_statement = self._context.get(
-            'create_from_statement', False)
-        create_from_expense = self._context.get('create_from_expense', False)
         new_aml_dicts = self._context.get('new_aml_dicts', [])
         counterpart_aml_data = self._context.get('counterpart_aml_dicts', [])
         if counterpart_aml_data or new_aml_dicts:
             vals.update(self.infer_partner_info(vals))
 
+        create_from_statement = self._context.get(
+            'create_from_statement', False) and vals.get('partner_type') \
+            and vals.get('partner_id') and all([
+                x['move_line'].account_id.internal_type in [
+                    'receivable', 'payable']
+                for x in counterpart_aml_data])
+        create_from_expense = self._context.get('create_from_expense', False)
         create_from_website = self._context.get('create_from_website', False)
         # NOTE: This is required at least from POS when we do not have
         # partner_id and we do not want a payment group in tha case.
-        create_payment_group = (
-            create_from_statement and vals.get('partner_type')
-            and vals.get('partner_id')) or create_from_website or \
-            create_from_expense
+        create_payment_group = \
+            create_from_statement or create_from_website or create_from_expense
         if create_payment_group:
             company_id = self.env['account.journal'].browse(
                 vals.get('journal_id')).company_id.id
