@@ -4,7 +4,9 @@
 ##############################################################################
 from odoo import api, models
 
+
 class PaymentTransaction(models.Model):
+
     _inherit = 'payment.transaction'
 
     @api.multi

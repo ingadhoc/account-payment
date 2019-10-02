@@ -29,18 +29,18 @@ class ResCompany(models.Model):
     )
 
     @api.multi
-    def _get_check_account(self, type):
+    def _get_check_account(self, check_type):
         self.ensure_one()
-        if type == 'holding':
+        if check_type == 'holding':
             account = self.holding_check_account_id
-        elif type == 'rejected':
+        elif check_type == 'rejected':
             account = self.rejected_check_account_id
-        elif type == 'deferred':
+        elif check_type == 'deferred':
             account = self.deferred_check_account_id
         else:
-            raise UserError(_("Type %s not implemented!"))
+            raise UserError(_("Check type %s not implemented!") % check_type)
         if not account:
             raise UserError(_(
                 'No checks %s account defined for company %s'
-            ) % (type, self.name))
+            ) % (check_type, self.name))
         return account
