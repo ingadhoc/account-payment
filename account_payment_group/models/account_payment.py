@@ -177,7 +177,8 @@ class AccountPayment(models.Model):
             return True
         for rec in self:
             receivable_payable = all([
-                x['move_line'].account_id.internal_type in ['receivable', 'payable']
+                x['move_line'].account_id.internal_type in [
+                    'receivable', 'payable']
                 for x in self._context.get('counterpart_aml_dicts', [])])
             if rec.partner_type and rec.partner_id and receivable_payable and \
                not rec.payment_group_id:
