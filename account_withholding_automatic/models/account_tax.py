@@ -2,7 +2,7 @@ from odoo import models, fields, api, _
 import odoo.addons.decimal_precision as dp
 from odoo.exceptions import UserError, ValidationError
 from ast import literal_eval
-from odoo.tools.safe_eval import safe_eval as eval
+from odoo.tools.safe_eval import safe_eval
 from dateutil.relativedelta import relativedelta
 import datetime
 
@@ -322,7 +322,7 @@ result = withholdable_base_amount * 0.10
                 'partner': payment_group.commercial_partner_id,
                 'withholding_tax': self,
             }
-            eval(
+            safe_eval(
                 self.withholding_python_compute, localdict,
                 mode="exec", nocopy=True)
             period_withholding_amount = localdict['result']
