@@ -4,13 +4,15 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2018
+# Ediz Duman <neps1192@gmail.com>, 2019
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 11.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-25 00:09+0000\n"
-"PO-Revision-Date: 2018-09-25 00:09+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2018\n"
+"POT-Creation-Date: 2019-10-03 09:10+0000\n"
+"PO-Revision-Date: 2018-05-17 22:03+0000\n"
+"Last-Translator: Ediz Duman <neps1192@gmail.com>, 2019\n"
 "Language-Team: Turkish (https://www.transifex.com/adhoc/teams/46451/tr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -31,6 +33,13 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid "+ Debit Note"
+msgstr ""
+
+#. module: account_payment_group
+#: model:ir.ui.view,arch_db:account_payment_group.res_config_settings_view_form
+msgid ""
+"<span class=\"fa fa-lg fa-building-o\" title=\"Values set here are company-"
+"specific.\" groups=\"base.group_multi_company\"/>"
 msgstr ""
 
 #. module: account_payment_group
@@ -111,7 +120,7 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_account_bank_statement_line
 msgid "Bank Statement Line"
-msgstr ""
+msgstr "Banka Ekstre Satırı"
 
 #. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
@@ -149,7 +158,7 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_res_company
 msgid "Companies"
-msgstr ""
+msgstr "Firmalar"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_company_id
@@ -164,7 +173,7 @@ msgstr "Firma"
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_invoice_wizard
 msgid "Confirm"
-msgstr ""
+msgstr "Onaylama"
 
 #. module: account_payment_group
 #: model:res.groups,name:account_payment_group.account_confirm_payment
@@ -205,7 +214,7 @@ msgstr ""
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
 msgid "Currency"
-msgstr ""
+msgstr "Para Birimi"
 
 #. module: account_payment_group
 #: selection:account.payment.group,partner_type:0
@@ -244,7 +253,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_display_name
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_display_name
 msgid "Display Name"
-msgstr ""
+msgstr "Ad Görünümü"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_res_company_double_validation
@@ -258,6 +267,11 @@ msgstr ""
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
 msgid "Draft"
 msgstr "Taslak"
+
+#. module: account_payment_group
+#: model:ir.model,name:account_payment_group.model_mail_compose_message
+msgid "Email composition wizard"
+msgstr ""
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_exchange_rate
@@ -312,6 +326,11 @@ msgstr ""
 #: model:ir.model,name:account_payment_group.model_account_invoice
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_invoice_tree
 msgid "Invoice"
+msgstr "Fatura"
+
+#. module: account_payment_group
+#: model:ir.model.fields,help:account_payment_group.field_account_payment_group_sent
+msgid "It indicates that the receipt has been sent."
 msgstr ""
 
 #. module: account_payment_group
@@ -327,7 +346,7 @@ msgid "Journal Item"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:514
+#: code:addons/account_payment_group/models/account_payment_group.py:547
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
 #, python-format
@@ -365,6 +384,11 @@ msgid "Matched Amount"
 msgstr ""
 
 #. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_matched_amount_untaxed
+msgid "Matched Amount Untaxed"
+msgstr ""
+
+#. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_matched_move_line_ids
 msgid "Matched Move Line"
 msgstr ""
@@ -385,8 +409,8 @@ msgid "Not Cancelled"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:289
-#: code:addons/account_payment_group/models/account_payment_group.py:293
+#: code:addons/account_payment_group/models/account_payment_group.py:322
+#: code:addons/account_payment_group/models/account_payment_group.py:327
 #, python-format
 msgid "Not implemented yet"
 msgstr ""
@@ -413,7 +437,7 @@ msgid "Paid"
 msgstr ""
 
 #. module: account_payment_group
-#: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
+#: model:ir.ui.view,arch_db:account_payment_group.view_move_line_with_matched_tree
 msgid "Paid Amount"
 msgstr ""
 
@@ -421,7 +445,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_partner_id
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 msgid "Partner"
-msgstr ""
+msgstr "İş Ortağı"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_partner_type
@@ -434,7 +458,7 @@ msgid "Pay now Journal"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_invoice.py:133
+#: code:addons/account_payment_group/models/account_invoice.py:137
 #, python-format
 msgid "Pay now journal must have manual method!"
 msgstr ""
@@ -442,7 +466,7 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_signed_amount
 msgid "Payment Amount"
-msgstr ""
+msgstr "Ödeme Tutarı"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_amount_company_currency
@@ -454,7 +478,7 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_payment_date
 msgid "Payment Date"
-msgstr ""
+msgstr "Ödeme Tarihi"
 
 #. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_account_payment_group
@@ -475,7 +499,7 @@ msgid "Payment Groups"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment.py:311
+#: code:addons/account_payment_group/models/account_payment.py:321
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_payment_ids
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #, python-format
@@ -503,7 +527,7 @@ msgid "Payment Type"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/wizards/account_payment_group_invoice_wizard.py:157
+#: code:addons/account_payment_group/wizards/account_payment_group_invoice_wizard.py:165
 #, python-format
 msgid "Payment id %s"
 msgstr ""
@@ -513,8 +537,7 @@ msgstr ""
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid ""
 "Payment will be automatically matched with the oldest lines of this list (by"
-" date, no by maturity date). You can remove any line you dont want to be "
-"matched."
+" maturity date). You can remove any line you dont want to be matched."
 msgstr ""
 
 #. module: account_payment_group
@@ -522,7 +545,7 @@ msgstr ""
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_graph
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 msgid "Payments"
-msgstr ""
+msgstr "Ödemeler"
 
 #. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
@@ -543,13 +566,13 @@ msgid ""
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment.py:180
+#: code:addons/account_payment_group/models/account_payment.py:185
 #, python-format
 msgid "Payments with partners must be created from payments groups"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment.py:185
+#: code:addons/account_payment_group/models/account_payment.py:190
 #, python-format
 msgid ""
 "Payments without partners (usually transfers) cant't have a related payment "
@@ -571,7 +594,7 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid "Print"
-msgstr ""
+msgstr "Basma"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_product_id
@@ -651,6 +674,7 @@ msgid "Sended Money"
 msgstr ""
 
 #. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_sent
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
 msgid "Sent"
 msgstr ""
@@ -693,7 +717,7 @@ msgid "To Pay Amount"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:586
+#: code:addons/account_payment_group/models/account_payment_group.py:622
 #, python-format
 msgid "To Pay Amount and Payment Amount must be equal!"
 msgstr ""
@@ -705,8 +729,8 @@ msgid "To Pay Lines"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment.py:296
-#: code:addons/account_payment_group/models/account_payment_group.py:559
+#: code:addons/account_payment_group/models/account_payment.py:306
+#: code:addons/account_payment_group/models/account_payment_group.py:593
 #, python-format
 msgid "To Pay Lines must be of the same account!"
 msgstr ""
@@ -715,8 +739,9 @@ msgstr ""
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_from_group_tree
 #: model:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_tree
 #: model:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
+#: model:ir.ui.view,arch_db:account_payment_group.view_move_line_with_matched_tree
 msgid "Total"
-msgstr ""
+msgstr "Toplam"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard_amount_total
@@ -780,20 +805,20 @@ msgid "View Payments"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:579
+#: code:addons/account_payment_group/models/account_payment_group.py:614
 #, python-format
 msgid "You can not confirm a payment group without payment lines!"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:550
+#: code:addons/account_payment_group/models/account_payment_group.py:584
 #, python-format
 msgid "You can not delete a payment that is already posted"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:492
-#: code:addons/account_payment_group/models/account_payment_group.py:498
+#: code:addons/account_payment_group/models/account_payment_group.py:525
+#: code:addons/account_payment_group/models/account_payment_group.py:531
 #, python-format
 msgid "You can not send to pay lines from different partners"
 msgstr ""
@@ -805,7 +830,7 @@ msgid "You can only register payment if invoice is open"
 msgstr ""
 
 #. module: account_payment_group
-#: code:addons/account_payment_group/wizards/account_payment_group_invoice_wizard.py:108
+#: code:addons/account_payment_group/wizards/account_payment_group_invoice_wizard.py:118
 #, python-format
 msgid "You can only set amount total if taxes are of type percentage"
 msgstr ""

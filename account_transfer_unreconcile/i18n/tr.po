@@ -1,0 +1,25 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * account_transfer_unreconcile
+# 
+# Translators:
+# Ediz Duman <neps1192@gmail.com>, 2019
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 11.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-10-03 09:10+0000\n"
+"PO-Revision-Date: 2018-05-18 21:13+0000\n"
+"Last-Translator: Ediz Duman <neps1192@gmail.com>, 2019\n"
+"Language-Team: Turkish (https://www.transifex.com/adhoc/teams/46451/tr/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Language: tr\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#. module: account_transfer_unreconcile
+#: model:ir.model,name:account_transfer_unreconcile.model_account_payment
+msgid "Payments"
+msgstr "Ödemeler"
