@@ -200,7 +200,7 @@ class AccountPayment(models.Model):
             'counterpart_aml_dicts', 'new_aml_dicts', 'payment_aml_rec')
          :return: account move line recorset
         """
-        counterpart_aml_data = self._context.get('counterpart_aml_dicts', [])
+        counterpart_aml_data = self._context.get('counterpart_aml_dicts', [{}])
         new_aml_data = self._context.get('new_aml_dicts', [])
         amls = self.env['account.move.line']
         if counterpart_aml_data:
@@ -260,7 +260,7 @@ class AccountPayment(models.Model):
         # Si viene counterpart_aml entonces estamos viniendo de una
         # conciliacion desde el wizard
         new_aml_dicts = self._context.get('new_aml_dicts', [])
-        counterpart_aml_data = self._context.get('counterpart_aml_dicts', [])
+        counterpart_aml_data = self._context.get('counterpart_aml_dicts', [{}])
         if counterpart_aml_data or new_aml_dicts:
             vals.update(self.infer_partner_info(vals))
 
