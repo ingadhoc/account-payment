@@ -171,11 +171,12 @@ class AccountPayment(models.Model):
         # odoo tests don't create payments with payment gorups
         if self.env.registry.in_test_mode():
             return True
+        counterpart_aml_dicts = self._context.get('counterpart_aml_dicts')
+        counterpart_aml_dicts = counterpart_aml_dicts or [{}]
         for rec in self:
             receivable_payable = all([
-                x['move_line'].account_id.internal_type in [
-                    'receivable', 'payable']
-                for x in self._context.get('counterpart_aml_dicts', [])])
+                x.get('move_line') and x.get('move_line').account_id.internal_type in [
+                    'receivable', 'payable'] for x in counterpart_aml_dicts])
             if rec.partner_type and rec.partner_id and receivable_payable and \
                not rec.payment_group_id:
                 raise ValidationError(_(
@@ -196,7 +197,8 @@ class AccountPayment(models.Model):
             'counterpart_aml_dicts', 'new_aml_dicts', 'payment_aml_rec')
          :return: account move line recorset
         """
-        counterpart_aml_data = self._context.get('counterpart_aml_dicts', [{}])
+        counterpart_aml_dicts = self._context.get('counterpart_aml_dicts')
+        counterpart_aml_data = counterpart_aml_dicts or [{}]
         new_aml_data = self._context.get('new_aml_dicts', [])
         amls = self.env['account.move.line']
         if counterpart_aml_data:
@@ -256,14 +258,15 @@ class AccountPayment(models.Model):
         # Si viene counterpart_aml entonces estamos viniendo de una
         # conciliacion desde el wizard
         new_aml_dicts = self._context.get('new_aml_dicts', [])
-        counterpart_aml_data = self._context.get('counterpart_aml_dicts', [{}])
+        counterpart_aml_dicts = self._context.get('counterpart_aml_dicts')
+        counterpart_aml_data = counterpart_aml_dicts or [{}]
         if counterpart_aml_data or new_aml_dicts:
             vals.update(self.infer_partner_info(vals))
 
         create_from_statement = self._context.get(
             'create_from_statement', False) and vals.get('partner_type') \
             and vals.get('partner_id') and all([
-                x['move_line'].account_id.internal_type in [
+                x.get('move_line') and x.get('move_line').account_id.internal_type in [
                     'receivable', 'payable']
                 for x in counterpart_aml_data])
         create_from_expense = self._context.get('create_from_expense', False)
