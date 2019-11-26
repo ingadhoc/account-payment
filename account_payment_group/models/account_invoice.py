@@ -186,7 +186,5 @@ class AccountInvoice(models.Model):
 
     @api.multi
     def action_cancel(self):
-        self.filtered(
-            lambda x: x.state == 'open' and x.pay_now_journal_id).write(
-                {'pay_now_journal_id': False})
+        self.filtered(lambda x: x.state != 'draft' and x.pay_now_journal_id).write({'pay_now_journal_id': False})
         return super(AccountInvoice, self).action_cancel()
