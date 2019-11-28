@@ -407,7 +407,7 @@ class AccountPaymentGroup(models.Model):
     @api.depends('payment_ids.signed_amount_company_currency')
     def _compute_payments_amount(self):
         for rec in self:
-            rec.payments_amount = sum(rec.sudo().payment_ids.mapped(
+            rec.payments_amount = sum(rec.payment_ids.mapped(
                 'signed_amount_company_currency'))
             # payments_amount = sum([
             #     x.payment_type == 'inbound' and
