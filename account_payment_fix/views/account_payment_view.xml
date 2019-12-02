@@ -7,12 +7,6 @@
         <field name="inherit_id" ref="account.view_account_payment_form"/>
         <field name="arch" type="xml">
             <form>
-                <!-- hide save and new button because it breaks onchange (for eg. on checks) and also do not update the amount -->
-                <style>
-                    .btn-primary:nth-child(2){
-                        display:none !important;
-                    }
-                </style>
                 <field name="payment_method_ids" invisible="1"/>
                 <field name="journal_ids" invisible="1"/>
                 <field name="destination_journal_ids" invisible="1"/>
