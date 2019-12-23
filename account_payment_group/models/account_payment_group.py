@@ -571,6 +571,7 @@ class AccountPaymentGroup(models.Model):
             rec.payment_ids.cancel()
             rec.payment_ids.write({'invoice_ids': [(5, 0, 0)]})
         self.write({'state': 'cancel'})
+        return True
 
     @api.multi
     def action_draft(self):
