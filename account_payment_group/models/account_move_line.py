@@ -17,6 +17,7 @@ class AccountMoveLine(models.Model):
         'payment_group_id',
         string="Payment Groups",
         readonly=True,
+        copy=False,
         # auto_join not yet implemented for m2m. TODO enable when implemented
         # https://github.com/odoo/odoo/blob/master/odoo/osv/expression.py#L899
         # auto_join=True,
