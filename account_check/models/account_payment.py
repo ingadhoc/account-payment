@@ -598,6 +598,11 @@ class AccountPayment(models.Model):
     def _get_counterpart_move_line_vals(self, invoice=False):
         vals = super(AccountPayment, self)._get_counterpart_move_line_vals(
             invoice=invoice)
+
+        # use check payment date on debt entry also so that it can be used for NC/ND adjustaments
+        if self.check_type and self.check_payment_date:
+            vals['date_maturity'] = self.check_payment_date
+
         force_account_id = self._context.get('force_account_id')
         if force_account_id:
             vals['account_id'] = force_account_id
