@@ -32,7 +32,7 @@ class AccountCheckbook(models.Model):
         inverse='_inverse_next_number',
     )
     issue_check_subtype = fields.Selection(
-        [('deferred', 'Deferred'), ('currents', 'Currents')],
+        [('deferred', 'Deferred'), ('currents', 'Currents'), ('electronic', 'Electronic')],
         string='Issue Check Subtype',
         required=True,
         default='deferred',
@@ -134,12 +134,13 @@ class AccountCheckbook(models.Model):
             })
 
     @api.multi
+    @api.depends('issue_check_subtype', 'range_to')
     def _compute_name(self):
-        for rec in self:
-            if rec.issue_check_subtype == 'deferred':
-                name = _('Deferred Checks')
-            else:
-                name = _('Currents Checks')
+        for rec in self.filtered('issue_check_subtype'):
+            name = {
+                'deferred': _('Deferred Checks'),
+                'currents': _('Currents Checks'),
+                'electronic': _('Electronic Checks')}.get(rec.issue_check_subtype)
             if rec.range_to:
                 name += _(' up to %s') % rec.range_to
             rec.name = name
