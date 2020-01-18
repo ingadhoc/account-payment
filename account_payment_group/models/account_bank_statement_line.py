@@ -4,7 +4,6 @@ from odoo import models, api
 class AccountBankStatementLine(models.Model):
     _inherit = "account.bank.statement.line"
 
-    @api.multi
     def button_cancel_reconciliation(self):
         """On statement line cancel, cancel and delete related payment group.
         We couldnt overwrite payments "unreconcile" because it is call

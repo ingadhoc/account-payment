@@ -241,7 +241,6 @@ class AccountPaymentGroup(models.Model):
         help="It indicates that the receipt has been sent."
     )
 
-    @api.multi
     @api.depends(
         'state',
         'payments_amount',
@@ -260,7 +259,6 @@ class AccountPaymentGroup(models.Model):
                         'payment_group_matched_amount'))
             rec.unmatched_amount = rec.payments_amount - rec.matched_amount
 
-    @api.multi
     def _compute_matched_amount_untaxed(self):
         """ Lo separamos en otro metodo ya que es un poco mas costoso y no se
         usa en conjunto con matched_amount
@@ -278,7 +276,6 @@ class AccountPaymentGroup(models.Model):
                     line.payment_group_matched_amount * factor
             rec.matched_amount_untaxed = sign * matched_amount_untaxed
 
-    @api.multi
     @api.depends('to_pay_move_line_ids')
     def _compute_has_outstanding(self):
         for rec in self:
@@ -298,7 +295,6 @@ class AccountPaymentGroup(models.Model):
         recs = self.search([('payment_ids.journal_id.name', operator, value)])
         return [('id', 'in', recs.ids)]
 
-    @api.multi
     def _compute_payment_methods(self):
         # TODO tal vez sea interesante sumar al string el metodo en si mismo
         # (manual, cheque, etc)
@@ -315,35 +311,29 @@ class AccountPaymentGroup(models.Model):
             rec.payment_methods = ", ".join(rec.payment_ids.sudo().mapped(
                 'journal_id.name'))
 
-    @api.multi
     def action_payment_sent(self):
         # self.sent = True
         raise ValidationError(_('Not implemented yet'))
 
-    @api.multi
     def payment_print(self):
         # self.sent = True
         raise ValidationError(_('Not implemented yet'))
 
-    @api.multi
     @api.depends('to_pay_move_line_ids')
     def _compute_debt_move_line_ids(self):
         for rec in self:
             rec.debt_move_line_ids = rec.to_pay_move_line_ids
 
-    @api.multi
     @api.onchange('debt_move_line_ids')
     def _inverse_debt_move_line_ids(self):
         for rec in self:
             rec.to_pay_move_line_ids = rec.debt_move_line_ids
 
-    @api.multi
     def _compute_payment_pop_up(self):
         pop_up = self._context.get('pop_up', False)
         for rec in self:
             rec.pop_up = pop_up
 
-    @api.multi
     @api.depends('company_id.double_validation', 'partner_type')
     def _compute_payment_subtype(self):
         force_simple = self._context.get('force_simple')
@@ -355,7 +345,6 @@ class AccountPaymentGroup(models.Model):
                 payment_subtype = 'simple'
             rec.payment_subtype = payment_subtype
 
-    @api.multi
     def _compute_matched_move_line_ids(self):
         """
         Lar partial reconcile vinculan dos apuntes con credit_move_id y
@@ -380,13 +369,11 @@ class AccountPaymentGroup(models.Model):
 
             rec.matched_move_line_ids = lines - payment_lines
 
-    @api.multi
     @api.depends('payment_ids.move_line_ids')
     def _compute_move_lines(self):
         for rec in self:
             rec.move_line_ids = rec.payment_ids.mapped('move_line_ids')
 
-    @api.multi
     @api.depends('partner_type')
     def _compute_account_internal_type(self):
         for rec in self:
@@ -394,7 +381,6 @@ class AccountPaymentGroup(models.Model):
                 rec.account_internal_type = MAP_PARTNER_TYPE_ACCOUNT_TYPE[
                     rec.partner_type]
 
-    @api.multi
     @api.depends('to_pay_amount', 'payments_amount')
     def _compute_payment_difference(self):
         for rec in self:
@@ -402,7 +388,6 @@ class AccountPaymentGroup(models.Model):
             #     continue
             rec.payment_difference = rec.to_pay_amount - rec.payments_amount
 
-    @api.multi
     @api.depends('payment_ids.signed_amount_company_currency')
     def _compute_payments_amount(self):
         for rec in self:
@@ -416,7 +401,6 @@ class AccountPaymentGroup(models.Model):
             #     rec.partner_type == 'supplier' and
             #     -payments_amount or payments_amount)
 
-    @api.multi
     @api.depends(
         'to_pay_move_line_ids.amount_residual',
         'to_pay_move_line_ids.amount_residual_currency',
@@ -442,20 +426,17 @@ class AccountPaymentGroup(models.Model):
             rec.selected_debt = selected_debt * sign
             rec.selected_debt_untaxed = selected_debt_untaxed * sign
 
-    @api.multi
     @api.depends(
         'selected_debt', 'unreconciled_amount')
     def _compute_to_pay_amount(self):
         for rec in self:
             rec.to_pay_amount = rec.selected_debt + rec.unreconciled_amount
 
-    @api.multi
     @api.onchange('to_pay_amount')
     def _inverse_to_pay_amount(self):
         for rec in self:
             rec.unreconciled_amount = rec.to_pay_amount - rec.selected_debt
 
-    @api.multi
     @api.onchange('partner_id', 'partner_type', 'company_id')
     def _refresh_payments_and_move_lines(self):
         # clean actual invoice and payments
@@ -466,7 +447,6 @@ class AccountPaymentGroup(models.Model):
             rec.payment_ids = [(2, item.id, 0) for item in rec.payment_ids]
             rec.add_all()
 
-    @api.multi
     def onchange(self, values, field_name, field_onchange):
         """Necesitamos hacer esto porque los onchange que agregan lineas,
         cuando se va a guardar el registro, terminan creando registros.
@@ -482,7 +462,6 @@ class AccountPaymentGroup(models.Model):
         return super(AccountPaymentGroup, self).onchange(
             values, field_name, field_onchange)
 
-    @api.multi
     def _get_to_pay_move_lines_domain(self):
         self.ensure_one()
         return [
@@ -499,13 +478,11 @@ class AccountPaymentGroup(models.Model):
             # ('amount_residual_currency', '!=', False),
         ]
 
-    @api.multi
     def add_all(self):
         for rec in self:
             rec.to_pay_move_line_ids = rec.env['account.move.line'].search(
                 rec._get_to_pay_move_lines_domain())
 
-    @api.multi
     def remove_all(self):
         self.to_pay_move_line_ids = False
 
@@ -540,7 +517,6 @@ class AccountPaymentGroup(models.Model):
             rec['to_pay_move_line_ids'] = [(6, False, to_pay_move_line_ids)]
         return rec
 
-    @api.multi
     def button_journal_entries(self):
         return {
             'name': _('Journal Items'),
@@ -552,14 +528,12 @@ class AccountPaymentGroup(models.Model):
             'domain': [('payment_id', 'in', self.payment_ids.ids)],
         }
 
-    @api.multi
     def unreconcile(self):
         for rec in self:
             rec.payment_ids.unreconcile()
         # TODO en alguos casos setear sent como en payment?
         self.write({'state': 'posted'})
 
-    @api.multi
     def cancel(self):
         for rec in self:
             # because child payments dont have invoices we remove reconcile
@@ -573,19 +547,16 @@ class AccountPaymentGroup(models.Model):
         self.write({'state': 'cancel'})
         return True
 
-    @api.multi
     def action_draft(self):
         self.mapped('payment_ids').action_draft()
         return self.write({'state': 'draft'})
 
-    @api.multi
     def unlink(self):
         if any(rec.state != 'draft' for rec in self):
             raise ValidationError(_(
                 "You can not delete a payment that is already posted"))
         return super(AccountPaymentGroup, self).unlink()
 
-    @api.multi
     def confirm(self):
         for rec in self:
             accounts = rec.to_pay_move_line_ids.mapped('account_id')
@@ -594,7 +565,6 @@ class AccountPaymentGroup(models.Model):
                     'To Pay Lines must be of the same account!'))
         self.write({'state': 'confirmed'})
 
-    @api.multi
     def post(self):
         # dont know yet why, but if we came from an invoice context values
         # break behaviour, for eg. with demo user error writing account.account
@@ -642,7 +612,6 @@ class AccountPaymentGroup(models.Model):
 
             rec.state = 'posted'
 
-    @api.multi
     @api.returns('mail.message', lambda value: value.id)
     def message_post(self, **kwargs):
         if self.env.context.get('mark_payment_as_sent'):

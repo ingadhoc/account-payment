@@ -147,7 +147,6 @@ class AccountPayment(models.Model):
                 continue
             rec.payment_type_copy = rec.payment_type
 
-    @api.multi
     def get_journals_domain(self):
         domain = super(AccountPayment, self).get_journals_domain()
         if self.payment_group_company_id:
@@ -165,7 +164,6 @@ class AccountPayment(models.Model):
             return super(AccountPayment, self)._onchange_payment_type()
         self.journal_id = False
 
-    @api.multi
     @api.constrains('payment_group_id', 'payment_type')
     def check_payment_group(self):
         # odoo tests don't create payments with payment gorups
@@ -292,7 +290,6 @@ class AccountPayment(models.Model):
             payment.payment_group_id.post()
         return payment
 
-    @api.multi
     @api.depends('invoice_ids', 'payment_type', 'partner_type', 'partner_id')
     def _compute_destination_account_id(self):
         """
@@ -310,7 +307,6 @@ class AccountPayment(models.Model):
             else:
                 super(AccountPayment, rec)._compute_destination_account_id()
 
-    @api.multi
     def show_details(self):
         """
         Metodo para mostrar form editable de payment, principalmente para ser

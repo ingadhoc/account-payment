@@ -27,7 +27,6 @@ class AccountInvoice(models.Model):
         string='Payment Groups',
     )
 
-    @api.multi
     @api.depends('payment_move_line_ids')
     def _compute_payment_groups(self):
         """
@@ -38,20 +37,17 @@ class AccountInvoice(models.Model):
             rec.payment_group_ids = rec.payment_move_line_ids.mapped(
                 'payment_id.payment_group_id')
 
-    @api.multi
     def _get_tax_factor(self):
         self.ensure_one()
         return (self.amount_total and (
             self.amount_untaxed / self.amount_total) or 1.0)
 
-    @api.multi
     def _compute_open_move_lines(self):
         for rec in self:
             rec.open_move_line_ids = rec.move_id.line_ids.filtered(
                 lambda r: not r.reconciled and r.account_id.internal_type in (
                     'payable', 'receivable'))
 
-    @api.multi
     def action_account_invoice_payment_group(self):
         self.ensure_one()
         if self.state != 'open':
@@ -81,13 +77,11 @@ class AccountInvoice(models.Model):
             },
         }
 
-    @api.multi
     def invoice_validate(self):
         res = super(AccountInvoice, self).invoice_validate()
         self.pay_now()
         return res
 
-    @api.multi
     def pay_now(self):
         # validate_payment = not self._context.get('validate_payment')
         for rec in self:
@@ -151,7 +145,6 @@ class AccountInvoice(models.Model):
                 # if validate_payment:
                 payment_group.post()
 
-    @api.multi
     def action_view_payment_groups(self):
         if self.type in ('in_invoice', 'in_refund'):
             action = self.env.ref(
@@ -171,7 +164,6 @@ class AccountInvoice(models.Model):
             result['res_id'] = self.payment_group_ids.id
         return result
 
-    @api.multi
     def pay_and_reconcile(self, pay_journal, pay_amount=None, date=None,
                           writeoff_acc=None):
         res = super(AccountInvoice, self.with_context(
@@ -184,7 +176,6 @@ class AccountInvoice(models.Model):
     def _onchange_company_id(self):
         self.pay_now_journal_id = False
 
-    @api.multi
     def action_cancel(self):
         self.filtered(lambda x: x.state != 'draft' and x.pay_now_journal_id).write({'pay_now_journal_id': False})
         return super(AccountInvoice, self).action_cancel()

@@ -242,7 +242,6 @@
     <record id="action_account_payments_transfer" model="ir.actions.act_window">
         <field name="name">Transfers</field>
         <field name="res_model">account.payment</field>
-        <field name="view_type">form</field>
         <field name="view_mode">tree,form,graph</field>
         <field name="context">{'default_payment_type': 'transfer'}</field>
         <field name="domain">[('payment_type', '=', 'transfer')]</field>
