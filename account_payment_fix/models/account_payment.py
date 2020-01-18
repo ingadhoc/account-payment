@@ -18,7 +18,7 @@ class AccountPayment(models.Model):
     # etc)
     payment_method_description = fields.Char(
         compute='_compute_payment_method_description',
-        string='Payment Method',
+        string='Payment Method Desc.',
     )
 
     def _compute_payment_method_description(self):
@@ -33,7 +33,8 @@ class AccountPayment(models.Model):
     )
     journal_ids = fields.Many2many(
         'account.journal',
-        compute='_compute_journals'
+        compute='_compute_journals',
+        string='Journals',
     )
     # journal_at_least_type = fields.Char(
     #     compute='_compute_journal_at_least_type'
