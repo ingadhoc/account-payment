@@ -7,7 +7,6 @@ from odoo import models, api
 class AccountInvoice(models.Model):
     _inherit = "account.invoice"
 
-    @api.multi
     def register_payment(
             self, payment_line,
             writeoff_acc_id=False, writeoff_journal_id=False):

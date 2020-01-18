@@ -21,7 +21,6 @@ class AccountPayment(models.Model):
         string='Payment Method',
     )
 
-    @api.multi
     def _compute_payment_method_description(self):
         for rec in self:
             rec.payment_method_description = rec.payment_method_id.display_name
@@ -44,7 +43,6 @@ class AccountPayment(models.Model):
         compute='_compute_destination_journals'
     )
 
-    @api.multi
     @api.depends(
         # 'payment_type',
         'journal_id',
@@ -62,7 +60,6 @@ class AccountPayment(models.Model):
             ]
             rec.destination_journal_ids = rec.journal_ids.search(domain)
 
-    # @api.multi
     # @api.depends(
     #     'payment_type',
     # )
@@ -74,7 +71,6 @@ class AccountPayment(models.Model):
     #             journal_at_least_type = 'at_least_one_outbound'
     #         rec.journal_at_least_type = journal_at_least_type
 
-    @api.multi
     def get_journals_domain(self):
         """
         We get domain here so it can be inherited
@@ -90,7 +86,6 @@ class AccountPayment(models.Model):
             domain.append(('at_least_one_outbound', '=', True))
         return domain
 
-    @api.multi
     @api.depends(
         'payment_type',
     )
@@ -98,7 +93,6 @@ class AccountPayment(models.Model):
         for rec in self:
             rec.journal_ids = rec.journal_ids.search(rec.get_journals_domain())
 
-    @api.multi
     @api.depends(
         'journal_id.outbound_payment_method_ids',
         'journal_id.inbound_payment_method_ids',
@@ -207,7 +201,6 @@ class AccountPayment(models.Model):
         #                 ('id', 'in', payment_methods.ids)]}}
         # return {}
 
-    @api.multi
     @api.depends('invoice_ids', 'payment_type', 'partner_type', 'partner_id')
     def _compute_destination_account_id(self):
         """
