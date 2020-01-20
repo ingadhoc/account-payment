@@ -39,7 +39,7 @@
     </record>
 
 </data>
-<data noupdate="0">
+<data>
     <!-- by default we enable it -->
     <record model="res.groups" id="base.group_user">
         <field name="implied_ids" eval="[(4, ref('group_choose_payment_type'))]"/>

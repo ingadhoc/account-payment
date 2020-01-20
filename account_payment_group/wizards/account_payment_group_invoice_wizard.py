@@ -2,7 +2,7 @@
 # For copyright and license notices, see __manifest__.py file in root directory
 ##############################################################################
 from odoo import api, fields, models, _
-from openerp.exceptions import ValidationError
+from odoo.exceptions import ValidationError
 
 
 class AccountPaymentGroupInvoiceWizard(models.TransientModel):
@@ -143,7 +143,6 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
             'tax_ids': tax_domain,
         }}
 
-    @api.multi
     def get_invoice_vals(self):
         self.ensure_one()
         payment_group = self.payment_group_id
@@ -169,7 +168,6 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
             # 'invoice_line_ids': [('invoice_type')],
         }
 
-    @api.multi
     def confirm(self):
         self.ensure_one()
 
