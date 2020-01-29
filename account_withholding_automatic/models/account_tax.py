@@ -70,7 +70,7 @@ class AccountTax(models.Model):
         help="The computation method for the tax amount."
     )
     withholding_python_compute = fields.Text(
-        'Python Code',
+        'Python Code (withholdings)',
         default='''
 # withholdable_base_amount
 # payment: account.payment.group object
