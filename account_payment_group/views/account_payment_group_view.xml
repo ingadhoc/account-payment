@@ -92,20 +92,7 @@
                     <group>
                         <field name="company_id" options="{'no_create': True, 'no_open': True}" groups="base.group_multi_company" invisible="context.get('pop_up')"/>
                         <field name="currency_id" invisible="1"/>
-                        <!-- <field name="payment_type" widget="radio"/> -->
-                        <!-- <b><field name="partner_type" nolabel="1" widget="selection" string="" attrs="{'required': [('payment_type', 'in', ('inbound', 'outbound'))], 'readonly': [('state', '!=', 'draft')]}"/></b> -->
-			<!-- field name="partner_id" context="{'default_is_company': True, 'default_supplier': partner_type == 'supplier', 'default_customer': partner_type == 'customer'}" 
-				domain="[(partner_type, '=', True)]"  
-				invisible="context.get('pop_up')"/ -->
-			<field name="partner_id" context="{'default_is_company': True, 'default_supplier': partner_type == 'supplier', 'default_customer': partner_type == 'customer'}" 
-				invisible="context.get('pop_up')"/>
-                        <!-- <field name="partner_id" attrs="{'required': [('payment_type', 'in', ('inbound', 'outbound'))]}" context="{'default_is_company': True, 'default_supplier': payment_type == 'outbound', 'default_customer': payment_type == 'inbound'}" domain="[(partner_type, '=', True)]"/> -->
-                        <!-- <field name="partner_id" nolabel="1" attrs="{'required': [('payment_type', 'in', ('inbound', 'outbound'))], 'invisible': [('payment_type', 'not in', ('inbound', 'outbound'))], 'readonly': [('state', '!=', 'draft')]}" context="{'default_is_company': True, 'default_supplier': payment_type == 'outbound', 'default_customer': payment_type == 'inbound'}"/> -->
-                        <!-- <label for="amount"/>
-                        <div name="amount_div" class="o_row">
-                            <field name="amount" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
-                            <field name="currency_id" options="{'no_create': True, 'no_open': True}" groups="base.group_multi_currency" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
-                        </div> -->
+                        <field name="partner_id" context="{'default_is_company': True, 'default_supplier': partner_type == 'supplier', 'default_customer': partner_type == 'customer'}" invisible="context.get('pop_up')"/>
                     </group>
                     <group>
                         <field name="payment_date"/>
