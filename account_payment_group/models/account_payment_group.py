@@ -142,30 +142,6 @@ class AccountPaymentGroup(models.Model):
         track_visibility='onchange',
         index=True,
     )
-    move_lines_domain = [
-        # ('partner_id.commercial_partner_id', '=', commercial_partner_id),
-        # ('account_id.internal_type', '=', account_internal_type),
-        ('account_id.reconcile', '=', True),
-        ('reconciled', '=', False),
-        ('full_reconcile_id', '=', False),
-        # ('company_id', '=', company_id),
-    ]
-    debt_move_line_ids = fields.Many2many(
-        'account.move.line',
-        # por alguna razon el related no funciona bien ni con states ni
-        # actualiza bien con el onchange, hacemos computado mejor
-        compute='_compute_debt_move_line_ids',
-        inverse='_inverse_debt_move_line_ids',
-        string="Debt Lines",
-        # no podemos ordenar por due date porque esta hardecodeado en
-        # funcion _get_pair_to_reconcile
-        help="Payment will be automatically matched with the oldest lines of "
-        "this list (by maturity date). You can remove any line you"
-        " dont want to be matched.",
-        domain=move_lines_domain,
-        readonly=True,
-        states={'draft': [('readonly', False)]},
-    )
     has_outstanding = fields.Boolean(
         compute='_compute_has_outstanding',
     )
@@ -177,9 +153,15 @@ class AccountPaymentGroup(models.Model):
         string="To Pay Lines",
         help='This lines are the ones the user has selected to be paid.',
         copy=False,
-        domain=move_lines_domain,
-        # lo hacemos readonly por vista y no por aca porque el relatd si no
-        # no funcionaba bien
+        domain=[
+            # ('partner_id.commercial_partner_id', '=', commercial_partner_id),
+            # ('account_id.internal_type', '=', account_internal_type),
+            ('move_id.state', '=', 'posted'),
+            ('account_id.reconcile', '=', True),
+            ('reconciled', '=', False),
+            ('full_reconcile_id', '=', False),
+            # ('company_id', '=', company_id),
+        ],
         readonly=True,
         states={'draft': [('readonly', False)]},
         # auto_join not yet implemented for m2m. TODO enable when implemented
@@ -244,9 +226,11 @@ class AccountPaymentGroup(models.Model):
     @api.depends(
         'state',
         'payments_amount',
-        'matched_move_line_ids.payment_group_matched_amount')
+        )
     def _compute_matched_amounts(self):
         for rec in self:
+            rec.matched_amount = 0.0
+            rec.unmatched_amount = 0.0
             if rec.state != 'posted':
                 continue
             # damos vuelta signo porque el payments_amount tmb lo da vuelta,
@@ -254,9 +238,7 @@ class AccountPaymentGroup(models.Model):
             # a si es pago entrante o saliente
             sign = rec.partner_type == 'supplier' and -1.0 or 1.0
             rec.matched_amount = sign * sum(
-                rec.matched_move_line_ids.with_context(
-                    payment_group_id=rec.id).mapped(
-                        'payment_group_matched_amount'))
+                rec.matched_move_line_ids.with_context(payment_group_id=rec.id).mapped('payment_group_matched_amount'))
             rec.unmatched_amount = rec.payments_amount - rec.matched_amount
 
     def _compute_matched_amount_untaxed(self):
@@ -264,6 +246,7 @@ class AccountPaymentGroup(models.Model):
         usa en conjunto con matched_amount
         """
         for rec in self:
+            rec.matched_amount_untaxed = 0.0
             if rec.state != 'posted':
                 continue
             matched_amount_untaxed = 0.0
@@ -279,6 +262,7 @@ class AccountPaymentGroup(models.Model):
     @api.depends('to_pay_move_line_ids')
     def _compute_has_outstanding(self):
         for rec in self:
+            rec.has_outstanding = False
             if rec.state != 'draft':
                 continue
             if rec.partner_type == 'supplier':
@@ -319,16 +303,6 @@ class AccountPaymentGroup(models.Model):
         # self.sent = True
         raise ValidationError(_('Not implemented yet'))
 
-    @api.depends('to_pay_move_line_ids')
-    def _compute_debt_move_line_ids(self):
-        for rec in self:
-            rec.debt_move_line_ids = rec.to_pay_move_line_ids
-
-    @api.onchange('debt_move_line_ids')
-    def _inverse_debt_move_line_ids(self):
-        for rec in self:
-            rec.to_pay_move_line_ids = rec.debt_move_line_ids
-
     def _compute_payment_pop_up(self):
         pop_up = self._context.get('pop_up', False)
         for rec in self:
@@ -345,6 +319,7 @@ class AccountPaymentGroup(models.Model):
                 payment_subtype = 'simple'
             rec.payment_subtype = payment_subtype
 
+    @api.depends('payment_ids.move_line_ids')
     def _compute_matched_move_line_ids(self):
         """
         Lar partial reconcile vinculan dos apuntes con credit_move_id y
@@ -380,6 +355,8 @@ class AccountPaymentGroup(models.Model):
             if rec.partner_type:
                 rec.account_internal_type = MAP_PARTNER_TYPE_ACCOUNT_TYPE[
                     rec.partner_type]
+            else:
+                rec.account_internal_type = False
 
     @api.depends('to_pay_amount', 'payments_amount')
     def _compute_payment_difference(self):
@@ -405,7 +382,7 @@ class AccountPaymentGroup(models.Model):
         'to_pay_move_line_ids.amount_residual',
         'to_pay_move_line_ids.amount_residual_currency',
         'to_pay_move_line_ids.currency_id',
-        'to_pay_move_line_ids.invoice_id',
+        'to_pay_move_line_ids.move_id',
         'payment_date',
         'currency_id',
     )
@@ -447,21 +424,6 @@ class AccountPaymentGroup(models.Model):
             rec.payment_ids = [(2, item.id, 0) for item in rec.payment_ids]
             rec.add_all()
 
-    def onchange(self, values, field_name, field_onchange):
-        """Necesitamos hacer esto porque los onchange que agregan lineas,
-        cuando se va a guardar el registro, terminan creando registros.
-        """
-        fields = []
-        for field in field_onchange.keys():
-            if field.startswith((
-                    'to_pay_move_line_ids.',
-                    'debt_move_line_ids.')):
-                fields.append(field)
-        for field in fields:
-            del field_onchange[field]
-        return super(AccountPaymentGroup, self).onchange(
-            values, field_name, field_onchange)
-
     def _get_to_pay_move_lines_domain(self):
         self.ensure_one()
         return [
@@ -489,7 +451,7 @@ class AccountPaymentGroup(models.Model):
     @api.model
     def default_get(self, fields):
         # TODO si usamos los move lines esto no haria falta
-        rec = super(AccountPaymentGroup, self).default_get(fields)
+        rec = super().default_get(fields)
         to_pay_move_line_ids = self._context.get('to_pay_move_line_ids')
         to_pay_move_lines = self.env['account.move.line'].browse(
             to_pay_move_line_ids).filtered(lambda x: (
@@ -498,27 +460,16 @@ class AccountPaymentGroup(models.Model):
         if to_pay_move_lines:
             partner = to_pay_move_lines.mapped('partner_id')
             if len(partner) != 1:
-                raise ValidationError(_(
-                    'You can not send to pay lines from different partners'))
+                raise ValidationError(_('You can not send to pay lines from different partners'))
 
-            internal_type = to_pay_move_lines.mapped(
-                'account_id.internal_type')
+            internal_type = to_pay_move_lines.mapped('account_id.internal_type')
             if len(internal_type) != 1:
-                raise ValidationError(_(
-                    'You can not send to pay lines from different partners'))
-            rec['partner_id'] = self._context.get(
-                'default_partner_id', partner[0].id)
-            partner_id = self._context.get('default_partner_id',partner[0].id)
-            if partner_id and partner_id.customer_rank:
+                raise ValidationError(_('You can not send to pay lines from different partners'))
+            rec['partner_id'] = self._context.get('default_partner_id', partner[0].id)
+            if internal_type[0] == 'receivable':
                 rec['partner_type'] = 'customer'
-            if partner_id and partner_id.supplier_rank:
+            else:
                 rec['partner_type'] = 'supplier'
-            #rec['partner_type'] = MAP_ACCOUNT_TYPE_PARTNER_TYPE[
-            #    internal_type[0]]
-            # rec['currency_id'] = invoice['currency_id'][0]
-            # rec['payment_type'] = (
-            #     internal_type[0] == 'receivable' and
-            #     'inbound' or 'outbound')
             rec['to_pay_move_line_ids'] = [(6, False, to_pay_move_line_ids)]
         return rec
 
@@ -534,40 +485,30 @@ class AccountPaymentGroup(models.Model):
         }
 
     def unreconcile(self):
-        for rec in self:
-            rec.payment_ids.unreconcile()
+        self.mapped('payment_ids').unreconcile()
         # TODO en alguos casos setear sent como en payment?
         self.write({'state': 'posted'})
 
     def cancel(self):
-        for rec in self:
-            # because child payments dont have invoices we remove reconcile
-            for move in rec.move_line_ids.mapped('move_id'):
-                rec.matched_move_line_ids.remove_move_reconcile()
-                # TODO borrar esto si con el de arriba va bien
-                # if rec.to_pay_move_line_ids:
-                #     move.line_ids.remove_move_reconcile()
-            rec.payment_ids.cancel()
-            rec.payment_ids.write({'invoice_ids': [(5, 0, 0)]})
+        self.mapped('payment_ids').cancel()
         self.write({'state': 'cancel'})
         return True
 
     def action_draft(self):
         self.mapped('payment_ids').action_draft()
+        # rec.payment_ids.write({'invoice_ids': [(5, 0, 0)]})
         return self.write({'state': 'draft'})
 
     def unlink(self):
-        if any(rec.state != 'draft' for rec in self):
-            raise ValidationError(_(
-                "You can not delete a payment that is already posted"))
-        return super(AccountPaymentGroup, self).unlink()
+        if any(bool(rec.move_line_ids) for rec in self):
+            raise ValidationError(_("You can not delete a payment that is already posted"))
+        return super().unlink()
 
     def confirm(self):
         for rec in self:
             accounts = rec.to_pay_move_line_ids.mapped('account_id')
             if len(accounts) > 1:
-                raise ValidationError(_(
-                    'To Pay Lines must be of the same account!'))
+                raise ValidationError(_('To Pay Lines must be of the same account!'))
         self.write({'state': 'confirmed'})
 
     def post(self):

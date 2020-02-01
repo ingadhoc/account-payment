@@ -23,6 +23,7 @@ class AccountMoveLine(models.Model):
         # auto_join=True,
     )
 
+    @api.depends_context('payment_group_id')
     def _compute_payment_group_matched_amount(self):
         """
         Reciviendo un payment_group_id por contexto, decimos en ese payment

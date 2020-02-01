@@ -31,13 +31,9 @@
     <field name="model">account.payment</field>
     <field name="arch" type="xml">
         <tree>
-        <!-- <tree decoration-info="state=='draft'" decoration-muted="state=='reconciled'"> -->
-            <!-- <field name="payment_date"/> -->
             <field name="name"/>
             <field name="journal_id"/>
-            <!-- <field name="payment_method_id"/> -->
             <field name="payment_method_description"/>
-
             <!-- lo agregamos para que al usar guardar y nuevo se ejecute onchange en la form y previsualice bien importe en la tree -->
             <field name="amount" invisible="1"/>
             <!-- sum de este amount no tiene sentido por que puede ser distintas monedas -->
@@ -56,9 +52,7 @@
     <record id="view_account_payment_form" model="ir.ui.view">
         <field name="name">account.payment.form</field>
         <field name="model">account.payment</field>
-        <!-- because of cancel button -->
-        <field name="inherit_id" ref="account_cancel.payment_cancel_form_inherit"/>
-        <!-- <field name="inherit_id" ref="account.view_account_payment_form"/> -->
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
         <field name="arch" type="xml">
             <!-- hide save and new button because it breaks onchange (for eg. on checks) and also do not update the amount -->
             <form>
@@ -102,24 +96,15 @@
                 <field name="signed_amount_company_currency" invisible="1"/>
                 <field name="signed_amount" invisible="1"/>
             </form>
-            <!-- ahora lo hicimos con el fix -->
-            <!-- <field name="journal_id" position="attributes">
-                <attribute name="domain">[('company_id', '=', payment_group_company_id)]</attribute>
-            </field> -->
 
-            <!-- <button name="post" position="attributes">
-                <attribute name="invisible">context.get('payment_group')</attribute>
-            </button> -->
             <button name="post" position="attributes">
                 <!-- idem cancel -->
-                <!-- <attribute name="invisible">1</attribute> -->
                 <attribute name="groups">base.group_no_one</attribute>
                 <attribute name="confirm">IMPORTANTE: La validación de la línea de pago se debe hacer desde el recibo. La validación manual de una línea de pago se usa solo para correcciones y usos avanzados. Seguro desea continuar?</attribute>
             </button>
 
             <button name="cancel" position="attributes">
                 <!-- al final lo hacemos visible para poder hacer ajustes sin cancelar todo el payment group, pero solo si no transfer, con tec group y un confirm -->
-                <!-- <attribute name="invisible">1</attribute> -->
                 <attribute name="groups">base.group_no_one</attribute>
                 <attribute name="confirm">IMPORTANTE: La validación de la línea de pago se debe hacer desde el recibo. La cancelación manual de una línea de pago se usa solo para correcciones y usos avanzados. Seguro desea continuar?</attribute>
             </button>
@@ -131,23 +116,17 @@
             <field name="payment_type" position="attributes">
                 <!-- comes from payment_group and from context on transfers -->
                 <attribute name="invisible">1</attribute>
-                <!-- <attribute name="invisible">context.get('payment_group')</attribute> -->
             </field>
 
             <field name="partner_type" position="attributes">
                 <!-- comes from payment_group and is not used on transfers -->
                 <attribute name="invisible">1</attribute>
-                <!-- <attribute name="invisible">context.get('payment_group')</attribute> -->
             </field>
             <field name="partner_id" position="attributes">
                 <!-- comes from payment_group and is not used on transfers -->
                 <attribute name="invisible">1</attribute>
-                <!-- <attribute name="invisible">context.get('payment_group')</attribute> -->
             </field>
 
-            <!-- <field name="state" position="attributes">
-                <attribute name="invisible">context.get('payment_group')</attribute>
-            </field> -->
         </field>
     </record>
 
@@ -169,7 +148,6 @@
         <field name="name">account.payment.transfer.form</field>
         <field name="model">account.payment</field>
         <field name="inherit_id" ref="view_account_payment_form"/>
-        <!-- <field name="inherit_id" ref="account.view_account_payment_form"/> -->
         <field name="priority">90</field>
         <field name="mode">primary</field>
         <field name="arch" type="xml">
