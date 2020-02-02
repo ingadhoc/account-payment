@@ -28,7 +28,6 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
         string='Available Journal Document Types',
     )
 
-    @api.multi
     @api.depends('journal_id')
     def _compute_available_journal_document_types(self):
         for rec in self:
@@ -44,7 +43,6 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
             rec.journal_document_type_id = res[
                 'journal_document_type']
 
-    @api.multi
     def get_invoice_vals(self):
         invoice_vals = super(
             AccountPaymentGroupInvoiceWizard, self).get_invoice_vals()
