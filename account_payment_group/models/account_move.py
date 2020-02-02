@@ -5,8 +5,8 @@ from odoo import models, api, fields, _
 from odoo.exceptions import ValidationError
 
 
-class AccountInvoice(models.Model):
-    _inherit = "account.invoice"
+class AccountMove(models.Model):
+    _inherit = "account.move"
 
     open_move_line_ids = fields.One2many(
         'account.move.line',
@@ -27,36 +27,29 @@ class AccountInvoice(models.Model):
         string='Payment Groups',
     )
 
-    @api.multi
-    @api.depends('payment_move_line_ids')
     def _compute_payment_groups(self):
         """
         El campo en invoices "payment_id" no lo seteamos con los payment groups
         Por eso tenemos que calcular este campo
         """
         for rec in self:
-            rec.payment_group_ids = rec.payment_move_line_ids.mapped(
-                'payment_id.payment_group_id')
+            rec.payment_group_ids = rec._get_reconciled_payments().mapped('payment_group_id')
 
-    @api.multi
     def _get_tax_factor(self):
         self.ensure_one()
         return (self.amount_total and (
             self.amount_untaxed / self.amount_total) or 1.0)
 
-    @api.multi
     def _compute_open_move_lines(self):
         for rec in self:
-            rec.open_move_line_ids = rec.move_id.line_ids.filtered(
+            rec.open_move_line_ids = rec.line_ids.filtered(
                 lambda r: not r.reconciled and r.account_id.internal_type in (
                     'payable', 'receivable'))
 
-    @api.multi
     def action_account_invoice_payment_group(self):
         self.ensure_one()
-        if self.state != 'open':
-            raise ValidationError(_(
-                'You can only register payment if invoice is open'))
+        if self.state != 'posted' or self.invoice_payment_state != 'not_paid':
+            raise ValidationError(_('You can only register payment if invoice is poted and unpaid'))
         return {
             'name': _('Register Payment'),
             'view_type': 'form',
@@ -81,18 +74,16 @@ class AccountInvoice(models.Model):
             },
         }
 
-    @api.multi
-    def invoice_validate(self):
-        res = super(AccountInvoice, self).invoice_validate()
+    def action_post(self):
+        res = super(AccountMove, self).action_post()
         self.pay_now()
         return res
 
-    @api.multi
     def pay_now(self):
         # validate_payment = not self._context.get('validate_payment')
         for rec in self:
             pay_journal = rec.pay_now_journal_id
-            if pay_journal and rec.state == 'open':
+            if pay_journal and rec.state == 'posted' and rec.invoice_payment_state != 'not_paid':
                 # si bien no hace falta mandar el partner_type al paygroup
                 # porque el defaults lo calcula solo en funcion al tipo de
                 # cuenta, es mas claro mandarlo y podria evitar error si
@@ -151,7 +142,6 @@ class AccountInvoice(models.Model):
                 # if validate_payment:
                 payment_group.post()
 
-    @api.multi
     def action_view_payment_groups(self):
         if self.type in ('in_invoice', 'in_refund'):
             action = self.env.ref(
@@ -171,20 +161,10 @@ class AccountInvoice(models.Model):
             result['res_id'] = self.payment_group_ids.id
         return result
 
-    @api.multi
-    def pay_and_reconcile(self, pay_journal, pay_amount=None, date=None,
-                          writeoff_acc=None):
-        res = super(AccountInvoice, self.with_context(
-            create_from_website=True)).pay_and_reconcile(
-                pay_journal, pay_amount=pay_amount, date=date,
-                writeoff_acc=writeoff_acc)
-        return res
-
     @api.onchange('company_id')
     def _onchange_company_id(self):
         self.pay_now_journal_id = False
 
-    @api.multi
-    def action_cancel(self):
+    def button_cancel(self):
         self.filtered(lambda x: x.state != 'draft' and x.pay_now_journal_id).write({'pay_now_journal_id': False})
-        return super(AccountInvoice, self).action_cancel()
+        return super().button_cancel()

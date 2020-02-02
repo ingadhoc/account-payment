@@ -36,7 +36,6 @@
         <record id="action_account_payment_group_invoice_wizard" model="ir.actions.act_window">
             <field name="name">Credit / Debit Note</field>
             <field name="res_model">account.payment.group.invoice.wizard</field>
-            <field name="view_type">form</field>
             <field name="view_mode">form</field>
            <field name="target">new</field>
         </record>

@@ -32,7 +32,6 @@ class AccountPayment(models.Model):
         string='Payment Type (without transfer)'
     )
     signed_amount = fields.Monetary(
-        string='Amount',
         compute='_compute_signed_amount',
     )
     signed_amount_company_currency = fields.Monetary(
@@ -95,9 +94,12 @@ class AccountPayment(models.Model):
 
     @api.depends('amount', 'other_currency', 'amount_company_currency')
     def _compute_exchange_rate(self):
-        for rec in self.filtered('other_currency'):
-            rec.exchange_rate = rec.amount and (
-                rec.amount_company_currency / rec.amount) or 0.0
+        for rec in self:
+            if rec.other_currency:
+                rec.exchange_rate = rec.amount and (
+                    rec.amount_company_currency / rec.amount) or 0.0
+            else:
+                rec.exchange_rate = False
 
     # this onchange is necesary because odoo, sometimes, re-compute
     # and overwrites amount_company_currency. That happends due to an issue
@@ -144,10 +146,10 @@ class AccountPayment(models.Model):
     def _compute_payment_type_copy(self):
         for rec in self:
             if rec.payment_type == 'transfer':
-                continue
-            rec.payment_type_copy = rec.payment_type
+                rec.payment_type_copy = False
+            else:
+                rec.payment_type_copy = rec.payment_type
 
-    @api.multi
     def get_journals_domain(self):
         domain = super(AccountPayment, self).get_journals_domain()
         if self.payment_group_company_id:
@@ -165,7 +167,6 @@ class AccountPayment(models.Model):
             return super(AccountPayment, self)._onchange_payment_type()
         self.journal_id = False
 
-    @api.multi
     @api.constrains('payment_group_id', 'payment_type')
     def check_payment_group(self):
         # odoo tests don't create payments with payment gorups
@@ -292,7 +293,6 @@ class AccountPayment(models.Model):
             payment.payment_group_id.post()
         return payment
 
-    @api.multi
     @api.depends('invoice_ids', 'payment_type', 'partner_type', 'partner_id')
     def _compute_destination_account_id(self):
         """
@@ -310,7 +310,6 @@ class AccountPayment(models.Model):
             else:
                 super(AccountPayment, rec)._compute_destination_account_id()
 
-    @api.multi
     def show_details(self):
         """
         Metodo para mostrar form editable de payment, principalmente para ser
@@ -328,28 +327,20 @@ class AccountPayment(models.Model):
             'context': self._context,
         }
 
-    def _get_shared_move_line_vals(
-            self, debit, credit, amount_currency, move_id, invoice_id=False):
-        """
-        Si se esta forzando importe en moneda de cia, usamos este importe
-        para debito/credito
-        """
-        res = super(AccountPayment, self)._get_shared_move_line_vals(
-            debit, credit, amount_currency, move_id, invoice_id=invoice_id)
-        if self.force_amount_company_currency:
-            if res.get('debit', False):
-                res['debit'] = self.force_amount_company_currency
-            if res.get('credit', False):
-                res['credit'] = self.force_amount_company_currency
-        return res
+    def _prepare_payment_moves(self):
+        all_move_vals = []
+        for rec in self:
+            move_vals = super(AccountPayment, rec)._prepare_payment_moves()[0]
+            # If we have a communication on payment group append it before payment communication
+            if rec.payment_group_id.communication:
+                move_vals['ref'] = "%s%s" % (self.payment_group_id.communication, move_vals['ref'] or '')
 
-    def _get_move_vals(self, journal=None):
-        """If we have a communication on payment group append it before
-        payment communication
-        """
-        vals = super(AccountPayment, self)._get_move_vals(journal=journal)
-        if self.payment_group_id.communication:
-            vals['ref'] = "%s%s" % (
-                self.payment_group_id.communication,
-                self.communication and ": %s" % self.communication or "")
-        return vals
+            # Si se esta forzando importe en moneda de cia, usamos este importe para debito/credito
+            if rec.force_amount_company_currency:
+                for line in move_vals['line_ids']:
+                    if line[2].get('debit'):
+                        line[2]['debit'] = rec.force_amount_company_currency
+                    if line[2].get('credit'):
+                        line[2]['credit'] = rec.force_amount_company_currency
+            all_move_vals.append(move_vals)
+        return all_move_vals
