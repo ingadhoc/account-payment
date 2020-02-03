@@ -38,10 +38,10 @@ class AccountPayment(models.Model):
         " for when the bank credits all the checks in a single movement",
     )
 
-    @api.multi
     @api.depends('check_ids')
     def _compute_check(self):
         for rec in self:
+            rec.check_id = False
             # we only show checks for issue checks or received thid checks
             # if len of checks is 1
             if rec.payment_method_code in (
@@ -123,7 +123,6 @@ class AccountPayment(models.Model):
     #     readonly=True,
     # )
 
-    @api.multi
     @api.depends('payment_method_code')
     def _compute_check_type(self):
         for rec in self:
@@ -133,8 +132,9 @@ class AccountPayment(models.Model):
                     'received_third_check',
                     'delivered_third_check']:
                 rec.check_type = 'third_check'
+            else:
+                rec.check_type = False
 
-    @api.multi
     def _compute_payment_method_description(self):
         check_payments = self.filtered(
             lambda x: x.payment_method_code in
@@ -190,7 +190,6 @@ class AccountPayment(models.Model):
             lambda x: x.payment_method_code != 'delivered_third_check')
         return super(AccountPayment, self)._inverse_amount_company_currency()
 
-    @api.multi
     @api.onchange('check_number')
     def change_check_number(self):
         # TODO make default padding a parameter
@@ -287,7 +286,6 @@ class AccountPayment(models.Model):
             self.check_number = False
 
 # post methods
-    @api.multi
     def cancel(self):
         for rec in self:
             # solo cancelar operaciones si estaba postead, por ej para comp.
@@ -298,7 +296,6 @@ class AccountPayment(models.Model):
         res = super(AccountPayment, self).cancel()
         return res
 
-    @api.multi
     def create_check(self, check_type, operation, bank):
         self.ensure_one()
 
@@ -324,7 +321,6 @@ class AccountPayment(models.Model):
             operation, self, self.partner_id, date=self.payment_date)
         return check
 
-    @api.multi
     def do_checks_operations(self, vals=None, cancel=False):
         """
         Check attached .ods file on this module to understand checks workflows
@@ -506,7 +502,6 @@ class AccountPayment(models.Model):
                     rec.destination_journal_id.type)))
         return vals
 
-    @api.multi
     def post(self):
         for rec in self:
             if rec.check_ids and not rec.currency_id.is_zero(
@@ -530,7 +525,6 @@ class AccountPayment(models.Model):
         vals = self.do_checks_operations(vals=vals)
         return vals
 
-    @api.multi
     def do_print_checks(self):
         # si cambiamos nombre de check_report tener en cuenta en sipreco
         checkbook = self.mapped('checkbook_id')
@@ -548,7 +542,6 @@ class AccountPayment(models.Model):
         #       "a check report named 'account_check_report'."))
         return check_report
 
-    @api.multi
     def print_checks(self):
         if len(self.mapped('checkbook_id')) != 1:
             raise UserError(_(
@@ -597,7 +590,6 @@ class AccountPayment(models.Model):
             vals['account_id'] = force_account_id
         return vals
 
-    @api.multi
     def _split_aml_line_per_check(self, move):
         """ Take an account mvoe, find the move lines related to check and
         split them one per earch check related to the payment
@@ -642,7 +634,6 @@ class AccountPayment(models.Model):
         move.post()
         return res
 
-    @api.multi
     def _create_payment_entry(self, amount):
         move = super(AccountPayment, self)._create_payment_entry(amount)
         if self.filtered(
@@ -652,7 +643,6 @@ class AccountPayment(models.Model):
             self._split_aml_line_per_check(move)
         return move
 
-    @api.multi
     def _create_transfer_entry(self, amount):
         transfer_debit_aml = super(
             AccountPayment, self)._create_transfer_entry(amount)

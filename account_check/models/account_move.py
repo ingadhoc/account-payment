@@ -5,8 +5,8 @@
 from odoo import models, fields, api
 
 
-class AccountInvoice(models.Model):
-    _inherit = 'account.invoice'
+class AccountMove(models.Model):
+    _inherit = 'account.move'
 
     # we add this field so that when invoice is validated we can reconcile
     # move lines between check and invoice lines
@@ -17,7 +17,6 @@ class AccountInvoice(models.Model):
         'Rejected Check',
     )
 
-    @api.multi
     def action_cancel(self):
         """
         Si al cancelar la factura la misma estaba vinculada a un rechazo
@@ -33,9 +32,8 @@ class AccountInvoice(models.Model):
                 deferred_account_line = rec.move_id.line_ids.filtered(
                     lambda x: x.account_id == deferred_account)
                 deferred_account_line.remove_move_reconcile()
-        return super(AccountInvoice, self).action_cancel()
+        return super().action_cancel()
 
-    @api.multi
     def action_move_create(self):
         """
         Si al validar la factura, la misma tiene un cheque de rechazo asociado

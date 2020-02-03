@@ -2,7 +2,7 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import fields, models, api, _
+from odoo import fields, models, _
 from odoo.exceptions import UserError
 import logging
 _logger = logging.getLogger(__name__)
@@ -28,7 +28,6 @@ class ResCompany(models.Model):
         'for eg. "Holding Checks"',
     )
 
-    @api.multi
     def _get_check_account(self, check_type):
         self.ensure_one()
         if check_type == 'holding':

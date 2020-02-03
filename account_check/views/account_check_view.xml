@@ -8,7 +8,7 @@
         <field name="priority">100</field>
         <field name="groups_id" eval="[(4, ref('account.group_account_manager'))]"/>
         <field name="arch" type="xml">
-            <tree colors="blue:state == 'draft';black:state in ('handed');red:state == 'hrejected';gray:state == 'cancel'" create="false" string="Checks">
+            <tree decoration-info="state == 'draft'" decoration-bf="state == 'handed'" decoration-danger="state == 'hrejected'" decoration-muted="state == 'cancel'" create="false" string="Checks">
                 <field name="checkbook_id" invisible="context.get('default_type',False) != 'issue_check'"/>
                 <field name="journal_id" invisible="1"/>
                 <field name="name"/>
@@ -209,7 +209,6 @@
     <record model="ir.actions.act_window" id="action_third_check">
         <field name="name">Third Checks</field>
         <field name="res_model">account.check</field>
-        <field name="view_type">form</field>
         <field name="view_mode">tree,form,calendar,graph,pivot</field>
         <field name="domain">[('type','=','third_check')]</field>
         <field name="context">{'search_default_state':'holding','default_type':'third_check'}</field>
@@ -225,7 +224,6 @@
     <record model="ir.actions.act_window" id="action_issue_check">
         <field name="name">Issue Checks</field>
         <field name="res_model">account.check</field>
-        <field name="view_type">form</field>
         <field name="view_mode">tree,form,calendar,graph,pivot</field>
         <field name="domain">[('type','=','issue_check')]</field>
         <field name="context">{'search_default_state':'handed','default_type':'issue_check'}</field>
