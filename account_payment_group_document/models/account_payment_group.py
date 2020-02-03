@@ -3,58 +3,27 @@
 # directory
 ##############################################################################
 from odoo import models, fields, api, _
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import UserError
 import logging
 _logger = logging.getLogger(__name__)
 
 
 class AccountPaymentGroup(models.Model):
-    _inherit = "account.payment.group"
-    _order = "payment_date desc, document_number desc, id desc"
 
-    document_number = fields.Char(
-        string='Document Number',
-        copy=False,
-        readonly=True,
-        states={'draft': [('readonly', False)]},
-        track_visibility='always',
-        index=True,
-    )
+    _inherit = "account.payment.group"
+    _order = "payment_date desc, name desc, id desc"
+    _check_company_auto = True
+
     document_sequence_id = fields.Many2one(
         related='receiptbook_id.sequence_id',
     )
-    localization = fields.Selection(
-        related='company_id.localization',
-    )
-    # por ahora no agregamos esto, vamos a ver si alguien lo pide
-    # manual_prefix = fields.Char(
-    #     related='receiptbook_id.prefix',
-    #     string='Prefix',
-    #     readonly=True,
-    #     copy=False
-    # )
-    # manual_sufix = fields.Integer(
-    #     'Number',
-    #     readonly=True,
-    #     states={'draft': [('readonly', False)]},
-    #     copy=False
-    # )
-    # TODO depreciate this field on v9
-    # be care that sipreco project use it
-    # force_number = fields.Char(
-    #     'Force Number',
-    #     readonly=True,
-    #     states={'draft': [('readonly', False)]},
-    #     copy=False
-    # )
     receiptbook_id = fields.Many2one(
         'account.payment.receiptbook',
         'ReceiptBook',
         readonly=True,
-        track_visibility='always',
         states={'draft': [('readonly', False)]},
-        ondelete='restrict',
         auto_join=True,
+        check_company=True,
     )
     document_type_id = fields.Many2one(
         related='receiptbook_id.document_type_id',
@@ -64,16 +33,42 @@ class AccountPaymentGroup(models.Model):
         compute='_compute_next_number',
         string='Next Number',
     )
+    # this field should be created on account_payment_document so that we have
+    # a name if we don't work with account.document.type
     name = fields.Char(
-        compute='_compute_name',
         string='Document Reference',
-        store=True,
-        index=True,
+        copy=False,
     )
+    document_number = fields.Char(
+        compute='_compute_document_number', inverse='_inverse_document_number',
+        string='Document Number', readonly=True, states={'draft': [('readonly', False)]})
 
     _sql_constraints = [
-        ('document_number_uniq', 'unique(document_number, receiptbook_id)',
+        ('name_uniq', 'unique(name, receiptbook_id)',
             'Document number must be unique per receiptbook!')]
+
+    @api.depends('name')
+    def _compute_document_number(self):
+        recs_with_name = self.filtered('name')
+        for rec in recs_with_name:
+            name = rec.name
+            doc_code_prefix = rec.document_type_id.doc_code_prefix
+            if doc_code_prefix and name:
+                name = name.split(" ", 1)[-1]
+            rec.document_number = name
+        remaining = self - recs_with_name
+        remaining.document_number = False
+
+    @api.onchange('document_type_id', 'document_number')
+    def _inverse_document_number(self):
+        for rec in self.filtered('document_type_id'):
+            if not rec.document_number:
+                rec.name = False
+            else:
+                document_number = rec.document_type_id._format_document_number(rec.document_number)
+                if rec.document_number != document_number:
+                    rec.document_number = document_number
+                rec.name = "%s %s" % (rec.document_type_id.doc_code_prefix, document_number)
 
     @api.depends(
         'receiptbook_id.sequence_id.number_next_actual',
@@ -82,9 +77,10 @@ class AccountPaymentGroup(models.Model):
         """
         show next number only for payments without number and on draft state
         """
-        for payment in self.filtered(
-            lambda x: x.state == 'draft' and x.receiptbook_id and
-                not x.document_number):
+        for payment in self:
+            if payment.state != 'draft' or not payment.receiptbook_id or payment.document_number:
+                payment.next_number = False
+                continue
             sequence = payment.receiptbook_id.sequence_id
             # we must check if sequence use date ranges
             if not sequence.use_date_range:
@@ -98,36 +94,6 @@ class AccountPaymentGroup(models.Model):
                 if not seq_date:
                     seq_date = sequence._create_date_range_seq(dt)
                 payment.next_number = seq_date.number_next_actual
-
-    @api.depends(
-        # 'move_name',
-        'state',
-        'document_number',
-        'document_type_id.doc_code_prefix'
-    )
-    def _compute_name(self):
-        """
-        * If document number and document type, we show them
-        * Else, we show name
-        """
-        for rec in self:
-            _logger.info('Getting name for payment group %s' % rec.id)
-            if rec.state == 'posted':
-                if rec.document_number and rec.document_type_id:
-                    name = ("%s%s" % (
-                        rec.document_type_id.doc_code_prefix or '',
-                        rec.document_number))
-                # for compatibility with v8 migration because receipbook
-                # was not required and we dont have a name
-                else:
-                    name = ', '.join(rec.payment_ids.mapped('name'))
-            else:
-                name = _('Draft Payment')
-            rec.name = name
-
-    _sql_constraints = [
-        ('name_uniq', 'unique(document_number, receiptbook_id)',
-            'Document number must be unique per receiptbook!')]
 
     @api.constrains('company_id', 'partner_type')
     def _force_receiptbook(self):
@@ -153,14 +119,6 @@ class AccountPaymentGroup(models.Model):
 
     def post(self):
         for rec in self:
-            # si no ha receiptbook no exigimos el numero, esto por ej. lo
-            # usa sipreco. Ademas limpiamos receiptbooks que se pueden
-            # haber seteado en el pago
-            if not rec.receiptbook_id:
-                rec.payment_ids.write({
-                    'receiptbook_id': False,
-                })
-                continue
             if not rec.document_number:
                 if not rec.receiptbook_id.sequence_id:
                     raise UserError(_(
@@ -171,52 +129,18 @@ class AccountPaymentGroup(models.Model):
                     rec.receiptbook_id.with_context(
                         ir_sequence_date=rec.payment_date
                         ).sequence_id.next_by_id())
-            rec.payment_ids.write({
-                'document_number': rec.document_number,
-                'receiptbook_id': rec.receiptbook_id.id,
-            })
+            rec.payment_ids.move_name = rec.name
 
-        # hacemos el llamado acá y no arriba para primero hacer los checks
-        # y ademas primero limpiar o copiar talonario antes de postear.
-        # lo hacemos antes de mandar email asi sale correctamente numerado
-        res = super(AccountPaymentGroup, self).post()
+            # hacemos el llamado acá y no arriba para primero hacer los checks
+            # y ademas primero limpiar o copiar talonario antes de postear.
+            # lo hacemos antes de mandar email asi sale correctamente numerado
+            # necesitamos realmente mandar el tipo de documento? lo necesitamos para algo?
+            super(AccountPaymentGroup, self.with_context(
+                default_l10n_latam_document_type_id=rec.document_type_id.id)).post()
+
         for rec in self:
             if rec.receiptbook_id.mail_template_id:
                 rec.message_post_with_template(
                     rec.receiptbook_id.mail_template_id.id,
                 )
-        return res
-
-    @api.constrains('receiptbook_id', 'company_id')
-    def _check_company_id(self):
-        """
-        Check receiptbook_id and voucher company
-        """
-        for rec in self:
-            if (rec.receiptbook_id and
-                    rec.receiptbook_id.company_id != rec.company_id):
-                raise ValidationError(_(
-                    'The company of the receiptbook and of the '
-                    'payment must be the same!'))
-
-    @api.constrains('receiptbook_id', 'document_number')
-    def validate_document_number(self):
-        for rec in self:
-            # if we have a sequence, number is set by sequence and we dont
-            # check this
-            if rec.document_sequence_id or not rec.document_number \
-                    or not rec.receiptbook_id:
-                continue
-            # para usar el validator deberiamos extenderlo para que reciba
-            # el registro o alguna referencia asi podemos obtener la data
-            # del prefix y el padding del talonario de recibo
-            res = rec.document_number
-            padding = rec.receiptbook_id.padding
-            res = '{:>0{padding}}'.format(res, padding=padding)
-
-            prefix = rec.receiptbook_id.prefix
-            if prefix and not res.startswith(prefix):
-                res = prefix + res
-
-            if res != rec.document_number:
-                rec.document_number = res
+        return True

@@ -512,17 +512,9 @@ class AccountPaymentGroup(models.Model):
         self.write({'state': 'confirmed'})
 
     def post(self):
-        # dont know yet why, but if we came from an invoice context values
-        # break behaviour, for eg. with demo user error writing account.account
-        # and with other users, error with block date of accounting
-        # TODO we should look for a better way to solve this
-
-        create_from_website = self._context.get(
-            'create_from_website', False)
-        create_from_statement = self._context.get(
-            'create_from_statement', False)
+        create_from_website = self._context.get('create_from_website', False)
+        create_from_statement = self._context.get('create_from_statement', False)
         create_from_expense = self._context.get('create_from_expense', False)
-        self = self.with_context({})
         for rec in self:
             # TODO if we want to allow writeoff then we can disable this
             # constrain and send writeoff_journal_id and writeoff_acc_id
@@ -557,6 +549,7 @@ class AccountPaymentGroup(models.Model):
                     writeoff_acc_id, writeoff_journal_id)
 
             rec.state = 'posted'
+        return True
 
     @api.returns('mail.message', lambda value: value.id)
     def message_post(self, **kwargs):
