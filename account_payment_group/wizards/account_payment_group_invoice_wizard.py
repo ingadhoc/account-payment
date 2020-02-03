@@ -171,7 +171,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
     def confirm(self):
         self.ensure_one()
 
-        invoice = self.env['account.invoice'].create(self.get_invoice_vals())
+        invoice = self.env['account.move'].create(self.get_invoice_vals())
 
         inv_line_vals = {
             'product_id': self.product_id.id,
@@ -179,7 +179,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
             'invoice_id': invoice.id,
             'invoice_line_tax_ids': [(6, 0, self.tax_ids.ids)],
         }
-        invoice_line = self.env['account.invoice.line'].new(inv_line_vals)
+        invoice_line = self.env['account.move.line'].new(inv_line_vals)
         invoice_line._onchange_product_id()
         # restore chosen taxes (changed by _onchange_product_id)
         invoice_line.invoice_line_tax_ids = self.tax_ids

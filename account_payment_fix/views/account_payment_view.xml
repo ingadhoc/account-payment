@@ -28,10 +28,6 @@
                 <attribute name="widget">many2one</attribute>
                 <attribute name="options">{'no_create': True, 'no_open': True}</attribute>
             </field>
-            <field name="partner_id" position="attributes">
-                <attribute name="domain">[(partner_type, '=', True)]</attribute>
-            </field>
-
         </field>
     </record>
 

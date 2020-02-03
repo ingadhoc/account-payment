@@ -7,13 +7,12 @@
         <field name="inherit_id" ref="account_payment_group.view_account_payment_group_invoice_wizard"/>
         <field name="arch" type="xml">
             <form>
-                <field name="available_journal_document_type_ids" invisible="1"/>
                 <field name="use_documents" invisible="1"/>
                 <field name="document_sequence_id" invisible="1"/>
             </form>
 
             <field name="journal_id" position="after">
-                <field name="journal_document_type_id" string="Document Type" attrs="{'invisible': [('use_documents', '=', False)], 'required': [('use_documents', '=', True)]}" domain="[('id', 'in', available_journal_document_type_ids)]"/>
+                <field name="journal_document_type_id" string="Document Type" attrs="{'invisible': [('use_documents', '=', False)], 'required': [('use_documents', '=', True)]}"/>
                 <field name="document_number" attrs="{'invisible': ['|', ('document_sequence_id', '!=', False), ('use_documents', '=', False)], 'required': [('document_sequence_id', '=', False), ('use_documents', '=', True)]}"/>
             </field>
         </field>
@@ -22,7 +21,6 @@
     <record id="action_account_payment_group_invoice_wizard" model="ir.actions.act_window">
         <field name="name">Credit / Debit Note</field>
         <field name="res_model">account.payment.group.invoice.wizard</field>
-        <field name="view_type">form</field>
         <field name="view_mode">form</field>
        <field name="target">new</field>
     </record>

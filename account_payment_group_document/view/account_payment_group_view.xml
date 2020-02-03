@@ -8,12 +8,11 @@
         <field name="arch" type="xml">
             <form>
                 <field name="document_sequence_id" invisible="1"/>
-                <field name="localization" invisible="1"/>
             </form>
             <field name="payment_date" position="before">
                 <!-- only required on posted state for compatibility if you install this module with payments already created -->
-                <field name="receiptbook_id" attrs="{'invisible': [('localization', '=', False)], 'required':[('localization', '!=', False), ('state', '=', 'draft')]}" domain="[('partner_type', '=', partner_type), ('company_id', '=', company_id)]"/>
-                <field name="document_number" attrs="{'invisible': ['|', ('document_sequence_id', '!=', False), ('localization', '=', False)], 'required': [('document_sequence_id', '=', False), ('localization', '!=', False)]}"/>
+                <field name="receiptbook_id" attrs="{'required':[('state', '=', 'draft')]}" domain="[('partner_type', '=', partner_type), ('company_id', '=', company_id)]"/>
+                <field name="document_number" attrs="{'invisible': [('document_sequence_id', '!=', False)], 'required': [('document_sequence_id', '=', False)]}"/>
             </field>
 
             <h1>
