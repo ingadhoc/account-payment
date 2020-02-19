@@ -157,12 +157,12 @@
                 <filter name="to_cash" string="Ready to Cash" domain="[['state', '=', 'holding'], ['payment_date', '&lt;=', context_today().strftime('%Y-%m-%d')]]"/>
                 <filter name="to_expire" string="Soon to Expire" domain="[['state', '=', 'holding'], ['payment_date', '&lt;=', (context_today()-datetime.timedelta(days=15)).strftime('%Y-%m-%d')]]"/>
                 <group expand="0" string="Group By...">
-                    <filter name="issue_date" string="Issue Date" context="{'group_by':'issue_date'}"/>
-                    <filter name="payment_date" string="Payment Date" context="{'group_by':'payment_date'}"/>
-                    <filter name="journal_id" string="Journal" context="{'group_by':'journal_id'}"/>
-                    <filter name="state" string="State" context="{'group_by':'state'}"/>
-                    <filter name="first_partner_id" string="First operation partner" context="{'group_by':'first_partner_id'}"/>
-                    <filter name="last_partner_id" string="Last operation partner" context="{'group_by':'partner_id'}"/>
+                    <filter name="groupby_issue_date" string="Issue Date" context="{'group_by':'issue_date'}"/>
+                    <filter name="groupby_payment_date" string="Payment Date" context="{'group_by':'payment_date'}"/>
+                    <filter name="groupby_journal_id" string="Journal" context="{'group_by':'journal_id'}"/>
+                    <filter name="groupy_state" string="State" context="{'group_by':'state'}"/>
+                    <filter name="groupby_first_partner_id" string="First operation partner" context="{'group_by':'first_partner_id'}"/>
+                    <filter name="groupby_last_partner_id" string="Last operation partner" context="{'group_by':'partner_id'}"/>
                 </group>
             </search>
         </field>
