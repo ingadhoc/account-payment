@@ -721,6 +721,7 @@ class AccountCheck(models.Model):
             inv_vals['currency_id'] = self.currency_id.id
         # we send internal_type for compatibility with account_document
         invoice = self.env['account.move'].with_context(
+            company_id=journal.company_id.id, force_company=journal.company_id.id,
             internal_type='debit_note').create(inv_vals)
         self._add_operation(operation, invoice, partner, date=action_date)
 
