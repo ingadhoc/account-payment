@@ -5,9 +5,8 @@
         <field name="name">account.checkbook.tree</field>
         <field name="model">account.checkbook</field>
         <field name="arch" type="xml">
-            <tree string="Checkbooks" colors="blue:state == 'draft';black:state in ('active');red:state == 'hrejected';gray:state == 'used'" editable="bottom">
+            <tree string="Checkbooks" decoration-info="state == 'draft'" decoration-muted="state == 'cancel'" editable="bottom">
                 <field name="issue_check_subtype"/>
-                <field name="name"/>
                 <field name="next_number"/>
                 <field name="range_to"/>
                 <field name="numerate_on_printing"/>

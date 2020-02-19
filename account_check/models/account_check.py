@@ -75,7 +75,6 @@ class AccountCheckOperation(models.Model):
     notes = fields.Text(
     )
 
-    @api.multi
     def unlink(self):
         for rec in self:
             if rec.origin:
@@ -84,7 +83,6 @@ class AccountCheckOperation(models.Model):
                     '\nYou can delete the origin reference and unlink after.'))
         return super(AccountCheckOperation, self).unlink()
 
-    @api.multi
     @api.depends('origin')
     def _compute_origin_name(self):
         """
@@ -116,7 +114,6 @@ class AccountCheckOperation(models.Model):
         return [
             ('account.payment', 'Payment'),
             ('account.check', 'Check'),
-            ('account.invoice', 'Invoice'),
             ('account.move', 'Journal Entry'),
             ('account.move.line', 'Journal Item'),
             ('account.bank.statement.line', 'Statement Line'),
@@ -237,7 +234,7 @@ class AccountCheck(models.Model):
         'res.currency',
         readonly=True,
         states={'draft': [('readonly', False)]},
-        default=lambda self: self.env.user.company_id.currency_id.id,
+        default=lambda self: self.env.company.currency_id.id,
         required=True,
     )
     payment_date = fields.Date(
@@ -265,10 +262,12 @@ class AccountCheck(models.Model):
 
     @api.depends('operation_ids.partner_id')
     def _compute_first_partner(self):
-        for rec in self.filtered('operation_ids'):
+        for rec in self:
+            if not rec.operation_ids:
+                rec.first_partner_id = False
+                continue
             rec.first_partner_id = rec.operation_ids[-1].partner_id
 
-    @api.multi
     def onchange(self, values, field_name, field_onchange):
         """
         Con esto arreglamos el borrador del origin de una operacíón de deposito
@@ -281,7 +280,6 @@ class AccountCheck(models.Model):
         return super(AccountCheck, self).onchange(
             values, field_name, field_onchange)
 
-    @api.multi
     @api.constrains('issue_date', 'payment_date')
     @api.onchange('issue_date', 'payment_date')
     def onchange_date(self):
@@ -292,7 +290,6 @@ class AccountCheck(models.Model):
                 raise UserError(
                     _('Check Payment Date must be greater than Issue Date'))
 
-    @api.multi
     @api.constrains(
         'type',
         'number',
@@ -314,7 +311,6 @@ class AccountCheck(models.Model):
                     rec.checkbook_id.state = 'used'
         return False
 
-    @api.multi
     @api.constrains(
         'type',
         'owner_name',
@@ -352,7 +348,6 @@ class AccountCheck(models.Model):
                         rec.name, same_checks.ids))
         return True
 
-    @api.multi
     def _del_operation(self, origin):
         """
         We check that the operation that is being cancel is the last operation
@@ -367,7 +362,6 @@ class AccountCheck(models.Model):
             rec.operation_ids[0].origin = False
             rec.operation_ids[0].unlink()
 
-    @api.multi
     def _add_operation(
             self, operation, origin, partner=None, date=False):
         for rec in self:
@@ -394,7 +388,6 @@ class AccountCheck(models.Model):
             }
             rec.operation_ids.create(vals)
 
-    @api.multi
     @api.depends(
         'operation_ids.operation',
         'operation_ids.date',
@@ -402,12 +395,11 @@ class AccountCheck(models.Model):
     def _compute_state(self):
         for rec in self:
             if rec.operation_ids:
-                operation = rec.operation_ids[0].operation
+                operation = rec.operation_ids.sorted()[0].operation
                 rec.state = operation
             else:
                 rec.state = 'draft'
 
-    @api.multi
     def _check_state_change(self, operation):
         """
         We only check state change from _add_operation because we want to
@@ -453,7 +445,6 @@ class AccountCheck(models.Model):
                     self.name,
                     self.id))
 
-    @api.multi
     def unlink(self):
         for rec in self:
             if rec.state not in ('draft', 'cancel'):
@@ -463,7 +454,6 @@ class AccountCheck(models.Model):
 
 # checks operations from checks
 
-    @api.multi
     def bank_debit(self):
         self.ensure_one()
         if self.state in ['handed']:
@@ -486,7 +476,6 @@ class AccountCheck(models.Model):
         move = payment._create_payment_entry(payment.amount)
         payment.write({'state': 'posted', 'move_name': move.name})
 
-    @api.multi
     def handed_reconcile(self, move):
         """
         Funcion que por ahora solo intenta conciliar cheques propios entregados
@@ -579,7 +568,6 @@ class AccountCheck(models.Model):
                 operations -= operation
         return operations
 
-    @api.multi
     def _get_operation(self, operation, partner_required=False):
         self.ensure_one()
         op = self.operation_ids.search([
@@ -592,7 +580,6 @@ class AccountCheck(models.Model):
                     'You will need to do it manually.') % (operation, op.id))
         return op
 
-    @api.multi
     def claim(self):
         self.ensure_one()
         if self.state in ['rejected'] and self.type == 'third_check':
@@ -601,7 +588,6 @@ class AccountCheck(models.Model):
                 'reclaimed', 'customer', self.first_partner_id,
                 self.company_id._get_check_account('rejected'))
 
-    @api.multi
     def customer_return(self):
         self.ensure_one()
         if self.state in ['holding'] and self.type == 'third_check':
@@ -647,7 +633,6 @@ class AccountCheck(models.Model):
             elif not rec.amount_company_currency:
                 rec.amount_company_currency = rec.amount
 
-    @api.multi
     def reject(self):
         self.ensure_one()
         if self.state in ['deposited', 'selled']:
@@ -680,7 +665,6 @@ class AccountCheck(models.Model):
                 'rejected', 'supplier', operation.partner_id,
                 self.company_id._get_check_account('deferred'))
 
-    @api.multi
     def action_create_debit_note(
             self, operation, partner_type, partner, account):
         self.ensure_one()
@@ -689,11 +673,9 @@ class AccountCheck(models.Model):
         if partner_type == 'supplier':
             invoice_type = 'in_invoice'
             journal_type = 'purchase'
-            view_id = self.env.ref('account.invoice_supplier_form').id
         else:
             invoice_type = 'out_invoice'
             journal_type = 'sale'
-            view_id = self.env.ref('account.invoice_form').id
 
         journal = self.env['account.journal'].search([
             ('company_id', '=', self.company_id.id),
@@ -725,9 +707,9 @@ class AccountCheck(models.Model):
             # 'name': name,
             # this is the reference that goes on account.move
             'rejected_check_id': self.id,
-            'reference': name,
-            'date_invoice': action_date,
-            'origin': _('Check nbr (id): %s (%s)') % (self.name, self.id),
+            'ref': name,
+            'invoice_date': action_date,
+            'invoice_origin': _('Check nbr (id): %s (%s)') % (self.name, self.id),
             'journal_id': journal.id,
             # this is done on muticompany fix
             # 'company_id': journal.company_id.id,
@@ -738,7 +720,7 @@ class AccountCheck(models.Model):
         if self.currency_id:
             inv_vals['currency_id'] = self.currency_id.id
         # we send internal_type for compatibility with account_document
-        invoice = self.env['account.invoice'].with_context(
+        invoice = self.env['account.move'].with_context(
             internal_type='debit_note').create(inv_vals)
         self._add_operation(operation, invoice, partner, date=action_date)
 
@@ -746,8 +728,7 @@ class AccountCheck(models.Model):
             'name': name,
             'view_type': 'form',
             'view_mode': 'form',
-            'res_model': 'account.invoice',
-            'view_id': view_id,
+            'res_model': 'account.move',
             'res_id': invoice.id,
             'type': 'ir.actions.act_window',
         }

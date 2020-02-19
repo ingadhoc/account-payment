@@ -27,7 +27,8 @@
                 <field name="checkbook_numerate_on_printing" invisible="1"/>
             </form>
             <!-- TODO ver si para una v10 implementamos algo parecido a los batch deposit y tal vez directamente hacemos que los pagos sean uno a uno con los cheques total se pueden agregar varios pagosen un payment group, tal vez para transfers usamos tambien payments groups -->
-            <field name='communication' position="after">
+            <group name='payment_difference' position="before">
+            <group>
                 <div colspan="2" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'delivered_third_check', 'issue_check'])]}">
                     <group name="checks">
                         <field name="check_id" attrs="{'invisible': [('check_id', '=', False)]}"/>
@@ -69,20 +70,12 @@
                         <field name="check_owner_name" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check'])]}"/>
                     </group>
                 </div>
-            </field>
-            <label for="amount" position="before">
-                <label for="amount" attrs="{'invisible': [('payment_method_code', '!=', 'delivered_third_check')]}"/>
-                <div name="readonly_amount_div" class="o_row" attrs="{'invisible': [('payment_method_code', '!=', 'delivered_third_check')]}">
-                    <field name="amount" readonly="True"/>
-                    <field name="currency_id" readonly="True" groups="base.group_multi_currency" attrs="{'invisible': [('other_currency', '=', False)]}"/>
-                </div>
-            </label>
-            <label for="amount" position="attributes">
-                <attribute name="attrs">{'invisible': [('payment_method_code', '=', 'delivered_third_check')]}</attribute>
-            </label>
-            <div name="amount_div" position="attributes">
-                <attribute name="attrs">{'invisible': [('payment_method_code', '=', 'delivered_third_check')]}</attribute>
-            </div>
+            </group>
+            </group>
+            <xpath expr="//div[@name='amount_div']//field[@name='amount']" position="attributes">
+                <attribute name="attrs">{'readonly': [('payment_method_code', '=', 'delivered_third_check')]}</attribute>
+                <attribute name="force_save">1</attribute>
+            </xpath>
             <field name="payment_method_id" position="after">
                 <field name="check_deposit_type" widget="radio" attrs="{'invisible': ['|', ('payment_type', '!=', 'transfer'), ('payment_method_code', '!=', 'delivered_third_check')]}"/>
             </field>

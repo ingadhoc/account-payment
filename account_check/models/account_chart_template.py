@@ -2,7 +2,7 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import models, api, fields
+from odoo import models, fields
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -30,16 +30,9 @@ class AccountChartTemplate(models.Model):
         # domain=[('type', 'in', ['other'])],
     )
 
-    @api.multi
-    def _load_template(
-            self, company, code_digits=None,
-            account_ref=None, taxes_ref=None):
-        account_ref, taxes_ref = super(
-            AccountChartTemplate, self)._load_template(
-                company,
-                code_digits=code_digits,
-                account_ref=account_ref,
-                taxes_ref=taxes_ref)
+    def _load_template(self, company, code_digits=None, account_ref=None, taxes_ref=None):
+        account_ref, taxes_ref = super()._load_template(
+            company, code_digits=code_digits, account_ref=account_ref, taxes_ref=taxes_ref)
         for field in [
                 'rejected_check_account_id',
                 'deferred_check_account_id',
@@ -51,7 +44,6 @@ class AccountChartTemplate(models.Model):
                 company[field] = account_ref[account_field.id]
         return account_ref, taxes_ref
 
-    @api.multi
     def _create_bank_journals(self, company, acc_template_ref):
         """
         Bank - Cash journals are created with this method
