@@ -113,15 +113,6 @@ class AccountPayment(models.Model):
     checkbook_numerate_on_printing = fields.Boolean(
         related='checkbook_id.numerate_on_printing',
     )
-    # TODO borrar, esto estaria depreciado
-    # checkbook_block_manual_number = fields.Boolean(
-    #     related='checkbook_id.block_manual_number',
-    #     readonly=True,
-    # )
-    # check_number_readonly = fields.Integer(
-    #     related='check_number',
-    #     readonly=True,
-    # )
 
     @api.depends('payment_method_code')
     def _compute_check_type(self):
@@ -286,14 +277,14 @@ class AccountPayment(models.Model):
             self.check_number = False
 
 # post methods
-    def cancel(self):
+    def action_draft(self):
         for rec in self:
             # solo cancelar operaciones si estaba postead, por ej para comp.
             # con pagos confirmados, se cancelan pero no hay que deshacer nada
             # de asientos ni cheques
             if rec.state in ['confirmed', 'posted']:
                 rec.do_checks_operations(cancel=True)
-        res = super(AccountPayment, self).cancel()
+        res = super(AccountPayment, self).action_draft()
         return res
 
     def create_check(self, check_type, operation, bank):
@@ -321,7 +312,7 @@ class AccountPayment(models.Model):
             operation, self, self.partner_id, date=self.payment_date)
         return check
 
-    def do_checks_operations(self, vals=None, cancel=False):
+    def do_checks_operations(self, cancel=False):
         """
         Check attached .ods file on this module to understand checks workflows
         This method is called from:
@@ -335,6 +326,7 @@ class AccountPayment(models.Model):
         los if
         """
         self.ensure_one()
+        vals = {}
         rec = self
         if not rec.check_type:
             # continue
@@ -519,11 +511,36 @@ class AccountPayment(models.Model):
         res = super(AccountPayment, self).post()
         return res
 
-    def _get_liquidity_move_line_vals(self, amount):
-        vals = super(AccountPayment, self)._get_liquidity_move_line_vals(
-            amount)
-        vals = self.do_checks_operations(vals=vals)
-        return vals
+    def _prepare_payment_moves(self):
+        vals = super(AccountPayment, self)._prepare_payment_moves()
+
+        force_account_id = self._context.get('force_account_id')
+        all_move_vals = []
+        for rec in self:
+            move_vals = super(AccountPayment, rec)._prepare_payment_moves()
+
+            # edit liquidity lines
+            # Si se esta forzando importe en moneda de cia, usamos este importe para debito/credito
+            vals = rec.do_checks_operations()
+            if vals:
+                move_vals[0]['line_ids'][1][2].update(vals)
+
+            # edit counterpart lines
+            # use check payment date on debt entry also so that it can be used for NC/ND adjustaments
+            if rec.check_type and rec.check_payment_date:
+                move_vals[0]['line_ids'][0][2]['date_maturity'] = rec.check_payment_date
+            if force_account_id:
+                move_vals[0]['line_ids'][0][2]['account_id'] = force_account_id
+
+            # split liquidity lines on detailed checks transfers
+            if rec.payment_type == 'transfer' and rec.payment_method_code == 'delivered_third_check' \
+               and rec.check_deposit_type == 'detailed':
+                rec._split_aml_line_per_check(move_vals[0]['line_ids'])
+                rec._split_aml_line_per_check(move_vals[1]['line_ids'])
+
+            all_move_vals += move_vals
+
+        return all_move_vals
 
     def do_print_checks(self):
         # si cambiamos nombre de check_report tener en cuenta en sipreco
@@ -577,78 +594,34 @@ class AccountPayment(models.Model):
         else:
             return self.do_print_checks()
 
-    def _get_counterpart_move_line_vals(self, invoice=False):
-        vals = super(AccountPayment, self)._get_counterpart_move_line_vals(
-            invoice=invoice)
-
-        # use check payment date on debt entry also so that it can be used for NC/ND adjustaments
-        if self.check_type and self.check_payment_date:
-            vals['date_maturity'] = self.check_payment_date
-
-        force_account_id = self._context.get('force_account_id')
-        if force_account_id:
-            vals['account_id'] = force_account_id
-        return vals
-
-    def _split_aml_line_per_check(self, move):
+    def _split_aml_line_per_check(self, line_vals):
         """ Take an account mvoe, find the move lines related to check and
         split them one per earch check related to the payment
         """
-        self.ensure_one()
-        res = self.env['account.move.line']
-        move.button_cancel()
         checks = self.check_ids
-        aml = move.line_ids.with_context(check_move_validity=False).filtered(
-            lambda x: x.name != self.name)
-        if len(aml) > 1:
-            raise UserError(
-                _('Seems like this move has been already splited'))
-        elif len(aml) == 0:
-            raise UserError(
-                _('There is not move lines to split'))
 
-        amount_field = 'credit' if aml.credit else 'debit'
-        new_name = _('Deposit check %s') if aml.credit else \
-            aml.name + _(' check %s')
+        amount_field = 'credit' if line_vals[1][2]['credit'] else 'debit'
+        new_name = _('Deposit check %s') if line_vals[1][2]['credit'] else line_vals[1][2]['name'] + _(' check %s')
 
         # if the move line has currency then we are delivering checks on a
         # different currency than company one
-        currency = aml.currency_id
+        currency = line_vals[1][2]['currency_id']
         currency_sign = amount_field == 'debit' and 1.0 or -1.0
-        aml.write({
+        line_vals[1][2].update({
             'name': new_name % checks[0].name,
             amount_field: checks[0].amount_company_currency,
             'date_maturity': checks[0].payment_date,
             'amount_currency': currency and currency_sign * checks[0].amount,
         })
-        res |= aml
         checks -= checks[0]
         for check in checks:
-            res |= aml.copy({
+            check_vals = line_vals[1][2].copy()
+            check_vals.update({
                 'name': new_name % check.name,
                 amount_field: check.amount_company_currency,
                 'date_maturity': check.payment_date,
                 'payment_id': self.id,
                 'amount_currency': currency and currency_sign * check.amount,
             })
-        move.post()
-        return res
-
-    def _create_payment_entry(self, amount):
-        move = super(AccountPayment, self)._create_payment_entry(amount)
-        if self.filtered(
-            lambda x: x.payment_type == 'transfer' and
-                x.payment_method_code == 'delivered_third_check' and
-                x.check_deposit_type == 'detailed'):
-            self._split_aml_line_per_check(move)
-        return move
-
-    def _create_transfer_entry(self, amount):
-        transfer_debit_aml = super(
-            AccountPayment, self)._create_transfer_entry(amount)
-        if self.filtered(
-            lambda x: x.payment_type == 'transfer' and
-                x.payment_method_code == 'delivered_third_check' and
-                x.check_deposit_type == 'detailed'):
-            self._split_aml_line_per_check(transfer_debit_aml.move_id)
-        return transfer_debit_aml
+            line_vals.append((0, 0, check_vals))
+        return True

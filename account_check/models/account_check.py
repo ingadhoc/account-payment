@@ -262,7 +262,10 @@ class AccountCheck(models.Model):
 
     @api.depends('operation_ids.partner_id')
     def _compute_first_partner(self):
-        for rec in self.filtered('operation_ids'):
+        for rec in self:
+            if not rec.operation_ids:
+                rec.first_partner_id = False
+                continue
             rec.first_partner_id = rec.operation_ids[-1].partner_id
 
     def onchange(self, values, field_name, field_onchange):
@@ -392,7 +395,7 @@ class AccountCheck(models.Model):
     def _compute_state(self):
         for rec in self:
             if rec.operation_ids:
-                operation = rec.operation_ids[0].operation
+                operation = rec.operation_ids.sorted()[0].operation
                 rec.state = operation
             else:
                 rec.state = 'draft'
