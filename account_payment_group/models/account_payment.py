@@ -92,6 +92,11 @@ class AccountPayment(models.Model):
                rec.company_currency_id != rec.currency_id:
                 rec.other_currency = True
 
+    @api.onchange('payment_group_id')
+    def onchange_payment_group_id(self):
+        if self.payment_group_id.payment_difference:
+            self.amount = self.payment_group_id.payment_difference
+
     @api.depends('amount', 'other_currency', 'amount_company_currency')
     def _compute_exchange_rate(self):
         for rec in self:
