@@ -40,6 +40,7 @@ class AccountMove(models.Model):
         return (self.amount_total and (
             self.amount_untaxed / self.amount_total) or 1.0)
 
+    @api.depends('line_ids.account_id.internal_type', 'line_ids.reconciled')
     def _compute_open_move_lines(self):
         for rec in self:
             rec.open_move_line_ids = rec.line_ids.filtered(

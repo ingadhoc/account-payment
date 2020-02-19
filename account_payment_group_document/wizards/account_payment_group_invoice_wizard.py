@@ -50,7 +50,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
         invoice_vals = super(
             AccountPaymentGroupInvoiceWizard, self).get_invoice_vals()
         invoice_vals.update({
-            'journal_document_type_id': self.journal_document_type_id.id,
-            'document_number': self.document_number,
+            'l10n_latam_document_type_id': self.journal_document_type_id.id,
+            'l10n_latam_document_number': self.document_number,
         })
         return invoice_vals
