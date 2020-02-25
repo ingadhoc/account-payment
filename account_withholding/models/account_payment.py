@@ -27,7 +27,6 @@ class AccountPayment(models.Model):
         states={'draft': [('readonly', False)]},
     )
 
-    @api.multi
     def post(self):
         without_number = self.filtered(
             lambda x: x.tax_withholding_id and not x.withholding_number)
@@ -74,7 +73,6 @@ class AccountPayment(models.Model):
             #             self.tax_withholding_id.name)))
         return vals
 
-    @api.multi
     def _compute_payment_method_description(self):
         payments = self.filtered(
             lambda x: x.payment_method_code == 'withholding')

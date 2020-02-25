@@ -10,7 +10,6 @@ _logger = logging.getLogger(__name__)
 class AccountChartTemplate(models.Model):
     _inherit = "account.chart.template"
 
-    @api.multi
     def _create_bank_journals(self, company, acc_template_ref):
         """
         Bank - Cash journals are created with this method
