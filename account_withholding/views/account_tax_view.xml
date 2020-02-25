@@ -34,7 +34,6 @@
     <record id="action_withholding_tax_form" model="ir.actions.act_window">
         <field name="name">Withholding Taxes</field>
         <field name="res_model">account.tax</field>
-        <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
         <field name="domain" eval="False"/>
         <field name="context">{'search_default_customer': True, 'search_default_supplier': True, 'default_type_tax_use': 'supplier'}</field>
