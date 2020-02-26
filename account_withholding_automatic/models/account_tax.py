@@ -92,7 +92,6 @@ result = withholdable_base_amount * 0.10
     #     help="For taxes of type percentage, enter % ratio between 0-1."
     #     )
 
-    @api.multi
     @api.constrains(
         'withholding_non_taxable_amount',
         'withholding_non_taxable_minimum')
@@ -105,7 +104,6 @@ result = withholdable_base_amount * 0.10
                     'Non-taxable Amount can not be greater than Non-taxable '
                     'Minimum'))
 
-    @api.multi
     def _get_rule(self, voucher):
         self.ensure_one()
         # do not return rule if other type
@@ -124,7 +122,6 @@ result = withholdable_base_amount * 0.10
                 return rule
         return False
 
-    @api.multi
     def create_payment_withholdings(self, payment_group):
         for tax in self.filtered(lambda x: x.withholding_type != 'none'):
             payment_withholding = self.env[
@@ -204,7 +201,6 @@ result = withholdable_base_amount * 0.10
                 payment_withholding = payment_withholding.create(vals)
         return True
 
-    # @api.multi
     # def get_withholdable_invoiced_amount(self, payment_group):
     #     self.ensure_one()
     #     return payment_group.selected_debt_untaxed
@@ -220,7 +216,6 @@ result = withholdable_base_amount * 0.10
         #     amount += line.amount * sign * factor
         # return amount
 
-    # @api.multi
     # def get_withholdable_factor(self, voucher_line):
     #     self.ensure_one()
     #     factor = 1.0
@@ -232,7 +227,6 @@ result = withholdable_base_amount * 0.10
     #     #     factor = self.base_amount_percentage
     #     return factor
 
-    @api.multi
     def get_period_payments_domain(self, payment_group):
         """
         We make this here so it can be inherited by localizations
@@ -270,7 +264,6 @@ result = withholdable_base_amount * 0.10
         ]
         return (previous_payment_groups_domain, previous_payments_domain)
 
-    @api.multi
     def get_withholding_vals(
             self, payment_group, force_withholding_amount_type=None):
         """

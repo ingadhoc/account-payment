@@ -25,7 +25,6 @@ class AccountPaymentGroup(models.Model):
         for rec in self:
             rec.withholdable_advanced_amount = rec.unreconciled_amount
 
-    @api.multi
     @api.depends(
         'payment_ids.tax_withholding_id',
         'payment_ids.amount',
@@ -36,7 +35,6 @@ class AccountPaymentGroup(models.Model):
                 rec.payment_ids.filtered(
                     lambda x: x.tax_withholding_id).mapped('amount'))
 
-    @api.multi
     def compute_withholdings(self):
         for rec in self:
             if rec.partner_type != 'supplier':
@@ -50,7 +48,6 @@ class AccountPaymentGroup(models.Model):
                 ('company_id', '=', rec.company_id.id),
             ]).create_payment_withholdings(rec)
 
-    @api.multi
     def confirm(self):
         res = super(AccountPaymentGroup, self).confirm()
         for rec in self:
