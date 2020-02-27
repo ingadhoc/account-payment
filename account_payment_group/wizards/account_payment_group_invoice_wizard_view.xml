@@ -21,7 +21,7 @@
                          <group>
                             <field name="journal_id"/>
                             <field name="company_id" invisible="1"/>
-                            <field name="date_invoice"/>
+                            <field name="invoice_date"/>
                             <field name="date" groups="base.group_no_one"/>
                          </group>
                     </group>
