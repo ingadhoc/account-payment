@@ -25,7 +25,13 @@
             <group name="advanced_booleans" position="attributes">
                 <attribute name="attrs">{'invisible': [('type_tax_use', 'in', ['supplier', 'customer'])]}</attribute>
             </group>
-            <xpath expr="//page/group/group" position="attributes">
+            <field name="amount_type" position="attributes">
+                <attribute name="attrs">{'invisible': [('type_tax_use', 'in', ['supplier', 'customer'])]}</attribute>
+            </field>
+            <label for="amount" position="attributes">
+                <attribute name="attrs">{'invisible': [('type_tax_use', 'in', ['supplier', 'customer'])]}</attribute>
+            </label>
+            <xpath expr="//group//div" position="attributes">
                 <attribute name="attrs">{'invisible': [('type_tax_use', 'in', ['supplier', 'customer'])]}</attribute>
             </xpath>
         </field>
