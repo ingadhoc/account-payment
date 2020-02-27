@@ -26,7 +26,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
         required=True,
         ondelete='cascade',
     )
-    date_invoice = fields.Date(
+    invoice_date = fields.Date(
         string='Refund Date',
         default=fields.Date.context_today,
         required=True
@@ -77,7 +77,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
             taxes = self.product_id.supplier_taxes_id
         else:
             taxes = self.product_id.taxes_id
-        company = self.company_id or self.env.user.company_id
+        company = self.company_id or self.env.company
         taxes = taxes.filtered(lambda r: r.company_id == company)
         self.tax_ids = self.payment_group_id.partner_id.with_context(
             force_company=company.id).property_account_position_id.map_tax(
@@ -159,7 +159,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
         return {
             'invoice_payment_ref': self.description,
             'date': self.date,
-            'invoice_date': self.date_invoice,
+            'invoice_date': self.invoice_date,
             'invoice_origin': _('Payment id %s') % payment_group.id,
             'journal_id': self.journal_id.id,
             'invoice_user_id': payment_group.partner_id.user_id.id,

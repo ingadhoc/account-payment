@@ -27,7 +27,7 @@ class AccountPaymentGroup(models.Model):
         required=True,
         index=True,
         change_default=True,
-        default=lambda self: self.env.user.company_id,
+        default=lambda self: self.env.company,
         readonly=True,
         states={'draft': [('readonly', False)]},
     )
@@ -58,7 +58,7 @@ class AccountPaymentGroup(models.Model):
         'res.currency',
         string='Currency',
         required=True,
-        default=lambda self: self.env.user.company_id.currency_id,
+        default=lambda self: self.env.company.currency_id,
         readonly=True,
         states={'draft': [('readonly', False)]},
         track_visibility='always',

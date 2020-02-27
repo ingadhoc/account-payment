@@ -104,7 +104,7 @@ class AccountMove(models.Model):
                 payment_group = rec.env[
                     'account.payment.group'].with_context(
                         pay_context).create({
-                            'payment_date': rec.date_invoice
+                            'payment_date': rec.invoice_date
                         })
                 # el difference es positivo para facturas (de cliente o
                 # proveedor) pero negativo para NC.
@@ -138,7 +138,7 @@ class AccountMove(models.Model):
                     'amount': abs(payment_group.payment_difference),
                     'journal_id': pay_journal.id,
                     'payment_method_id': payment_method.id,
-                    'payment_date': rec.date_invoice,
+                    'payment_date': rec.invoice_date,
                 })
                 # if validate_payment:
                 payment_group.post()
