@@ -47,9 +47,21 @@ class AccountPayment(models.Model):
 
         return super(AccountPayment, self).post()
 
-    def _get_liquidity_move_line_vals(self, amount):
-        vals = super(AccountPayment, self)._get_liquidity_move_line_vals(
-            amount)
+    def _prepare_payment_moves(self):
+        all_move_vals = []
+        for rec in self:
+            move_vals = super(AccountPayment, rec)._prepare_payment_moves()
+
+            vals = rec._get_withholding_line_vals()
+            if vals:
+                move_vals[0]['line_ids'][1][2].update(vals)
+
+            all_move_vals += move_vals
+
+        return all_move_vals
+
+    def _get_withholding_line_vals(self):
+        vals = {}
         if self.payment_method_code == 'withholding':
             if self.payment_type == 'transfer':
                 raise UserError(_(
@@ -59,9 +71,15 @@ class AccountPayment(models.Model):
                         self.payment_type == 'inbound') or
                     (self.partner_type == 'supplier' and
                         self.payment_type == 'outbound')):
-                account = self.tax_withholding_id.account_id
+                rep_field = 'invoice_repartition_line_ids'
             else:
-                account = self.tax_withholding_id.refund_account_id
+                rep_field = 'refund_repartition_line_ids'
+            rep_lines = self.tax_withholding_id[rep_field].filtered(lambda x: x.repartition_type == 'tax')
+            if len(rep_lines) != 1:
+                raise UserError(
+                    'En los impuestos de retención debe haber una línea de repartición de tipo tax para pagos y otra'
+                    'para reembolsos')
+            account = rep_lines.account_id
             # if not accounts on taxes then we use accounts of journal
             if account:
                 vals['account_id'] = account.id
@@ -73,6 +91,7 @@ class AccountPayment(models.Model):
             #             self.tax_withholding_id.name)))
         return vals
 
+    @api.depends('payment_method_code', 'tax_withholding_id.name')
     def _compute_payment_method_description(self):
         payments = self.filtered(
             lambda x: x.payment_method_code == 'withholding')

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data> 
 
-        <record id="view_tax_form" model="ir.ui.view">
-            <field name="name">account.tax.form</field>
-            <field name="model">account.tax</field>
-            <field name="inherit_id" ref="account.view_tax_form"/>
-            <field name="arch" type="xml">
-                <!-- TODO mejorar esta vista -->
-                <xpath expr="//page" position="inside">
-                    <group attrs="{'invisible': [('type_tax_use', '!=', 'supplier')]}">
+    <record id="view_tax_form" model="ir.ui.view">
+        <field name="name">account.tax.form</field>
+        <field name="model">account.tax</field>
+        <field name="inherit_id" ref="account.view_tax_form"/>
+        <field name="arch" type="xml">
+            <!-- TODO mejorar esta vista -->
+            <xpath expr="//page" position="after">
+                <page string="Withholding computation" attrs="{'invisible': [('type_tax_use', '!=', 'supplier')]}">
+                    <group>
                         <group name="withholdings">
                             <label for="withholding_type"/>
                             <div>
@@ -38,9 +38,9 @@
                             <field name="withholding_user_error_domain" attrs="{'invisible': [('withholding_user_error_message', '=', False)]}"/>
                         </group>
                     </group>
-                </xpath>
-            </field>
-        </record>
+                </page>
+            </xpath>
+        </field>
+    </record>
 
-    </data>
 </odoo>
