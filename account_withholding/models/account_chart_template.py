@@ -18,7 +18,7 @@ class AccountChartTemplate(models.Model):
         and they will be disable by default
         """
 
-        res = super(
+        bank_journals = super(
             AccountChartTemplate, self)._create_bank_journals(
             company, acc_template_ref)
 
@@ -39,9 +39,13 @@ class AccountChartTemplate(models.Model):
                 'outbound_payment_method_ids': [
                     (4, outbound_withholding.id, None)],
             })
+            bank_journals += journal
+
             # we dont want this journal to have accounts and we can not inherit
             # to avoid creation, so we delete it
-            journal.default_credit_account_id.with_context(
-                force_unlink=True).unlink()
+            to_unlink = journal.default_credit_account_id
+            journal.default_credit_account_id = False
+            journal.default_debit_account_id = False
+            to_unlink.with_context(force_unlink=True).unlink()
 
-        return res
+        return bank_journals
