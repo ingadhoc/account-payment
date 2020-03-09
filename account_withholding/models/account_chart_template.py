@@ -24,7 +24,7 @@ class AccountChartTemplate(models.Model):
 
         # each chart of account / localization should send this key if
         # they want withholding journal to be created
-        if self._context.get('create_withholding_journal'):
+        if company._localization_use_withholdings():
             # creamos diario para retenciones
             inbound_withholding = self.env.ref(
                 'account_withholding.account_payment_method_in_withholding')
