@@ -606,8 +606,8 @@ class AccountPaymentGroup(models.Model):
         create_from_statement = self._context.get(
             'create_from_statement', False)
         create_from_expense = self._context.get('create_from_expense', False)
-        self = self.with_context({})
         for rec in self:
+            rec = rec.with_context({'company_id': rec.company_id.id})
             # TODO if we want to allow writeoff then we can disable this
             # constrain and send writeoff_journal_id and writeoff_acc_id
             if not rec.payment_ids:
