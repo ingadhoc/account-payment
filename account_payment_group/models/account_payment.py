@@ -110,7 +110,7 @@ class AccountPayment(models.Model):
         for rec in self:
             if rec.other_currency and rec.amount_company_currency != \
                     rec.currency_id.with_context(
-                        date=rec.payment_date).compute(
+                        date=rec.payment_date, company_id=rec.company_id.id).compute(
                         rec.amount, rec.company_id.currency_id):
                 force_amount_company_currency = rec.amount_company_currency
             else:
@@ -133,7 +133,7 @@ class AccountPayment(models.Model):
                 amount_company_currency = rec.force_amount_company_currency
             else:
                 amount_company_currency = rec.currency_id.with_context(
-                    date=rec.payment_date).compute(
+                    date=rec.payment_date, company_id=rec.company_id.id).compute(
                         rec.amount, rec.company_id.currency_id)
             rec.amount_company_currency = amount_company_currency
 
