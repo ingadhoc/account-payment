@@ -65,6 +65,6 @@
         <field name="search_view_id" ref="view_receipt_receiptbook_search"/>
     </record>
 
-    <menuitem action="action_receiptbook_form" id="menu_receiptbook_form" sequence="25" parent="account.account_account_menu"/>
+    <menuitem action="action_receiptbook_form" id="menu_receiptbook_form" sequence="25" parent="account.root_payment_menu"/>
 
 </odoo>

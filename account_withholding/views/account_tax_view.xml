@@ -46,6 +46,6 @@
         <field name="view_id" ref="account.view_tax_tree"/>
     </record>
 
-    <menuitem action="action_withholding_tax_form" id="menu_withholding_tax_form" parent="account.account_account_menu" sequence="1"/>
+    <menuitem action="action_withholding_tax_form" id="menu_withholding_tax_form" parent="account.root_payment_menu" sequence="1"/>
 
 </odoo>
