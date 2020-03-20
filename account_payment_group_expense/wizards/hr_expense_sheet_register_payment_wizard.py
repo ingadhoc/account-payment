@@ -5,7 +5,6 @@ class HrExpenseSheetRegisterPaymentWizard(models.TransientModel):
 
     _inherit = "hr.expense.sheet.register.payment.wizard"
 
-    @api.multi
     def expense_post_payment(self):
         """ Update context in order to identify when a account.payment is
         created from an expense.

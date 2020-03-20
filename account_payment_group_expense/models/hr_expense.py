@@ -5,7 +5,6 @@ class HrExpense(models.Model):
 
     _inherit = "hr.expense"
 
-    @api.multi
     def action_move_create(self):
         """ Update context in order to identify when a account.payment is
         created from an expense.
