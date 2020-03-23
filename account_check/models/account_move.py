@@ -32,7 +32,7 @@ class AccountMove(models.Model):
                 deferred_account_line = rec.line_ids.filtered(
                     lambda x: x.account_id == deferred_account)
                 deferred_account_line.remove_move_reconcile()
-        return super().button_cancel()
+        return super().button_draft()
 
     def post(self):
         """
