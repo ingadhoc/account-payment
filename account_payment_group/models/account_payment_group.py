@@ -296,12 +296,45 @@ class AccountPaymentGroup(models.Model):
                 'journal_id.name'))
 
     def action_payment_sent(self):
-        # self.sent = True
-        raise ValidationError(_('Not implemented yet'))
+        """ Open a window to compose an email, with the edi payment template
+            message loaded by default
+        """
+        self.ensure_one()
+        template = self.env.ref(
+            'account_payment_group.email_template_edi_payment_group',
+            False)
+        compose_form = self.env.ref(
+            'mail.email_compose_message_wizard_form', False)
+        ctx = dict(
+            default_model='account.payment.group',
+            default_res_id=self.id,
+            default_use_template=bool(template),
+            default_template_id=template and template.id or False,
+            default_composition_mode='comment',
+            mark_payment_as_sent=True,
+        )
+        return {
+            'name': _('Compose Email'),
+            'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'mail.compose.message',
+            'views': [(compose_form.id, 'form')],
+            'view_id': compose_form.id,
+            'target': 'new',
+            'context': ctx,
+        }
 
     def payment_print(self):
-        # self.sent = True
-        raise ValidationError(_('Not implemented yet'))
+        self.ensure_one()
+        self.sent = True
+
+        # if we print caming from other model then active id and active model
+        # is wrong and it raise an error with custom filename
+        self = self.with_context(
+            active_model=self._name, active_id=self.id, active_ids=self.ids)
+
+        return self.env.ref('account_payment_group.action_report_payment_group').report_action(self)
 
     def _compute_payment_pop_up(self):
         pop_up = self._context.get('pop_up', False)

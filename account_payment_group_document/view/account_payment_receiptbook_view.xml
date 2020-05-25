@@ -7,6 +7,7 @@
         <field name="arch" type="xml">
             <search string="Receipt Books">
                 <field name="name"/>
+                <field name="report_partner_id"/>
                 <field name="sequence_type"/>
                 <field name="partner_type"/>
                 <field name="document_type_id"/>
@@ -22,6 +23,7 @@
             <tree string="Receipt Books">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
+                <field name="report_partner_id"/>
                 <field name="sequence_type"/>
                 <field name="partner_type"/>
                 <field name="document_type_id"/>
@@ -34,12 +36,13 @@
         <field name="name">account.payment.receiptbook.form</field>
         <field name="model">account.payment.receiptbook</field>
         <field name="arch" type="xml">
-            <form string="Receipt Books"> 
+            <form string="Receipt Books">
                 <sheet string="Receipt Books">
                     <group>
                         <group>
                             <field name="name"/>
                             <field name="partner_type"/>
+                            <field name="report_partner_id"/>
                             <field name="sequence_type"/>
                             <field name="padding" attrs="{'invisible':[('sequence_type','!=','manual')],'required':[('sequence_type','=','manual')]}"/>
                             <field name="prefix"/>
