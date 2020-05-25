@@ -14,6 +14,9 @@ class AccountPaymentReceiptbook(models.Model):
     # analogo a account.journal.document.type pero para pagos
     _order = 'sequence asc'
 
+    report_partner_id = fields.Many2one(
+        'res.partner',
+    )
     mail_template_id = fields.Many2one(
         'mail.template',
         'Email Template',
