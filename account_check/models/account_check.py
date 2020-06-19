@@ -394,7 +394,7 @@ class AccountCheck(models.Model):
     )
     def _compute_state(self):
         for rec in self:
-            if rec.operation_ids:
+            if rec.operation_ids.sorted():
                 operation = rec.operation_ids.sorted()[0].operation
                 rec.state = operation
             else:
