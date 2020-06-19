@@ -447,14 +447,20 @@ class AccountPaymentGroup(models.Model):
         for rec in self:
             rec.unreconciled_amount = rec.to_pay_amount - rec.selected_debt
 
+    def onchange(self, values, field_name, field_onchange):
+        """ Fix this issue https://github.com/ingadhoc/account-payment/issues/189
+        """
+        fields = []
+        for field in field_onchange.keys():
+            if field.startswith(('to_pay_move_line_ids.')):
+                fields.append(field)
+        for field in fields:
+            del field_onchange[field]
+        return super().onchange(values, field_name, field_onchange)
+
     @api.onchange('partner_id', 'partner_type', 'company_id')
     def _refresh_payments_and_move_lines(self):
-        # clean actual invoice and payments
-        # no hace falta
-        if self._context.get('pop_up'):
-            return
         for rec in self:
-            rec.payment_ids = [(2, item.id, 0) for item in rec.payment_ids]
             rec.add_all()
 
     def _get_to_pay_move_lines_domain(self):
