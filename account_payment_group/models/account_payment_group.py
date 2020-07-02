@@ -424,7 +424,7 @@ class AccountPaymentGroup(models.Model):
             selected_finacial_debt = 0.0
             selected_debt = 0.0
             selected_debt_untaxed = 0.0
-            for line in rec.to_pay_move_line_ids:
+            for line in rec.to_pay_move_line_ids._origin:
                 selected_finacial_debt += line.financial_amount_residual
                 selected_debt += line.amount_residual
                 # factor for total_untaxed
@@ -474,6 +474,7 @@ class AccountPaymentGroup(models.Model):
             ('reconciled', '=', False),
             ('full_reconcile_id', '=', False),
             ('company_id', '=', self.company_id.id),
+            ('move_id.state', '=', 'posted')
             # '|',
             # ('amount_residual', '!=', False),
             # ('amount_residual_currency', '!=', False),
