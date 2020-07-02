@@ -22,7 +22,7 @@
         <field name="arch" type="xml">
             <form string="Checkbooks">
                 <header string="Checkbooks">
-                    <field name="state" widget="statusbar" clickable="True"/>
+                    <field name="state" widget="statusbar" options="{'clickable': '1'}"/>
                 </header>
                 <sheet string="Checkbooks">
                     <group>
