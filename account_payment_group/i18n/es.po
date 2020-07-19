@@ -164,6 +164,12 @@ msgid "Cancelled"
 msgstr "Cancelado"
 
 #. module: account_payment_group
+#: model:ir.model.fields,help:account_payment_group.field_account_payment_group__writeoff_label
+msgid "Change label of the counterpart that will hold the payment difference"
+msgstr ""
+"Cambiar la etiqueta de la contraparte que mantendrá la diferencia de pago"
+
+#. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_res_config_settings__group_choose_payment_type
 #: model:res.groups,name:account_payment_group.group_choose_payment_type
 msgid "Choose Payment Type on Payments"
@@ -286,6 +292,11 @@ msgstr "Descripción"
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_from_group_tree
 msgid "Details"
 msgstr "Detalles"
+
+#. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__writeoff_account_id
+msgid "Difference Account"
+msgstr "Cuenta diferencial"
 
 #. module: account_payment_group
 #: model:ir.model.fields,help:account_payment_group.field_account_payment_group__payment_difference
@@ -447,12 +458,27 @@ msgid "Journal Item"
 msgstr "Apunte Contable"
 
 #. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__writeoff_label
+msgid "Journal Item Label"
+msgstr "Etiqueta de apunte contable."
+
+#. module: account_payment_group
 #: code:addons/account_payment_group/models/account_payment_group.py:0
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
 #, python-format
 msgid "Journal Items"
 msgstr "Apuntes Contables"
+
+#. module: account_payment_group
+#: model:ir.model.fields.selection,name:account_payment_group.selection__account_payment_group__payment_difference_handling__open
+msgid "Keep open"
+msgstr "Mantener abierto"
+
+#. module: account_payment_group
+#: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
+msgid "Label"
+msgstr "Descripción"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group____last_update
@@ -485,6 +511,11 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__message_main_attachment_id
 msgid "Main Attachment"
 msgstr "Adjunto Principal"
+
+#. module: account_payment_group
+#: model:ir.model.fields.selection,name:account_payment_group.selection__account_payment_group__payment_difference_handling__reconcile
+msgid "Mark invoice as fully paid"
+msgstr "Marcar la factura como totalmente pagada"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__matched_amount
@@ -617,6 +648,11 @@ msgid "Payment Date"
 msgstr "Fecha de Pago"
 
 #. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__payment_difference_handling
+msgid "Payment Difference Handling"
+msgstr "Manejo de diferencias de pago"
+
+#. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment__payment_group_id
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard__payment_group_id
@@ -676,6 +712,11 @@ msgstr "Tipo de Pago"
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment__payment_type_copy
 msgid "Payment Type (without transfer)"
 msgstr "Tipo de pago (sin transferencia)"
+
+#. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__writeoff_amount
+msgid "Payment difference amount"
+msgstr "Monto Conciliado Diferencia de Pago"
 
 #. module: account_payment_group
 #: code:addons/account_payment_group/wizards/account_payment_group_invoice_wizard.py:0
@@ -740,6 +781,11 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__pop_up
 msgid "Pop Up"
 msgstr "Pestaña emergente"
+
+#. module: account_payment_group
+#: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
+msgid "Post Difference In"
+msgstr "Contabilizar la diferencia en"
 
 #. module: account_payment_group
 #: model:ir.model.fields.selection,name:account_payment_group.selection__account_payment_group__state__posted
