@@ -20,7 +20,7 @@
     </template>
 
     <report
-        string="Recibo / Orden de Pago"
+        string="Receipt / Payment Order"
         id="action_report_payment_group"
         model="account.payment.group"
         report_type="qweb-pdf"

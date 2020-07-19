@@ -110,6 +110,10 @@
                         <field name="payments_amount" string="Payments Amount" options="{'currency_field': 'currency_id'}"/>
                         <field name="payment_difference" options="{'currency_field': 'currency_id'}" states="draft,confirmed"/>
                     </group>
+                    <group>
+                        <button name="update_advance_payment" string="+/- Advance Payments" states="draft" type="object"/>
+                    </group>
+                    <group/>
                 </group>
                 <notebook>
                     <page string="To Pay Lines" attrs="{'invisible': ['|', '|', ('pop_up', '=', True), ('payment_subtype', '!=', 'double_validation'), ('state', 'not in', ['draft', 'confirmed'])]}">
@@ -192,6 +196,16 @@
           Payments are used to register liquidity movements (send or collect).
           You can then process those payments by your own means or by using installed facilities.
         </p>
+    </field>
+</record>
+
+<!-- Abrir el formulario de multipagos cuando se selecciona varias facturas-->
+<record id="account.action_account_invoice_from_list" model="ir.actions.server">
+    <field name="model_id" ref="account_payment_group.model_account_payment_group"/>
+    <field name="binding_view_types">list</field>
+    <field name="state">code</field>
+    <field name="code">
+        action = model.action_account_invoice_payment_group()
     </field>
 </record>
 
