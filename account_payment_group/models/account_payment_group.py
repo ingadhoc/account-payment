@@ -577,6 +577,7 @@ class AccountPaymentGroup(models.Model):
     def action_draft(self):
         self.mapped('payment_ids').action_draft()
         # rec.payment_ids.write({'invoice_ids': [(5, 0, 0)]})
+        self.writeoff_amount = 0.0
         return self.write({'state': 'draft'})
 
     def unlink(self):
@@ -637,12 +638,13 @@ class AccountPaymentGroup(models.Model):
 
     def reconcile_diff_payment(self):
         self.ensure_one()
+        sign = self.partner_type == 'supplier' and -1.0 or 1.0
         payment_curr = self.payment_ids.filtered(lambda x: x.currency_id == self.currency_id)
         if payment_curr:
             payment_diff = payment_curr.sorted(key=lambda i: i.amount, reverse=True)[0]
         else:
             payment_diff = self.payment_ids.sorted(key=lambda i: i.amount, reverse=True)[0]
-        payment_diff.payment_difference = self.currency_id._convert(self.payment_difference,
+        payment_diff.payment_difference = sign * self.currency_id._convert(self.payment_difference,
                                                                     payment_diff.currency_id,
                                                                     self.company_id,
                                                                     self.payment_date or fields.Date.today())
