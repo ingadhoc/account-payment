@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record model="ir.ui.view" id="account_check_lot_action_wizard_form_view">
+        <field name="name">account.check.lot.action.wizard.form</field>
+        <field name="model">account.check.lot.action.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Check Action">
+                <field name="action_type" invisible="1"/>
+                <group >
+                    <group>
+                        <field name="date"/>
+                        <field name="debit_note" attrs="{'invisible': [('action_type', '!=', 'selled')]}"/>
+                        <field name="amount_total" readonly="1" force_save="1" attrs="{'invisible': [('action_type', '!=', 'selled')]}"/>
+                        <field name="amount" attrs="{'invisible': [('action_type', '!=', 'selled')]}"/>
+                        <field name="communication" attrs="{'invisible': [('action_type', '!=', 'deposited')]}"/>
+                    </group>
+                    <group>
+                        <field name="lot_operation"/>
+                        <field name="partner_id" attrs="{'invisible': [('action_type', 'not in', ['negotiated', 'used', 'selled'])],
+                                                         'required': [('action_type', 'in', ['negotiated', 'used', 'selled'])]}"/>
+                        <field name="journal_id" attrs="{'invisible': [('action_type', 'not in', ('selled', 'deposited'))],
+                                                         'required': [('action_type', 'in', ('selled', 'deposited'))]}"/>
+                        <field name="expense_check_account_id" attrs="{'invisible': [('action_type', '!=', 'selled')],
+                                                         'required': [('action_type', '=', 'selled')]}"/>
+                        <field name="tax_id" attrs="{'invisible': [('debit_note', '!=', True)],
+                                                         'required': [('debit_note', '=', True)]}"/>
+                    </group>
+                </group>
+                <footer>
+                    <button string="Confirm" name="action_confirm" type="object" class="oe_highlight"/>
+                    or
+                    <button string="Cancel" class="oe_link" special="cancel"/>
+                </footer>     
+            </form>
+        </field>
+    </record>
+
+    <record id="action_account_check_lot_action_wizard" model="ir.actions.act_window">
+        <field name="name">Check Lot Action</field>
+        <field name="res_model">account.check.lot.action.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="action_account_invoice_from_list" model="ir.actions.server">
+        <field name="name">Register Payment</field>
+        <field name="model_id" ref="account.model_account_payment"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+            action = model.action_register_payment()
+        </field>
+    </record>
+
+    <record id="action_used_account_check_lot_action_wizard" model="ir.actions.act_window">
+        <field name="name">Checks in use</field>
+        <field name="res_model">account.check.lot.action.wizard</field>
+        <field name="binding_model_id" ref="account_check.model_account_check"/>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_action_type':'used'}</field>
+    </record>
+
+    <record id="action_negotiated_account_check_lot_action_wizard" model="ir.actions.act_window">
+        <field name="name">Negotiate checks</field>
+        <field name="res_model">account.check.lot.action.wizard</field>
+        <field name="binding_model_id" ref="account_check.model_account_check"/>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_action_type':'negotiated'}</field>
+    </record>
+
+    <record id="action_sell_account_check_lot_action_wizard" model="ir.actions.act_window">
+        <field name="name">Sell checks</field>
+        <field name="res_model">account.check.lot.action.wizard</field>
+        <field name="binding_model_id" ref="account_check.model_account_check"/>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_action_type':'selled'}</field>
+    </record>
+
+    <record id="action_deposited_account_check_lot_action_wizard" model="ir.actions.act_window">
+        <field name="name">Deposited checks</field>
+        <field name="res_model">account.check.lot.action.wizard</field>
+        <field name="binding_model_id" ref="account_check.model_account_check"/>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_action_type':'deposited'}</field>
+    </record>
+
+    <record id="action_debit_account_check_lot_action_wizard" model="ir.actions.act_window">
+        <field name="name">Bank Debit checks</field>
+        <field name="res_model">account.check.lot.action.wizard</field>
+        <field name="binding_model_id" ref="account_check.model_account_check"/>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_action_type':'deposited'}</field>
+    </record>
+</odoo>
