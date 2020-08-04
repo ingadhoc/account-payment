@@ -9,7 +9,6 @@ _logger = logging.getLogger(__name__)
 
 
 class AccountCheckbook(models.Model):
-
     _name = 'account.checkbook'
     _description = 'Account Checkbook'
 
@@ -31,9 +30,9 @@ class AccountCheckbook(models.Model):
         compute='_compute_next_number',
         inverse='_inverse_next_number',
     )
-    issue_check_subtype = fields.Selection(
+    check_subtype = fields.Selection(
         [('deferred', 'Deferred'), ('currents', 'Currents'), ('electronic', 'Electronic')],
-        string='Issue Check Subtype',
+        string='Check Subtype',
         required=True,
         default='deferred',
         help='* Con cheques corrientes el asiento generado por el pago '
@@ -130,16 +129,16 @@ class AccountCheckbook(models.Model):
                 'company_id': rec.journal_id.company_id.id,
             })
 
-    @api.depends('issue_check_subtype', 'range_to')
+    @api.depends('check_subtype', 'range_to')
     def _compute_name(self):
         for rec in self:
-            if not rec.issue_check_subtype:
+            if not rec.check_subtype:
                 rec.name = False
                 continue
             name = {
                 'deferred': _('Deferred Checks'),
                 'currents': _('Currents Checks'),
-                'electronic': _('Electronic Checks')}.get(rec.issue_check_subtype)
+                'electronic': _('Electronic Checks')}.get(rec.check_subtype)
             if rec.range_to:
                 name += _(' up to %s') % rec.range_to
             rec.name = name

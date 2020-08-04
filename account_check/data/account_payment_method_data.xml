@@ -21,4 +21,12 @@
 
     <function model="account.journal" name="_enable_issue_check_on_bank_journals"/>
 
+    <record id="sequence_lot_operation_check" model="ir.sequence">
+        <field name="name">Lot Operation Check sequence</field>
+        <field name="code">sequence.lot.operation.check</field>
+        <field eval="1" name="number_next"/>
+        <field eval="1" name="number_increment"/>
+        <field name="padding">5</field>
+    </record>
+
 </odoo>

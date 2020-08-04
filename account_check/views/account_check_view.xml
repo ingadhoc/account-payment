@@ -47,7 +47,6 @@
                 <field name="id" invisible="1"/>
                 <field name="type" invisible="1"/>
                 <field name="journal_id" invisible="1"/>
-                <field name="issue_check_subtype" invisible="1"/>
                 <field name="company_currency_id" invisible="1"/>
             <header>
                 <!-- usamos la accion en vez del metodo directamente para pedir una fecha -->
@@ -61,6 +60,12 @@
                 <button context="{'default_action_type': 'reject'}" name="%(action_account_check_action_wizard)d" type="action" string="Supplier Rejection" states="delivered" help="It will create a debit note from supplier in draft state and change check state"/>
                 <button context="{'default_action_type': 'reject'}" name="%(action_account_check_action_wizard)d" type="action" string="Bank Rejection" states="deposited" help="It will create an account entry from bank account to company rejection account and change check state"/>
                 <button context="{'default_action_type': 'reject'}" name="%(action_account_check_action_wizard)d" type="action" string="Sell Rejection" states="selled" help="It will create an account entry from cash account to company rejection account and change check state"/>
+                <!--Operations with issue checks-->
+                <button context="{'default_action_type': 'used'}" name="%(action_account_check_lot_action_wizard)d" type="action" string="Is use" attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('type', '!=', 'issue_check')]}" help="It is used when an issue check is used to pay for an operation of the company."/>
+                <!--Operations with issue checks-->
+                <button context="{'default_action_type': 'negotiated'}" name="%(action_account_check_lot_action_wizard)d" type="action" string="Negotiated" attrs="{'invisible': ['|', '&amp;',('state', '!=', 'draft'), ('type', '=', 'issue_check'), '&amp;', ('type','=','third_check'), ('state','!=','holding')]}" help="It is used when negotiating the sale of a check with a third party."/>
+                <button context="{'default_action_type': 'selled'}" name="%(action_account_check_lot_action_wizard)d" type="action" string="Selled" attrs="{'invisible': ['|', ('state', '!=', 'negotiated')]}" help="It is used when confirming the sale of a check with a third party."/>
+                <button context="{'default_action_type': 'deposited'}" name="%(action_account_check_lot_action_wizard)d" type="action" string="Deposited" attrs="{'invisible': ['|', '&amp;',('state', '!=', 'draft'), ('type', '=', 'issue_check'), '&amp;', ('type','=','third_check'), ('state','!=','holding')]}" help="It is used when deposited a third check."/>
             </header>
             <sheet string="Checks">
                 <h1>
@@ -71,6 +76,7 @@
                         <field name="journal_id"/>
                         <field name="checkbook_id" attrs="{'invisible':[('type','!=','issue_check')],'required':[('type','=','issue_check')]}" domain="[('journal_id', '=', journal_id)]"/>
                         <field name="bank_id"/>
+                        <field name="partner_id"/>
                         <field name="number"/>
                         <label for="amount"/>
                         <div name="amount_div" class="o_row">
@@ -78,6 +84,11 @@
                             <field name="currency_id" options="{'no_create': True, 'no_open': True}" groups="base.group_multi_currency"/>
                         </div>
                         <field name="amount_company_currency"/>
+                        <field name="check_subtype" force_save="1" attrs="{'readonly':['|', ('type','!=','third_check'),
+                                                                                            ('state','!=','draft')],
+                                                                            'required':[('type','=','third_check')]}"/>
+                        <field name="deposited_journal_id" readonly="1" attrs="{'invisible':[('state','!=','deposited')]}"/>
+                        <field name="deposited_bank_id" readonly="1" attrs="{'invisible':[('state','!=','deposited')]}"/>
                     </group>
                     <group>
                         <field name="state"/>
@@ -85,7 +96,9 @@
                         <field name="owner_vat" attrs="{'invisible':[('type','!=','third_check')],'required':[('type','=','third_check')]}"/>
                         <field name="issue_date"/>
                         <field name="payment_date"/>
+                        <field name="deposited_date" readonly="1" attrs="{'invisible':[('state','!=','deposited')]}"/>
                         <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                        <field name="lot_operation"/>
                     </group>
                 </group>
                 <group string="Operations">
@@ -95,6 +108,7 @@
                             <field name="operation"/>
                             <field name="origin_name" string="Origin"/>
                             <field name="partner_id"/>
+                            <field name="lot_operation"/>
                         </tree>
                         <form>
                             <group>

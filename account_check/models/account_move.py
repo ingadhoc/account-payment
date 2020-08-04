@@ -16,6 +16,16 @@ class AccountMove(models.Model):
         'account.check',
         'Rejected Check',
     )
+    used_check_ids = fields.Many2many(
+        'account.check',
+        string='Used Check',
+        copy=False
+    )
+
+    lot_operation = fields.Char(
+        string="Lot Operation",
+        copy=False
+    )
 
     def button_draft(self):
         """
@@ -40,8 +50,10 @@ class AccountMove(models.Model):
         intentamos concilarlo
         """
         res = super().post()
-        for rec in self.filtered('rejected_check_id'):
+        for rec in self.filtered(lambda x: x.rejected_check_id or x.used_check_ids):
             check = rec.rejected_check_id
             if check.state == 'rejected' and check.type == 'issue_check':
                 rec.rejected_check_id.handed_reconcile(rec)
+            if rec.used_check_ids:
+                rec.used_check_ids._add_operation('used', rec, rec.partner_id, rec.date, rec.lot_operation)
         return res

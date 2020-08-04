@@ -23,6 +23,10 @@
                                 <label for="deferred_check_account_id" class="col-md-3 o_light_label"/>
                                 <field name="deferred_check_account_id"/>
                             </div>
+                            <div class="row mt16">
+                                <label for="sale_check_account_id" class="col-md-3 o_light_label"/>
+                                <field name="sale_check_account_id"/>
+                            </div>
                             <!-- la ocultamos porque la idea es depreciarla y que si se usa cheques de terceros y manual en mismo diario, siempre se use la misma cuenta, la dejamos por compatibilidad para clientes que ya la tienen en uso -->
                             <!-- <div class="row mt16">
                                 <label for="holding_check_account_id" class="col-md-3 o_light_label"/>
