@@ -613,7 +613,7 @@ class AccountCheck(models.Model):
             'payment_date': action_date,
             'payment_type': 'outbound',
             'payment_method_id':
-            journal._default_outbound_payment_methods().id,
+            self.env.ref('account.account_payment_method_manual_out').id,
             # 'check_ids': [(4, self.id, False)],
         }
 
