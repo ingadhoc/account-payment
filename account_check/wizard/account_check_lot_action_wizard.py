@@ -89,6 +89,10 @@ class AccountCheckLotActionWizard(models.TransientModel):
             sequence = self.env['ir.sequence'].search([('code', '=', 'sequence.lot.operation.check')])
             if sequence and not rec.get('lot_operation', False):
                 rec['lot_operation'] = sequence.next_by_id()
+        if self._context.get('default_action_type') in ['bank_debit'] and any(
+                check.type == 'third_check' for check in checks):
+            raise ValidationError(_(
+                'You can only debit your issue checks.'))
         return rec
 
     def action_confirm(self):
@@ -122,8 +126,7 @@ class AccountCheckLotActionWizard(models.TransientModel):
                                communication=self.communication
                                ), self.action_type)()
         else:
-            for check in checks:
-                res = getattr(
-                    check.with_context(action_date=self.date,
-                                       lot_operation=self.lot_operation), self.action_type)()
+            return getattr(
+                checks.with_context(action_date=self.date,
+                                   lot_operation=self.lot_operation), self.action_type)()
         return True

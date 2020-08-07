@@ -321,6 +321,22 @@ class AccountCheck(models.Model):
         for rec in self:
             rec.check_subtype = rec.checkbook_id.check_subtype
 
+    @api.onchange('journal_id')
+    def onchange_journal_id(self):
+        for rec in self:
+            if rec.journal_id and rec.type == 'issue_check':
+                rec.bank_id = rec.journal_id.bank_id
+
+    @api.onchange('amount', 'currency_id')
+    def onchange_amount(self):
+        for rec in self:
+            if rec.amount and rec.currency_id and rec.currency_id != rec.company_currency_id:
+                rec.amount_company_currency = rec.currency_id._convert(
+                    rec.amount, rec.company_id.currency_id,
+                    rec.company_id, rec.issue_date)
+            else:
+                rec.amount_company_currency = rec.amount
+
     @api.constrains(
         'type',
         'number',
@@ -468,7 +484,7 @@ class AccountCheck(models.Model):
             'transfered': ['holding'],
             'withdrawed': ['draft'],
             'rejected': ['delivered', 'deposited', 'changed', 'handed'],
-            'debited': ['handed'],
+            'debited': ['handed', 'selled'],
             'returned': ['handed', 'holding'],
             'used': ['draft'],
             'negotiated': ['draft', 'holding'],
@@ -530,11 +546,15 @@ class AccountCheck(models.Model):
         """
 
         self.ensure_one()
-        debit_account = self.company_id._get_check_account('deferred')
+        if self.state == 'selled':
+            debit_account = self.company_id._get_check_account('selled')
+            operation = self._get_operation('selled')
+        else:
+            debit_account = self.company_id._get_check_account('deferred')
+            operation = self._get_operation("handed")
 
         # conciliamos
         if debit_account.reconcile:
-            operation = self._get_operation('handed')
             if operation.origin._name == 'account.payment':
                 move_lines = operation.origin.move_line_ids
             elif operation.origin._name == 'account.move':

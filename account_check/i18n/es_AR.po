@@ -217,6 +217,11 @@ msgid "Change check %s"
 msgstr "Cambiar cheque %s"
 
 #. module: account_check
+#: model_terms:ir.ui.view,arch_db:account_check.view_account_check_form
+msgid "Changed Rejection"
+msgstr "Rechazo del cambiado"
+
+#. module: account_check
 #: model:ir.model.fields,field_description:account_check.field_account_check_operation__check_id
 #: model:ir.model.fields,field_description:account_check.field_account_payment__check_id
 #: model_terms:ir.ui.view,arch_db:account_check.view_account_check_graph
@@ -1386,11 +1391,6 @@ msgid "Sell"
 msgstr "Vender"
 
 #. module: account_check
-#: model_terms:ir.ui.view,arch_db:account_check.view_account_check_form
-msgid "Sell Rejection"
-msgstr "Rechazo de venta"
-
-#. module: account_check
 #: model:ir.actions.act_window,name:account_check.action_sell_account_check_lot_action_wizard
 msgid "Sell checks"
 msgstr "Vender Cheques"
@@ -1682,6 +1682,12 @@ msgid ""
 msgstr ""
 "No puede eliminar una operación de cheque que tiene un origen.\n"
 "Puede eliminar la referencia de origen y desvincularla después."
+
+#. module: account_check
+#: code:addons/account_check/wizard/account_check_lot_action_wizard.py:0
+#, python-format
+msgid "You can only debit your issue checks."
+msgstr "Solo puede debitar cheques propios."
 
 #. module: account_check
 #: code:addons/account_check/wizard/account_check_lot_action_wizard.py:0
