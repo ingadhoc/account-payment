@@ -1308,11 +1308,6 @@ msgid ""
 msgstr ""
 
 #. module: account_check
-#: model:ir.actions.server,name:account_check.action_account_invoice_from_list
-msgid "Register Payment"
-msgstr "Registrar pagos"
-
-#. module: account_check
 #: model:ir.model.fields.selection,name:account_check.selection__account_check__state__rejected
 msgid "Rejected"
 msgstr "Rechazado"
