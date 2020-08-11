@@ -279,6 +279,7 @@ class AccountPayment(models.Model):
 
     def create_check(self, check_type, operation, bank):
         self.ensure_one()
+
         check_vals = {
             'bank_id': bank.id,
             'owner_name': self.check_owner_name,
@@ -288,7 +289,7 @@ class AccountPayment(models.Model):
             'checkbook_id': self.checkbook_id.id,
             'check_subtype': self.check_subtype or self.checkbook_id.check_subtype or 'deferred',
             'issue_date': self.check_issue_date,
-            'type': check_type,
+            'type': self.check_type,
             'journal_id': self.journal_id.id,
             'amount': self.amount,
             'payment_date': self.check_payment_date,
