@@ -321,6 +321,11 @@ class AccountCheck(models.Model):
         for rec in self:
             rec.check_subtype = rec.checkbook_id.check_subtype
 
+    @api.onchange('number')
+    def onchange_number(self):
+        for rec in self:
+            rec.name = self._get_name_from_number(rec.number)
+
     @api.onchange('journal_id')
     def onchange_journal_id(self):
         for rec in self:

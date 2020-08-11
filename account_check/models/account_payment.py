@@ -279,17 +279,17 @@ class AccountPayment(models.Model):
 
     def create_check(self, check_type, operation, bank):
         self.ensure_one()
-
+        check_type = self.check_type or ('issue_check' if self.checkbook_id else 'third_check')
         check_vals = {
             'bank_id': bank.id,
             'owner_name': self.check_owner_name,
             'owner_vat': self.check_owner_vat,
             'number': self.check_number,
             'name': self.check_name,
-            'checkbook_id': self.checkbook_id.id,
+            'checkbook_id': self.checkbook_id.id if self.checkbook_id else False,
             'check_subtype': self.check_subtype or self.checkbook_id.check_subtype or 'deferred',
             'issue_date': self.check_issue_date,
-            'type': self.check_type,
+            'type': check_type,
             'journal_id': self.journal_id.id,
             'amount': self.amount,
             'payment_date': self.check_payment_date,
