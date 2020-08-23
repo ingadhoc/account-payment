@@ -222,6 +222,26 @@ class AccountPaymentGroup(models.Model):
         copy=False,
         help="It indicates that the receipt has been sent."
     )
+    #Conciliar diferencia en pagos contra una cuenta.
+    payment_difference_handling = fields.Selection(
+        [('open', 'Keep open'),
+         ('reconcile', 'Mark invoice as fully paid')],
+        default='open',
+        string="Payment Difference Handling",
+        copy=False)
+    writeoff_account_id = fields.Many2one(
+        'account.account',
+        string="Difference Account",
+        domain="[('deprecated', '=', False), "
+               "('company_id', '=', company_id)]",
+        copy=False)
+    writeoff_label = fields.Char(
+        string='Journal Item Label',
+        help='Change label of the counterpart that will hold the payment difference',
+        default='Write-Off')
+    writeoff_amount = fields.Monetary(
+        string='Payment difference amount',
+        track_visibility='onchange')
 
     @api.depends(
         'state',
@@ -239,7 +259,7 @@ class AccountPaymentGroup(models.Model):
             sign = rec.partner_type == 'supplier' and -1.0 or 1.0
             rec.matched_amount = sign * sum(
                 rec.matched_move_line_ids.with_context(payment_group_id=rec.id).mapped('payment_group_matched_amount'))
-            rec.unmatched_amount = rec.payments_amount - rec.matched_amount
+            rec.unmatched_amount = rec.payments_amount - rec.matched_amount - rec.writeoff_amount
 
     def _compute_matched_amount_untaxed(self):
         """ Lo separamos en otro metodo ya que es un poco mas costoso y no se
@@ -546,6 +566,7 @@ class AccountPaymentGroup(models.Model):
     def action_draft(self):
         self.mapped('payment_ids').action_draft()
         # rec.payment_ids.write({'invoice_ids': [(5, 0, 0)]})
+        self.writeoff_amount = 0.0
         return self.write({'state': 'draft'})
 
     def unlink(self):
@@ -582,6 +603,10 @@ class AccountPaymentGroup(models.Model):
             writeoff_acc_id = False
             writeoff_journal_id = False
 
+            #Conciliar en una cuenta contable la diferencia entre la deuda y lo pagado.
+            if rec.payment_difference_handling == 'reconcile':
+                rec.reconcile_diff_payment()
+
             # al crear desde website odoo crea primero el pago y lo postea
             # y no debemos re-postearlo
             if not create_from_website and not create_from_expense:
@@ -599,6 +624,23 @@ class AccountPaymentGroup(models.Model):
 
             rec.state = 'posted'
         return True
+
+    def reconcile_diff_payment(self):
+        self.ensure_one()
+        sign = self.partner_type == 'supplier' and -1.0 or 1.0
+        payment_curr = self.payment_ids.filtered(lambda x: x.currency_id == self.currency_id)
+        if payment_curr:
+            payment_diff = payment_curr.sorted(key=lambda i: i.amount, reverse=True)[0]
+        else:
+            payment_diff = self.payment_ids.sorted(key=lambda i: i.amount, reverse=True)[0]
+        payment_diff.payment_difference = sign * self.currency_id._convert(self.payment_difference,
+                                                                    payment_diff.currency_id,
+                                                                    self.company_id,
+                                                                    self.payment_date or fields.Date.today())
+        self.writeoff_amount = self.payment_difference * -1
+        payment_diff.payment_difference_handling = self.payment_difference_handling
+        payment_diff.writeoff_account_id = self.writeoff_account_id.id
+        payment_diff.writeoff_label = self.writeoff_label
 
     @api.returns('mail.message', lambda value: value.id)
     def message_post(self, **kwargs):
