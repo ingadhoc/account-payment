@@ -725,6 +725,7 @@ msgid "Payment id %s"
 msgstr "Id del Pago %s"
 
 #. module: account_payment_group
+#: model:ir.model.fields,help:account_payment_group.field_account_payment_group__debt_move_line_ids
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid ""
 "Payment will be automatically matched with the oldest lines of this list (by"

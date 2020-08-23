@@ -118,10 +118,6 @@
                             <field name="writeoff_label" attrs="{'required': [('payment_difference_handling', '=', 'reconcile'), ('payment_difference', '!=', 0.0)], 'readonly': [('state', 'not in', ['draft', 'confirmed'])]}"/>
                         </div>
                     </group>
-                    <group>
-                        <button name="update_advance_payment" string="+/- Advance Payments" states="draft" type="object"/>
-                    </group>
-                    <group/>
                 </group>
                 <notebook>
                     <page string="To Pay Lines" attrs="{'invisible': ['|', '|', ('pop_up', '=', True), ('payment_subtype', '!=', 'double_validation'), ('state', 'not in', ['draft', 'confirmed'])]}">

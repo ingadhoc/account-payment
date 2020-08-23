@@ -517,17 +517,6 @@ class AccountPaymentGroup(models.Model):
     def remove_all(self):
         self.to_pay_move_line_ids = False
 
-    # Tener en cuenta o no los pagos anticipados en el pago actual.
-    def update_advance_payment(self):
-        for rec in self:
-            payment_ids = rec.to_pay_move_line_ids.filtered(lambda x: x.payment_id)
-            if payment_ids:
-                rec.to_pay_move_line_ids -= payment_ids
-            else:
-                domain = rec._get_to_pay_move_lines_domain()
-                domain.append(('payment_id', '!=', False))
-                rec.to_pay_move_line_ids += rec.env['account.move.line'].search(domain)
-
     @api.model
     def default_get(self, fields):
         # TODO si usamos los move lines esto no haria falta
