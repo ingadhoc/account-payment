@@ -39,8 +39,7 @@ class AccountCheckOperation(models.Model):
         # from payments
         ('holding', 'Receive'),
         ('deposited', 'Deposit'),
-        #Cambiar el termino vendido por cambiado en cheques de tercero
-        ('changed', 'Change'),
+        ('selled', 'Sell'),
         ('delivered', 'Deliver'),
         # usado para hacer transferencias internas, es lo mismo que delivered
         # (endosado) pero no queremos confundir con terminos, a la larga lo
@@ -53,9 +52,11 @@ class AccountCheckOperation(models.Model):
         ('rejected', 'Rejection'),
         ('debited', 'Debit'),
         ('returned', 'Return'),
-        ('used', 'In use'),
-        ('negotiated', 'Negotiate'),
-        ('selled', 'Sell'),
+        # al final no vamos a implemnetar esto ya que habria que hacer muchas
+        # cosas hasta actualizar el asiento, mejor se vuelve atras y se
+        # vuelve a generar deuda y listo, igualmente lo dejamos por si se
+        # quiere usar de manera manual
+        ('changed', 'Change'),
         ('cancel', 'Cancel'),
     ],
         required=True,
@@ -72,9 +73,6 @@ class AccountCheckOperation(models.Model):
         string='Partner',
     )
     notes = fields.Text(
-    )
-    lot_operation = fields.Char(
-        string='Lot operation'
     )
 
     def unlink(self):
@@ -135,7 +133,7 @@ class AccountCheck(models.Model):
         auto_join=True,
     )
     name = fields.Char(
-        required=False,
+        required=True,
         readonly=True,
         copy=False,
         states={'draft': [('readonly', False)]},
@@ -184,7 +182,7 @@ class AccountCheck(models.Model):
         ('draft', 'Draft'),
         ('holding', 'Holding'),
         ('deposited', 'Deposited'),
-        ('changed', 'Change'),
+        ('selled', 'Selled'),
         ('delivered', 'Delivered'),
         ('transfered', 'Transfered'),
         ('reclaimed', 'Reclaimed'),
@@ -193,9 +191,7 @@ class AccountCheck(models.Model):
         ('rejected', 'Rejected'),
         ('debited', 'Debited'),
         ('returned', 'Returned'),
-        ('used', 'In use'),
-        ('negotiated', 'Negotiated'),
-        ('selled', 'Sell'),
+        ('changed', 'Changed'),
         ('cancel', 'Cancel'),
     ],
         required=True,
@@ -266,25 +262,6 @@ class AccountCheck(models.Model):
         related='company_id.currency_id',
         string='Company currency',
     )
-    deposited_date = fields.Date(
-        string='Deposited date'
-    )
-    deposited_journal_id = fields.Many2one(
-        'account.journal',
-        string='Deposited Journal'
-    )
-    deposited_bank_id = fields.Many2one(
-        'res.bank',
-        string='Deposited Bank'
-    )
-    notes = fields.Text(
-        string='Note'
-    )
-    lot_operation = fields.Char(
-        string='Lot operation',
-        copy=False,
-        compute='_compute_lot_operation',
-    )
 
     @api.depends('operation_ids.partner_id')
     def _compute_first_partner(self):
@@ -320,11 +297,6 @@ class AccountCheck(models.Model):
     def onchange_checkbook_id(self):
         for rec in self:
             rec.check_subtype = rec.checkbook_id.check_subtype
-
-    @api.onchange('number')
-    def onchange_number(self):
-        for rec in self:
-            rec.name = self._get_name_from_number(rec.number)
 
     @api.onchange('journal_id')
     def onchange_journal_id(self):
@@ -415,7 +387,7 @@ class AccountCheck(models.Model):
             rec.operation_ids[0].unlink()
 
     def _add_operation(
-            self, operation, origin, partner=None, date=False, lot_operation=False):
+            self, operation, origin, partner=None, date=False):
         for rec in self:
             rec._check_state_change(operation)
             # agregamos validacion de fechas
@@ -435,9 +407,8 @@ class AccountCheck(models.Model):
                 'operation': operation,
                 'date': date,
                 'check_id': rec.id,
-                'origin': origin and '%s,%i' % (origin._name, origin.id) or False,
+                'origin': '%s,%i' % (origin._name, origin.id),
                 'partner_id': partner and partner.id or False,
-                'lot_operation': lot_operation,
             }
             rec.operation_ids.create(vals)
 
@@ -452,17 +423,6 @@ class AccountCheck(models.Model):
                 rec.state = operation
             else:
                 rec.state = 'draft'
-
-    @api.depends(
-        'operation_ids.operation',
-        'operation_ids.lot_operation',
-    )
-    def _compute_lot_operation(self):
-        for rec in self:
-            if rec.operation_ids.sorted():
-                rec.lot_operation = rec.operation_ids.sorted()[0].lot_operation
-            else:
-                rec.lot_operation = False
 
     def _check_state_change(self, operation):
         """
@@ -481,19 +441,17 @@ class AccountCheck(models.Model):
         operation_from_state_map = {
             # 'draft': [False],
             'holding': [
-                'draft', 'deposited', 'changed', 'delivered', 'transfered'],
+                'draft', 'deposited', 'selled', 'delivered', 'transfered'],
             'delivered': ['holding'],
-            'deposited': ['holding', 'rejected', 'draft'],
-            'changed': ['holding'],
+            'deposited': ['holding', 'rejected'],
+            'selled': ['holding'],
             'handed': ['draft'],
             'transfered': ['holding'],
             'withdrawed': ['draft'],
-            'rejected': ['delivered', 'deposited', 'changed', 'handed'],
-            'debited': ['handed', 'selled'],
+            'rejected': ['delivered', 'deposited', 'selled', 'handed'],
+            'debited': ['handed'],
             'returned': ['handed', 'holding'],
-            'used': ['draft'],
-            'negotiated': ['draft', 'holding'],
-            'selled': ['negotiated'],
+            'changed': ['handed', 'holding'],
             'cancel': ['draft'],
             'reclaimed': ['rejected'],
         }
@@ -539,9 +497,8 @@ class AccountCheck(models.Model):
         parecido a los statements donde odoo ya lo genera posteado
         """
         # payment.post()
-        # move = payment._create_payment_entry(payment.amount)
-        AccountMove = self.env['account.move'].with_context(default_type='entry')
-        move = AccountMove.create(payment._prepare_payment_moves())
+        move = self.env['account.move'].with_context(default_type='entry').create(payment._prepare_payment_moves())
+        move.post()
         payment.write({'state': 'posted', 'move_name': move.name})
 
     def handed_reconcile(self, move):
@@ -551,15 +508,11 @@ class AccountCheck(models.Model):
         """
 
         self.ensure_one()
-        if self.state == 'selled':
-            debit_account = self.company_id._get_check_account('selled')
-            operation = self._get_operation('selled')
-        else:
-            debit_account = self.company_id._get_check_account('deferred')
-            operation = self._get_operation("handed")
+        debit_account = self.company_id._get_check_account('deferred')
 
         # conciliamos
         if debit_account.reconcile:
+            operation = self._get_operation('handed')
             if operation.origin._name == 'account.payment':
                 move_lines = operation.origin.move_line_ids
             elif operation.origin._name == 'account.move':
@@ -667,175 +620,6 @@ class AccountCheck(models.Model):
                 'returned', 'customer', self.first_partner_id,
                 self.get_third_check_account())
 
-    def used(self):
-        if all([x.state in ['draft'] and x.type == 'issue_check' for x in self]):
-            if self._context.get('lot_operation', False):
-                name = _('Lot Checks "%s" used') % (self._context.get('lot_operation'))
-            else:
-                name = _('Check "%s" used') % (self[0].name)
-            view_id = self.env.ref('account.view_move_form').id
-            journal = self[0].journal_id
-            partner_id = self._context.get('partner', False)
-            vals = self.get_used_values(journal, name, partner_id, self._context.get('lot_operation'))
-            action_context = vals
-            return {
-                'name': name,
-                'view_type': 'form',
-                'view_mode': 'form',
-                'res_model': 'account.move',
-                'view_id': view_id,
-                'type': 'ir.actions.act_window',
-                'context': action_context,
-            }
-
-    def get_used_values(self, journal, name, partner_id, lot_operation):
-        amount = sum(self.mapped('amount'))
-        credit_account = journal.default_debit_account_id
-        credit_line_vals = {
-            'name': name,
-            'account_id': credit_account.id,
-            'debit': 0.0,
-            'credit': amount,
-            'exclude_from_invoice_tab': True
-        }
-        if partner_id:
-            credit_line_vals['partner_id'] = partner_id.id
-        return {
-            'default_ref': name,
-            'default_type': 'entry',
-            'default_auto_post': True,
-            'default_journal_id': journal.id,
-            'default_partner_id': partner_id and partner_id.id or False,
-            'default_date': self._context.get('action_date'),
-            'default_used_check_ids': [(6, 0, self.ids)],
-            'default_lot_operation': lot_operation,
-            'default_line_ids': [(0, 0, credit_line_vals)]
-        }
-
-    def negotiated(self):
-        if all([x.state in ['draft', 'holding'] for x in self]):
-            action_date = self._context.get('action_date')
-            partner = self._context.get('partner', False) or self.company_id.partner_id
-            lot_operation = self._context.get('lot_operation')
-            self._add_operation('negotiated', False, partner, action_date, lot_operation)
-
-    def selled(self):
-        if all([x.state in ['negotiated'] for x in self]):
-            action_date = self._context.get('action_date')
-            partner = self._context.get('partner', False)
-            journal = self._context.get('journal', False)
-            expense_account = self._context.get('expense_account', False)
-            debit_note = self._context.get('debit_note', False)
-            expense_amount = self._context.get('expense_amount', 0.0)
-            if journal and expense_account:
-                if self._context.get('lot_operation', False):
-                    name = _('Lot Checks "%s" selled') % (self._context.get('lot_operation'))
-                else:
-                    name = _('Check "%s" selled') % (self[0].name)
-                amount_total = sum(x.amount for x in self)
-                vals = self[0].get_move_values(name,
-                    debit_note, journal, expense_account, expense_amount, amount_total)
-
-                action_date = self._context.get('action_date')
-                lot_operation = self._context.get('lot_operation', False)
-                vals['date'] = action_date
-                move = self.env['account.move'].create(vals)
-                move.post()
-                self._add_operation('selled', move, partner, action_date, lot_operation)
-                if debit_note and expense_amount > 0.0:
-                    tax_ids = self._context.get('tax_ids')
-                    return self[0].action_create_debit_note('selled', 'supplier', partner,
-                                                            expense_account, expense_amount, tax_ids)
-
-    def deposited(self):
-        if all([x.state in ['draft', 'holding'] for x in self]):
-            journal = self._context.get('journal', False)
-            if journal:
-                payment_ids = self.env['account.payment']
-                if self[0].type == 'third_check':
-                    payment_ids += self.create_payment_deposited(journal, self[0].type)
-                else:
-                    for rec in self:
-                        payment_ids += rec.create_payment_deposited(journal, rec.type)
-                action = self.env.ref('account_payment_group.action_account_payments_transfer').read()[0]
-                action['name'] = _('Deposited Checks')
-                action['domain'] = [('id', 'in', payment_ids.ids)]
-                return action
-
-    def create_payment_deposited(self, journal, type):
-        vals = self[0].get_payment_values(self[0].journal_id)
-        ctx = dict(self._context)
-        if type == 'third_check':
-            vals['check_ids'] = [(4, check.id, None) for check in self]
-            payment_method_code_id = self.env['account.payment.method'].search(
-                                                [('code', '=', 'delivered_third_check')])
-            if payment_method_code_id:
-                vals['payment_method_id'] = payment_method_code_id.id
-        else:
-            # vals['check_id'] = self.id
-            vals['check_ids'] = [(4, self.id, None)]
-            vals['check_number'] = self.number
-            vals['checkbook_id'] = self.checkbook_id.id
-            vals['check_name'] = self.name
-            payment_method_code_id = self.env['account.payment.method'].search(
-                [('code', '=', 'issue_check')])
-            if payment_method_code_id:
-                vals['payment_method_id'] = payment_method_code_id.id
-        vals['communication'] = self._context.get('communication', False)
-        vals['payment_type'] = 'transfer'
-        vals['destination_journal_id'] = journal.id,
-        payment = self.env['account.payment'].with_context(ctx).create(vals)
-        payment.post()
-        return payment
-
-    def get_move_values(self, name, debit_note, journal, expense_account, expense_amount, amount_total=0.0):
-        if self.type == 'third_check':
-            credit_account = self[0].journal_id.default_credit_account_id
-        else:
-            credit_account = self[0].company_id._get_check_account('selled')
-        debit_account = journal.default_debit_account_id
-        debit = amount_total
-        amount_move = amount_total
-        line_ids = []
-        debit_line_vals1 = False
-        if not debit_note:
-            debit = amount_move - expense_amount
-            debit_line_vals1 = {
-                'name': name,
-                'account_id': expense_account.id,
-                'debit': expense_amount,
-                'exclude_from_invoice_tab': True
-                # 'amount_currency': self.amount_currency,
-                # 'currency_id': self.currency_id.id,
-            }
-        debit_line_vals = {
-            'name': name,
-            'account_id': debit_account.id,
-            'debit': debit,
-            'exclude_from_invoice_tab': True
-            # 'amount_currency': self.amount_currency,
-            # 'currency_id': self.currency_id.id,
-        }
-        line_ids.append((0, False, debit_line_vals))
-        if debit_line_vals1:
-            line_ids.append((0, False, debit_line_vals1))
-        credit_line_vals = {
-            'name': name,
-            'account_id': credit_account.id,
-            'credit': amount_move,
-            'exclude_from_invoice_tab': True
-            # 'amount_currency': self.amount_currency,
-            # 'currency_id': self.currency_id.id,
-        }
-        line_ids.append((0, False, credit_line_vals))
-        return {
-            'ref': name,
-            'journal_id': journal.id,
-            'date': fields.Date.today(),
-            'line_ids': line_ids,
-            'type': 'entry',
-        }
-
     @api.model
     def get_payment_values(self, journal):
         """ return dictionary with the values to create the reject check
@@ -853,7 +637,7 @@ class AccountCheck(models.Model):
             'payment_date': action_date,
             'payment_type': 'outbound',
             'payment_method_id':
-            journal._default_outbound_payment_methods().id,
+            self.env.ref('account.account_payment_method_manual_out').id,
             # 'check_ids': [(4, self.id, False)],
         }
 
@@ -907,7 +691,7 @@ class AccountCheck(models.Model):
                 self.company_id._get_check_account('deferred'))
 
     def action_create_debit_note(
-            self, operation, partner_type, partner, account, amount=0.0, tax_ids=False):
+            self, operation, partner_type, partner, account):
         self.ensure_one()
         action_date = self._context.get('action_date')
 
@@ -930,25 +714,18 @@ class AccountCheck(models.Model):
         # si pedimos la de holding es una devolucion
         elif operation == 'returned':
             name = 'Devolución cheque "%s"' % (self.name)
-        elif operation == 'selled':
-            name = 'Venta de cheque "%s"' % (self.name)
         else:
             raise ValidationError(_(
                 'Debit note for operation %s not implemented!' % (
                     operation)))
-        price_unit = self.amount
-        if amount > 0.0:
-            price_unit = amount
 
         inv_line_vals = {
             # 'product_id': self.product_id.id,
             'name': name,
             'account_id': account.id,
-            'price_unit': price_unit,
+            'price_unit': self.amount,
             # 'invoice_id': invoice.id,
         }
-        if tax_ids:
-            inv_line_vals['tax_ids'] = [(6, 0, tax_ids.ids)]
 
         inv_vals = {
             # this is the reference that goes on account.move.line of debt line
@@ -971,8 +748,7 @@ class AccountCheck(models.Model):
         invoice = self.env['account.move'].with_context(
             company_id=journal.company_id.id, force_company=journal.company_id.id,
             internal_type='debit_note').create(inv_vals)
-        if not operation == 'selled':
-            self._add_operation(operation, invoice, partner, date=action_date)
+        self._add_operation(operation, invoice, partner, date=action_date)
 
         return {
             'name': name,
@@ -982,45 +758,3 @@ class AccountCheck(models.Model):
             'res_id': invoice.id,
             'type': 'ir.actions.act_window',
         }
-
-    def name_get(self):
-        result = []
-        for record in self:
-            name = record.name or ''
-            if not record.name:
-                name = record.number and str(record.number) or ''
-            if record.bank_id:
-                name += ' / ' + record.bank_id.name
-            if record.owner_name:
-                name += ' / ' + record.owner_name
-            result.append((record.id, name))
-        return result
-
-    def _get_name_from_number(self, number):
-        padding = 8
-        if len(str(number)) > padding:
-            padding = len(str(number))
-        return ('%%0%sd' % padding % number)
-
-    def _get_number(self, checkbook_id, number=False):
-        if checkbook_id and not checkbook_id.numerate_on_printing:
-            sequence = checkbook_id.sequence_id
-            if number:
-                sequence.sudo().write(
-                    {
-                        'number_next_actual': number
-                    })
-            else:
-                number = checkbook_id.next_number
-            sequence.next_by_id()
-        return number
-
-    @api.model
-    def create(self, vals):
-        checkbook = self.env['account.checkbook']
-        if vals.get('checkbook_id') and not vals.get('number', False):
-            checkbook_id = checkbook.browse(vals.get('checkbook_id'))
-            vals['number'] = self._get_number(checkbook_id)
-        if not vals.get('name', False) and vals['number']:
-            vals['name'] = self._get_name_from_number(vals['number'])
-        return super(AccountCheck, self).create(vals)

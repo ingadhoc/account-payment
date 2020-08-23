@@ -27,11 +27,6 @@ class ResCompany(models.Model):
         help='Holding Checks account for third checks, '
         'for eg. "Holding Checks"',
     )
-    sale_check_account_id = fields.Many2one(
-        'account.account',
-        'Account for the Sale of Check',
-        help='Account where the balance of the debt contracted with the buyer of the check is recorded.',
-    )
 
     def _get_check_account(self, check_type):
         self.ensure_one()
@@ -41,8 +36,6 @@ class ResCompany(models.Model):
             account = self.rejected_check_account_id
         elif check_type == 'deferred':
             account = self.deferred_check_account_id
-        elif check_type == 'selled':
-            account = self.sale_check_account_id
         else:
             raise UserError(_("Check type %s not implemented!") % check_type)
         if not account:

@@ -184,17 +184,34 @@ class AccountPayment(models.Model):
 
     @api.onchange('check_number')
     def change_check_number(self):
-        check_obj = self.env['account.check']
+        # TODO make default padding a parameter
+        def _get_name_from_number(number):
+            padding = 8
+            if len(str(number)) > padding:
+                padding = len(str(number))
+            return ('%%0%sd' % padding % number)
+
         for rec in self:
-            if rec.payment_method_code in ['issue_check']:
+            if rec.payment_method_code in ['received_third_check']:
+                if not rec.check_number:
+                    check_name = False
+                else:
+                    check_name = _get_name_from_number(rec.check_number)
+                rec.check_name = check_name
+            elif rec.payment_method_code in ['issue_check']:
                 sequence = rec.checkbook_id.sequence_id
-                if rec.check_number != sequence.number_next_actual:
-                    check_obj._get_number(rec.checkbook_id, rec.check_number)
-            if not rec.check_number:
-                check_name = False
-            else:
-                check_name = check_obj._get_name_from_number(rec.check_number)
-            rec.check_name = check_name
+                if not rec.check_number:
+                    check_name = False
+                elif sequence:
+                    if rec.check_number != sequence.number_next_actual:
+                        # write with sudo for access rights over sequence
+                        sequence.sudo().write(
+                            {'number_next_actual': rec.check_number})
+                    check_name = rec.checkbook_id.sequence_id.next_by_id()
+                else:
+                    # in sipreco, for eg, no sequence on checkbooks
+                    check_name = _get_name_from_number(rec.check_number)
+                rec.check_name = check_name
 
     @api.onchange('check_issue_date', 'check_payment_date')
     def onchange_date(self):
@@ -318,7 +335,6 @@ class AccountPayment(models.Model):
         """
         self.ensure_one()
         vals = {}
-        lot_operation = self._context.get('lot_operation', False)
         rec = self
         if not rec.check_type:
             # continue
@@ -370,9 +386,9 @@ class AccountPayment(models.Model):
                 # get the account before changing the journal on the check
                 vals['account_id'] = rec.check_ids.get_third_check_account().id
                 rec.check_ids._add_operation(
-                    'transfered', rec, False, date=rec.payment_date, lot_operation=lot_operation)
+                    'transfered', rec, False, date=rec.payment_date)
                 rec.check_ids._add_operation(
-                    'holding', rec, False, date=rec.payment_date, lot_operation=lot_operation)
+                    'holding', rec, False, date=rec.payment_date)
                 rec.check_ids.write({
                     'journal_id': rec.destination_journal_id.id})
                 vals['name'] = _('Transfer checks %s') % ', '.join(
@@ -383,11 +399,11 @@ class AccountPayment(models.Model):
                     rec.check_ids._del_operation(self)
                     return None
 
-                _logger.info('Change Check')
+                _logger.info('Sell Check')
                 rec.check_ids._add_operation(
-                    'changed', rec, False, date=rec.payment_date, lot_operation=lot_operation)
+                    'selled', rec, False, date=rec.payment_date)
                 vals['account_id'] = rec.check_ids.get_third_check_account().id
-                vals['name'] = _('Change check %s') % ', '.join(
+                vals['name'] = _('Sell check %s') % ', '.join(
                     rec.check_ids.mapped('name'))
             # bank
             else:
@@ -398,12 +414,7 @@ class AccountPayment(models.Model):
 
                 _logger.info('Deposit Check')
                 rec.check_ids._add_operation(
-                    'deposited', rec, False, date=rec.payment_date, lot_operation=lot_operation)
-                rec.check_ids.write({
-                    'deposited_journal_id': rec.destination_journal_id.id,
-                    'deposited_bank_id': rec.destination_journal_id.bank_id.id,
-                    'deposited_date': rec.payment_date,
-                })
+                    'deposited', rec, False, date=rec.payment_date)
                 vals['account_id'] = rec.check_ids.get_third_check_account().id
                 vals['name'] = _('Deposit checks %s') % ', '.join(
                     rec.check_ids.mapped('name'))
@@ -426,7 +437,7 @@ class AccountPayment(models.Model):
             if len(rec.check_ids) == 1 and rec.check_ids.payment_date:
                 vals['date_maturity'] = rec.check_ids.payment_date
             rec.check_ids._add_operation(
-                'delivered', rec, rec.partner_id, date=rec.payment_date, lot_operation=lot_operation)
+                'delivered', rec, rec.partner_id, date=rec.payment_date)
             vals['account_id'] = rec.check_ids.get_third_check_account().id
             vals['name'] = _('Deliver checks %s') % ', '.join(
                 rec.check_ids.mapped('name'))
@@ -469,37 +480,10 @@ class AccountPayment(models.Model):
                 return None
 
             _logger.info('Withdraw Check')
-            if rec.check_id:
-                rec.check_ids._add_operation(
-                    'withdrawed', rec, rec.partner_id, date=rec.payment_date, lot_operation=lot_operation)
-            else:
-                self.create_check('issue_check', 'withdrawed', self.check_bank_id)
+            self.create_check('issue_check', 'withdrawed', self.check_bank_id)
             vals['name'] = _('Withdraw with checks %s') % ', '.join(
                 rec.check_ids.mapped('name'))
             vals['date_maturity'] = self.check_payment_date
-        elif (
-                rec.payment_method_code == 'issue_check' and
-                rec.payment_type == 'transfer' and rec.check_ids and
-                rec.destination_journal_id.type == 'bank'):
-            if cancel:
-                _logger.info('Cancel Deposit Check')
-                rec.check_id._del_operation(self)
-                rec.check_id.unlink()
-                return None
-
-            _logger.info('Deposit Issue Check')
-            if rec.check_ids:
-                rec.check_ids._add_operation(
-                    'deposited', rec, rec.partner_id, date=rec.payment_date, lot_operation=lot_operation)
-            else:
-                self.create_check('issue_check', 'deposited', self.check_bank_id)
-            rec.check_ids.write({
-                'deposited_journal_id': rec.destination_journal_id.id,
-                'deposited_bank_id': rec.destination_journal_id.bank_id.id,
-                'deposited_date': rec.payment_date,
-            })
-            vals['name'] = _('Withdraw with checks %s') % rec.check_ids[0].mapped('name')
-            vals['date_maturity'] = rec.check_ids[0].payment_date
             # if check is deferred, change account
             # si retiramos por caja directamente lo sacamos de banco
             # if self.check_subtype == 'deferred':

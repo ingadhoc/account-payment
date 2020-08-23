@@ -9,6 +9,7 @@ _logger = logging.getLogger(__name__)
 
 
 class AccountCheckbook(models.Model):
+
     _name = 'account.checkbook'
     _description = 'Account Checkbook'
 

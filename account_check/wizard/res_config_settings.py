@@ -17,7 +17,3 @@ class ResConfigSettings(models.TransientModel):
         related='company_id.holding_check_account_id',
         readonly=False,
     )
-    sale_check_account_id = fields.Many2one(
-        related='company_id.sale_check_account_id',
-        readonly=False,
-    )
