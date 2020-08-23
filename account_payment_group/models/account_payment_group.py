@@ -482,8 +482,17 @@ class AccountPaymentGroup(models.Model):
 
     def add_all(self):
         for rec in self:
-            rec.to_pay_move_line_ids = rec.env['account.move.line'].search(
-                rec._get_to_pay_move_lines_domain())
+            # Cuando se genera el pago desde la factura debe reconocer las deudas de las
+            # facturas a pagar y no la deuda global.
+            if self._context.get('to_pay_move_line_ids', False):
+                to_pay_move_line_ids = self._context.get('to_pay_move_line_ids')
+                rec.to_pay_move_line_ids = self.env['account.move.line'].browse(
+                    to_pay_move_line_ids).filtered(lambda x: (
+                        x.account_id.reconcile and
+                        x.account_id.internal_type in ('receivable', 'payable')))
+            else:
+                rec.to_pay_move_line_ids = rec.env['account.move.line'].search(
+                    rec._get_to_pay_move_lines_domain())
 
     def remove_all(self):
         self.to_pay_move_line_ids = False
@@ -597,3 +606,34 @@ class AccountPaymentGroup(models.Model):
             self.filtered(lambda rec: not rec.sent).write({'sent': True})
         return super(AccountPaymentGroup, self.with_context(
             mail_post_autofollow=True)).message_post(**kwargs)
+
+    def action_account_invoice_payment_group(self):
+        active_ids = self.env.context.get('active_ids')
+        if not active_ids:
+            return ''
+        move_ids = self.env['account.move'].browse(active_ids)
+        if move_ids.filtered(lambda x: x.state != 'posted') or \
+                move_ids.filtered(lambda x: x.invoice_payment_state != 'not_paid'):
+            raise ValidationError(_('You can only register payment if invoice is posted and unpaid'))
+        return {
+            'name': _('Register Payment'),
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'account.payment.group',
+            'view_id': False,
+            'target': 'current',
+            'type': 'ir.actions.act_window',
+            'context': {
+                # si bien el partner se puede adivinar desde los apuntes
+                # con el default de payment group, preferimos mandar por aca
+                # ya que puede ser un contacto y no el commercial partner (y
+                # en los apuntes solo hay commercial partner)
+                'to_pay_move_line_ids': move_ids.mapped('open_move_line_ids').ids,
+                'pop_up': True,
+                # We set this because if became from other view and in the
+                # context has 'create=False' you can't crate payment lines
+                #  (for ej: subscription)
+                'create': True,
+                'default_company_id': move_ids[0].company_id.id,
+            },
+        }
