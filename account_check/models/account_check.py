@@ -148,14 +148,17 @@ class AccountCheck(models.Model):
     )
     checkbook_id = fields.Many2one(
         'account.checkbook',
-        'Checkbook',
+        string='Checkbook',
         readonly=True,
         states={'draft': [('readonly', False)]},
         auto_join=True,
         index=True,
     )
-    issue_check_subtype = fields.Selection(
-        related='checkbook_id.issue_check_subtype',
+    check_subtype = fields.Selection(
+        [('deferred', 'Deferred'), ('currents', 'Currents'), ('electronic', 'Electronic')],
+        string='Check Subtype',
+        required=True,
+        default='deferred',
     )
     type = fields.Selection(
         [('issue_check', 'Issue Check'), ('third_check', 'Third Check')],
@@ -199,24 +202,24 @@ class AccountCheck(models.Model):
         index=True,
     )
     issue_date = fields.Date(
-        'Issue Date',
+        string='Issue Date',
         required=True,
         readonly=True,
         states={'draft': [('readonly', False)]},
         default=fields.Date.context_today,
     )
     owner_vat = fields.Char(
-        'Owner Vat',
+        string='Owner Vat',
         readonly=True,
         states={'draft': [('readonly', False)]}
     )
     owner_name = fields.Char(
-        'Owner Name',
+        string='Owner Name',
         readonly=True,
         states={'draft': [('readonly', False)]}
     )
     bank_id = fields.Many2one(
-        'res.bank', 'Bank',
+        'res.bank', string='Bank',
         readonly=True,
         states={'draft': [('readonly', False)]}
     )
@@ -289,6 +292,27 @@ class AccountCheck(models.Model):
                     rec.issue_date > rec.payment_date):
                 raise UserError(
                     _('Check Payment Date must be greater than Issue Date'))
+
+    @api.onchange('checkbook_id')
+    def onchange_checkbook_id(self):
+        for rec in self:
+            rec.check_subtype = rec.checkbook_id.check_subtype
+
+    @api.onchange('journal_id')
+    def onchange_journal_id(self):
+        for rec in self:
+            if rec.journal_id and rec.type == 'issue_check':
+                rec.bank_id = rec.journal_id.bank_id
+
+    @api.onchange('amount', 'currency_id')
+    def onchange_amount(self):
+        for rec in self:
+            if rec.amount and rec.currency_id and rec.currency_id != rec.company_currency_id:
+                rec.amount_company_currency = rec.currency_id._convert(
+                    rec.amount, rec.company_id.currency_id,
+                    rec.company_id, rec.issue_date)
+            else:
+                rec.amount_company_currency = rec.amount
 
     @api.constrains(
         'type',
@@ -473,7 +497,8 @@ class AccountCheck(models.Model):
         parecido a los statements donde odoo ya lo genera posteado
         """
         # payment.post()
-        move = payment._create_payment_entry(payment.amount)
+        move = self.env['account.move'].with_context(default_type='entry').create(payment._prepare_payment_moves())
+        move.post()
         payment.write({'state': 'posted', 'move_name': move.name})
 
     def handed_reconcile(self, move):
@@ -612,7 +637,7 @@ class AccountCheck(models.Model):
             'payment_date': action_date,
             'payment_type': 'outbound',
             'payment_method_id':
-            journal._default_outbound_payment_methods().id,
+            self.env.ref('account.account_payment_method_manual_out').id,
             # 'check_ids': [(4, self.id, False)],
         }
 
