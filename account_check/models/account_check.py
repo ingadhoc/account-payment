@@ -473,7 +473,8 @@ class AccountCheck(models.Model):
         parecido a los statements donde odoo ya lo genera posteado
         """
         # payment.post()
-        move = payment._create_payment_entry(payment.amount)
+        move = self.env['account.move'].create(payment._prepare_payment_moves())
+        move.post()
         payment.write({'state': 'posted', 'move_name': move.name})
 
     def handed_reconcile(self, move):
@@ -612,7 +613,7 @@ class AccountCheck(models.Model):
             'payment_date': action_date,
             'payment_type': 'outbound',
             'payment_method_id':
-            journal._default_outbound_payment_methods().id,
+            self.env.ref('account.account_payment_method_manual_out').id,
             # 'check_ids': [(4, self.id, False)],
         }
 
