@@ -5,7 +5,7 @@
     "version": "13.0.1.1.0",
     "category": "Accounting",
     "website": "www.adhoc.com.ar",
-    "author": "ADHOC SA,",
+    "author": "ADHOC SA, AITIC S.A.S",
     "license": "AGPL-3",
     "application": False,
     'installable': True,
