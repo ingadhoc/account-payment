@@ -513,6 +513,17 @@ class AccountPaymentGroup(models.Model):
             else:
                 rec.to_pay_move_line_ids = rec.env['account.move.line'].search(
                     rec._get_to_pay_move_lines_domain())
+            # Cuando se genera el pago desde la factura no reconocia solo las deudas de las
+            # facturas a pagar sino la deuda global.
+            if self._context.get('to_pay_move_line_ids', False):
+                to_pay_move_line_ids = self._context.get('to_pay_move_line_ids')
+                rec.to_pay_move_line_ids = self.env['account.move.line'].browse(
+                    to_pay_move_line_ids).filtered(lambda x: (
+                        x.account_id.reconcile and
+                        x.account_id.internal_type in ('receivable', 'payable')))
+            else:
+                rec.to_pay_move_line_ids = rec.env['account.move.line'].search(
+                    rec._get_to_pay_move_lines_domain())
 
     def remove_all(self):
         self.to_pay_move_line_ids = False

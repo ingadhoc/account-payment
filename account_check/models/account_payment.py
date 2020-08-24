@@ -84,7 +84,8 @@ class AccountPayment(models.Model):
         auto_join=True,
     )
     check_subtype = fields.Selection(
-        related='checkbook_id.issue_check_subtype',
+        [('deferred', 'Deferred'), ('currents', 'Currents'), ('electronic', 'Electronic')],
+        string='Check Subtype'
     )
     check_bank_id = fields.Many2one(
         'res.bank',
@@ -227,9 +228,12 @@ class AccountPayment(models.Model):
         We suggest owner name from owner vat
         """
         # if not self.check_owner_name:
-        self.check_owner_name = self.search(
+        check_owner_name = self.search(
             [('check_owner_vat', '=', self.check_owner_vat)],
             limit=1).check_owner_name
+        if not check_owner_name:
+            check_owner_name = self.partner_id.commercial_partner_id and self.partner_id.commercial_partner_id.name
+        self.check_owner_name = check_owner_name
 
     @api.onchange('partner_id', 'payment_method_code')
     def onchange_partner_check(self):
@@ -271,9 +275,12 @@ class AccountPayment(models.Model):
 
     @api.onchange('checkbook_id')
     def onchange_checkbook(self):
-        if self.checkbook_id and not self.checkbook_id.numerate_on_printing:
-            self.check_number = self.checkbook_id.next_number
+        if self.checkbook_id:
+            self.check_subtype = self.checkbook_id.check_subtype
+            if not self.checkbook_id.numerate_on_printing:
+                self.check_number = self.checkbook_id.next_number
         else:
+            self.check_subtype = False
             self.check_number = False
 
 # post methods
@@ -297,6 +304,7 @@ class AccountPayment(models.Model):
             'number': self.check_number,
             'name': self.check_name,
             'checkbook_id': self.checkbook_id.id,
+            'check_subtype': self.check_subtype or self.checkbook_id.check_subtype or 'deferred',
             'issue_date': self.check_issue_date,
             'type': self.check_type,
             'journal_id': self.journal_id.id,

@@ -47,7 +47,6 @@
                 <field name="id" invisible="1"/>
                 <field name="type" invisible="1"/>
                 <field name="journal_id" invisible="1"/>
-                <field name="issue_check_subtype" invisible="1"/>
                 <field name="company_currency_id" invisible="1"/>
             <header>
                 <!-- usamos la accion en vez del metodo directamente para pedir una fecha -->
@@ -78,6 +77,9 @@
                             <field name="currency_id" options="{'no_create': True, 'no_open': True}" groups="base.group_multi_currency"/>
                         </div>
                         <field name="amount_company_currency"/>
+                        <field name="check_subtype" force_save="1" attrs="{'readonly':['|', ('type','!=','third_check'),
+                                                                                            ('state','!=','draft')],
+                                                                            'required':[('type','=','third_check')]}"/>
                     </group>
                     <group>
                         <field name="state"/>

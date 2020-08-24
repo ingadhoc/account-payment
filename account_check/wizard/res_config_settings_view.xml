@@ -14,7 +14,7 @@
                         <div class="text-muted">
                             Accounts used on checks operations
                         </div>
-                        <div class="content-group">
+                        <div class="content-group" id="account_check">
                             <div class="row mt16">
                                 <label for="rejected_check_account_id" class="col-md-3 o_light_label"/>
                                 <field name="rejected_check_account_id"/>
