@@ -222,6 +222,26 @@ class AccountPaymentGroup(models.Model):
         copy=False,
         help="It indicates that the receipt has been sent."
     )
+    #Conciliar diferencia en pagos contra una cuenta.
+    payment_difference_handling = fields.Selection(
+        [('open', 'Keep open'),
+         ('reconcile', 'Mark invoice as fully paid')],
+        default='open',
+        string="Payment Difference Handling",
+        copy=False)
+    writeoff_account_id = fields.Many2one(
+        'account.account',
+        string="Difference Account",
+        domain="[('deprecated', '=', False), "
+               "('company_id', '=', company_id)]",
+        copy=False)
+    writeoff_label = fields.Char(
+        string='Journal Item Label',
+        help='Change label of the counterpart that will hold the payment difference',
+        default='Write-Off')
+    writeoff_amount = fields.Monetary(
+        string='Payment difference amount',
+        track_visibility='onchange')
 
     @api.depends(
         'state',
@@ -239,7 +259,7 @@ class AccountPaymentGroup(models.Model):
             sign = rec.partner_type == 'supplier' and -1.0 or 1.0
             rec.matched_amount = sign * sum(
                 rec.matched_move_line_ids.with_context(payment_group_id=rec.id).mapped('payment_group_matched_amount'))
-            rec.unmatched_amount = rec.payments_amount - rec.matched_amount
+            rec.unmatched_amount = rec.payments_amount - rec.matched_amount - rec.writeoff_amount
 
     def _compute_matched_amount_untaxed(self):
         """ Lo separamos en otro metodo ya que es un poco mas costoso y no se
@@ -482,8 +502,17 @@ class AccountPaymentGroup(models.Model):
 
     def add_all(self):
         for rec in self:
-            rec.to_pay_move_line_ids = rec.env['account.move.line'].search(
-                rec._get_to_pay_move_lines_domain())
+            # Cuando se genera el pago desde la factura debe reconocer las deudas de las
+            # facturas a pagar y no la deuda global.
+            if self._context.get('to_pay_move_line_ids', False):
+                to_pay_move_line_ids = self._context.get('to_pay_move_line_ids')
+                rec.to_pay_move_line_ids = self.env['account.move.line'].browse(
+                    to_pay_move_line_ids).filtered(lambda x: (
+                        x.account_id.reconcile and
+                        x.account_id.internal_type in ('receivable', 'payable')))
+            else:
+                rec.to_pay_move_line_ids = rec.env['account.move.line'].search(
+                    rec._get_to_pay_move_lines_domain())
 
     def remove_all(self):
         self.to_pay_move_line_ids = False
@@ -537,6 +566,7 @@ class AccountPaymentGroup(models.Model):
     def action_draft(self):
         self.mapped('payment_ids').action_draft()
         # rec.payment_ids.write({'invoice_ids': [(5, 0, 0)]})
+        self.writeoff_amount = 0.0
         return self.write({'state': 'draft'})
 
     def unlink(self):
@@ -573,6 +603,10 @@ class AccountPaymentGroup(models.Model):
             writeoff_acc_id = False
             writeoff_journal_id = False
 
+            #Conciliar en una cuenta contable la diferencia entre la deuda y lo pagado.
+            if rec.payment_difference_handling == 'reconcile':
+                rec.reconcile_diff_payment()
+
             # al crear desde website odoo crea primero el pago y lo postea
             # y no debemos re-postearlo
             if not create_from_website and not create_from_expense:
@@ -591,9 +625,57 @@ class AccountPaymentGroup(models.Model):
             rec.state = 'posted'
         return True
 
+    def reconcile_diff_payment(self):
+        self.ensure_one()
+        sign = self.partner_type == 'supplier' and -1.0 or 1.0
+        payment_curr = self.payment_ids.filtered(lambda x: x.currency_id == self.currency_id)
+        if payment_curr:
+            payment_diff = payment_curr.sorted(key=lambda i: i.amount, reverse=True)[0]
+        else:
+            payment_diff = self.payment_ids.sorted(key=lambda i: i.amount, reverse=True)[0]
+        payment_diff.payment_difference = sign * self.currency_id._convert(self.payment_difference,
+                                                                    payment_diff.currency_id,
+                                                                    self.company_id,
+                                                                    self.payment_date or fields.Date.today())
+        self.writeoff_amount = self.payment_difference * -1
+        payment_diff.payment_difference_handling = self.payment_difference_handling
+        payment_diff.writeoff_account_id = self.writeoff_account_id.id
+        payment_diff.writeoff_label = self.writeoff_label
+
     @api.returns('mail.message', lambda value: value.id)
     def message_post(self, **kwargs):
         if self.env.context.get('mark_payment_as_sent'):
             self.filtered(lambda rec: not rec.sent).write({'sent': True})
         return super(AccountPaymentGroup, self.with_context(
             mail_post_autofollow=True)).message_post(**kwargs)
+
+    def action_account_invoice_payment_group(self):
+        active_ids = self.env.context.get('active_ids')
+        if not active_ids:
+            return ''
+        move_ids = self.env['account.move'].browse(active_ids)
+        if move_ids.filtered(lambda x: x.state != 'posted') or \
+                move_ids.filtered(lambda x: x.invoice_payment_state != 'not_paid'):
+            raise ValidationError(_('You can only register payment if invoice is posted and unpaid'))
+        return {
+            'name': _('Register Payment'),
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'account.payment.group',
+            'view_id': False,
+            'target': 'current',
+            'type': 'ir.actions.act_window',
+            'context': {
+                # si bien el partner se puede adivinar desde los apuntes
+                # con el default de payment group, preferimos mandar por aca
+                # ya que puede ser un contacto y no el commercial partner (y
+                # en los apuntes solo hay commercial partner)
+                'to_pay_move_line_ids': move_ids.mapped('open_move_line_ids').ids,
+                'pop_up': True,
+                # We set this because if became from other view and in the
+                # context has 'create=False' you can't crate payment lines
+                #  (for ej: subscription)
+                'create': True,
+                'default_company_id': move_ids[0].company_id.id,
+            },
+        }
