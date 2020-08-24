@@ -102,6 +102,7 @@
                         <field name="selected_debt" options="{'currency_field': 'currency_id'}" states="draft,confirmed"/>
                         <field name="selected_finacial_debt" options="{'currency_field': 'currency_id'}" states="draft,confirmed" groups="account_financial_amount.account_use_financial_amounts"/>
                         <field name="matched_amount" options="{'currency_field': 'currency_id'}" states="posted"/>
+                        <field name="writeoff_amount" options="{'currency_field': 'currency_id'}" states="posted" readonly="1"/>
                         <field name="unmatched_amount" options="{'currency_field': 'currency_id'}" states="posted"/>
                         <field name="unreconciled_amount" options="{'currency_field': 'currency_id'}" attrs="{'invisible': ['|', ('payment_subtype', '!=', 'double_validation'), ('state', 'not in', ['draft', 'confirmed'])]}"/>
                         <field name="to_pay_amount" options="{'currency_field': 'currency_id'}" attrs="{'invisible': ['|', ('payment_subtype', '!=', 'double_validation'), ('state', 'not in', ['draft', 'confirmed'])]}"/>
@@ -109,6 +110,13 @@
                     <group>
                         <field name="payments_amount" string="Payments Amount" options="{'currency_field': 'currency_id'}"/>
                         <field name="payment_difference" options="{'currency_field': 'currency_id'}" states="draft,confirmed"/>
+                        <field name="payment_difference_handling" widget="radio" nolabel="1" attrs="{'invisible': [('payment_difference', '=', 0.0),('state', 'not in', ['draft', 'confirmed'])]}"/>
+                        <div attrs="{'invisible': [('payment_difference_handling','=','open')]}">
+                            <label for="writeoff_account_id" class="oe_edit_only" string="Post Difference In"/>
+                            <field name="writeoff_account_id" options="{'no_create': True}" string="Post Difference In" attrs="{'required': [('payment_difference_handling', '=', 'reconcile'), ('payment_difference', '!=', 0.0)], 'readonly': [('state', 'not in', ['draft', 'confirmed'])]}"/>
+                            <label for="writeoff_label" class="oe_edit_only" string="Label"/>
+                            <field name="writeoff_label" attrs="{'required': [('payment_difference_handling', '=', 'reconcile'), ('payment_difference', '!=', 0.0)], 'readonly': [('state', 'not in', ['draft', 'confirmed'])]}"/>
+                        </div>
                     </group>
                 </group>
                 <notebook>
