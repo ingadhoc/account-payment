@@ -148,7 +148,7 @@ class AccountCheck(models.Model):
     )
     checkbook_id = fields.Many2one(
         'account.checkbook',
-        string='Checkbook',
+        'Checkbook',
         readonly=True,
         states={'draft': [('readonly', False)]},
         auto_join=True,
@@ -202,24 +202,24 @@ class AccountCheck(models.Model):
         index=True,
     )
     issue_date = fields.Date(
-        string='Issue Date',
+        'Issue Date',
         required=True,
         readonly=True,
         states={'draft': [('readonly', False)]},
         default=fields.Date.context_today,
     )
     owner_vat = fields.Char(
-        string='Owner Vat',
+        'Owner Vat',
         readonly=True,
         states={'draft': [('readonly', False)]}
     )
     owner_name = fields.Char(
-        string='Owner Name',
+        'Owner Name',
         readonly=True,
         states={'draft': [('readonly', False)]}
     )
     bank_id = fields.Many2one(
-        'res.bank', string='Bank',
+        'res.bank', 'Bank',
         readonly=True,
         states={'draft': [('readonly', False)]}
     )
