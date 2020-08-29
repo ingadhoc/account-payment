@@ -48,8 +48,17 @@ class AccountMoveLine(models.Model):
                 ('credit_move_id', '=', rec.id)])
             matched_amount -= sum(reconciles.mapped('amount'))
             rec.payment_group_matched_amount = matched_amount
+            
+            currency_id = rec.move_id.currency_id or self.env.company.currency_id
+            rec.payment_group_matched_amount_company = currency_id._convert(matched_amount, rec.move_id.company_currency_id, rec.company_id,
+                rec.date or fields.Date.context_today())
 
     payment_group_matched_amount = fields.Monetary(
+        compute='_compute_payment_group_matched_amount',
+        currency_field='company_currency_id',
+    )
+
+    payment_group_matched_amount_company = fields.Monetary(
         compute='_compute_payment_group_matched_amount',
         currency_field='company_currency_id',
     )
