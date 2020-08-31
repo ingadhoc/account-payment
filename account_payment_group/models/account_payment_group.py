@@ -31,9 +31,6 @@ class AccountPaymentGroup(models.Model):
         readonly=True,
         states={'draft': [('readonly', False)]},
     )
-    company_currency_id = fields.Many2one(string='Company Currency', readonly=True, 
-        related='company_id.currency_id')
-
     payment_methods = fields.Char(
         string='Payment Methods',
         compute='_compute_payment_methods',
@@ -90,10 +87,6 @@ class AccountPaymentGroup(models.Model):
     unmatched_amount = fields.Monetary(
         compute='_compute_matched_amounts',
         currency_field='currency_id',
-    )
-    unmatched_amount_company = fields.Monetary(
-        compute='_compute_matched_amounts',
-        currency_field='company_currency_id',
     )
     matched_amount_untaxed = fields.Monetary(
         compute='_compute_matched_amount_untaxed',
@@ -249,10 +242,6 @@ class AccountPaymentGroup(models.Model):
     writeoff_amount = fields.Monetary(
         string='Payment difference amount',
         track_visibility='onchange')
-        
-    writeoff_amount_company = fields.Monetary(
-        string='Payment difference amount company',
-        compute='_compute_writeoff_amount_company')
         
     @api.depends(
         'state',
@@ -693,9 +682,3 @@ class AccountPaymentGroup(models.Model):
                 'default_company_id': move_ids[0].company_id.id,
             },
         }
-
-    @api.depends('writeoff_amount')
-    def _compute_writeoff_amount_company(self):
-        for rec in self:
-            rec.writeoff_amount_company = rec.currency_id._convert(rec.writeoff_amount, rec.company_currency_id, rec.company_id,
-                rec.payment_date or fields.Date.context_today())
