@@ -49,16 +49,7 @@ class AccountMoveLine(models.Model):
             matched_amount -= sum(reconciles.mapped('amount'))
             rec.payment_group_matched_amount = matched_amount
 
-            company_currency_id = rec.move_id.company_currency_id
-            rec.payment_group_matched_amount_currency = company_currency_id._convert(matched_amount, rec.move_id.currency_id, rec.move_id.company_id,
-                rec.date or fields.Date.context_today())
-
     payment_group_matched_amount = fields.Monetary(
         compute='_compute_payment_group_matched_amount',
         currency_field='company_currency_id',
-    )
-
-    payment_group_matched_amount_currency = fields.Monetary(
-        compute='_compute_payment_group_matched_amount',
-        currency_field='currency_id',
     )
