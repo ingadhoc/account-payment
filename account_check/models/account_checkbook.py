@@ -33,7 +33,7 @@ class AccountCheckbook(models.Model):
     )
     issue_check_subtype = fields.Selection(
         [('deferred', 'Deferred'), ('currents', 'Currents'), ('electronic', 'Electronic')],
-        string='Issue Check Subtype',
+        string='Check Subtype',
         required=True,
         default='deferred',
         help='* Con cheques corrientes el asiento generado por el pago '

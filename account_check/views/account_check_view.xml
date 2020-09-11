@@ -47,7 +47,6 @@
                 <field name="id" invisible="1"/>
                 <field name="type" invisible="1"/>
                 <field name="journal_id" invisible="1"/>
-                <field name="issue_check_subtype" invisible="1"/>
                 <field name="company_currency_id" invisible="1"/>
             <header>
                 <!-- usamos la accion en vez del metodo directamente para pedir una fecha -->

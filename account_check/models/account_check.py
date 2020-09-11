@@ -473,7 +473,7 @@ class AccountCheck(models.Model):
         parecido a los statements donde odoo ya lo genera posteado
         """
         # payment.post()
-        move = self.env['account.move'].create(payment._prepare_payment_moves())
+        move = self.env['account.move'].with_context(default_type='entry').create(payment._prepare_payment_moves())
         move.post()
         payment.write({'state': 'posted', 'move_name': move.name})
 

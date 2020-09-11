@@ -195,6 +195,16 @@
     </field>
 </record>
 
+<!-- Abrir el formulario de multipagos cuando se selecciona varias facturas-->
+<record id="account.action_account_invoice_from_list" model="ir.actions.server">
+    <field name="model_id" ref="account_payment_group.model_account_payment_group"/>
+    <field name="binding_view_types">list</field>
+    <field name="state">code</field>
+    <field name="code">
+        action = model.action_account_invoice_payment_group()
+    </field>
+</record>
+
 <menuitem action="action_account_payments_group" id="menu_action_account_payments_group_receivable" parent="account.menu_finance_receivables" sequence="20"/>
 <menuitem action="action_account_payments_group_payable" id="menu_action_account_payments_group_payable" parent="account.menu_finance_payables" sequence="20"/>
 

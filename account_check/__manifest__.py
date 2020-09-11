@@ -19,10 +19,10 @@
 ##############################################################################
 {
     'name': 'Account Check Management',
-    'version': "13.0.1.0.0",
+    'version': "13.0.1.1.0",
     'category': 'Accounting',
     'summary': 'Accounting, Payment, Check, Third, Issue',
-    'author': 'ADHOC SA',
+    'author': 'ADHOC SA, AITIC S.A.S',
     'license': 'AGPL-3',
     'images': [
     ],

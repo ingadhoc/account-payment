@@ -227,9 +227,12 @@ class AccountPayment(models.Model):
         We suggest owner name from owner vat
         """
         # if not self.check_owner_name:
-        self.check_owner_name = self.search(
+        check_owner_name = self.search(
             [('check_owner_vat', '=', self.check_owner_vat)],
             limit=1).check_owner_name
+        if not check_owner_name:
+            check_owner_name = self.partner_id.commercial_partner_id and self.partner_id.commercial_partner_id.name
+        self.check_owner_name = check_owner_name
 
     @api.onchange('partner_id', 'payment_method_code')
     def onchange_partner_check(self):
