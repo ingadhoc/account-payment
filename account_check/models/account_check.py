@@ -154,11 +154,8 @@ class AccountCheck(models.Model):
         auto_join=True,
         index=True,
     )
-    check_subtype = fields.Selection(
-        [('deferred', 'Deferred'), ('currents', 'Currents'), ('electronic', 'Electronic')],
-        string='Check Subtype',
-        required=True,
-        default='deferred',
+    issue_check_subtype = fields.Selection(
+        related='checkbook_id.issue_check_subtype',
     )
     type = fields.Selection(
         [('issue_check', 'Issue Check'), ('third_check', 'Third Check')],
@@ -292,27 +289,6 @@ class AccountCheck(models.Model):
                     rec.issue_date > rec.payment_date):
                 raise UserError(
                     _('Check Payment Date must be greater than Issue Date'))
-
-    @api.onchange('checkbook_id')
-    def onchange_checkbook_id(self):
-        for rec in self:
-            rec.check_subtype = rec.checkbook_id.check_subtype
-
-    @api.onchange('journal_id')
-    def onchange_journal_id(self):
-        for rec in self:
-            if rec.journal_id and rec.type == 'issue_check':
-                rec.bank_id = rec.journal_id.bank_id
-
-    @api.onchange('amount', 'currency_id')
-    def onchange_amount(self):
-        for rec in self:
-            if rec.amount and rec.currency_id and rec.currency_id != rec.company_currency_id:
-                rec.amount_company_currency = rec.currency_id._convert(
-                    rec.amount, rec.company_id.currency_id,
-                    rec.company_id, rec.issue_date)
-            else:
-                rec.amount_company_currency = rec.amount
 
     @api.constrains(
         'type',
