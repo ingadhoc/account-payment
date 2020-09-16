@@ -403,7 +403,6 @@ msgstr "Si marca nuevos mensajes requieren su atención"
 
 #. module: account_payment_group
 #: model:ir.model.fields,help:account_payment_group.field_account_payment_group__message_needaction
-#: model:ir.model.fields,help:account_payment_group.field_account_payment_group__message_unread
 msgid "If checked, new messages require your attention."
 msgstr "Si marca, nuevos mensajes requieren su atención."
 
