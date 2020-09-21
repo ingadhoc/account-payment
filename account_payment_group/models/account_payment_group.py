@@ -483,6 +483,8 @@ class AccountPaymentGroup(models.Model):
 
     @api.onchange('partner_id', 'partner_type', 'company_id')
     def _refresh_payments_and_move_lines(self):
+        if self._context.get('to_pay_move_line_ids'):
+            return
         for rec in self:
             rec.add_all()
 

@@ -28,7 +28,7 @@ msgid " up to %s"
 msgstr " hasta %s"
 
 #. module: account_check
-#: model:ir.model.fields,help:account_check.field_account_checkbook__check_subtype
+#: model:ir.model.fields,help:account_check.field_account_checkbook__issue_check_subtype
 msgid ""
 "* Con cheques corrientes el asiento generado por el pago descontará directamente de la cuenta de banco y además la fecha de pago no es obligatoria.\n"
 "* Con cheques diferidos el asiento generado por el pago se hará contra la cuenta definida para tal fin en la compañía, luego será necesario el asiento de débito que se puede generar desde el extracto o desde el cheque."
@@ -263,9 +263,9 @@ msgid "Check Payment Date must be greater than Issue Date"
 msgstr "La fecha de pago del cheque debe ser mayor que la fecha de emisión"
 
 #. module: account_check
-#: model:ir.model.fields,field_description:account_check.field_account_check__check_subtype
-#: model:ir.model.fields,field_description:account_check.field_account_checkbook__check_subtype
-#: model:ir.model.fields,field_description:account_check.field_account_payment__check_subtype
+#: model:ir.model.fields,field_description:account_check.field_account_check__issue_check_subtype
+#: model:ir.model.fields,field_description:account_check.field_account_checkbook__issue_check_subtype
+#: model:ir.model.fields,field_description:account_check.field_account_payment__issue_check_subtype
 msgid "Check Subtype"
 msgstr "Subtipo de cheque"
 
@@ -416,9 +416,9 @@ msgid "Currency"
 msgstr "Moneda"
 
 #. module: account_check
-#: model:ir.model.fields.selection,name:account_check.selection__account_check__check_subtype__currents
-#: model:ir.model.fields.selection,name:account_check.selection__account_checkbook__check_subtype__currents
-#: model:ir.model.fields.selection,name:account_check.selection__account_payment__check_subtype__currents
+#: model:ir.model.fields.selection,name:account_check.selection__account_check__issue_check_subtype__currents
+#: model:ir.model.fields.selection,name:account_check.selection__account_checkbook__issue_check_subtype__currents
+#: model:ir.model.fields.selection,name:account_check.selection__account_payment__issue_check_subtype__currents
 msgid "Currents"
 msgstr "Corrientes"
 
@@ -451,9 +451,9 @@ msgid "Debited"
 msgstr "Debitado"
 
 #. module: account_check
-#: model:ir.model.fields.selection,name:account_check.selection__account_check__check_subtype__deferred
-#: model:ir.model.fields.selection,name:account_check.selection__account_checkbook__check_subtype__deferred
-#: model:ir.model.fields.selection,name:account_check.selection__account_payment__check_subtype__deferred
+#: model:ir.model.fields.selection,name:account_check.selection__account_check__issue_check_subtype__deferred
+#: model:ir.model.fields.selection,name:account_check.selection__account_checkbook__issue_check_subtype__deferred
+#: model:ir.model.fields.selection,name:account_check.selection__account_payment__issue_check_subtype__deferred
 msgid "Deferred"
 msgstr "Diferidos"
 
@@ -545,9 +545,9 @@ msgid "Draft"
 msgstr "Borrador"
 
 #. module: account_check
-#: model:ir.model.fields.selection,name:account_check.selection__account_check__check_subtype__electronic
-#: model:ir.model.fields.selection,name:account_check.selection__account_checkbook__check_subtype__electronic
-#: model:ir.model.fields.selection,name:account_check.selection__account_payment__check_subtype__electronic
+#: model:ir.model.fields.selection,name:account_check.selection__account_check__issue_check_subtype__electronic
+#: model:ir.model.fields.selection,name:account_check.selection__account_checkbook__issue_check_subtype__electronic
+#: model:ir.model.fields.selection,name:account_check.selection__account_payment__issue_check_subtype__electronic
 msgid "Electronic"
 msgstr "Cheque electrónico"
 

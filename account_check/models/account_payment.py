@@ -83,7 +83,7 @@ class AccountPayment(models.Model):
         states={'draft': [('readonly', False)]},
         auto_join=True,
     )
-    check_subtype = fields.Selection(
+    issue_check_subtype = fields.Selection(
         [('deferred', 'Deferred'), ('currents', 'Currents'), ('electronic', 'Electronic')],
         string='Check Subtype'
     )
@@ -276,11 +276,11 @@ class AccountPayment(models.Model):
     @api.onchange('checkbook_id')
     def onchange_checkbook(self):
         if self.checkbook_id:
-            self.check_subtype = self.checkbook_id.check_subtype
+            self.issue_check_subtype = self.checkbook_id.issue_check_subtype
             if not self.checkbook_id.numerate_on_printing:
                 self.check_number = self.checkbook_id.next_number
         else:
-            self.check_subtype = False
+            self.issue_check_subtype = False
             self.check_number = False
 
 # post methods
@@ -304,7 +304,7 @@ class AccountPayment(models.Model):
             'number': self.check_number,
             'name': self.check_name,
             'checkbook_id': self.checkbook_id.id,
-            'check_subtype': self.check_subtype or self.checkbook_id.check_subtype or 'deferred',
+            'issue_check_subtype': self.issue_check_subtype or self.checkbook_id.issue_check_subtype or 'deferred',
             'issue_date': self.check_issue_date,
             'type': self.check_type,
             'journal_id': self.journal_id.id,
@@ -461,7 +461,7 @@ class AccountPayment(models.Model):
             # al final por ahora depreciamos esto ya que deberiamos adaptar
             # rechazos y demas, deferred solamente sin fecha pero con cuenta
             # puente
-            # if self.check_subtype == 'deferred':
+            # if self.issue_check_subtype == 'deferred':
             vals['account_id'] = self.company_id._get_check_account(
                 'deferred').id
             operation = 'handed'
@@ -486,7 +486,7 @@ class AccountPayment(models.Model):
             vals['date_maturity'] = self.check_payment_date
             # if check is deferred, change account
             # si retiramos por caja directamente lo sacamos de banco
-            # if self.check_subtype == 'deferred':
+            # if self.issue_check_subtype == 'deferred':
             #     vals['account_id'] = self.company_id._get_check_account(
             #         'deferred').id
         else:

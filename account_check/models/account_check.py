@@ -154,7 +154,7 @@ class AccountCheck(models.Model):
         auto_join=True,
         index=True,
     )
-    check_subtype = fields.Selection(
+    issue_check_subtype = fields.Selection(
         [('deferred', 'Deferred'), ('currents', 'Currents'), ('electronic', 'Electronic')],
         string='Check Subtype',
         required=True,
@@ -296,7 +296,7 @@ class AccountCheck(models.Model):
     @api.onchange('checkbook_id')
     def onchange_checkbook_id(self):
         for rec in self:
-            rec.check_subtype = rec.checkbook_id.check_subtype
+            rec.issue_check_subtype = rec.checkbook_id.issue_check_subtype
 
     @api.onchange('journal_id')
     def onchange_journal_id(self):
