@@ -178,6 +178,6 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
             'tax_ids': [(6, 0, self.tax_ids.ids)],
         })]
         invoice = self.env['account.move'].create(invoice_vals)
-        invoice.post()
+        invoice.action_post()
 
         self.payment_group_id.to_pay_move_line_ids += (invoice.open_move_line_ids)
