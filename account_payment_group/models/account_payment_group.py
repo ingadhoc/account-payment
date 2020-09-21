@@ -261,9 +261,6 @@ class AccountPaymentGroup(models.Model):
                 rec.matched_move_line_ids.with_context(payment_group_id=rec.id).mapped('payment_group_matched_amount'))
             rec.unmatched_amount = rec.payments_amount - rec.matched_amount - rec.writeoff_amount
 
-            rec.unmatched_amount_company = rec.currency_id._convert(rec.unmatched_amount, rec.company_currency_id, rec.company_id,
-                rec.payment_date or fields.Date.context_today())
-
     def _compute_matched_amount_untaxed(self):
         """ Lo separamos en otro metodo ya que es un poco mas costoso y no se
         usa en conjunto con matched_amount

@@ -298,22 +298,6 @@ class AccountCheck(models.Model):
         for rec in self:
             rec.issue_check_subtype = rec.checkbook_id.issue_check_subtype
 
-    @api.onchange('journal_id')
-    def onchange_journal_id(self):
-        for rec in self:
-            if rec.journal_id and rec.type == 'issue_check':
-                rec.bank_id = rec.journal_id.bank_id
-
-    @api.onchange('amount', 'currency_id')
-    def onchange_amount(self):
-        for rec in self:
-            if rec.amount and rec.currency_id and rec.currency_id != rec.company_currency_id:
-                rec.amount_company_currency = rec.currency_id._convert(
-                    rec.amount, rec.company_id.currency_id,
-                    rec.company_id, rec.issue_date)
-            else:
-                rec.amount_company_currency = rec.amount
-
     @api.constrains(
         'type',
         'number',
@@ -468,6 +452,17 @@ class AccountCheck(models.Model):
                     self._fields['state'].convert_to_export(old_state, self),
                     self.name,
                     self.id))
+
+    @api.model
+    def create(self, vals):
+        if vals.get('journal_id', False) and vals.get('type', False) \
+                and vals['type'] == 'issue_check' and not vals.get('bank_id', False):
+            journal_id = self.env['account.journal'].browse(vals['journal_id'])
+            vals['bank_id'] = journal_id.bank_id.id if journal_id.bank_id else False
+        rec = super(AccountCheck, self).create(vals)
+        if not rec.sequence_id:
+            rec._create_sequence(vals.get('next_number', 0))
+        return rec
 
     def unlink(self):
         for rec in self:
