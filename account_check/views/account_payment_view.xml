@@ -1,18 +1,18 @@
 <odoo>
 
-    <record id="view_account_payment2_form_inherited" model="ir.ui.view">
-        <field name="name">account.payment.form.inherited</field>
-        <field name="model">account.payment</field>
-        <field name="inherit_id" ref="account_payment_group.view_account_payment_form" />
-        <field name="arch" type="xml">
-            <label for="amount_company_currency" position="attributes">
-                <attribute name="attrs">{'invisible': ['|', ('other_currency', '=', False), ('payment_method_code', '=', 'delivered_third_check')]}</attribute>
-            </label>
-            <div name="amount_company_currency" position="attributes">
-                <attribute name="attrs">{'invisible': ['|', ('other_currency', '=', False), ('payment_method_code', '=', 'delivered_third_check')]}</attribute>
-            </div>
-        </field>
-    </record>
+<!--    <record id="view_account_payment2_form_inherited" model="ir.ui.view">-->
+<!--        <field name="name">account.payment.form.inherited</field>-->
+<!--        <field name="model">account.payment</field>-->
+<!--        <field name="inherit_id" ref="account_payment_group.view_account_payment_form" />-->
+<!--        <field name="arch" type="xml">-->
+<!--            <label for="amount_company_currency" position="attributes">-->
+<!--                <attribute name="attrs">{'invisible': ['|', ('other_currency', '=', False), ('payment_method_code', '=', 'delivered_third_check')]}</attribute>-->
+<!--            </label>-->
+<!--            <div name="amount_company_currency" position="attributes">-->
+<!--                <attribute name="attrs">{'invisible': ['|', ('other_currency', '=', False), ('payment_method_code', '=', 'delivered_third_check')]}</attribute>-->
+<!--            </div>-->
+<!--        </field>-->
+<!--    </record>-->
 
     <!-- TODO inherit other form views also (like check printing module) -->
     <record id="view_account_payment_form_inherited" model="ir.ui.view">
@@ -22,7 +22,7 @@
         <field name="arch" type="xml">
             <form>
                 <field name="check_type" invisible="1"/>
-                <field name="check_subtype" invisible="1"/>
+                <field name="issue_check_subtype" invisible="1"/>
                 <!-- <field name="checkbook_block_manual_number" invisible="1"/> -->
                 <field name="checkbook_numerate_on_printing" invisible="1"/>
             </form>
@@ -64,11 +64,11 @@
                         <field name="check_number" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': ['|', ('payment_method_code', '=', 'received_third_check'), '&amp;', ('payment_method_code', '=', 'issue_check'), ('checkbook_numerate_on_printing', '=', False)]}"/>
                         <field name="check_name" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': ['|', ('payment_method_code', '=', 'received_third_check'), '&amp;', ('payment_method_code', '=', 'issue_check'), ('checkbook_numerate_on_printing', '=', False)]}"/>
                         <field name="check_issue_date" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('payment_method_code', 'in', ['received_third_check', 'issue_check'])]}"/>
-                        <field name="check_payment_date" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('check_subtype', '=', 'deferred')]}"/>
+                        <field name="check_payment_date" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check', 'issue_check'])], 'required': [('issue_check_subtype', '=', 'deferred')]}"/>
                         <field name="check_bank_id" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check'])], 'required': [('payment_method_code', 'in', ['received_third_check'])]}"/>
                         <field name="check_owner_vat" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check'])]}"/>
                         <field name="check_owner_name" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check'])]}"/>
-                        <field name="check_subtype" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check'])]}"/>
+                        <field name="issue_check_subtype" attrs="{'invisible': [('payment_method_code', 'not in', ['received_third_check'])],  'required': [('payment_method_code', 'in', ['received_third_check'])]}"/>
                     </group>
                 </div>
             </group>

@@ -455,14 +455,11 @@ class AccountCheck(models.Model):
 
     @api.model
     def create(self, vals):
-        if vals.get('journal_id', False) and vals.get('type', False) \
-                and vals['type'] == 'issue_check' and not vals.get('bank_id', False):
+        type = vals.get('type', False) or self._context.get('default_type', False)
+        if vals.get('journal_id', False) and type and type == 'issue_check' and not vals.get('bank_id', False):
             journal_id = self.env['account.journal'].browse(vals['journal_id'])
             vals['bank_id'] = journal_id.bank_id.id if journal_id.bank_id else False
-        rec = super(AccountCheck, self).create(vals)
-        if not rec.sequence_id:
-            rec._create_sequence(vals.get('next_number', 0))
-        return rec
+        return super(AccountCheck, self).create(vals)
 
     def unlink(self):
         for rec in self:
