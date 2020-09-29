@@ -120,14 +120,15 @@ class AccountPaymentGroup(models.Model):
     def post(self):
         for rec in self:
             if not rec.document_number:
-                if not rec.receiptbook_id.sequence_id:
+                if rec.receiptbook_id and not rec.receiptbook_id.sequence_id:
                     raise UserError(_(
                         'Error!. Please define sequence on the receiptbook'
                         ' related documents to this payment or set the '
                         'document number.'))
-                rec.document_number = (
-                    rec.receiptbook_id.with_context(
-                        ir_sequence_date=rec.payment_date
+                if rec.receiptbook_id.sequence_id:
+                    rec.document_number = (
+                        rec.receiptbook_id.with_context(
+                            ir_sequence_date=rec.payment_date
                         ).sequence_id.next_by_id())
             rec.payment_ids.move_name = rec.name
 
@@ -137,6 +138,10 @@ class AccountPaymentGroup(models.Model):
             # necesitamos realmente mandar el tipo de documento? lo necesitamos para algo?
             super(AccountPaymentGroup, self.with_context(
                 default_l10n_latam_document_type_id=rec.document_type_id.id)).post()
+            if not rec.receiptbook_id:
+                rec.name = any(
+                    rec.payment_ids.mapped('name')) and ', '.join(
+                    rec.payment_ids.mapped('name')) or False
 
         for rec in self:
             if rec.receiptbook_id.mail_template_id:
