@@ -604,7 +604,7 @@ class AccountPayment(models.Model):
         """
         self.ensure_one()
         res = self.env['account.move.line']
-        move.button_cancel()
+        move.write({'state': 'draft'})
         checks = self.check_ids
         aml = move.line_ids.with_context(check_move_validity=False).filtered(
             lambda x: x.name != self.name)
