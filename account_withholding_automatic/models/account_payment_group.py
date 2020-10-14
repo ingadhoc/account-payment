@@ -107,8 +107,8 @@ class AccountPaymentGroup(models.Model):
                         )))
 
             if withholding_amount_type == 'untaxed_amount' and \
-                    partial_line.invoice_id:
-                invoice_factor = partial_line.invoice_id._get_tax_factor()
+                    partial_line.move_id:
+                invoice_factor = partial_line.move_id._get_tax_factor()
             else:
                 invoice_factor = 1.0
 

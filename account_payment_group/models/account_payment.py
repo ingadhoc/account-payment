@@ -276,20 +276,17 @@ class AccountPayment(models.Model):
         """ When payments are created from bank reconciliation create the
         Payment group before creating payment to avoid raising error, only
         apply when the all the counterpart account are receivable/payable """
-        # Si viene counterpart_aml entonces estamos viniendo de una
-        # conciliacion desde el wizard
-        new_aml_dicts = self._context.get('new_aml_dicts', [])
-        counterpart_aml_dicts = self._context.get('counterpart_aml_dicts')
-        counterpart_aml_data = counterpart_aml_dicts or [{}]
-        if counterpart_aml_data or new_aml_dicts:
+        aml_data = self._context.get('counterpart_aml_dicts') or self._context.get('new_aml_dicts') or [{}]
+        if aml_data and not vals.get('partner_id'):
             vals.update(self.infer_partner_info(vals))
 
-        create_from_statement = self._context.get(
-            'create_from_statement', False) and vals.get('partner_type') \
-            and vals.get('partner_id') and all([
-                x.get('move_line') and x.get('move_line').account_id.internal_type in [
-                    'receivable', 'payable']
-                for x in counterpart_aml_data])
+        receivable_payable_accounts = [
+            (x.get('move_line') and x.get('move_line').account_id.internal_type in ['receivable', 'payable']) or
+            (x.get('account_id') and self.env['account.account'].browse(x.get('account_id')).internal_type in [
+                'receivable', 'payable'])
+            for x in aml_data]
+        create_from_statement = self._context.get('create_from_statement') and vals.get('partner_type') \
+            and vals.get('partner_id') and all(receivable_payable_accounts)
         create_from_expense = self._context.get('create_from_expense', False)
         create_from_website = self._context.get('create_from_website', False)
         # NOTE: This is required at least from POS when we do not have
