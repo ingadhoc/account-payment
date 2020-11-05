@@ -48,17 +48,17 @@ class AccountPayment(models.Model):
         return super(AccountPayment, self).post()
 
     def _prepare_payment_moves(self):
-        all_move_vals = []
+        all_moves_vals = []
         for rec in self:
-            move_vals = super(AccountPayment, rec)._prepare_payment_moves()
+            moves_vals = super(AccountPayment, rec)._prepare_payment_moves()
 
             vals = rec._get_withholding_line_vals()
             if vals:
-                move_vals[0]['line_ids'][1][2].update(vals)
+                moves_vals[0]['line_ids'][1][2].update(vals)
 
-            all_move_vals += move_vals
+            all_moves_vals += moves_vals
 
-        return all_move_vals
+        return all_moves_vals
 
     def _get_withholding_line_vals(self):
         vals = {}
