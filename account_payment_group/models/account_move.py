@@ -25,6 +25,7 @@ class AccountMove(models.Model):
         'account.payment.group',
         compute='_compute_payment_groups',
         string='Payment Groups',
+        compute_sudo=True,
     )
 
     def _compute_payment_groups(self):
