@@ -518,32 +518,32 @@ class AccountPayment(models.Model):
         vals = super(AccountPayment, self)._prepare_payment_moves()
 
         force_account_id = self._context.get('force_account_id')
-        all_move_vals = []
+        all_moves_vals = []
         for rec in self:
-            move_vals = super(AccountPayment, rec)._prepare_payment_moves()
+            moves_vals = super(AccountPayment, rec)._prepare_payment_moves()
 
             # edit liquidity lines
             # Si se esta forzando importe en moneda de cia, usamos este importe para debito/credito
             vals = rec.do_checks_operations()
             if vals:
-                move_vals[0]['line_ids'][1][2].update(vals)
+                moves_vals[0]['line_ids'][1][2].update(vals)
 
             # edit counterpart lines
             # use check payment date on debt entry also so that it can be used for NC/ND adjustaments
             if rec.check_type and rec.check_payment_date:
-                move_vals[0]['line_ids'][0][2]['date_maturity'] = rec.check_payment_date
+                moves_vals[0]['line_ids'][0][2]['date_maturity'] = rec.check_payment_date
             if force_account_id:
-                move_vals[0]['line_ids'][0][2]['account_id'] = force_account_id
+                moves_vals[0]['line_ids'][0][2]['account_id'] = force_account_id
 
             # split liquidity lines on detailed checks transfers
             if rec.payment_type == 'transfer' and rec.payment_method_code == 'delivered_third_check' \
                and rec.check_deposit_type == 'detailed':
-                rec._split_aml_line_per_check(move_vals[0]['line_ids'])
-                rec._split_aml_line_per_check(move_vals[1]['line_ids'])
+                rec._split_aml_line_per_check(moves_vals[0]['line_ids'])
+                rec._split_aml_line_per_check(moves_vals[1]['line_ids'])
 
-            all_move_vals += move_vals
+            all_moves_vals += moves_vals
 
-        return all_move_vals
+        return all_moves_vals
 
     def do_print_checks(self):
         # si cambiamos nombre de check_report tener en cuenta en sipreco
