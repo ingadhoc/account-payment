@@ -31,6 +31,7 @@ class AccountMoveLine(models.Model):
         """
         payment_group_id = self._context.get('payment_group_id')
         if not payment_group_id:
+            self.payment_group_matched_amount = 0.0
             return False
         payments = self.env['account.payment.group'].browse(
             payment_group_id).payment_ids
