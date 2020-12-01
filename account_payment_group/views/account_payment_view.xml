@@ -209,6 +209,20 @@
         </field>
     </record>
 
+    <record id="view_account_payment_kanban" model="ir.ui.view">
+        <field name="name">account.payment.kanban.inherit</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_kanban"/>
+        <field name="arch" type="xml">
+            <!-- we force to create because we need for the mobile view, odoo remove this here:
+            https://github.com/odoo/odoo/commit/6774f9cfe768e5cffce4cfd458910af450ef7616
+            https://github.com/odoo/odoo/blob/13.0/addons/account/views/account_payment_view.xml#L40 -->
+            <kanban class="o_kanban_mobile" position="attributes">
+                <attribute name="create" >1</attribute>
+            </kanban>
+        </field>
+    </record>
+
     <record id="action_account_payments_transfer" model="ir.actions.act_window">
         <field name="name">Transfers</field>
         <field name="res_model">account.payment</field>
