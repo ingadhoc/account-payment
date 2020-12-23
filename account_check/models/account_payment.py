@@ -380,7 +380,6 @@ class AccountPayment(models.Model):
                     _logger.info('Cancel Transfer Check')
                     for check in rec.check_ids:
                         check._del_operation(self)
-                        check._del_operation(self)
                         receive_op = check._get_operation('holding')
                         if receive_op.origin._name == 'account.payment':
                             check.journal_id = receive_op.origin.journal_id.id
