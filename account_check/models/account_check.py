@@ -163,14 +163,15 @@ class AccountCheck(models.Model):
         index=True,
     )
     partner_id = fields.Many2one(
-        related='operation_ids.partner_id',
+        'res.partner',
+        compute='_compute_partners',
         store=True,
         index=True,
         string='Last operation partner',
     )
     first_partner_id = fields.Many2one(
         'res.partner',
-        compute='_compute_first_partner',
+        compute='_compute_partners',
         string='First operation partner',
         readonly=True,
         store=True,
@@ -261,12 +262,15 @@ class AccountCheck(models.Model):
     )
 
     @api.depends('operation_ids.partner_id')
-    def _compute_first_partner(self):
+    def _compute_partners(self):
         for rec in self:
             if not rec.operation_ids:
+                rec.partner_id = False
                 rec.first_partner_id = False
                 continue
-            rec.first_partner_id = rec.operation_ids[-1].partner_id
+            operations = rec.operation_ids.sorted()
+            rec.first_partner_id = operations[-1].partner_id
+            rec.partner_id = operations[0].partner_id
 
     def onchange(self, values, field_name, field_onchange):
         """
