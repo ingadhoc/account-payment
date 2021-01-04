@@ -65,7 +65,6 @@ class AccountPaymentGroup(models.Model):
     )
     payment_date = fields.Date(
         string='Payment Date',
-        default=fields.Date.context_today,
         required=True,
         copy=False,
         readonly=True,
@@ -491,9 +490,10 @@ class AccountPaymentGroup(models.Model):
         self.to_pay_move_line_ids = False
 
     @api.model
-    def default_get(self, fields):
+    def default_get(self, defaul_fields):
         # TODO si usamos los move lines esto no haria falta
-        rec = super().default_get(fields)
+        rec = super().default_get(defaul_fields)
+        rec['payment_date'] = fields.Date.context_today(self)
         to_pay_move_line_ids = self._context.get('to_pay_move_line_ids')
         to_pay_move_lines = self.env['account.move.line'].browse(
             to_pay_move_line_ids).filtered(lambda x: (
