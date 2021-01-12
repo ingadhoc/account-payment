@@ -3,7 +3,7 @@
 # 	* account_payment_group
 # 
 # Translators:
-# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2020
+# Irina Fedulova <istartlin@gmail.com>, 2020
 # 
 msgid ""
 msgstr ""
@@ -11,13 +11,13 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 19:19+0000\n"
 "PO-Revision-Date: 2020-02-02 00:57+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2020\n"
-"Language-Team: Catalan (https://www.transifex.com/adhoc/teams/46451/ca/)\n"
+"Last-Translator: Irina Fedulova <istartlin@gmail.com>, 2020\n"
+"Language-Team: Russian (https://www.transifex.com/adhoc/teams/46451/ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Language: ca\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: ru\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
 
 #. module: account_payment_group
 #: model:mail.template,body_html:account_payment_group.email_template_edi_payment_group
@@ -106,6 +106,8 @@ msgid ""
 "<span class=\"fa fa-lg fa-building-o\" title=\"Values set here are company-"
 "specific.\" groups=\"base.group_multi_company\"/>"
 msgstr ""
+"<span class=\"fa fa-lg fa-building-o\" title=\"Values set here are company-"
+"specific.\" groups=\"base.group_multi_company\"/>"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__account_internal_type
@@ -120,7 +122,7 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__message_needaction
 msgid "Action Needed"
-msgstr ""
+msgstr "Требуемое действие"
 
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
@@ -180,7 +182,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__payments_amount
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
 msgid "Amount"
-msgstr ""
+msgstr "Сумма"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment__amount_company_currency
@@ -206,12 +208,12 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_invoice_wizard
 msgid "Cancel"
-msgstr "Cancel·la"
+msgstr "Отмена"
 
 #. module: account_payment_group
 #: model:ir.model.fields.selection,name:account_payment_group.selection__account_payment_group__state__cancel
 msgid "Cancelled"
-msgstr ""
+msgstr "Отменено"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_res_config_settings__group_choose_payment_type
@@ -238,7 +240,7 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_res_company
 msgid "Companies"
-msgstr ""
+msgstr "Компании"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__company_id
@@ -246,7 +248,7 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
 msgid "Company"
-msgstr ""
+msgstr "Компания"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment__company_currency_id
@@ -268,7 +270,7 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_invoice_wizard
 msgid "Confirm"
-msgstr ""
+msgstr "Подтвердить"
 
 #. module: account_payment_group
 #: model:res.groups,name:account_payment_group.account_confirm_payment
@@ -278,19 +280,19 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model.fields.selection,name:account_payment_group.selection__account_payment_group__state__confirmed
 msgid "Confirmed"
-msgstr ""
+msgstr "Подтверждено"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__create_uid
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard__create_uid
 msgid "Created by"
-msgstr ""
+msgstr "Создано"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__create_date
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard__create_date
 msgid "Created on"
-msgstr ""
+msgstr "Создано"
 
 #. module: account_payment_group
 #: model:ir.actions.act_window,name:account_payment_group.action_account_payment_group_invoice_wizard
@@ -308,12 +310,12 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
 msgid "Currency"
-msgstr ""
+msgstr "Валюта"
 
 #. module: account_payment_group
 #: model:ir.model.fields.selection,name:account_payment_group.selection__account_payment_group__partner_type__customer
 msgid "Customer"
-msgstr ""
+msgstr "Покупатель"
 
 #. module: account_payment_group
 #: model:ir.actions.act_window,name:account_payment_group.action_account_payments_group
@@ -330,7 +332,7 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
 msgid "Description"
-msgstr ""
+msgstr "Описание"
 
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_from_group_tree
@@ -347,7 +349,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__display_name
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard__display_name
 msgid "Display Name"
-msgstr ""
+msgstr "Показать имя"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_res_company__double_validation
@@ -360,7 +362,7 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
 msgid "Draft"
-msgstr "Esborrany"
+msgstr ""
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment__exchange_rate
@@ -405,7 +407,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__id
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard__id
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_form
@@ -458,7 +460,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard__journal_id
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
 msgid "Journal"
-msgstr "Diari"
+msgstr ""
 
 #. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_account_move
@@ -482,19 +484,19 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group____last_update
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard____last_update
 msgid "Last Modified on"
-msgstr ""
+msgstr "Изменено"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__write_uid
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard__write_uid
 msgid "Last Updated by"
-msgstr ""
+msgstr "Обновлено"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__write_date
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard__write_date
 msgid "Last Updated on"
-msgstr ""
+msgstr "Обновлено"
 
 #. module: account_payment_group
 #: model:ir.model.fields,help:account_payment_group.field_account_payment_group__matched_move_line_ids
@@ -531,12 +533,12 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__message_has_error
 msgid "Message Delivery error"
-msgstr ""
+msgstr "Ошибка доставки сообщения"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__message_ids
 msgid "Messages"
-msgstr ""
+msgstr "Сообщения"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__move_line_ids
@@ -546,7 +548,7 @@ msgstr ""
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 msgid "Not Cancelled"
-msgstr ""
+msgstr "Не отменено"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__notes
@@ -557,12 +559,12 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__message_needaction_counter
 msgid "Number of Actions"
-msgstr ""
+msgstr "Кол-во действий"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__message_has_error_counter
 msgid "Number of errors"
-msgstr ""
+msgstr "Кол-во ошибок"
 
 #. module: account_payment_group
 #: model:ir.model.fields,help:account_payment_group.field_account_payment_group__message_needaction_counter
@@ -572,12 +574,12 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model.fields,help:account_payment_group.field_account_payment_group__message_has_error_counter
 msgid "Number of messages with delivery error"
-msgstr ""
+msgstr "Кол-во сообщений с ошибкой отправки"
 
 #. module: account_payment_group
 #: model:ir.model.fields,help:account_payment_group.field_account_payment_group__message_unread_counter
 msgid "Number of unread messages"
-msgstr ""
+msgstr "Кол-во непрочитанных сообщений"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_move__open_move_line_ids
@@ -587,28 +589,28 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment__other_currency
 msgid "Other Currency"
-msgstr ""
+msgstr "Другая валюта"
 
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid "Paid"
-msgstr ""
+msgstr "Оплачен"
 
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_move_line_with_matched_tree
 msgid "Paid Amount"
-msgstr ""
+msgstr "Оплаченная сумма"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__partner_id
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 msgid "Partner"
-msgstr ""
+msgstr "Партнер"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__partner_type
 msgid "Partner Type"
-msgstr ""
+msgstr "Тип партнера"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_move__pay_now_journal_id
@@ -629,7 +631,7 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__payment_date
 msgid "Payment Date"
-msgstr ""
+msgstr "Дата оплаты"
 
 #. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_account_payment_group
@@ -665,17 +667,17 @@ msgstr ""
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
 msgid "Payment Method"
-msgstr ""
+msgstr "Способ оплаты"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__payment_methods
 msgid "Payment Methods"
-msgstr ""
+msgstr "Способы оплаты"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__payment_subtype
 msgid "Payment Subtype"
-msgstr ""
+msgstr "Подтип оплаты"
 
 #. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_payment_transaction
@@ -685,7 +687,7 @@ msgstr ""
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_form
 msgid "Payment Type"
-msgstr ""
+msgstr "Способ оплаты"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment__payment_type_copy
@@ -696,7 +698,7 @@ msgstr ""
 #: code:addons/account_payment_group/wizards/account_payment_group_invoice_wizard.py:0
 #, python-format
 msgid "Payment id %s"
-msgstr ""
+msgstr "id оплаты %s"
 
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
@@ -715,7 +717,7 @@ msgstr ""
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid "Payments Amount"
-msgstr ""
+msgstr "Сумма оплаты"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__payment_difference
@@ -759,17 +761,17 @@ msgstr ""
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid "Print"
-msgstr ""
+msgstr "Печать"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard__product_id
 msgid "Product"
-msgstr ""
+msgstr "Товар"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard__description
 msgid "Reason"
-msgstr ""
+msgstr "Причина"
 
 #. module: account_payment_group
 #: model:ir.actions.report,name:account_payment_group.action_report_payment_group
@@ -784,12 +786,12 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model.fields.selection,name:account_payment_group.selection__account_payment__payment_type_copy__inbound
 msgid "Receive Money"
-msgstr ""
+msgstr "Получить деньги"
 
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.account_journal_dashboard_kanban_view
 msgid "Received Money"
-msgstr ""
+msgstr "Полученные деньги"
 
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
@@ -799,7 +801,7 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard__invoice_date
 msgid "Refund Date"
-msgstr ""
+msgstr "Дата возврата"
 
 #. module: account_payment_group
 #: code:addons/account_payment_group/models/account_move.py:0
@@ -812,12 +814,12 @@ msgstr ""
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid "Remove All"
-msgstr ""
+msgstr "Удалить все"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__message_has_sms_error
 msgid "SMS Delivery error"
-msgstr ""
+msgstr "Ошибка доставки SMS"
 
 #. module: account_payment_group
 #: model:res.groups,name:account_payment_group.account_see_payment_menu
@@ -842,23 +844,23 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model.fields.selection,name:account_payment_group.selection__account_payment__payment_type_copy__outbound
 msgid "Send Money"
-msgstr ""
+msgstr "Отправить деньги"
 
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid "Send by Email"
-msgstr ""
+msgstr "Отправить по электронной почте"
 
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.account_journal_dashboard_kanban_view
 msgid "Sended Money"
-msgstr ""
+msgstr "Отправленные деньги"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__sent
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
 msgid "Sent"
-msgstr ""
+msgstr "Отправлено"
 
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
@@ -879,7 +881,7 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__state
 msgid "Status"
-msgstr ""
+msgstr "Статус"
 
 #. module: account_payment_group
 #: model:ir.actions.act_window,name:account_payment_group.action_account_payments_group_payable
@@ -890,7 +892,7 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard__tax_ids
 msgid "Taxes"
-msgstr ""
+msgstr "Налоги"
 
 #. module: account_payment_group
 #: model:ir.model.fields,help:account_payment_group.field_account_payment_group__to_pay_move_line_ids
@@ -900,13 +902,13 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__to_pay_amount
 msgid "To Pay Amount"
-msgstr ""
+msgstr "К оплате"
 
 #. module: account_payment_group
 #: code:addons/account_payment_group/models/account_payment_group.py:0
 #, python-format
 msgid "To Pay Amount and Payment Amount must be equal!"
-msgstr ""
+msgstr "Сумма к оплате и сумма оплаты должны быть одинаковыми!"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__to_pay_move_line_ids
@@ -927,12 +929,12 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_move_line_with_matched_tree
 msgid "Total"
-msgstr ""
+msgstr "Всего"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard__amount_total
 msgid "Total Amount"
-msgstr ""
+msgstr "Общая сумма"
 
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
@@ -954,12 +956,12 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__message_unread
 msgid "Unread Messages"
-msgstr ""
+msgstr "Непрочитанные сообщения"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__message_unread_counter
 msgid "Unread Messages Counter"
-msgstr ""
+msgstr "Счетчик непрочитанных сообщений"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard__amount_untaxed
@@ -1002,7 +1004,7 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__website_message_ids
 msgid "Website Messages"
-msgstr ""
+msgstr "Сообщения веб-сайта"
 
 #. module: account_payment_group
 #: model:ir.model.fields,help:account_payment_group.field_account_payment_group__website_message_ids
@@ -1044,4 +1046,4 @@ msgstr ""
 #. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_account_payment_group_invoice_wizard
 msgid "account.payment.group.invoice.wizard"
-msgstr ""
+msgstr "account.payment.group.invoice.wizard"

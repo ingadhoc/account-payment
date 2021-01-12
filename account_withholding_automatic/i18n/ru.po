@@ -3,8 +3,7 @@
 # 	* account_withholding_automatic
 # 
 # Translators:
-# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2020
-# Juan Carreras <jc@adhoc.com.ar>, 2020
+# Irina Fedulova <istartlin@gmail.com>, 2020
 # 
 msgid ""
 msgstr ""
@@ -12,13 +11,13 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 19:19+0000\n"
 "PO-Revision-Date: 2020-02-27 12:53+0000\n"
-"Last-Translator: Juan Carreras <jc@adhoc.com.ar>, 2020\n"
-"Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
+"Last-Translator: Irina Fedulova <istartlin@gmail.com>, 2020\n"
+"Language-Team: Russian (https://www.transifex.com/adhoc/teams/46451/ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Language: es\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: ru\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
 
 #. module: account_withholding_automatic
 #: model_terms:ir.ui.view,arch_db:account_withholding_automatic.res_config_settings_view_form
@@ -32,84 +31,84 @@ msgstr ""
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment__accumulated_amount
 msgid "Accumulated Amount"
-msgstr "Monto Acumulado"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment__withholding_accumulated_payments
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax__withholding_accumulated_payments
 msgid "Accumulated Payments"
-msgstr "Pagos Acumulados"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_group__withholdable_advanced_amount
 msgid "Adjustment / Advance (untaxed)"
-msgstr "Ajuste / Avance (sin impuestos)"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax__withholding_advances
 msgid "Advances are Withholdable?"
-msgstr "Adelantos sujetos a retención?"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__fix_amount
 msgid "Amount"
-msgstr "Importe"
+msgstr "Сумма"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,help:account_withholding_automatic.field_account_tax__withholding_non_taxable_amount
 msgid "Amount to be substracted before applying alicuot"
-msgstr "Importe a ser descontado antes de aplicar la alícuota"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,help:account_withholding_automatic.field_account_tax__withholding_non_taxable_minimum
 msgid "Amounts lower than this wont't have any withholding"
-msgstr "Importes menores a este no van a tener retenciones"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment__automatic
 msgid "Automatic"
-msgstr "Automático"
+msgstr "Автоматически"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_res_company__automatic_withholdings
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_res_config_settings__automatic_withholdings
 msgid "Automatic Withholdings"
-msgstr "Retenciones automáticas"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax__withholding_amount_type
 msgid "Base Amount"
-msgstr "Importe Base"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,help:account_withholding_automatic.field_account_tax__withholding_amount_type
 msgid "Base amount used to get withholding amount"
-msgstr "Importe base usado para obtener el importe de la retención"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields.selection,name:account_withholding_automatic.selection__account_tax__withholding_type__based_on_rule
 msgid "Based On Rule"
-msgstr "Basado en Regla"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model,name:account_withholding_automatic.model_res_company
 msgid "Companies"
-msgstr "Compañías"
+msgstr "Компании"
 
 #. module: account_withholding_automatic
 #: model_terms:ir.ui.view,arch_db:account_withholding_automatic.view_account_payment_group_form
 msgid "Compute Withholdings"
-msgstr "Calcular Retenciones"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment__computed_withholding_amount
 msgid "Computed Withholding Amount"
-msgstr "Importe de retención calculado"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model,name:account_withholding_automatic.model_res_config_settings
 msgid "Config Settings"
-msgstr "Parámetros de Configuración"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: code:addons/account_withholding_automatic/models/account_tax.py:0
@@ -120,39 +119,36 @@ msgid ""
 "This is what we get:\n"
 "%s"
 msgstr ""
-"No se puedo evaluar la regla de dominio \"%s\".\"\n"
-"Esto es lo que obtuvimos:\n"
-"%s"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__create_uid
 msgid "Created by"
-msgstr "Creado por"
+msgstr "Создано"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__create_date
 msgid "Created on"
-msgstr "Creadon el"
+msgstr "Создано"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__display_name
 msgid "Display Name"
-msgstr "Mostrar Nombre"
+msgstr "Показать имя"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__domain
 msgid "Domain"
-msgstr "Dominio"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,help:account_withholding_automatic.field_account_tax_withholding_rule__percentage
 msgid "Enter % ratio between 0-1."
-msgstr "Ingresar % entre 0-1."
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,help:account_withholding_automatic.field_account_tax_withholding_rule__fix_amount
 msgid "Fixed Amount after percentaje"
-msgstr "Importe Fijo después del porcentaje"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__id
@@ -163,117 +159,117 @@ msgstr "ID"
 #: model:ir.model.fields,help:account_withholding_automatic.field_account_payment__withholding_accumulated_payments
 #: model:ir.model.fields,help:account_withholding_automatic.field_account_tax__withholding_accumulated_payments
 msgid "If none is selected, then payments are not accumulated"
-msgstr "Si ninguna se selecciona, entonces los pagos no son acumulados"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment__withholdable_advanced_amount
 msgid "Importe a cuenta sujeto a retencion"
-msgstr "Importe a cuenta sujeto a retención"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment__withholdable_invoiced_amount
 msgid "Importe imputado sujeto a retencion"
-msgstr "Importe imputado sujeto a retención"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule____last_update
 msgid "Last Modified on"
-msgstr "Última Modificación en"
+msgstr "Изменено"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__write_uid
 msgid "Last Updated by"
-msgstr "Last Updated by"
+msgstr "Обновлено"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__write_date
 msgid "Last Updated on"
-msgstr "Last Updated on"
+msgstr "Обновлено"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,help:account_withholding_automatic.field_res_company__automatic_withholdings
 #: model:ir.model.fields,help:account_withholding_automatic.field_res_config_settings__automatic_withholdings
 msgid "Make withholdings automatically on payments confirmation"
-msgstr "Hacer retenciones automáticas en las confirmaciones de pagos"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model_terms:ir.ui.view,arch_db:account_withholding_automatic.res_config_settings_view_form
 msgid "Make withholdings automatically on payments confirmation."
-msgstr "Hacer retenciones automáticamente en la confirmación de los pagos."
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields.selection,name:account_withholding_automatic.selection__account_tax__withholding_accumulated_payments__month
 msgid "Month"
-msgstr "Mes"
+msgstr "Месяц"
 
 #. module: account_withholding_automatic
 #: code:addons/account_withholding_automatic/models/account_tax.py:0
 #, python-format
 msgid "No journal for withholdings found on company %s"
-msgstr "No fueron encontrados diarios para las retenciones en la compañía %s"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment__withholding_non_taxable_amount
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax__withholding_non_taxable_amount
 msgid "Non-taxable Amount"
-msgstr "Base no Imponible"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: code:addons/account_withholding_automatic/models/account_tax.py:0
 #, python-format
 msgid "Non-taxable Amount can not be greater than Non-taxable Minimum"
-msgstr "La base no Imponible no puede ser mayor que el mínimo no imponible"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment__withholding_non_taxable_minimum
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax__withholding_non_taxable_minimum
 msgid "Non-taxable Minimum"
-msgstr "Mínimo no imponible"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields.selection,name:account_withholding_automatic.selection__account_tax__withholding_type__none
 msgid "None"
-msgstr "Ninguna"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model,name:account_withholding_automatic.model_account_payment_group
 msgid "Payment Group"
-msgstr "Grupo de Pago"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model,name:account_withholding_automatic.model_account_payment
 msgid "Payments"
-msgstr "Pagos"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__percentage
 msgid "Percentage"
-msgstr "Porcentaje"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment__period_withholding_amount
 msgid "Period Withholding Amount"
-msgstr "Retención del periodo"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment__previous_withholding_amount
 msgid "Previous Withholding Amount"
-msgstr "Importe de retenciones anteriores"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields.selection,name:account_withholding_automatic.selection__account_tax__withholding_type__code
 msgid "Python Code"
-msgstr "Código Python"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax__withholding_python_compute
 msgid "Python Code (withholdings)"
-msgstr "Código Python (retenciones)"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax__withholding_rule_ids
 msgid "Rules"
-msgstr "Reglas"
+msgstr "Правила"
 
 #. module: account_withholding_automatic
 #: code:addons/account_withholding_automatic/models/account_payment_group.py:0
@@ -284,87 +280,83 @@ msgid ""
 "(%s). Deberá quitar  dichos comprobantes de la deuda seleccionada para poder"
 " hacer el correcto cálculo de las retenciones."
 msgstr ""
-"Seleccionó deuda por %s pero aparentente desea pagar  %s. En la deuda "
-"seleccionada hay algunos comprobantes de mas que no van a poder ser pagados "
-"(%s). Deberá quitar  dichos comprobantes de la deuda seleccionada para poder"
-" hacer el correcto cálculo de las retenciones."
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__sequence
 msgid "Sequence"
-msgstr "Secuencia"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,help:account_withholding_automatic.field_account_payment_group__withholdable_advanced_amount
 msgid "Sometimes used for withholdings calculation"
-msgstr "Algunas veces usado para el cálculo de retenciones"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model,name:account_withholding_automatic.model_account_tax
 msgid "Tax"
-msgstr "Impuesto"
+msgstr "Налог"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__tax_withholding_id
 msgid "Tax Withholding"
-msgstr "Impuesto de Retención"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,help:account_withholding_automatic.field_account_tax__withholding_type
 msgid "The computation method for the tax amount."
-msgstr "Método de cálculo para el importe del impuesto."
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment__total_amount
 #: model:ir.model.fields.selection,name:account_withholding_automatic.selection__account_tax__withholding_amount_type__total_amount
 msgid "Total Amount"
-msgstr "Importe total"
+msgstr "Общая сумма"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax__withholding_type
 msgid "Type"
-msgstr "Tipo"
+msgstr "Тип"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields.selection,name:account_withholding_automatic.selection__account_tax__withholding_amount_type__untaxed_amount
 msgid "Untaxed Amount"
-msgstr "Importe sin impuestos"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment__withholdable_base_amount
 msgid "Withholdable Base Amount"
-msgstr "Importe Base de Retención"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax__withholding_user_error_domain
 msgid "Withholding User Error Domain"
-msgstr "Dominio para mensaje de error"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax__withholding_user_error_message
 msgid "Withholding User Error Message"
-msgstr "Mensaje de error"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model_terms:ir.ui.view,arch_db:account_withholding_automatic.view_tax_form
 msgid "Withholding computation"
-msgstr "Cálculo de retención"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_group__withholdings_amount
 msgid "Withholdings Amount"
-msgstr "Importe de la Retención"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,help:account_withholding_automatic.field_account_tax__withholding_user_error_domain
 #: model:ir.model.fields,help:account_withholding_automatic.field_account_tax_withholding_rule__domain
 msgid "Write a domain over account voucher module"
-msgstr "Escriba un dominio sobre el modelo account voucher"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields.selection,name:account_withholding_automatic.selection__account_tax__withholding_accumulated_payments__year
 msgid "Year"
-msgstr "Año"
+msgstr "Год"
 
 #. module: account_withholding_automatic
 #: model:ir.model,name:account_withholding_automatic.model_account_tax_withholding_rule
