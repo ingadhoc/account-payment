@@ -5,14 +5,15 @@
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2020
 # Juan Carreras <jc@adhoc.com.ar>, 2020
+# Juan Rivero <jr@adhoc.com.ar>, 2021
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 13.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-01-04 19:19+0000\n"
+"POT-Creation-Date: 2021-01-22 15:01+0000\n"
 "PO-Revision-Date: 2020-02-27 12:53+0000\n"
-"Last-Translator: Juan Carreras <jc@adhoc.com.ar>, 2020\n"
+"Last-Translator: Juan Rivero <jr@adhoc.com.ar>, 2021\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -120,7 +121,7 @@ msgid ""
 "This is what we get:\n"
 "%s"
 msgstr ""
-"No se puedo evaluar la regla de dominio \"%s\".\"\n"
+"No se puedo evaluar la regla de dominio \"%s\".\n"
 "Esto es lo que obtuvimos:\n"
 "%s"
 
@@ -178,17 +179,17 @@ msgstr "Importe imputado sujeto a retención"
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule____last_update
 msgid "Last Modified on"
-msgstr "Última Modificación en"
+msgstr "Última Modificación el"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__write_uid
 msgid "Last Updated by"
-msgstr "Last Updated by"
+msgstr "Última Actualización por"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__write_date
 msgid "Last Updated on"
-msgstr "Last Updated on"
+msgstr "Última actualización el"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,help:account_withholding_automatic.field_res_company__automatic_withholdings
@@ -338,12 +339,12 @@ msgstr "Importe Base de Retención"
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax__withholding_user_error_domain
 msgid "Withholding User Error Domain"
-msgstr "Dominio para mensaje de error"
+msgstr "Dominio de Error de Usuario de Retención"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax__withholding_user_error_message
 msgid "Withholding User Error Message"
-msgstr "Mensaje de error"
+msgstr "Mensaje de Error de Usuario de Retención"
 
 #. module: account_withholding_automatic
 #: model_terms:ir.ui.view,arch_db:account_withholding_automatic.view_tax_form
