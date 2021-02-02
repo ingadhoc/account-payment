@@ -13,6 +13,7 @@
                 <field name="journal_id" invisible="1"/>
                 <field name="name"/>
                 <field name="issue_date"/>
+                <field name="payment_date"/>
                 <field name="first_partner_id" optional="show"/>
                 <field name="partner_id" optional="show"/>
                 <field name="partner_id"/>
