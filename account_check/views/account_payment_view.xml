@@ -43,7 +43,7 @@
                                 <field name="currency_id" invisible="1"/>
                             </tree>
                         </field>
-                        <label for="check_ids" colspan="2" attrs="{'invisible': ['|', ('payment_method_code', '!=', 'delivered_third_check'), ('payment_type', 'not in', ['transfer', 'outbound'])]}"/>
+                        <label for="check_ids" colspan="2" context="{'default_type': 'third_check'}" attrs="{'invisible': ['|', ('payment_method_code', '!=', 'delivered_third_check'), ('payment_type', 'not in', ['transfer', 'outbound'])]}"/>
                         <field name="check_ids"
                             nolabel="1" colspan="2"
                             options="{'no_create': True}"

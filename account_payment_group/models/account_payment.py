@@ -345,19 +345,20 @@ class AccountPayment(models.Model):
         }
 
     def _prepare_payment_moves(self):
-        all_move_vals = []
+        all_moves_vals = []
         for rec in self:
-            move_vals = super(AccountPayment, rec)._prepare_payment_moves()
-            # If we have a communication on payment group append it before payment communication
-            if rec.payment_group_id.communication:
-                move_vals[0]['ref'] = "%s%s" % (self.payment_group_id.communication, move_vals[0]['ref'] or '')
+            moves_vals = super(AccountPayment, rec)._prepare_payment_moves()
+            for move_vals in moves_vals:
+                # If we have a communication on payment group append it before payment communication
+                if rec.payment_group_id.communication:
+                    move_vals['ref'] = "%s%s" % (self.payment_group_id.communication, move_vals['ref'] or '')
 
-            # Si se esta forzando importe en moneda de cia, usamos este importe para debito/credito
-            if rec.force_amount_company_currency:
-                for line in move_vals[0]['line_ids']:
-                    if line[2].get('debit'):
-                        line[2]['debit'] = rec.force_amount_company_currency
-                    if line[2].get('credit'):
-                        line[2]['credit'] = rec.force_amount_company_currency
-            all_move_vals += move_vals
-        return all_move_vals
+                # Si se esta forzando importe en moneda de cia, usamos este importe para debito/credito
+                if rec.force_amount_company_currency:
+                    for line in move_vals['line_ids']:
+                        if line[2].get('debit'):
+                            line[2]['debit'] = rec.force_amount_company_currency
+                        if line[2].get('credit'):
+                            line[2]['credit'] = rec.force_amount_company_currency
+                all_moves_vals += [move_vals]
+        return all_moves_vals
