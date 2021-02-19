@@ -64,6 +64,7 @@
             <button type="object"  name="action_view_payment_groups"
                     class="oe_link" string="View Payments"
                     colspan="2"
+                    groups="account.group_account_invoice"
                     attrs="{'invisible':[('payment_group_ids','=',[])]}"/>
         </field>
     </field>

@@ -1,19 +1,19 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# * account_withholding_automatic
+# 	* account_withholding_automatic
 # 
 # Translators:
-# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2019
-# Federico La Torre <3doeste@gmail.com>, 2019
-# Lucas L. Soto <ls@adhoc.com.ar>, 2020
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2020
+# Juan Carreras <jc@adhoc.com.ar>, 2020
+# Juan Rivero <jr@adhoc.com.ar>, 2021
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 12.0\n"
+"Project-Id-Version: Odoo Server 13.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-01 10:08+0000\n"
-"PO-Revision-Date: 2019-07-26 19:27+0000\n"
-"Last-Translator: Lucas L. Soto <ls@adhoc.com.ar>, 2020\n"
+"POT-Creation-Date: 2021-01-22 15:01+0000\n"
+"PO-Revision-Date: 2020-02-27 12:53+0000\n"
+"Last-Translator: Juan Rivero <jr@adhoc.com.ar>, 2021\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -88,7 +88,7 @@ msgid "Base amount used to get withholding amount"
 msgstr "Importe base usado para obtener el importe de la retención"
 
 #. module: account_withholding_automatic
-#: selection:account.tax,withholding_type:0
+#: model:ir.model.fields.selection,name:account_withholding_automatic.selection__account_tax__withholding_type__based_on_rule
 msgid "Based On Rule"
 msgstr "Basado en Regla"
 
@@ -113,15 +113,15 @@ msgid "Config Settings"
 msgstr "Parámetros de Configuración"
 
 #. module: account_withholding_automatic
-#: code:addons/account_withholding_automatic/models/account_tax.py:120
-#: code:addons/account_withholding_automatic/models/account_tax.py:144
+#: code:addons/account_withholding_automatic/models/account_tax.py:0
+#: code:addons/account_withholding_automatic/models/account_tax.py:0
 #, python-format
 msgid ""
 "Could not eval rule domain \"%s\".\n"
 "This is what we get:\n"
 "%s"
 msgstr ""
-"No se puedo evaluar la regla de dominio \"%s\".\"\n"
+"No se puedo evaluar la regla de dominio \"%s\".\n"
 "Esto es lo que obtuvimos:\n"
 "%s"
 
@@ -179,17 +179,17 @@ msgstr "Importe imputado sujeto a retención"
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule____last_update
 msgid "Last Modified on"
-msgstr "Última Modificación en"
+msgstr "Última Modificación el"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__write_uid
 msgid "Last Updated by"
-msgstr "Last Updated by"
+msgstr "Última Actualización por"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__write_date
 msgid "Last Updated on"
-msgstr "Last Updated on"
+msgstr "Última actualización el"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,help:account_withholding_automatic.field_res_company__automatic_withholdings
@@ -203,12 +203,12 @@ msgid "Make withholdings automatically on payments confirmation."
 msgstr "Hacer retenciones automáticamente en la confirmación de los pagos."
 
 #. module: account_withholding_automatic
-#: selection:account.tax,withholding_accumulated_payments:0
+#: model:ir.model.fields.selection,name:account_withholding_automatic.selection__account_tax__withholding_accumulated_payments__month
 msgid "Month"
 msgstr "Mes"
 
 #. module: account_withholding_automatic
-#: code:addons/account_withholding_automatic/models/account_tax.py:196
+#: code:addons/account_withholding_automatic/models/account_tax.py:0
 #, python-format
 msgid "No journal for withholdings found on company %s"
 msgstr "No fueron encontrados diarios para las retenciones en la compañía %s"
@@ -220,7 +220,7 @@ msgid "Non-taxable Amount"
 msgstr "Base no Imponible"
 
 #. module: account_withholding_automatic
-#: code:addons/account_withholding_automatic/models/account_tax.py:104
+#: code:addons/account_withholding_automatic/models/account_tax.py:0
 #, python-format
 msgid "Non-taxable Amount can not be greater than Non-taxable Minimum"
 msgstr "La base no Imponible no puede ser mayor que el mínimo no imponible"
@@ -232,7 +232,7 @@ msgid "Non-taxable Minimum"
 msgstr "Mínimo no imponible"
 
 #. module: account_withholding_automatic
-#: selection:account.tax,withholding_type:0
+#: model:ir.model.fields.selection,name:account_withholding_automatic.selection__account_tax__withholding_type__none
 msgid "None"
 msgstr "Ninguna"
 
@@ -262,7 +262,7 @@ msgid "Previous Withholding Amount"
 msgstr "Importe de retenciones anteriores"
 
 #. module: account_withholding_automatic
-#: selection:account.tax,withholding_type:0
+#: model:ir.model.fields.selection,name:account_withholding_automatic.selection__account_tax__withholding_type__code
 msgid "Python Code"
 msgstr "Código Python"
 
@@ -277,7 +277,7 @@ msgid "Rules"
 msgstr "Reglas"
 
 #. module: account_withholding_automatic
-#: code:addons/account_withholding_automatic/models/account_payment_group.py:106
+#: code:addons/account_withholding_automatic/models/account_payment_group.py:0
 #, python-format
 msgid ""
 "Seleccionó deuda por %s pero aparentente desea pagar  %s. En la deuda "
@@ -285,6 +285,10 @@ msgid ""
 "(%s). Deberá quitar  dichos comprobantes de la deuda seleccionada para poder"
 " hacer el correcto cálculo de las retenciones."
 msgstr ""
+"Seleccionó deuda por %s pero aparentente desea pagar  %s. En la deuda "
+"seleccionada hay algunos comprobantes de mas que no van a poder ser pagados "
+"(%s). Deberá quitar  dichos comprobantes de la deuda seleccionada para poder"
+" hacer el correcto cálculo de las retenciones."
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__sequence
@@ -312,8 +316,8 @@ msgid "The computation method for the tax amount."
 msgstr "Método de cálculo para el importe del impuesto."
 
 #. module: account_withholding_automatic
-#: selection:account.tax,withholding_amount_type:0
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment__total_amount
+#: model:ir.model.fields.selection,name:account_withholding_automatic.selection__account_tax__withholding_amount_type__total_amount
 msgid "Total Amount"
 msgstr "Importe total"
 
@@ -323,7 +327,7 @@ msgid "Type"
 msgstr "Tipo"
 
 #. module: account_withholding_automatic
-#: selection:account.tax,withholding_amount_type:0
+#: model:ir.model.fields.selection,name:account_withholding_automatic.selection__account_tax__withholding_amount_type__untaxed_amount
 msgid "Untaxed Amount"
 msgstr "Importe sin impuestos"
 
@@ -335,12 +339,17 @@ msgstr "Importe Base de Retención"
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax__withholding_user_error_domain
 msgid "Withholding User Error Domain"
-msgstr "Dominio para mensaje de error"
+msgstr "Dominio de Error de Usuario de Retención"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax__withholding_user_error_message
 msgid "Withholding User Error Message"
-msgstr "Mensaje de error"
+msgstr "Mensaje de Error de Usuario de Retención"
+
+#. module: account_withholding_automatic
+#: model_terms:ir.ui.view,arch_db:account_withholding_automatic.view_tax_form
+msgid "Withholding computation"
+msgstr "Cálculo de retención"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_group__withholdings_amount
@@ -354,7 +363,7 @@ msgid "Write a domain over account voucher module"
 msgstr "Escriba un dominio sobre el modelo account voucher"
 
 #. module: account_withholding_automatic
-#: selection:account.tax,withholding_accumulated_payments:0
+#: model:ir.model.fields.selection,name:account_withholding_automatic.selection__account_tax__withholding_accumulated_payments__year
 msgid "Year"
 msgstr "Año"
 

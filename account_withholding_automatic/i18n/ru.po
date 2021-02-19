@@ -3,7 +3,7 @@
 # 	* account_withholding_automatic
 # 
 # Translators:
-# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2020
+# Irina Fedulova <istartlin@gmail.com>, 2020
 # 
 msgid ""
 msgstr ""
@@ -11,13 +11,13 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 19:19+0000\n"
 "PO-Revision-Date: 2020-02-27 12:53+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2020\n"
-"Language-Team: Turkish (https://www.transifex.com/adhoc/teams/46451/tr/)\n"
+"Last-Translator: Irina Fedulova <istartlin@gmail.com>, 2020\n"
+"Language-Team: Russian (https://www.transifex.com/adhoc/teams/46451/ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Language: tr\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Language: ru\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
 
 #. module: account_withholding_automatic
 #: model_terms:ir.ui.view,arch_db:account_withholding_automatic.res_config_settings_view_form
@@ -52,7 +52,7 @@ msgstr ""
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__fix_amount
 msgid "Amount"
-msgstr "Tutar"
+msgstr "Сумма"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,help:account_withholding_automatic.field_account_tax__withholding_non_taxable_amount
@@ -67,7 +67,7 @@ msgstr ""
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment__automatic
 msgid "Automatic"
-msgstr ""
+msgstr "Автоматически"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_res_company__automatic_withholdings
@@ -93,7 +93,7 @@ msgstr ""
 #. module: account_withholding_automatic
 #: model:ir.model,name:account_withholding_automatic.model_res_company
 msgid "Companies"
-msgstr "Firmalar"
+msgstr "Компании"
 
 #. module: account_withholding_automatic
 #: model_terms:ir.ui.view,arch_db:account_withholding_automatic.view_account_payment_group_form
@@ -108,7 +108,7 @@ msgstr ""
 #. module: account_withholding_automatic
 #: model:ir.model,name:account_withholding_automatic.model_res_config_settings
 msgid "Config Settings"
-msgstr "Yapılandırma Ayarları"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: code:addons/account_withholding_automatic/models/account_tax.py:0
@@ -123,17 +123,17 @@ msgstr ""
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__create_uid
 msgid "Created by"
-msgstr "Tarafından Oluşturuldu"
+msgstr "Создано"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__create_date
 msgid "Created on"
-msgstr "Tarihinde Oluşturuldu"
+msgstr "Создано"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__display_name
 msgid "Display Name"
-msgstr "Ad Görünümü"
+msgstr "Показать имя"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__domain
@@ -174,17 +174,17 @@ msgstr ""
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule____last_update
 msgid "Last Modified on"
-msgstr ""
+msgstr "Изменено"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__write_uid
 msgid "Last Updated by"
-msgstr "Tarafından Güncellendi"
+msgstr "Обновлено"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__write_date
 msgid "Last Updated on"
-msgstr "Tarihinde Güncellendi"
+msgstr "Обновлено"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,help:account_withholding_automatic.field_res_company__automatic_withholdings
@@ -200,7 +200,7 @@ msgstr ""
 #. module: account_withholding_automatic
 #: model:ir.model.fields.selection,name:account_withholding_automatic.selection__account_tax__withholding_accumulated_payments__month
 msgid "Month"
-msgstr ""
+msgstr "Месяц"
 
 #. module: account_withholding_automatic
 #: code:addons/account_withholding_automatic/models/account_tax.py:0
@@ -234,12 +234,12 @@ msgstr ""
 #. module: account_withholding_automatic
 #: model:ir.model,name:account_withholding_automatic.model_account_payment_group
 msgid "Payment Group"
-msgstr "Ödeme Grubu"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model,name:account_withholding_automatic.model_account_payment
 msgid "Payments"
-msgstr "Ödemeler"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__percentage
@@ -269,7 +269,7 @@ msgstr ""
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax__withholding_rule_ids
 msgid "Rules"
-msgstr ""
+msgstr "Правила"
 
 #. module: account_withholding_automatic
 #: code:addons/account_withholding_automatic/models/account_payment_group.py:0
@@ -294,7 +294,7 @@ msgstr ""
 #. module: account_withholding_automatic
 #: model:ir.model,name:account_withholding_automatic.model_account_tax
 msgid "Tax"
-msgstr ""
+msgstr "Налог"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__tax_withholding_id
@@ -310,12 +310,12 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment__total_amount
 #: model:ir.model.fields.selection,name:account_withholding_automatic.selection__account_tax__withholding_amount_type__total_amount
 msgid "Total Amount"
-msgstr "Toplam Tutar"
+msgstr "Общая сумма"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax__withholding_type
 msgid "Type"
-msgstr "Tür"
+msgstr "Тип"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields.selection,name:account_withholding_automatic.selection__account_tax__withholding_amount_type__untaxed_amount
@@ -356,9 +356,9 @@ msgstr ""
 #. module: account_withholding_automatic
 #: model:ir.model.fields.selection,name:account_withholding_automatic.selection__account_tax__withholding_accumulated_payments__year
 msgid "Year"
-msgstr ""
+msgstr "Год"
 
 #. module: account_withholding_automatic
 #: model:ir.model,name:account_withholding_automatic.model_account_tax_withholding_rule
 msgid "account.tax.withholding.rule"
-msgstr ""
+msgstr "account.tax.withholding.rule"

@@ -3,8 +3,7 @@
 # 	* account_payment_fix
 # 
 # Translators:
-# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2020
-# Juan Carreras <jc@adhoc.com.ar>, 2020
+# Irina Fedulova <istartlin@gmail.com>, 2020
 # 
 msgid ""
 msgstr ""
@@ -12,70 +11,70 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 19:19+0000\n"
 "PO-Revision-Date: 2020-01-30 15:02+0000\n"
-"Last-Translator: Juan Carreras <jc@adhoc.com.ar>, 2020\n"
-"Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
+"Last-Translator: Irina Fedulova <istartlin@gmail.com>, 2020\n"
+"Language-Team: Russian (https://www.transifex.com/adhoc/teams/46451/ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Language: es\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: ru\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
 
 #. module: account_payment_fix
 #: model:ir.model.fields,field_description:account_payment_fix.field_account_payment__amount
 msgid "Amount"
-msgstr "Importe"
+msgstr "Сумма"
 
 #. module: account_payment_fix
 #: model:ir.model.fields,field_description:account_payment_fix.field_account_payment__payment_method_ids
 msgid "Available payment methods"
-msgstr "Métodos de pago disponibles"
+msgstr "Доступные способы оплаты"
 
 #. module: account_payment_fix
 #: model:ir.ui.menu,name:account_payment_fix.menu_finance_bank_and_cash
 msgid "Bank and Cash"
-msgstr "Caja y Bancos"
+msgstr ""
 
 #. module: account_payment_fix
 #: model:ir.model.fields,field_description:account_payment_fix.field_account_payment__currency_id
 msgid "Currency"
-msgstr "Moneda"
+msgstr "Валюта"
 
 #. module: account_payment_fix
 #: model:ir.model.fields,field_description:account_payment_fix.field_account_payment__destination_journal_ids
 msgid "Destination Journal"
-msgstr "Diario de Destino"
+msgstr ""
 
 #. module: account_payment_fix
 #: model:ir.model.fields,field_description:account_payment_fix.field_account_payment__journal_id
 msgid "Journal"
-msgstr "Diario"
+msgstr ""
 
 #. module: account_payment_fix
 #: model:ir.model.fields,field_description:account_payment_fix.field_account_payment__journal_ids
 msgid "Journals"
-msgstr "Diarios"
+msgstr ""
 
 #. module: account_payment_fix
 #: model:ir.model.fields,field_description:account_payment_fix.field_account_payment__partner_id
 msgid "Partner"
-msgstr "Empresa"
+msgstr "Партнер"
 
 #. module: account_payment_fix
 #: model:ir.model.fields,field_description:account_payment_fix.field_account_payment__payment_method_description
 msgid "Payment Method Desc."
-msgstr "Método de pago Desc."
+msgstr "Описание способа оплаты"
 
 #. module: account_payment_fix
 #: model:ir.model,name:account_payment_fix.model_account_payment
 msgid "Payments"
-msgstr "Pagos"
+msgstr ""
 
 #. module: account_payment_fix
 #: model:ir.model.fields,field_description:account_payment_fix.field_account_payment__state
 msgid "Status"
-msgstr "Estado"
+msgstr "Статус"
 
 #. module: account_payment_fix
 #: model:ir.model.fields,field_description:account_payment_fix.field_account_payment__destination_journal_id
 msgid "Transfer To"
-msgstr "Transferir a"
+msgstr ""

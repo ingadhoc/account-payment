@@ -1,24 +1,142 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# * account_payment_group
+# 	* account_payment_group
 # 
 # Translators:
-# Federico La Torre <3doeste@gmail.com>, 2019
+# Juan Carreras <jc@adhoc.com.ar>, 2020
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2020
+# Juan Rivero <jr@adhoc.com.ar>, 2021
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 12.0\n"
+"Project-Id-Version: Odoo Server 13.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-01 10:08+0000\n"
-"PO-Revision-Date: 2019-07-26 19:26+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2020\n"
+"POT-Creation-Date: 2021-01-22 15:01+0000\n"
+"PO-Revision-Date: 2020-02-02 00:57+0000\n"
+"Last-Translator: Juan Rivero <jr@adhoc.com.ar>, 2021\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Language: es\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: account_payment_group
+#: model:mail.template,body_html:account_payment_group.email_template_edi_payment_group
+msgid ""
+"\n"
+"<div style=\"font-family: 'Lucida Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; \">\n"
+"    <p>Hello ${object.partner_id.name},</p>\n"
+"    <p>Here is your receipt from ${object.company_id.name}: </p>\n"
+"\n"
+"    <p style=\"border-left: 1px solid #8e0000; margin-left: 30px;\">\n"
+"       &nbsp;&nbsp;<strong>REFERENCES</strong><br />\n"
+"       &nbsp;&nbsp;Receipt number: <strong>${object.display_name}</strong><br />\n"
+"       &nbsp;&nbsp;Receipt reference: <strong>${object.communication or 'n/a'}</strong><br />\n"
+"       &nbsp;&nbsp;Receipt total: <strong>${object.payments_amount}</strong><br />\n"
+"    </p>\n"
+"\n"
+"    <p>If you have any question, do not hesitate to contact us.</p>\n"
+"    <p>Thank you for choosing ${object.company_id.name or 'us'}!</p>\n"
+"    <br/>\n"
+"    <br/>\n"
+"    <div style=\"width: 375px; margin: 0px; padding: 0px; background-color: #8E0000; border-top-left-radius: 5px 5px; border-top-right-radius: 5px 5px; background-repeat: repeat no-repeat;\">\n"
+"        <h3 style=\"margin: 0px; padding: 2px 14px; font-size: 12px; color: #DDD;\">\n"
+"            <strong style=\"text-transform:uppercase;\">${object.company_id.name}</strong></h3>\n"
+"    </div>\n"
+"    <div style=\"width: 347px; margin: 0px; padding: 5px 14px; line-height: 16px; background-color: #F2F2F2;\">\n"
+"        <span style=\"color: #222; margin-bottom: 5px; display: block; \">\n"
+"        % if object.company_id.street:\n"
+"            ${object.company_id.street}<br/>\n"
+"        % endif\n"
+"        % if object.company_id.street2:\n"
+"            ${object.company_id.street2}<br/>\n"
+"        % endif\n"
+"        % if object.company_id.city or object.company_id.zip:\n"
+"            ${object.company_id.zip} ${object.company_id.city}<br/>\n"
+"        % endif\n"
+"        % if object.company_id.country_id:\n"
+"            ${object.company_id.state_id and ('%s, ' % object.company_id.state_id.name) or ''} ${object.company_id.country_id.name or ''}<br/>\n"
+"        % endif\n"
+"        </span>\n"
+"        % if object.company_id.phone:\n"
+"            <div style=\"margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; \">\n"
+"                Phone:&nbsp; ${object.company_id.phone}\n"
+"            </div>\n"
+"        % endif\n"
+"        % if object.company_id.website:\n"
+"            <div>\n"
+"                Web :&nbsp;<a href=\"${object.company_id.website}\">${object.company_id.website}</a>\n"
+"            </div>\n"
+"        %endif\n"
+"        <p></p>\n"
+"    </div>\n"
+"</div>\n"
+"            "
+msgstr ""
+"\n"
+"<div style=\"font-family: 'Lucida Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; \">\n"
+"    Hola ${object.partner_id.name},</p>\n"
+"    <p>Acá está su recibo por ${object.company_id.name}: </p>\n"
+"\n"
+"    <p style=\"border-left: 1px solid #8e0000; margin-left: 30px;\">\n"
+"       &nbsp;&nbsp;REFERENCIAS\n"
+"       &nbsp;&nbsp;Receipt number: <strong>${object.display_name}</strong><br />\n"
+"       &nbsp;&nbsp;Receipt reference: <strong>${object.communication or 'n/a'}</strong><br />\n"
+"       &nbsp;&nbsp;Receipt total: <strong>${object.payments_amount}</strong><br />\n"
+"    </p>\n"
+"\n"
+"    <p>Si tiene alguna pregunta, no dude en contactarnos.</p>\n"
+"    <p>Gracias por elegir ${object.company_id.name or 'us'}!</p>\n"
+"    <br/>\n"
+"    <br/>\n"
+"    <div style=\"width: 375px; margin: 0px; padding: 0px; background-color: #8E0000; border-top-left-radius: 5px 5px; border-top-right-radius: 5px 5px; background-repeat: repeat no-repeat;\">\n"
+"        <h3 style=\"margin: 0px; padding: 2px 14px; font-size: 12px; color: #DDD;\">\n"
+"            <strong style=\"text-transform:uppercase;\">${object.company_id.name}</strong></h3>\n"
+"    </div>\n"
+"    <div style=\"width: 347px; margin: 0px; padding: 5px 14px; line-height: 16px; background-color: #F2F2F2;\">\n"
+"        <span style=\"color: #222; margin-bottom: 5px; display: block; \">\n"
+"        % if object.company_id.street:\n"
+"            ${object.company_id.street}<br/>\n"
+"        % endif\n"
+"        % if object.company_id.street2:\n"
+"            ${object.company_id.street2}<br/>\n"
+"        % endif\n"
+"        % if object.company_id.city or object.company_id.zip:\n"
+"            ${object.company_id.zip} ${object.company_id.city}<br/>\n"
+"        % endif\n"
+"        % if object.company_id.country_id:\n"
+"            ${object.company_id.state_id and ('%s, ' % object.company_id.state_id.name) or ''} ${object.company_id.country_id.name or ''}<br/>\n"
+"        % endif\n"
+"        </span>\n"
+"        % if object.company_id.phone:\n"
+"            <div style=\"margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; \">\n"
+"                Phone:&nbsp; ${object.company_id.phone}\n"
+"            </div>\n"
+"        % endif\n"
+"        % if object.company_id.website:\n"
+"            <div>\n"
+"                Web :&nbsp;<a href=\"${object.company_id.website}\">${object.company_id.website}</a>\n"
+"            </div>\n"
+"        %endif\n"
+"        <p></p>\n"
+"    </div>\n"
+"</div>\n"
+"            "
+
+#. module: account_payment_group
+#: model:mail.template,subject:account_payment_group.email_template_edi_payment_group
+msgid "${object.company_id.name|safe} Receipt ${object.display_name or 'n/a'}"
+msgstr "${object.company_id.name|safe} Recibo ${object.display_name or 'n/a'}"
+
+#. module: account_payment_group
+#: model:ir.actions.report,print_report_name:account_payment_group.action_report_payment_group
+msgid ""
+"(object.partner_type == 'supplier' and 'Orden de pago' or 'Recibo') + ' ' + "
+"object.document_number"
+msgstr ""
+"(object.partner_type == 'supplier' and 'Orden de pago' or 'Recibo') + ' ' + "
+"object.document_number"
 
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_form
@@ -34,11 +152,6 @@ msgstr "+ Nota de Crédito"
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid "+ Debit Note"
 msgstr "+ Nota de Débito"
-
-#. module: account_payment_group
-#: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
-msgid "+/- Advance Payments"
-msgstr "+/- Pagos anticipados"
 
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.res_config_settings_view_form
@@ -126,7 +239,6 @@ msgstr ""
 "crear usando el diario seleccionado"
 
 #. module: account_payment_group
-#: model:ir.model.fields,field_description:account_payment_group.field_account_payment__signed_amount
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__payments_amount
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
 msgid "Amount"
@@ -162,12 +274,6 @@ msgstr "Cancelar"
 #: model:ir.model.fields.selection,name:account_payment_group.selection__account_payment_group__state__cancel
 msgid "Cancelled"
 msgstr "Cancelado"
-
-#. module: account_payment_group
-#: model:ir.model.fields,help:account_payment_group.field_account_payment_group__writeoff_label
-msgid "Change label of the counterpart that will hold the payment difference"
-msgstr ""
-"Cambiar la etiqueta de la contraparte que mantendrá la diferencia de pago"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_res_config_settings__group_choose_payment_type
@@ -209,6 +315,12 @@ msgstr "Compañía"
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment__company_currency_id
 msgid "Company currency"
 msgstr "Moneda de la empresa"
+
+#. module: account_payment_group
+#: code:addons/account_payment_group/models/account_payment_group.py:0
+#, python-format
+msgid "Compose Email"
+msgstr "Escribir correo"
 
 #. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_res_config_settings
@@ -273,11 +385,6 @@ msgid "Customer Receipts"
 msgstr "Recibos de Cliente"
 
 #. module: account_payment_group
-#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__debt_move_line_ids
-msgid "Debt Lines"
-msgstr "Líneas de Deuda"
-
-#. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid "Debts"
 msgstr "Deudas"
@@ -294,17 +401,11 @@ msgid "Details"
 msgstr "Detalles"
 
 #. module: account_payment_group
-#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__writeoff_account_id
-msgid "Difference Account"
-msgstr "Cuenta diferencial"
-
-#. module: account_payment_group
 #: model:ir.model.fields,help:account_payment_group.field_account_payment_group__payment_difference
 msgid ""
 "Difference between selected debt (or to pay amount) and payments amount"
 msgstr ""
-"Diferencia entre la deuda seleccionada (o pagar cantidad) y la cantidad de "
-"pagos"
+"Diferencia entre la deuda seleccionada (o cantidad a pagar) y monto del pago"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__display_name
@@ -397,11 +498,6 @@ msgstr ""
 "usos avanzados. Seguro desea continuar?"
 
 #. module: account_payment_group
-#: model:ir.model.fields,help:account_payment_group.field_account_payment_group__message_unread
-msgid "If checked new messages require your attention."
-msgstr "Si marca nuevos mensajes requieren su atención"
-
-#. module: account_payment_group
 #: model:ir.model.fields,help:account_payment_group.field_account_payment_group__message_needaction
 #: model:ir.model.fields,help:account_payment_group.field_account_payment_group__message_unread
 msgid "If checked, new messages require your attention."
@@ -423,12 +519,6 @@ msgstr ""
 "Si establece un diario aquí, luego de la validación de la factura, la misma "
 "va a ser automáticamente pagada con este diario. Como en el pago se fuerza "
 "método de pago manual, solo diarios con método de pago manual son mostrados."
-
-#. module: account_payment_group
-#: model:ir.model,name:account_payment_group.model_account_invoice
-#: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_invoice_tree
-msgid "Invoice"
-msgstr "Factura"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__message_is_follower
@@ -458,27 +548,12 @@ msgid "Journal Item"
 msgstr "Apunte Contable"
 
 #. module: account_payment_group
-#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__writeoff_label
-msgid "Journal Item Label"
-msgstr "Etiqueta de apunte contable."
-
-#. module: account_payment_group
 #: code:addons/account_payment_group/models/account_payment_group.py:0
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_move_line_tree
 #, python-format
 msgid "Journal Items"
 msgstr "Apuntes Contables"
-
-#. module: account_payment_group
-#: model:ir.model.fields.selection,name:account_payment_group.selection__account_payment_group__payment_difference_handling__open
-msgid "Keep open"
-msgstr "Mantener abierto"
-
-#. module: account_payment_group
-#: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
-msgid "Label"
-msgstr "Descripción"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group____last_update
@@ -511,11 +586,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__message_main_attachment_id
 msgid "Main Attachment"
 msgstr "Adjunto Principal"
-
-#. module: account_payment_group
-#: model:ir.model.fields.selection,name:account_payment_group.selection__account_payment_group__payment_difference_handling__reconcile
-msgid "Mark invoice as fully paid"
-msgstr "Marcar la factura como totalmente pagada"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__matched_amount
@@ -556,13 +626,6 @@ msgstr "Apunte contable"
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 msgid "Not Cancelled"
 msgstr "No cancelado"
-
-#. module: account_payment_group
-#: code:addons/account_payment_group/models/account_payment_group.py:321
-#: code:addons/account_payment_group/models/account_payment_group.py:326
-#, python-format
-msgid "Not implemented yet"
-msgstr "No implementado todavía"
 
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__notes
@@ -648,11 +711,6 @@ msgid "Payment Date"
 msgstr "Fecha de Pago"
 
 #. module: account_payment_group
-#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__payment_difference_handling
-msgid "Payment Difference Handling"
-msgstr "Manejo de diferencias de pago"
-
-#. module: account_payment_group
 #: model:ir.model,name:account_payment_group.model_account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment__payment_group_id
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard__payment_group_id
@@ -714,18 +772,12 @@ msgid "Payment Type (without transfer)"
 msgstr "Tipo de pago (sin transferencia)"
 
 #. module: account_payment_group
-#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__writeoff_amount
-msgid "Payment difference amount"
-msgstr "Monto Conciliado Diferencia de Pago"
-
-#. module: account_payment_group
 #: code:addons/account_payment_group/wizards/account_payment_group_invoice_wizard.py:0
 #, python-format
 msgid "Payment id %s"
 msgstr "Id del Pago %s"
 
 #. module: account_payment_group
-#: model:ir.model.fields,help:account_payment_group.field_account_payment_group__debt_move_line_ids
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid ""
 "Payment will be automatically matched with the oldest lines of this list (by"
@@ -784,11 +836,6 @@ msgid "Pop Up"
 msgstr "Pestaña emergente"
 
 #. module: account_payment_group
-#: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
-msgid "Post Difference In"
-msgstr "Contabilizar la diferencia en"
-
-#. module: account_payment_group
 #: model:ir.model.fields.selection,name:account_payment_group.selection__account_payment_group__state__posted
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_transfer_search
@@ -814,6 +861,11 @@ msgstr "Razón"
 #: model:ir.actions.report,name:account_payment_group.action_report_payment_group
 msgid "Receipt / Payment Order"
 msgstr "Recibo / Orden de Pago"
+
+#. module: account_payment_group
+#: model:mail.template,report_name:account_payment_group.email_template_edi_payment_group
+msgid "Receipt_${(object.display_name or '').replace('/','_')}"
+msgstr "Receipt_${(object.display_name or '').replace('/','_')}"
 
 #. module: account_payment_group
 #: model:ir.model.fields.selection,name:account_payment_group.selection__account_payment__payment_type_copy__inbound
@@ -847,6 +899,11 @@ msgstr "Registrar Pago"
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid "Remove All"
 msgstr "Eliminar Todo"
+
+#. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr "Error de entrega de SMS"
 
 #. module: account_payment_group
 #: model:res.groups,name:account_payment_group.account_see_payment_menu
@@ -893,6 +950,11 @@ msgstr "Enviado"
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
 msgid "Set to Draft"
 msgstr "Establecer como Borrador"
+
+#. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment__signed_amount
+msgid "Signed Amount"
+msgstr "Cantidad firmada"
 
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_search
@@ -1073,106 +1135,3 @@ msgstr ""
 #: model:ir.model,name:account_payment_group.model_account_payment_group_invoice_wizard
 msgid "account.payment.group.invoice.wizard"
 msgstr "account.payment.group.invoice.wizard"
-
-#. module: account_payment_group
-#: model:mail.template,body_html:account_payment_group.email_template_edi_payment_group
-msgid ""
-"\n"
-"<div style=\"font-family: 'Lucida Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; \">\n"
-"    <p>Hello ${object.partner_id.name},</p>  \n"
-"    <p>Here is your receipt from ${object.company_id.name}: </p>\n"
-"\n"
-"    <p style=\"border-left: 1px solid #8e0000; margin-left: 30px;\">\n"
-"       &nbsp;&nbsp;<strong>REFERENCES</strong><br />\n"
-"       &nbsp;&nbsp;Receipt number: <strong>${object.display_name}</strong><br />\n"
-"       &nbsp;&nbsp;Receipt reference: <strong>${object.communication or 'n/a'}</strong><br />\n"
-"       &nbsp;&nbsp;Receipt total: <strong>${object.payments_amount}</strong><br />\n"
-"    </p>\n"
-"    \n"
-"    <p>If you have any question, do not hesitate to contact us.</p>\n"
-"    <p>Thank you for choosing ${object.company_id.name or 'us'}!</p>\n"
-"    <br/>\n"
-"    <br/>\n"
-"    <div style=\"width: 375px; margin: 0px; padding: 0px; background-color: #8E0000; border-top-left-radius: 5px 5px; border-top-right-radius: 5px 5px; background-repeat: repeat no-repeat;\">\n"
-"        <h3 style=\"margin: 0px; padding: 2px 14px; font-size: 12px; color: #DDD;\">\n"
-"            <strong style=\"text-transform:uppercase;\">${object.company_id.name}</strong></h3>\n"
-"    </div>\n"
-"    <div style=\"width: 347px; margin: 0px; padding: 5px 14px; line-height: 16px; background-color: #F2F2F2;\">\n"
-"        <span style=\"color: #222; margin-bottom: 5px; display: block; \">\n"
-"        % if object.company_id.street:\n"
-"            ${object.company_id.street}<br/>\n"
-"        % endif\n"
-"        % if object.company_id.street2:\n"
-"            ${object.company_id.street2}<br/>\n"
-"        % endif\n"
-"        % if object.company_id.city or object.company_id.zip:\n"
-"            ${object.company_id.zip} ${object.company_id.city}<br/>\n"
-"        % endif\n"
-"        % if object.company_id.country_id:\n"
-"            ${object.company_id.state_id and ('%s, ' % object.company_id.state_id.name) or ''} ${object.company_id.country_id.name or ''}<br/>\n"
-"        % endif\n"
-"        </span>\n"
-"        % if object.company_id.phone:\n"
-"            <div style=\"margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; \">\n"
-"                Phone:&nbsp; ${object.company_id.phone}\n"
-"            </div>\n"
-"        % endif\n"
-"        % if object.company_id.website:\n"
-"            <div>\n"
-"                Web :&nbsp;<a href=\"${object.company_id.website}\">${object.company_id.website}</a>\n"
-"            </div>\n"
-"        %endif\n"
-"        <p></p>\n"
-"    </div>\n"
-"</div>\n"
-"            "
-msgstr ""
-"\n"
-"<div style=\"font-family: 'Lucida Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; \">\n"
-"    <p>Hola ${object.partner_id.name},</p>  \n"
-"    <p>Aquí está su recibo de ${object.company_id.name}: </p>\n"
-"\n"
-"    <p style=\"border-left: 1px solid #8e0000; margin-left: 30px;\">\n"
-"       &nbsp;&nbsp;<strong>REFERENCES</strong><br />\n"
-"       &nbsp;&nbsp;Número de Recibo: <strong>${object.display_name}</strong><br />\n"
-"       &nbsp;&nbsp;Referencia: <strong>${object.communication or 'n/a'}</strong><br />\n"
-"       &nbsp;&nbsp;Total del Recibo: <strong>${object.payments_amount}</strong><br />\n"
-"    </p>\n"
-"    \n"
-"    <p>No dude en contactar con nosotros ante cualquier duda.</p>\n"
-"    <p>Gracias por elegir a ${object.company_id.name or 'us'}!</p>\n"
-"    <br/>\n"
-"    <br/>\n"
-"    <div style=\"width: 375px; margin: 0px; padding: 0px; background-color: #8E0000; border-top-left-radius: 5px 5px; border-top-right-radius: 5px 5px; background-repeat: repeat no-repeat;\">\n"
-"        <h3 style=\"margin: 0px; padding: 2px 14px; font-size: 12px; color: #DDD;\">\n"
-"            <strong style=\"text-transform:uppercase;\">${object.company_id.name}</strong></h3>\n"
-"    </div>\n"
-"    <div style=\"width: 347px; margin: 0px; padding: 5px 14px; line-height: 16px; background-color: #F2F2F2;\">\n"
-"        <span style=\"color: #222; margin-bottom: 5px; display: block; \">\n"
-"        % if object.company_id.street:\n"
-"            ${object.company_id.street}<br/>\n"
-"        % endif\n"
-"        % if object.company_id.street2:\n"
-"            ${object.company_id.street2}<br/>\n"
-"        % endif\n"
-"        % if object.company_id.city or object.company_id.zip:\n"
-"            ${object.company_id.zip} ${object.company_id.city}<br/>\n"
-"        % endif\n"
-"        % if object.company_id.country_id:\n"
-"            ${object.company_id.state_id and ('%s, ' % object.company_id.state_id.name) or ''} ${object.company_id.country_id.name or ''}<br/>\n"
-"        % endif\n"
-"        </span>\n"
-"        % if object.company_id.phone:\n"
-"            <div style=\"margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; \">\n"
-"                Teléfono:&nbsp; ${object.company_id.phone}\n"
-"            </div>\n"
-"        % endif\n"
-"        % if object.company_id.website:\n"
-"            <div>\n"
-"                Web :&nbsp;<a href=\"${object.company_id.website}\">${object.company_id.website}</a>\n"
-"            </div>\n"
-"        %endif\n"
-"        <p></p>\n"
-"    </div>\n"
-"</div>\n"
-"            "
