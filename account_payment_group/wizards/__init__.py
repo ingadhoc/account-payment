@@ -3,3 +3,4 @@
 
 from . import account_payment_group_invoice_wizard
 from . import res_config_settings
+from . import account_validate_account_move
