@@ -23,6 +23,7 @@
             <field name="currency_id" invisible="1"/>
             <field name="company_currency_id" invisible="1"/>
             <field name="company_id" invisible="1"/>
+            <button type="object" string="Open Document" icon="fa-external-link" help="Open Related Document" name="action_open_related_document"/>
         </tree>
     </field>
 </record>
