@@ -20,6 +20,10 @@ class AccountMove(models.Model):
         'method is used, only journals with manual method are shown.',
         readonly=True,
         states={'draft': [('readonly', False)]},
+        # use copy false for two reasons:
+        # 1. when making refund it's safer to make pay now empty (specially if automatic refund validation is enable)
+        # 2. on duplicating an invoice it's safer also
+        copy=False,
     )
     payment_group_ids = fields.Many2many(
         'account.payment.group',
@@ -163,8 +167,10 @@ class AccountMove(models.Model):
             result['res_id'] = self.payment_group_ids.id
         return result
 
-    @api.onchange('company_id')
-    def _onchange_company_id(self):
+    @api.onchange('journal_id')
+    def _onchange_journal_reset_pay_now(self):
+        # while not always it should be reseted (only if changing company) it's not so usual to set pay now first
+        # and then change journal
         self.pay_now_journal_id = False
 
     def button_cancel(self):
