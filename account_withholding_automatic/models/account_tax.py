@@ -247,6 +247,7 @@ result = withholdable_base_amount * 0.10
         previous_payment_groups_domain = common_previous_domain + [
             ('state', 'not in', ['draft', 'cancel', 'confirmed']),
             ('id', '!=', payment_group.id),
+            ('company_id', '=', payment_group.company_id.id),
         ]
         # for compatibility with public_budget we check state not in and not
         # state in posted. Just in case someone implements payments cancelled
