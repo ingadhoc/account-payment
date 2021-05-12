@@ -347,3 +347,10 @@ class AccountPayment(models.Model):
                             line[2]['credit'] = rec.force_amount_company_currency
                 all_moves_vals += [move_vals]
         return all_moves_vals
+
+    @api.model
+    def default_get(self, default_fields):
+        rec = super().default_get(default_fields)
+        if rec.get('invoice_ids', False):
+            rec.pop('invoice_ids')
+        return rec
