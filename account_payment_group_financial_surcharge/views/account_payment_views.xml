@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_payment_form" model="ir.ui.view">
+        <field name="name">account.payment.form</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="arch" type="xml">
+
+            <field name="journal_id" position="after">
+                <field name="available_financing_plans_ids" invisible="1"/>
+                <field name="financing_plan_id" domain="[('id', 'in', available_financing_plans_ids)]" attrs="{'invisible':[('available_financing_plans_ids', '=', [])], 'required': [('available_financing_plans_ids', '!=', [])]}"/>
+            </field>
+            <div name="amount_div" position="after">
+            <label for="net_amount"/>
+                <div name="net_amount" class="o_row">
+                    <field name="net_amount"/>
+                    <field name="currency_id" options="{'no_create': True, 'no_open': True}" groups="base.group_multi_currency"/>
+                </div>
+            </div>
+        </field>
+    </record>
+
+</odoo>
