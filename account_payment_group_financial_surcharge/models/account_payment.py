@@ -16,12 +16,17 @@ class AccountPayment(models.Model):
 
     @api.depends('amount')
     def _computed_net_amount(self):
-        surcharged_payments = self.filtered('financing_plan_id')
-        (self - surcharged_payments).net_amount = False
-        for rec in surcharged_payments:
+        for rec in self:
             rec.net_amount = rec.amount * (1 - rec.financing_plan_id.surcharge_coefficient / 100.0)
 
-    @api.onchange('net_amount', 'financing_plan_id')
+    @api.onchange('financing_plan_id')
+    def _onchange_financing_plan(self):
+        """ no agregamos este onchange en el de _inverse_net_amount porque si no el amount se inicializa en cero.
+        Eventualmente habria que mejorar esto. Se podria tal vez pasar el default por vista al net_amount tmb """
+        for rec in self:
+            rec._inverse_net_amount()
+
+    @api.onchange('net_amount',)
     def _inverse_net_amount(self):
         for rec in self:
             rec.amount = rec.net_amount / (1 - rec.financing_plan_id.surcharge_coefficient / 100.0)
