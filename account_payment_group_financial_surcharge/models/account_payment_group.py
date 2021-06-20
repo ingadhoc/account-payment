@@ -11,8 +11,8 @@ class AccountPaymentGroup(models.Model):
 
     financing_surcharge = fields.Monetary(compute='_computed_financing_surcharge')
 
-    @api.depends('payment_ids.surcharged_amount')
+    @api.depends('payment_ids.net_amount')
     def _computed_financing_surcharge(self):
         for rec in self:
             rec.financing_surcharge = sum(
-                rec.payment_ids.filtered('surcharged_amount').mapped(lambda x: x.surcharged_amount - x.amount))
+                rec.payment_ids.filtered('financing_plan_id').mapped(lambda x: x.amount - x.net_amount))

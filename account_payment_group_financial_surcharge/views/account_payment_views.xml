@@ -10,9 +10,9 @@
                 <field name="available_financing_plans_ids" invisible="1"/>
                 <field name="financing_plan_id" domain="[('id', 'in', available_financing_plans_ids)]" attrs="{'invisible':['|', ('available_financing_plans_ids', '=', []), ('payment_type', '!=', 'inbound')], 'required': [('available_financing_plans_ids', '!=', []), ('payment_type', '=', 'inbound')]}"/>
             </field>
-            <div name="amount_div" position="after">
-                <field name="surcharged_amount" attrs="{'invisible':['|', ('available_financing_plans_ids', '=', []), ('payment_type', '!=', 'inbound')]}"/>
-            </div>
+            <label for="amount" position="before">
+                <field name="net_amount" attrs="{'invisible':['|', ('available_financing_plans_ids', '=', []), ('payment_type', '!=', 'inbound')]}"/>
+            </label>
         </field>
     </record>
 
