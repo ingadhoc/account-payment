@@ -5,13 +5,9 @@
         <field name="model">account.journal</field>
         <field name="inherit_id" ref="account.view_account_journal_form"/>
         <field name="arch" type="xml">
-            <page name="advanced_settings" position="after">
-                <page name="financing_plans" string="Financing Plans">
-                    <group>
-                        <field name="financing_plans_ids"/>
-                    </group>
-                </page>
-            </page>
+            <field name="company_id" position="after">
+                <field name="financing_plans_ids" widget="many2many_tags" attrs="{'invisible': [('type', 'not in', ['cash', 'bank'])]}"/>
+            </field>
         </field>
     </record>
 
