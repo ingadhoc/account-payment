@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_payment_group_form" model="ir.ui.view">
+        <field name="name">account.payment.group.form</field>
+        <field name="model">account.payment.group</field>
+        <field name="inherit_id" ref="account_payment_group.view_account_payment_group_form"/>
+        <field name="arch" type="xml">
+            <field name="payment_difference" position="after">
+                <field name="financing_surcharge" attrs="{'invisible':[('financing_surcharge', '=', False)]}"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>
