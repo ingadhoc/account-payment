@@ -11,7 +11,7 @@
                     <!-- this option is not so common, we only enable it for tec features -->
                     <div class="col-xs-12 col-md-6 o_setting_box" title="Used if you want let user choose payment type (inbound or outbound) when registering a payment from a payment group" groups="base.group_no_one">
                         <div class="o_setting_left_pane">
-                            <field name="group_choose_payment_type" widget="upgrade_boolean"/>
+                            <field name="group_choose_payment_type"/>
                         </div>
                         <div class="o_setting_right_pane">
                             <label for="group_choose_payment_type"/>
@@ -26,7 +26,7 @@
                 <xpath expr="//div[@data-key='account']//field[@name='module_account_check_printing']/../.." position="before">
                     <div class="col-xs-12 col-md-6 o_setting_box" name="double_validation">
                         <div class="o_setting_left_pane">
-                            <field name="double_validation" widget="upgrade_boolean"/>
+                            <field name="double_validation"/>
                         </div>
                         <div class="o_setting_right_pane">
                             <label for="double_validation"/>
@@ -39,7 +39,7 @@
 
                     <div class="col-xs-12 col-md-6 o_setting_box" title="Allow users to choose a payment journal on invoices so that invoice is automatically paid after invoice validation. A payment will be created using choosen journal">
                         <div class="o_setting_left_pane">
-                            <field name="group_pay_now_vendor_invoices" widget="upgrade_boolean"/>
+                            <field name="group_pay_now_vendor_invoices"/>
                         </div>
                         <div class="o_setting_right_pane">
                             <label for="group_pay_now_vendor_invoices"/>
@@ -54,7 +54,7 @@
                 <xpath expr="//div[@data-key='account']//field[@name='module_account_payment']/../.." position="before">
                     <div class="col-xs-12 col-md-6 o_setting_box" title="Allow users to choose a payment journal on invoices so that invoice is automatically paid after invoice validation. A payment will be created using choosen journal">
                         <div class="o_setting_left_pane">
-                            <field name="group_pay_now_customer_invoices" widget="upgrade_boolean"/>
+                            <field name="group_pay_now_customer_invoices"/>
                         </div>
                         <div class="o_setting_right_pane">
                             <label for="group_pay_now_customer_invoices"/>
