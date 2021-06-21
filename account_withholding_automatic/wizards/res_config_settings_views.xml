@@ -12,7 +12,7 @@
                 <div name="double_validation" position="after">
                     <div class="col-xs-12 col-md-6 o_setting_box" attrs="{'invisible': [('double_validation', '=', False)]}">
                         <div class="o_setting_left_pane">
-                            <field name="automatic_withholdings" widget="upgrade_boolean"/>
+                            <field name="automatic_withholdings"/>
                         </div>
                         <div class="o_setting_right_pane">
                             <label for="automatic_withholdings"/>
