@@ -9,8 +9,8 @@ class AccountJournal(models.Model):
 
     _inherit = "account.journal"
 
-    financing_plans_ids = fields.Many2many(
-        'account.financing_plans',
+    financing_plan_ids = fields.Many2many(
+        'account.financing.plan',
         'account_journal_plans_rel',
         'journal_id',
         'financing_plan_id',
