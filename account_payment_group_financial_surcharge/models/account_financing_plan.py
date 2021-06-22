@@ -19,3 +19,11 @@ class AccountFinancingPlan(models.Model):
         'Surcharge coefficient',
         required=True,
     )
+
+    @api.depends('name', 'surcharge_coefficient')
+    def name_get(self):
+        result = []
+        for plan in self:
+            name = '{} ({}%)'.format(plan.name, str(plan.surcharge_coefficient))
+            result.append((plan.id, name))
+        return result
