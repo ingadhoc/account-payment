@@ -9,7 +9,7 @@ class AccountPayment(models.Model):
 
     _inherit = "account.payment"
 
-    available_financing_plan_ids = fields.Many2many(related='journal_id.financing_plan_ids')
+    available_financing_plan_ids = fields.Many2many(string="Financing Plans Available", related='journal_id.financing_plan_ids')
     financing_plan_id = fields.Many2one(
         'account.financing.plan', store=True, readonly=False, compute='_compute_financing_plan')
     net_amount = fields.Monetary(compute='_computed_net_amount', inverse='_inverse_net_amount')
