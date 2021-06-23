@@ -19,17 +19,23 @@ class AccountPaymentGroup(models.Model):
 
     def post(self):
         if self.payment_ids.mapped('financing_plan_id'):
-            if not self.company_id.product_surcharge_id:
+            product = self.company_id.product_surcharge_id
+            if not product:
                 raise UserError(
                     "To validate payment with finacing plan is necessary to have a product surcharge in the "
                     "company of the payment. Please check this in the Account Config")
             journal = self.env['account.journal'].search([
                 ('type', '=', 'sale'),
                 ('company_id', '=', self.company_id.id)], limit=1)
-            wiz = self.env['account.payment.group.invoice.wizard'].with_context(active_id=self.id, internal_type='debit_note').create({
-                'journal_id': journal.id,
-                'product_id': self.company_id.product_surcharge_id.id,
-                'amount_total': self.financing_surcharge,
+            taxes = product.taxes_id.filtered(lambda t: t.company_id.id == self.company_id.id)
+            wiz = self.env['account.payment.group.invoice.wizard'].with_context(
+                active_id=self.id, internal_type='debit_note').create({
+                    'journal_id': journal.id,
+                    'product_id': product.id,
+                    'tax_ids': [(6, 0, taxes.ids)],
+                    'amount_total': taxes.with_context(
+                        force_price_include=True).compute_all(
+                        self.financing_surcharge, currency=self.currency_id)['total_excluded'],
                 })
             wiz.change_payment_group()
             wiz.confirm()
