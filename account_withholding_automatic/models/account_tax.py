@@ -344,6 +344,7 @@ result = withholdable_base_amount * 0.10
             'period_withholding_amount': period_withholding_amount,
             'previous_withholding_amount': previous_withholding_amount,
             'payment_group_id': payment_group.id,
+            'currency_id': payment_group.currency_id.id,
             'tax_withholding_id': self.id,
             'automatic': True,
             'comment': comment,
