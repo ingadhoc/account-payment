@@ -101,16 +101,8 @@ class AccountPayment(models.Model):
             self.payment_date = self.payment_group_id.payment_date
             self.partner_type = self.payment_group_id.partner_type
             self.partner_id = self.payment_group_id.partner_id
-            payment_difference = self.payment_group_id.payment_difference
-            if self.payment_group_id.payment_difference < 0.0 and self.payment_group_id.partner_type  == 'customer':
-                self.amount = abs(payment_difference)
-                self.payment_type = 'outbound'
-            elif self.payment_group_id.payment_difference < 0.0 and self.payment_group_id.partner_type  == 'supplier':
-                self.amount = abs(payment_difference)
-                self.payment_type = 'inbound'
-            else:
-                self.payment_type = 'inbound' if self.payment_group_id.partner_type  == 'customer' else 'outbound'
-                self.amount = payment_difference
+            self.payment_type = 'inbound' if self.payment_group_id.partner_type  == 'customer' else 'outbound'
+            self.amount = self.payment_group_id.payment_difference
 
     @api.depends('amount', 'other_currency', 'amount_company_currency')
     def _compute_exchange_rate(self):
