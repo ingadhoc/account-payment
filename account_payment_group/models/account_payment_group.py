@@ -367,10 +367,12 @@ class AccountPaymentGroup(models.Model):
             payment_lines = rec.payment_ids.mapped('move_line_ids')
 
             reconciles = rec.env['account.partial.reconcile'].search([
+                ('credit_move_id.account_id.internal_type', 'in', ['receivable', 'payable']),
                 ('credit_move_id', 'in', payment_lines.ids)])
             lines |= reconciles.mapped('debit_move_id')
 
             reconciles = rec.env['account.partial.reconcile'].search([
+                ('credit_move_id.account_id.internal_type', 'in', ['receivable', 'payable']),
                 ('debit_move_id', 'in', payment_lines.ids)])
             lines |= reconciles.mapped('credit_move_id')
 
