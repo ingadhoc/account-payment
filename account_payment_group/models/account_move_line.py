@@ -33,24 +33,13 @@ class AccountMoveLine(models.Model):
         if not payment_group_id:
             self.payment_group_matched_amount = 0.0
             return False
-        payments = self.env['account.payment.group'].browse(
-            payment_group_id).payment_ids
-        payment_move_lines = payments.mapped('move_line_ids')
+        payments = self.env['account.payment.group'].browse(payment_group_id).payment_ids
+        payment_lines = payments.mapped('move_line_ids').filtered(lambda x: x.account_internal_type in ['receivable', 'payable'])
 
         for rec in self:
-            matched_amount = 0.0
-            reconciles = self.env['account.partial.reconcile'].search([
-                ('credit_move_id.account_id.internal_type', 'in', ['receivable', 'payable']),
-                ('credit_move_id', 'in', payment_move_lines.ids),
-                ('debit_move_id', '=', rec.id)])
-            matched_amount += sum(reconciles.mapped('amount'))
-
-            reconciles = self.env['account.partial.reconcile'].search([
-                ('credit_move_id.account_id.internal_type', 'in', ['receivable', 'payable']),
-                ('debit_move_id', 'in', payment_move_lines.ids),
-                ('credit_move_id', '=', rec.id)])
-            matched_amount -= sum(reconciles.mapped('amount'))
-            rec.payment_group_matched_amount = matched_amount
+            debit_move_amount = sum(payment_lines.mapped('matched_debit_ids').filtered(lambda x: x.debit_move_id == rec).mapped('amount'))
+            credit_move_amount = sum(payment_lines.mapped('matched_credit_ids').filtered(lambda x: x.credit_move_id == rec).mapped('amount'))
+            rec.payment_group_matched_amount = debit_move_amount - credit_move_amount
 
     payment_group_matched_amount = fields.Monetary(
         compute='_compute_payment_group_matched_amount',
