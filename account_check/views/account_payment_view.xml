@@ -73,7 +73,7 @@
             </group>
             </group>
             <xpath expr="//div[@name='amount_div']//field[@name='amount']" position="attributes">
-                <attribute name="attrs">{'readonly': [('payment_method_code', '=', 'delivered_third_check')]}</attribute>
+                <attribute name="attrs">{'readonly': ['|',('state', '!=', 'draft'),('payment_method_code', '=', 'delivered_third_check')]}</attribute>
                 <attribute name="force_save">1</attribute>
             </xpath>
             <field name="payment_method_id" position="after">
