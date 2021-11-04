@@ -174,5 +174,5 @@ class AccountMove(models.Model):
         self.pay_now_journal_id = False
 
     def button_cancel(self):
-        self.filtered(lambda x: x.state != 'draft' and x.pay_now_journal_id).write({'pay_now_journal_id': False})
+        self.filtered(lambda x: x.state == 'draft' and x.pay_now_journal_id).write({'pay_now_journal_id': False})
         return super().button_cancel()
