@@ -1,4 +1,3 @@
-[![Coverage Status](https://coveralls.io/repos/ingadhoc/account-payment/badge.png?branch=8.0)](https://coveralls.io/r/ingadhoc/account-payment?branch=8.0)
 [![Code Climate](https://codeclimate.com/github/ingadhoc/account-payment/badges/gpa.svg)](https://codeclimate.com/github/ingadhoc/account-payment)
 
 # ADHOC Account Invoicing
