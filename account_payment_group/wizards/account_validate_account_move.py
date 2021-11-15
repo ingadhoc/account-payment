@@ -21,9 +21,13 @@ class ValidateAccountMove(models.TransientModel):
             # we consider that an error with "Afip" occurred and we need to pay the invoice with pay now
             if 'AFIP' in repr(error):
                 # we try to pay automatic if the pay now journal is setting on the invoice.
-                moves.pay_now()
-                if not self.env.context.get('l10n_ar_invoice_skip_commit'):
-                    self._cr.commit()
+                for move in moves:
+                    move.pay_now()
+                    if not self.env.context.get('l10n_ar_invoice_skip_commit'):
+                        self._cr.commit()
             raise UserError(error)
-        moves.pay_now()
+        for move in moves:
+            move.pay_now()
+            if not self.env.context.get('l10n_ar_invoice_skip_commit'):
+                self._cr.commit()
         return res
