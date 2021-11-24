@@ -1,6 +1,5 @@
 from odoo import models, fields, api
 
-# Agregar un ondelete="cascade" en la relacion con el modelo account.invoice
 
 class AccountTaxTemplate(models.Model):
     _inherit = "account.tax.template"
@@ -10,9 +9,6 @@ class AccountTaxTemplate(models.Model):
             ('customer', 'Customer Payment'),
             ('supplier', 'Supplier Payment'),
         ],
-        ondelete={'customer': 'cascade',
-                  'supplier': 'cascade'}
-        #ondelete="set null",
     )
 
 
@@ -27,11 +23,7 @@ class AccountTax(models.Model):
             ('customer', 'Customer Payment'),
             ('supplier', 'Supplier Payment'),
         ],
-        ondelete={'customer': 'cascade',
-                  'supplier': 'cascade'}
-        #ondelete="set null",
     )
-
     amount = fields.Float(
         default=0.0,
     )
