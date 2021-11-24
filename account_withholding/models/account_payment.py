@@ -5,52 +5,52 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
+class AccountPaymentMethodAW(models.Model):
+    _inherit = 'account.payment.method'
 
-class AccountPayment(models.Model):
+    @api.model
+    def _get_payment_method_information(self):
+        res = super(AccountPaymentMethodAW, self)._get_payment_method_information()
+        res['withholding_in'] =  {'mode': 'multi', 'domain': [('type', 'in', ('bank', 'cash'))]}
+        res['withholding_out'] = {'mode': 'multi', 'domain': [('type', 'in', ('bank', 'cash'))]}
+        return res
+
+
+class AccountPaymentAW(models.Model):
     _inherit = "account.payment"
 
     tax_withholding_id = fields.Many2one(
         'account.tax',
         string='Withholding Tax',
-        readonly=True,
+        #readonly=True,
         states={'draft': [('readonly', False)]},
     )
     withholding_number = fields.Char(
-        readonly=True,
+        #readonly=True,
         states={'draft': [('readonly', False)]},
         help="If you don't set a number we will add a number automatically "
         "from a sequence that should be configured on the Withholding Tax"
     )
     withholding_base_amount = fields.Monetary(
         string='Withholding Base Amount',
-        readonly=True,
+        #readonly=True,
         states={'draft': [('readonly', False)]},
     )
 
-    def post(self):
-        without_number = self.filtered(
-            lambda x: x.tax_withholding_id and not x.withholding_number)
+    payment_method_code = fields.Char(related='payment_method_line_id.code')
 
-        without_sequence = without_number.filtered(
-            lambda x: not x.tax_withholding_id.withholding_sequence_id)
-        if without_sequence:
-            raise UserError(_(
-                'No puede validar pagos con retenciones que no tengan número '
-                'de retención. Recomendamos agregar una secuencia a los '
-                'impuestos de retención correspondientes. Id de pagos: %s') % (
-                without_sequence.ids))
 
-        # a los que tienen secuencia les setamos el numero desde secuencia
-        for payment in (without_number - without_sequence):
-            payment.withholding_number = \
-                payment.tax_withholding_id.withholding_sequence_id.next_by_id()
+    def _prepare_move_line_default_vals(self, write_off_line_vals=None):
+        vals = super(AccountPaymentAW, self)._prepare_move_line_default_vals(write_off_line_vals=write_off_line_vals)
+        for move_line_vals in vals:
+            move_line_vals.update(self._get_withholding_line_vals())
+        return vals
 
-        return super(AccountPayment, self).post()
-
+    """
     def _prepare_payment_moves(self):
         all_moves_vals = []
         for rec in self:
-            moves_vals = super(AccountPayment, rec)._prepare_payment_moves()
+            moves_vals = super(AccountPaymentRegister, rec)._prepare_payment_moves()
 
             vals = rec._get_withholding_line_vals()
             if vals:
@@ -59,10 +59,12 @@ class AccountPayment(models.Model):
             all_moves_vals += moves_vals
 
         return all_moves_vals
+    """
+
 
     def _get_withholding_line_vals(self):
         vals = {}
-        if self.payment_method_code == 'withholding':
+        if self.payment_method_code in ['withholding_in', 'withholding_out']:
             if self.payment_type == 'transfer':
                 raise UserError(_(
                     'You can not use withholdings on transfers!'))
@@ -94,10 +96,68 @@ class AccountPayment(models.Model):
     @api.depends('payment_method_code', 'tax_withholding_id.name')
     def _compute_payment_method_description(self):
         payments = self.filtered(
-            lambda x: x.payment_method_code == 'withholding')
+            lambda x: x.payment_method_code in ['withholding_in', 'withholding_out'])
         for rec in payments:
             name = rec.tax_withholding_id.name or rec.payment_method_id.name
             rec.payment_method_description = name
-        return super(
-            AccountPayment,
-            (self - payments))._compute_payment_method_description()
+        return super(AccountPaymentAW, self)._compute_payment_method_description()
+
+class AccountPaymentRegister(models.TransientModel):
+    _inherit = "account.payment.register"
+
+    tax_withholding_id = fields.Many2one(
+        'account.tax',
+        string='Withholding Tax',
+        #readonly=True,
+        states={'draft': [('readonly', False)]},
+    )
+    withholding_number = fields.Char(
+        #readonly=True,
+        states={'draft': [('readonly', False)]},
+        help="If you don't set a number we will add a number automatically "
+        "from a sequence that should be configured on the Withholding Tax"
+    )
+    withholding_base_amount = fields.Monetary(
+        string='Withholding Base Amount',
+        #readonly=True,
+        states={'draft': [('readonly', False)]},
+    )
+
+    type_tax_use = fields.Selection(related='tax_withholding_id.type_tax_use')
+
+    payment_method_code = fields.Char(related='payment_method_line_id.code')
+
+    def _create_payment_vals_from_batch(self, batch_result):
+        without_number = self.filtered(
+            lambda x: x.tax_withholding_id and not x.withholding_number)
+
+        without_sequence = without_number.filtered(
+            lambda x: not x.tax_withholding_id.withholding_sequence_id)
+        if without_sequence:
+            raise UserError(_(
+                'No puede validar pagos con retenciones que no tengan número '
+                'de retención. Recomendamos agregar una secuencia a los '
+                'impuestos de retención correspondientes. Id de pagos: %s') % (
+                without_sequence.ids))
+
+        # a los que tienen secuencia les setamos el numero desde secuencia
+        for payment in (without_number - without_sequence):
+            payment.withholding_number = \
+                payment.tax_withholding_id.withholding_sequence_id.next_by_id()
+
+        res = super(AccountPaymentRegister, self)._create_payment_vals_from_batch(batch_result)
+        res.update({
+            'tax_withholding_id': self.tax_withholding_id.id,
+            'withholding_number' : self.withholding_number,
+            'withholding_base_amount': self.withholding_base_amount,
+        })
+        return res
+
+    @api.depends('payment_method_code', 'tax_withholding_id.name')
+    def _compute_payment_method_description(self):
+        payments = self.filtered(
+            lambda x: x.payment_method_code in ['withholding_in', 'withholding_out'])
+        for rec in payments:
+            name = rec.tax_withholding_id.name or rec.payment_method_id.name
+            rec.payment_method_description = name
+        return super(AccountPaymentRegister, self)._compute_payment_method_description()

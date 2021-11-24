@@ -18,9 +18,7 @@ class AccountChartTemplate(models.Model):
         and they will be disable by default
         """
 
-        bank_journals = super(
-            AccountChartTemplate, self)._create_bank_journals(
-            company, acc_template_ref)
+        bank_journals = super(AccountChartTemplate, self)._create_bank_journals(company, acc_template_ref)
 
         # each chart of account / localization should send this key if
         # they want withholding journal to be created
