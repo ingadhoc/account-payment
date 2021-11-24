@@ -23,11 +23,11 @@
                 <attribute name="widget">many2one</attribute>
                 <attribute name="options">{'no_create': True, 'no_open': True}</attribute>
             </field>
-            <field name="payment_method_id" position="attributes">
+            <xpath expr="//field[@name='payment_method_line_id']" position="attributes">
                 <attribute name="domain">[('id', 'in', payment_method_ids)]</attribute>
                 <attribute name="widget">many2one</attribute>
                 <attribute name="options">{'no_create': True, 'no_open': True}</attribute>
-            </field>
+            </xpath>
         </field>
     </record>
 
@@ -45,10 +45,10 @@
         <field name="model">account.payment</field>
         <field name="inherit_id" ref="account.view_account_payment_tree"/>
         <field name="arch" type="xml">
-            <field name="payment_method_id" position="attributes">
+            <field name="payment_method_line_id" position="attributes">
                 <attribute name="invisible">1</attribute>
             </field>
-            <field name="payment_method_id" position="after">
+            <field name="payment_method_line_id" position="after">
                 <field name="payment_method_description"/>
             </field>
         </field>
