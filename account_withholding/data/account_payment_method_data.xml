@@ -1,18 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo noupdate="1">
-
+<odoo noupdate="0">
     <record id="account_payment_method_in_withholding" model="account.payment.method">
         <field name="name">Withholding</field>
-        <field name="code">withholding</field>
+        <field name="code">withholding_in</field>
         <field name="payment_type">inbound</field>
     </record>
 
     <record id="account_payment_method_out_withholding" model="account.payment.method">
         <field name="name">Withholding</field>
-        <field name="code">withholding</field>
+        <field name="code">withholding_out</field>
         <field name="payment_type">outbound</field>
     </record>
-
-    <!-- <function model="account.journal" name="_enable_withholding_on_cash_journals"/> -->
-
 </odoo>
