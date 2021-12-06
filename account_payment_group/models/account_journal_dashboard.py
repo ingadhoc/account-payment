@@ -12,8 +12,7 @@ class AccountJournal(models.Model):
                 'default_journal_id': self.id
             })
             ctx.pop('group_by', None)
-            action_rec = self.env['ir.model.data'].xmlid_to_object(
-                'account_payment_group.action_account_payments_transfer')
+            action_rec = self.env.ref('account_payment_group.action_account_payments_transfer')
             action = action_rec.read([])[0]
             action['context'] = ctx
             action['domain'] = [('journal_id', '=', self.id),

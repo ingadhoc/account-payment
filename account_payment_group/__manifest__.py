@@ -2,21 +2,18 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 {
     "name": "Account Payment with Multiple methods",
-    "version": "13.0.1.8.0",
+    "version": "15.0.1.0.0",
     "category": "Accounting",
     "website": "www.adhoc.com.ar",
     "author": "ADHOC SA, AITIC S.A.S",
     "license": "AGPL-3",
     "application": False,
-    'installable': False,
+    'installable': True,
     "external_dependencies": {
         "python": [],
         "bin": [],
     },
     "depends": [
-        "account_financial_amount",
-        # for fixes related to domains and company_id field on form view
-        "account_payment_fix",
         "account_ux",
     ],
     "data": [
@@ -31,6 +28,7 @@
         'views/report_payment_group.xml',
         'data/mail_template_data.xml',
         'data/account_payment_data.xml',
+        'data/ir_actions_server_data.xml',
     ],
     "demo": [
     ],

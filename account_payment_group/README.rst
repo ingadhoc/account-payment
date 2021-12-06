@@ -25,7 +25,6 @@ We also add a pay now functionality on invoices so that payment can be automatic
 Account Payment groups are created from:
 
 * sale order payments
-* reconciliation wizard (statements)
 * website payments
 * after expense validation when posting journal items.
 
