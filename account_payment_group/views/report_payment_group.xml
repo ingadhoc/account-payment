@@ -19,14 +19,14 @@
         </t>
     </template>
 
-    <report
-        string="Receipt / Payment Order"
-        id="action_report_payment_group"
-        model="account.payment.group"
-        report_type="qweb-pdf"
-        name="account_payment_group.report_payment_group"
-        file="account_payment_group.report_payment_group"
-        print_report_name="(object.partner_type == 'supplier' and 'Orden de pago' or 'Recibo') + ' ' + object.document_number"
-    />
+    <record id="action_report_payment_group" model="ir.actions.report">
+        <field name="name">Receipt / Payment Order</field>
+        <field name="model">account.payment.group</field>
+        <field name="binding_model_id" ref="model_account_payment_group"/>
+        <field name="report_type">qweb-pdf</field>
+        <field name="print_report_name">(object.partner_type == 'supplier' and 'Orden de pago' or 'Recibo') + ' ' + object.document_number</field>
+        <field name="report_name">account_payment_group.report_payment_group</field>
+        <field name="report_file">account_payment_group.report_payment_group</field>
+    </record>
 
 </odoo>
