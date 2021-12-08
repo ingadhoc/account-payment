@@ -27,7 +27,7 @@ class AccountPayment(models.Model):
         states={'draft': [('readonly', False)]},
     )
 
-    def post(self):
+    def action_post(self):
         without_number = self.filtered(
             lambda x: x.tax_withholding_id and not x.withholding_number)
 
@@ -45,20 +45,39 @@ class AccountPayment(models.Model):
             payment.withholding_number = \
                 payment.tax_withholding_id.withholding_sequence_id.next_by_id()
 
-        return super(AccountPayment, self).post()
+        return super(AccountPayment, self).action_post()
 
-    def _prepare_payment_moves(self):
-        all_moves_vals = []
-        for rec in self:
-            moves_vals = super(AccountPayment, rec)._prepare_payment_moves()
+    # TODO integrar _prepare_payment_moves
+    # def _prepare_move_line_default_vals(self, write_off_line_vals=None):
+    #     res = super()._prepare_move_line_default_vals(write_off_line_vals=write_off_line_vals)
+    #     if self.force_amount_company_currency:
+    #         difference = self.force_amount_company_currency - res[0]['credit'] - res[0]['debit']
+    #         if res[0]['credit']:
+    #             liquidity_field = 'credit'
+    #             counterpart_field = 'debit'
+    #         else:
+    #             liquidity_field = 'debit'
+    #             counterpart_field = 'credit'
+    #         res[0].update({
+    #             liquidity_field: self.force_amount_company_currency,
+    #         })
+    #         res[1].update({
+    #             counterpart_field: res[1][counterpart_field] + difference,
+    #         })
+    #     return res
 
-            vals = rec._get_withholding_line_vals()
-            if vals:
-                moves_vals[0]['line_ids'][1][2].update(vals)
+    # def _prepare_payment_moves(self):
+    #     all_moves_vals = []
+    #     for rec in self:
+    #         moves_vals = super(AccountPayment, rec)._prepare_payment_moves()
 
-            all_moves_vals += moves_vals
+    #         vals = rec._get_withholding_line_vals()
+    #         if vals:
+    #             moves_vals[0]['line_ids'][1][2].update(vals)
 
-        return all_moves_vals
+    #         all_moves_vals += moves_vals
+
+    #     return all_moves_vals
 
     def _get_withholding_line_vals(self):
         vals = {}

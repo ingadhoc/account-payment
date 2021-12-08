@@ -10,6 +10,7 @@
     <field name="arch" type="xml">
         <tree decoration-info="state=='draft'" decoration-muted="state in ['reconciled', 'cancel']">
             <field name="payment_date"/>
+            <field name="display_name"/>
             <field name="partner_id" invisible="context.get('default_partner_type') == 'customer'" string="Vendor"/>
             <field name="partner_id" invisible="context.get('default_partner_type') == 'supplier'" string="Customer"/>
             <field name="payment_methods"/>
@@ -27,7 +28,7 @@
     <field name="model">account.payment.group</field>
     <field name="arch" type="xml">
         <search string="Payments">
-            <field name="display_name" filter_domain="[('communication','ilike',self)]" string="Description"/>
+            <field name="display_name" filter_domain="['|', ('name','ilike',self), ('communication','ilike',self)]" string="Description"/>
             <separator/>
             <field name="payment_methods"/>
             <field name="partner_id" invisible="context.get('default_partner_type') == 'supplier'" string="Vendor"/>
@@ -55,6 +56,7 @@
             <field name="partner_type" invisible="1"/>
             <field name="payment_subtype" invisible="1"/>
             <field name="has_outstanding" invisible="1"/>
+            <field name="document_sequence_id" invisible="1"/>
             <header>
                 <button name="action_payment_sent" type="object" string="Send by Email" attrs="{'invisible':['|', ('sent','=',True), ('state', '!=', 'posted')]}" class="oe_highlight" groups="base.group_user"/>
                 <field name="sent" invisible="1"/>
@@ -73,15 +75,18 @@
             <sheet>
                 <div class="oe_button_box" name="button_box">
                     <button class="oe_stat_button" name="button_journal_entries"
-                            help="Journal Items" type="object"
+                            string="Journal Items" type="object"
                             groups="account.group_account_manager"
                             attrs="{'invisible':[('move_line_ids','=',[])]}" icon="fa-bars"/>
                     <field name="move_line_ids" invisible="1"/>
                 </div>
 
                 <div class="oe_title">
-                    <h1 attrs="{'invisible': [('state', '!=', 'draft')]}"><span>Draft</span></h1>
-                    <h1 attrs="{'invisible': [('state', '=', 'draft')]}"><field name="name" readonly="1"/></h1>
+                    <h1>
+                        <field name="display_name" attrs="{'invisible': [('display_name', '=', False)]}" class="oe_inline"/>
+                        <label for="next_number" string="- Next Number: " attrs="{'invisible': [('next_number', 'in', (0, False))]}" class="oe_inline"/>
+                        <field name="next_number" attrs="{'invisible': [('next_number', 'in', (0, False))]}" class="oe_inline"/>
+                    </h1>
                 </div>
 
                 <group>
@@ -99,6 +104,9 @@
                     </group>
                     <group name="group2">
                         <field name="payment_date"/>
+                        <!-- only required on posted state for compatibility if you install this module with payments already created -->
+                        <field name="receiptbook_id" attrs="{'required':[('state', '=', 'draft')]}" domain="[('partner_type', '=', partner_type), ('company_id', '=', company_id)]"/>
+                        <field name="document_number" attrs="{'invisible': [('document_sequence_id', '!=', False)], 'required': [('document_sequence_id', '=', False)]}"/>
                         <field name="communication" attrs="{'invisible': [('state', '!=', 'draft'), ('communication', '=', False)]}"/>
                     </group>
                     <group name="group3">

@@ -32,6 +32,12 @@ class AccountMove(models.Model):
         compute_sudo=True,
     )
 
+    @api.constrains('name', 'journal_id', 'state')
+    def _check_unique_sequence_number(self):
+        payment_group_moves = self.filtered(
+            lambda x: x.journal_id.type in ['cash', 'bank'] and x.l10n_latam_document_type_id)
+        return super(AccountMove, self - payment_group_moves)._check_unique_sequence_number()
+
     def _compute_payment_groups(self):
         """
         El campo en invoices "payment_id" no lo seteamos con los payment groups

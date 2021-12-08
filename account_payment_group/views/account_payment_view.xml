@@ -33,6 +33,9 @@
         <field name="priority">90</field>
         <field name="mode">primary</field>
         <field name="arch" type="xml">
+            <tree position="attributes">
+                <attribute name="create">true</attribute>
+            </tree>
             <field name="journal_id" position="after">
                 <field name="payment_method_description"/>
             </field>
@@ -155,6 +158,6 @@
         </field>
     </record>
 
-    <menuitem action="action_account_payments_transfer" id="menu_action_account_payments_transfer" parent="account.menu_finance" sequence="30" groups="account.group_account_user"/>
+    <menuitem action="action_account_payments_transfer" id="menu_action_account_payments_transfer" parent="menu_finance_bank_and_cash" sequence="30" groups="account.group_account_user"/>
 
 </odoo>
