@@ -27,6 +27,13 @@ class AccountPayment(models.Model):
         states={'draft': [('readonly', False)]},
     )
 
+    def _get_valid_liquidity_accounts(self):
+        res = super()._get_valid_liquidity_accounts()
+        if self.tax_withholding_id:
+            res += (self._get_withholding_repartition_line().account_id,)
+
+        return res
+
     def action_post(self):
         without_number = self.filtered(
             lambda x: x.tax_withholding_id and not x.withholding_number)
@@ -47,76 +54,31 @@ class AccountPayment(models.Model):
 
         return super(AccountPayment, self).action_post()
 
-    # TODO integrar _prepare_payment_moves
-    # def _prepare_move_line_default_vals(self, write_off_line_vals=None):
-    #     res = super()._prepare_move_line_default_vals(write_off_line_vals=write_off_line_vals)
-    #     if self.force_amount_company_currency:
-    #         difference = self.force_amount_company_currency - res[0]['credit'] - res[0]['debit']
-    #         if res[0]['credit']:
-    #             liquidity_field = 'credit'
-    #             counterpart_field = 'debit'
-    #         else:
-    #             liquidity_field = 'debit'
-    #             counterpart_field = 'credit'
-    #         res[0].update({
-    #             liquidity_field: self.force_amount_company_currency,
-    #         })
-    #         res[1].update({
-    #             counterpart_field: res[1][counterpart_field] + difference,
-    #         })
-    #     return res
+    def _get_withholding_repartition_line(self):
+        self.ensure_one()
+        if ((self.partner_type == 'customer' and self.payment_type == 'inbound') or
+                (self.partner_type == 'supplier' and self.payment_type == 'outbound')):
+            rep_field = 'invoice_repartition_line_ids'
+        else:
+            rep_field = 'refund_repartition_line_ids'
+        rep_line = self.tax_withholding_id[rep_field].filtered(lambda x: x.repartition_type == 'tax')
+        if len(rep_line) != 1:
+            raise UserError(
+                'En los impuestos de retención debe haber una línea de repartición de tipo tax para pagos y otra'
+                'para reembolsos')
+        if not rep_line.account_id:
+            raise UserError(_('The tax %s dont have account configured on the tax repartition line') % (
+                rep_line.tax_id.name))
+        return rep_line
 
-    # def _prepare_payment_moves(self):
-    #     all_moves_vals = []
-    #     for rec in self:
-    #         moves_vals = super(AccountPayment, rec)._prepare_payment_moves()
+    def _prepare_move_line_default_vals(self, write_off_line_vals=None):
+        res = super()._prepare_move_line_default_vals(write_off_line_vals=write_off_line_vals)
 
-    #         vals = rec._get_withholding_line_vals()
-    #         if vals:
-    #             moves_vals[0]['line_ids'][1][2].update(vals)
-
-    #         all_moves_vals += moves_vals
-
-    #     return all_moves_vals
-
-    def _get_withholding_line_vals(self):
-        vals = {}
         if self.payment_method_code == 'withholding':
             if self.payment_type == 'transfer':
-                raise UserError(_(
-                    'You can not use withholdings on transfers!'))
-            if (
-                    (self.partner_type == 'customer' and
-                        self.payment_type == 'inbound') or
-                    (self.partner_type == 'supplier' and
-                        self.payment_type == 'outbound')):
-                rep_field = 'invoice_repartition_line_ids'
-            else:
-                rep_field = 'refund_repartition_line_ids'
-            rep_lines = self.tax_withholding_id[rep_field].filtered(lambda x: x.repartition_type == 'tax')
-            if len(rep_lines) != 1:
-                raise UserError(
-                    'En los impuestos de retención debe haber una línea de repartición de tipo tax para pagos y otra'
-                    'para reembolsos')
-            account = rep_lines.account_id
-            # if not accounts on taxes then we use accounts of journal
-            if account:
-                vals['account_id'] = account.id
-            vals['name'] = self.withholding_number or '/'
-            vals['tax_repartition_line_id'] = rep_lines.id
-            # if not account:
-            #     raise UserError(_(
-            #         'Accounts not configured on tax %s' % (
-            #             self.tax_withholding_id.name)))
-        return vals
-
-    @api.depends('payment_method_code', 'tax_withholding_id.name')
-    def _compute_payment_method_description(self):
-        payments = self.filtered(
-            lambda x: x.payment_method_code == 'withholding')
-        for rec in payments:
-            name = rec.tax_withholding_id.name or rec.payment_method_id.name
-            rec.payment_method_description = name
-        return super(
-            AccountPayment,
-            (self - payments))._compute_payment_method_description()
+                raise UserError(_('You can not use withholdings on transfers!'))
+            rep_line = self._get_withholding_repartition_line()
+            res[0]['name'] = self.withholding_number or '/'
+            res[0]['account_id'] = rep_line.account_id.id
+            res[0]['tax_repartition_line_id'] = rep_line.id
+        return res

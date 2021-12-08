@@ -22,7 +22,7 @@ class AccountPaymentGroup(models.Model):
     selected_debt_untaxed = fields.Monetary(
         # string='To Pay lines Amount',
         string='Selected Debt Untaxed',
-        compute='_compute_selected_debt',
+        compute='_compute_selected_debt_untaxed',
     )
     matched_amount_untaxed = fields.Monetary(
         compute='_compute_matched_amount_untaxed',
@@ -63,7 +63,7 @@ class AccountPaymentGroup(models.Model):
                 invoice = line.move_id
                 factor = invoice and invoice._get_tax_factor() or 1.0
                 selected_debt_untaxed += line.amount_residual * factor
-            rec.selected_debt_untaxed = selected_debt_untaxed * rec.partner_type == 'supplier' and -1.0 or 1.0
+            rec.selected_debt_untaxed = selected_debt_untaxed * (rec.partner_type == 'supplier' and -1.0 or 1.0)
 
     @api.onchange('unreconciled_amount')
     def set_withholdable_advanced_amount(self):

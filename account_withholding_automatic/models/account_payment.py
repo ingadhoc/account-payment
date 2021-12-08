@@ -2,7 +2,7 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import models, fields
+from odoo import models, fields, api
 # import odoo.addons.decimal_precision as dp
 # from odoo.exceptions import ValidationError
 # from dateutil.relativedelta import relativedelta
@@ -72,3 +72,14 @@ class AccountPayment(models.Model):
                 'tax_withholding_id')
             vals['tax_ids'] = [(6, False, taxes.ids)]
         return vals
+
+    @api.depends('payment_method_code', 'tax_withholding_id.name')
+    def _compute_payment_method_description(self):
+        payments = self.filtered(
+            lambda x: x.payment_method_code == 'withholding')
+        for rec in payments:
+            name = rec.tax_withholding_id.name or rec.payment_method_id.name
+            rec.payment_method_description = name
+        return super(
+            AccountPayment,
+            (self - payments))._compute_payment_method_description()
