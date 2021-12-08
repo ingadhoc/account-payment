@@ -7,3 +7,6 @@ from . import account_move_line
 from . import account_move
 from . import res_company
 from . import account_journal_dashboard
+from . import account_payment_receiptbook
+from . import account_chart_template
+from . import l10n_latam_document_type

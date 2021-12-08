@@ -8,11 +8,35 @@ from odoo.exceptions import ValidationError
 class AccountPaymentGroup(models.Model):
     _name = "account.payment.group"
     _description = "Payment Group"
-    _order = "payment_date desc"
+    _order = "payment_date desc, name desc"
     _inherit = 'mail.thread'
     _check_company_auto = True
 
-    name = fields.Char(string='Number', required=True, readonly=True, copy=False, default='/')
+    name = fields.Char(string='Number', readonly=True, copy=False)
+    document_sequence_id = fields.Many2one(
+        related='receiptbook_id.sequence_id',
+    )
+    receiptbook_id = fields.Many2one(
+        'account.payment.receiptbook',
+        'ReceiptBook',
+        readonly=True,
+        states={'draft': [('readonly', False)]},
+        auto_join=True,
+        check_company=True,
+        compute='_compute_receiptbook',
+        store=True,
+    )
+    document_type_id = fields.Many2one(
+        related='receiptbook_id.document_type_id',
+    )
+    next_number = fields.Integer(
+        # related='receiptbook_id.sequence_id.number_next_actual',
+        compute='_compute_next_number',
+        string='Next Number',
+    )
+    document_number = fields.Char(
+        compute='_compute_document_number', inverse='_inverse_document_number',
+        string='Document Number', readonly=True, states={'draft': [('readonly', False)]})
     company_id = fields.Many2one(
         'res.company',
         string='Company',
@@ -176,6 +200,10 @@ class AccountPaymentGroup(models.Model):
         copy=False,
         help="It indicates that the receipt has been sent."
     )
+
+    _sql_constraints = [
+        ('name_uniq', 'unique(name, receiptbook_id)',
+            'Document number must be unique per receiptbook!')]
 
     @api.depends(
         'state',
@@ -394,6 +422,19 @@ class AccountPaymentGroup(models.Model):
         create_from_statement = self._context.get('create_from_statement', False)
         create_from_expense = self._context.get('create_from_expense', False)
         for rec in self:
+            if not rec.document_number:
+                if rec.receiptbook_id and not rec.receiptbook_id.sequence_id:
+                    raise ValidationError(_(
+                        'Error!. Please define sequence on the receiptbook'
+                        ' related documents to this payment or set the '
+                        'document number.'))
+                if rec.receiptbook_id.sequence_id:
+                    rec.document_number = (
+                        rec.receiptbook_id.with_context(
+                            ir_sequence_date=rec.payment_date
+                        ).sequence_id.next_by_id())
+            rec.payment_ids.name = rec.name
+
             if not rec.payment_ids:
                 raise ValidationError(_(
                     'You can not confirm a payment group without payment lines!'))
@@ -414,12 +455,20 @@ class AccountPaymentGroup(models.Model):
             if not create_from_website and not create_from_expense:
                 rec.payment_ids.filtered(lambda x: x.state == 'draft').action_post()
 
+            if not rec.receiptbook_id and not rec.name:
+                rec.name = any(
+                    rec.payment_ids.mapped('name')) and ', '.join(
+                    rec.payment_ids.mapped('name')) or False
+
             counterpart_aml = rec.payment_ids.mapped('line_ids').filtered(
                 lambda r: not r.reconciled and r.account_id.internal_type in ('payable', 'receivable'))
             if counterpart_aml and rec.to_pay_move_line_ids:
                 (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile()
 
             rec.state = 'posted'
+
+            if rec.receiptbook_id.mail_template_id:
+                rec.message_post_with_template(rec.receiptbook_id.mail_template_id.id)
         return True
 
     @api.returns('mail.message', lambda value: value.id)
@@ -440,3 +489,65 @@ class AccountPaymentGroup(models.Model):
             if to_pay_partners and to_pay_partners != rec.partner_id:
                 raise ValidationError(_('Payment group for partner %s but payment lines are of partner %s') % (
                     rec.partner_id.name, to_pay_partners.name))
+
+    # from old account_payment_document_number
+
+    @api.depends('name')
+    def _compute_document_number(self):
+        recs_with_name = self.filtered('name')
+        for rec in recs_with_name:
+            name = rec.name
+            doc_code_prefix = rec.document_type_id.doc_code_prefix
+            if doc_code_prefix and name:
+                name = name.split(" ", 1)[-1]
+            rec.document_number = name
+        remaining = self - recs_with_name
+        remaining.document_number = False
+
+    @api.onchange('document_type_id', 'document_number')
+    def _inverse_document_number(self):
+        for rec in self.filtered('document_type_id'):
+            if not rec.document_number:
+                rec.name = False
+            else:
+                document_number = rec.document_type_id._format_document_number(rec.document_number)
+                if rec.document_number != document_number:
+                    rec.document_number = document_number
+                rec.name = "%s %s" % (rec.document_type_id.doc_code_prefix, document_number)
+
+    @api.depends(
+        'receiptbook_id.sequence_id.number_next_actual',
+    )
+    def _compute_next_number(self):
+        """
+        show next number only for payments without number and on draft state
+        """
+        for payment in self:
+            if payment.state != 'draft' or not payment.receiptbook_id or payment.document_number:
+                payment.next_number = False
+                continue
+            sequence = payment.receiptbook_id.sequence_id
+            # we must check if sequence use date ranges
+            if not sequence.use_date_range:
+                payment.next_number = sequence.number_next_actual
+            else:
+                dt = self.payment_date or fields.Date.today()
+                seq_date = self.env['ir.sequence.date_range'].search([
+                    ('sequence_id', '=', sequence.id),
+                    ('date_from', '<=', dt),
+                    ('date_to', '>=', dt)], limit=1)
+                if not seq_date:
+                    seq_date = sequence._create_date_range_seq(dt)
+                payment.next_number = seq_date.number_next_actual
+
+    @api.depends('company_id', 'partner_type')
+    def _compute_receiptbook(self):
+        for rec in self.filtered(lambda x: not x.receiptbook_id):
+            partner_type = self.partner_type or self._context.get(
+                'partner_type', self._context.get('default_partner_type', False))
+            receiptbook = self.env[
+                'account.payment.receiptbook'].search([
+                    ('partner_type', '=', partner_type),
+                    ('company_id', '=', self.company_id.id),
+                ], limit=1)
+            rec.receiptbook_id = receiptbook
