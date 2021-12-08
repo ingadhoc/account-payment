@@ -87,7 +87,7 @@ class AccountMove(models.Model):
                 # cuenta, es mas claro mandarlo y podria evitar error si
                 # estamos usando cuentas cruzadas (payable, receivable) con
                 # tipo de factura
-                if rec.type in ['in_invoice', 'in_refund']:
+                if rec.move_type in ['in_invoice', 'in_refund']:
                     partner_type = 'supplier'
                 else:
                     partner_type = 'customer'
