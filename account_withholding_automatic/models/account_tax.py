@@ -183,46 +183,24 @@ result = withholdable_base_amount * 0.10
                     'account_payment_method_out_withholding')
                 journal = self.env['account.journal'].search([
                     ('company_id', '=', tax.company_id.id),
-                    ('outbound_payment_method_ids', '=', payment_method.id),
+                    ('outbound_payment_method_line_ids.payment_method_id', '=', payment_method.id),
                     ('type', 'in', ['cash', 'bank']),
                 ], limit=1)
                 if not journal:
                     raise UserError(_(
                         'No journal for withholdings found on company %s') % (
                         tax.company_id.name))
+
+                method = journal._get_available_payment_method_lines('outbound').filtered(
+                    lambda x: x.code == 'withholding')
+
                 vals['journal_id'] = journal.id
-                vals['payment_method_id'] = payment_method.id
+                vals['payment_method_line_id'] = method.id
                 vals['payment_type'] = 'outbound'
                 vals['partner_type'] = payment_group.partner_type
                 vals['partner_id'] = payment_group.partner_id.id
                 payment_withholding = payment_withholding.create(vals)
         return True
-
-    # def get_withholdable_invoiced_amount(self, payment_group):
-    #     self.ensure_one()
-    #     return payment_group.selected_debt_untaxed
-        # amount = 0.0
-        # for line in self.env['account.voucher.line'].search([
-        #         ('voucher_id', '=', voucher.id)]):
-        #     factor = self.get_withholdable_factor(line)
-        #     sign = 1.0
-        #     if voucher.type == 'payment':
-        #         sign = -1.0
-        #     if line.type == 'dr':
-        #         sign = sign * -1.0
-        #     amount += line.amount * sign * factor
-        # return amount
-
-    # def get_withholdable_factor(self, voucher_line):
-    #     self.ensure_one()
-    #     factor = 1.0
-    #     if self.withholding_amount_type == 'untaxed_amount':
-    #         invoice = voucher_line.move_line_id.invoice
-    #         factor = (invoice.amount_total and (
-    #             invoice.amount_untaxed / invoice.amount_total) or 1.0)
-    #     # elif self.withholding_amount_type == 'percentage_of_total':
-    #     #     factor = self.base_amount_percentage
-    #     return factor
 
     def get_period_payments_domain(self, payment_group):
         """
@@ -230,21 +208,16 @@ result = withholdable_base_amount * 0.10
         """
         to_date = fields.Date.from_string(
             payment_group.payment_date) or datetime.date.today()
-        common_previous_domain = [
-            ('partner_id.commercial_partner_id', '=',
-                payment_group.commercial_partner_id.id),
-        ]
         if self.withholding_accumulated_payments == 'month':
             from_relative_delta = relativedelta(day=1)
         elif self.withholding_accumulated_payments == 'year':
             from_relative_delta = relativedelta(day=1, month=1)
         from_date = to_date + from_relative_delta
-        common_previous_domain += [
+
+        previous_payment_groups_domain = [
+            ('partner_id.commercial_partner_id', '=', payment_group.commercial_partner_id.id),
             ('payment_date', '<=', to_date),
             ('payment_date', '>=', from_date),
-        ]
-
-        previous_payment_groups_domain = common_previous_domain + [
             ('state', 'not in', ['draft', 'cancel', 'confirmed']),
             ('id', '!=', payment_group.id),
             ('company_id', '=', payment_group.company_id.id),
@@ -253,7 +226,10 @@ result = withholdable_base_amount * 0.10
         # state in posted. Just in case someone implements payments cancelled
         # on posted payment group, we remove the cancel payments (not the
         # draft ones as they are also considered by public_budget)
-        previous_payments_domain = common_previous_domain + [
+        previous_payments_domain = [
+            ('partner_id.commercial_partner_id', '=', payment_group.commercial_partner_id.id),
+            ('date', '<=', to_date),
+            ('date', '>=', from_date),
             ('payment_group_id.state', 'not in',
                 ['draft', 'cancel', 'confirmed']),
             ('state', '!=', 'cancel'),

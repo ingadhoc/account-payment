@@ -25,15 +25,14 @@
     'data': [
         'views/account_tax_view.xml',
         'views/account_payment_view.xml',
+        'views/account_journal_views.xml',
         'data/account_payment_method_data.xml',
     ],
     'depends': [
         'account',
-        # for payment method description and company_id field on form view
-        'account_payment_fix',
     ],
-    'installable': False,
+    'installable': True,
     'name': 'Withholdings on Payments',
     'test': [],
-    'version': "13.0.1.1.0",
+    'version': "15.0.1.0.0",
 }
