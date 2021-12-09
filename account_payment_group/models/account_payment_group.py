@@ -418,9 +418,13 @@ class AccountPaymentGroup(models.Model):
         self.write({'state': 'confirmed'})
 
     def post(self):
-        create_from_website = self._context.get('create_from_website', False)
-        create_from_statement = self._context.get('create_from_statement', False)
-        create_from_expense = self._context.get('create_from_expense', False)
+        """ Post payment group. If payment is created automatically when creating a payment (for eg. from website
+        or expenses), then:
+        1. do not post payments (posted by super method)
+        2. do not reconcile (reconciled by super)
+        3. do not check double validation
+        TODO: may be we can improve code and actually do what we want for payments from payment groups"""
+        created_automatically = self._context.get('created_automatically')
         for rec in self:
             if not rec.document_number:
                 if rec.receiptbook_id and not rec.receiptbook_id.sequence_id:
@@ -438,21 +442,17 @@ class AccountPaymentGroup(models.Model):
             if not rec.payment_ids:
                 raise ValidationError(_(
                     'You can not confirm a payment group without payment lines!'))
-            # si el pago se esta posteando desde statements y hay doble
-            # validacion no verificamos que haya deuda seleccionada
-            if (rec.payment_subtype == 'double_validation' and
-                    rec.payment_difference and (not create_from_statement and
-                                                not create_from_expense)):
-                raise ValidationError(_(
-                    'To Pay Amount and Payment Amount must be equal!'))
+            # si todos los pagos hijos estan posteados es probable que venga de un pago creado en otro lugar
+            # (expenses por ejemplo), en ese caso salteamos la dobule validation
+            if (rec.payment_subtype == 'double_validation' and rec.payment_difference and not created_automatically):
+                raise ValidationError(_('To Pay Amount and Payment Amount must be equal!'))
 
             # if the partner of the payment is different of ht payment group we change it.
             rec.payment_ids.filtered(lambda p: p.partner_id != rec.partner_id.commercial_partner_id).write(
                 {'partner_id': rec.partner_id.commercial_partner_id.id})
 
-            # al crear desde website odoo crea primero el pago y lo postea
-            # y no debemos re-postearlo
-            if not create_from_website and not create_from_expense:
+            # no volvemos a postear lo que estaba posteado
+            if not created_automatically:
                 rec.payment_ids.filtered(lambda x: x.state == 'draft').action_post()
 
             if not rec.receiptbook_id and not rec.name:
@@ -460,10 +460,11 @@ class AccountPaymentGroup(models.Model):
                     rec.payment_ids.mapped('name')) and ', '.join(
                     rec.payment_ids.mapped('name')) or False
 
-            counterpart_aml = rec.payment_ids.mapped('line_ids').filtered(
-                lambda r: not r.reconciled and r.account_id.internal_type in ('payable', 'receivable'))
-            if counterpart_aml and rec.to_pay_move_line_ids:
-                (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile()
+            if not created_automatically:
+                counterpart_aml = rec.payment_ids.mapped('line_ids').filtered(
+                    lambda r: not r.reconciled and r.account_id.internal_type in ('payable', 'receivable'))
+                if counterpart_aml and rec.to_pay_move_line_ids:
+                    (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile()
 
             rec.state = 'posted'
 
