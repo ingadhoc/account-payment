@@ -15,7 +15,7 @@
             <field name="report_name">{{(object.partner_type == 'supplier' and 'Payment_order_' or 'Receipt_' + object.display_name or '').replace('/','_')}}</field>
             <field name="report_template" ref="account_payment_group.action_report_payment_group"/>
             <field name="lang">{{object.partner_id.lang}}</field>
-            <field name="body_html" type="ihtml">
+            <field name="body_html" type="html">
 <div style="margin: 0px; padding: 0px;">
     <p style="margin: 0px; padding: 0px; font-size: 13px;">
         Dear <t t-out="object.partner_id.name or ''">Azure Interior</t><br/><br/>

@@ -33,9 +33,6 @@
         <field name="priority">90</field>
         <field name="mode">primary</field>
         <field name="arch" type="xml">
-            <tree position="attributes">
-                <attribute name="create">true</attribute>
-            </tree>
             <field name="journal_id" position="after">
                 <field name="payment_method_description"/>
             </field>
@@ -78,6 +75,14 @@
                 </button>
             </button>
 
+            <!-- Hide this fields. On payment groups comes from pay group, on transfers no need to set them -->
+            <field name="partner_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="is_internal_transfer" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+
         </field>
     </record>
 
@@ -104,39 +109,6 @@
                 <attribute name="confirm">IMPORTANTE: La validación de la línea de pago se debe hacer desde el recibo. La cancelación manual de una línea de pago se usa solo para correcciones y usos avanzados. Seguro desea continuar?</attribute>
             </button>
 
-            <!-- TODO CHECK IF NEEDED -->
-            <!-- we make title invisible and we add a new one -->
-            <!-- <attribute name="invisible">1</attribute> -->
-            <!-- <div class="oe_title" position="attributes">
-                <attribute name="attrs">{'invisible': ['|', ('payment_type', '!=', 'transfer'), ('state', '=', 'draft')]}</attribute>
-            </div> -->
-            <!-- only show this field if we are not on a payment group -->
-            <!-- <div class="oe_title" position="after">
-                <div class="oe_title" name="payment_group_id" invisible="context.get('payment_group')">
-                    <h1><field name="payment_group_id"/></h1>
-                </div>
-            </div> -->
-
-            <!-- comes from payment_group -->
-            <field name="partner_id" position="attributes">
-                <attribute name="invisible">1</attribute>
-            </field>
-            <field name="is_internal_transfer" position="attributes">
-                <attribute name="invisible">1</attribute>
-            </field>
-
-        </field>
-    </record>
-
-    <!-- disable create on paymen tree view -->
-    <record id="view_account_payment_tree" model="ir.ui.view">
-        <field name="name">account.payment.transfer.tree</field>
-        <field name="model">account.payment</field>
-        <field name="inherit_id" ref="account.view_account_payment_tree"/>
-        <field name="arch" type="xml">
-            <tree position="attributes">
-                <attribute name="create">false</attribute>
-            </tree>
         </field>
     </record>
 
@@ -144,13 +116,8 @@
         <field name="name">Transfers</field>
         <field name="res_model">account.payment</field>
         <field name="view_mode">tree,form,graph</field>
-        <field name="context">{'default_payment_type': 'transfer'}</field>
-        <field name="domain">[('payment_type', '=', 'transfer')]</field>
-        <!-- <field name="view_id" ref="view_account_payment_transfer_tree"/> -->
-        <!-- <field name="search_view_id" ref="view_account_payment_transfer_search"/> -->
-        <!-- <field name="view_ids" eval="[(5, 0, 0),
-            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_account_payment_transfer_tree')}),
-            (0, 0, {'view_mode': 'form', 'view_id': ref('view_account_payment_transfer_form')})]"/> -->
+        <field name="context">{'default_is_internal_transfer': True}</field>
+        <field name="domain">[('is_internal_transfer', '=', 'transfer')]</field>
         <field name="help" type="html">
             <p class="oe_view_nocontent_create">
               Click to register a transfer between liquidity journals

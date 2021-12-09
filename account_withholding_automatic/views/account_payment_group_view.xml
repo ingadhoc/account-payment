@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data> 
+    <data>
 
         <!-- Supplier Receipt Form  -->
         <record id="view_account_payment_group_form" model="ir.ui.view">

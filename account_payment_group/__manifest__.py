@@ -15,6 +15,7 @@
     },
     "depends": [
         "account_ux",
+        "l10n_latam_invoice_document",
     ],
     "data": [
         'security/security.xml',
