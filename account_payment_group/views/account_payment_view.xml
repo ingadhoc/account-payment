@@ -116,7 +116,7 @@
         <field name="name">Transfers</field>
         <field name="res_model">account.payment</field>
         <field name="view_mode">tree,form,graph</field>
-        <field name="context">{'default_is_internal_transfer': True}</field>
+        <field name="context">{'default_is_internal_transfer': True, 'default_move_journal_types': ('bank', 'cash')}</field>
         <field name="domain">[('is_internal_transfer', '=', 'transfer')]</field>
         <field name="help" type="html">
             <p class="oe_view_nocontent_create">
