@@ -35,7 +35,7 @@ class AccountMove(models.Model):
     @api.constrains('name', 'journal_id', 'state')
     def _check_unique_sequence_number(self):
         payment_group_moves = self.filtered(
-            lambda x: x.journal_id.type in ['cash', 'bank'] and x.l10n_latam_document_type_id)
+            lambda x: x.journal_id.type in ['cash', 'bank'] and x.payment_id.payment_group_id)
         return super(AccountMove, self - payment_group_moves)._check_unique_sequence_number()
 
     def _compute_payment_groups(self):
