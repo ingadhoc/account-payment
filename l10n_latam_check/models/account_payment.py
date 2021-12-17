@@ -10,6 +10,8 @@ class AccountPayment(models.Model):
 
     _inherit = 'account.payment'
 
+    # fix that should go in standard
+    payment_method_line_id = fields.Many2one(copy=False)
     l10n_latam_check_id = fields.Many2one(
         'account.payment', string='Check', readonly=True,
         states={'draft': [('readonly', False)]}, copy=False)
@@ -81,13 +83,19 @@ class AccountPayment(models.Model):
                 date = rec.date or fields.Datetime.now()
                 last_operation = rec.env['account.payment'].search([
                     ('state', '=', 'posted'), '|', ('l10n_latam_check_id', '=', rec.l10n_latam_check_id.id),
-                    ('id', '=', rec.l10n_latam_check_id.id)], order="date desc, id desc, name desc", limit=1)
+                    ('id', '=', rec.l10n_latam_check_id.id)], order="date desc, id desc", limit=1)
                 if last_operation and last_operation[0].date > date:
                     rec.l10n_latam_check_warning_msg = _(
                         "It seems you're trying to move a check with a date (%s) prior to last operation done with "
                         "the check (%s). This may be wrong, please double check it. If continue, last operation on "
                         "the check will remain being %s") % (
                             format_date(self.env, date), last_operation.display_name, last_operation.display_name)
+                elif not rec.is_internal_transfer and rec.partner_type != last_operation.partner_type:
+                    rec.l10n_latam_check_warning_msg = _(
+                        "It seems you're receiving back a check from '%s' with a different payment type than "
+                        "when sending it. It is advisable to use the same payment type (customer payment / supplier "
+                        "payment) so that the same receivable / payable account is used") % (rec.partner_id.name)
+
             elif rec.check_number and rec.payment_method_line_id.code == 'new_third_checks' and \
                     rec.l10n_latam_check_bank_id and rec.l10n_latam_check_issuer_vat:
                 same_checks = self.search([
@@ -161,7 +169,7 @@ class AccountPayment(models.Model):
         new_checks = self.filtered(lambda x: x.payment_method_line_id.code == 'new_third_checks')
         for rec in new_checks:
             last_operation = rec.env['account.payment'].search(
-                [('l10n_latam_check_id', '=', rec.id), ('state', '=', 'posted')], order="date desc, id desc, name desc", limit=1)
+                [('l10n_latam_check_id', '=', rec.id), ('state', '=', 'posted')], order="date desc, id desc", limit=1)
             if not last_operation:
                 rec.l10n_latam_check_current_journal_id = rec.journal_id
                 continue
