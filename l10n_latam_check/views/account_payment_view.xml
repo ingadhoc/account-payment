@@ -67,6 +67,7 @@
                 <attribute name="force_save">1</attribute>
             </field>
             <field name="payment_method_line_id" position="after">
+                <field name="available_partner_bank_ids" invisible="1"/>
                 <field name="l10n_latam_use_checkbooks" invisible="1"/>
                 <field name="l10n_latam_checkbook_type" invisible="1"/>
                 <field name="l10n_latam_checkbook_id" options="{'no_create': True, 'no_open': True}" attrs="{'invisible': ['|', ('payment_method_code', '!=', 'check_printing'), ('l10n_latam_use_checkbooks', '=', False)], 'required': [('payment_method_code', '=', 'check_printing'), ('l10n_latam_use_checkbooks', '=', True)]}" domain="[('journal_id', '=', journal_id)]"/>
