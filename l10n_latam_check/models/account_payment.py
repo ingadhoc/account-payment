@@ -36,6 +36,31 @@ class AccountPayment(models.Model):
     l10n_latam_check_warning_msg = fields.Html(compute='_compute_l10n_latam_check_warning_msg')
     check_number = fields.Char(readonly=False)
 
+    @api.constrains('check_number', 'journal_id')
+    def _constrains_check_number(self):
+        """ This odoo constraint should not check checks with checkbooks because when using checkbooks, number is
+        unique by checkbook type (deferred, current, electronic) """
+        checkbooks_checks = self.filtered('l10n_latam_checkbook_id')
+        return super(AccountPayment, self - checkbooks_checks)._constrains_check_number
+
+    @api.constrains('journal_id', 'check_number', 'l10n_latam_checkbook_id')
+    def _l10n_latam_check_unique(self):
+        """ The constraint _constrains_check_number is not usefull when using checkbooks for two reasons:
+        1. it is protecting to use same number because it check only posted payments and it doesn't re-check when
+        changing state
+        2. when using checkbooks the uniqueness is pero checkbook type on a journal"""
+        for rec in self.filtered('l10n_latam_checkbook_id'):
+            same_checks = self.search([
+                ('l10n_latam_checkbook_id.type', '=', rec.l10n_latam_checkbook_id.type),
+                ('journal_id', '=', rec.journal_id.id),
+                ('check_number', '=', rec.check_number),
+                ('id', '!=', rec.id),
+            ])
+            if same_checks:
+                raise ValidationError(_(
+                    'Check Number (%s) must be unique per Checkbook type (current, deferred or electronic)!\n'
+                    '* Check ids: %s') % (rec.check_number, same_checks.ids))
+
     @api.depends('payment_method_line_id.code', 'journal_id.l10n_latam_use_checkbooks')
     def _compute_l10n_latam_checkbook(self):
         with_checkbooks = self.filtered(
