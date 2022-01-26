@@ -88,6 +88,7 @@
     <record model="ir.ui.view" id="view_account_third_check_operations_tree">
         <field name="name">account.check.operations.tree</field>
         <field name="model">account.payment</field>
+        <field name="priority" eval="99"/>
         <field name="arch" type="xml">
             <tree default_order="date desc, id desc, name desc">
                 <field name="date"/>

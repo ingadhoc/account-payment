@@ -337,7 +337,9 @@ class AccountPaymentGroup(models.Model):
     @api.depends('payment_ids.l10n_ar_amount_company_currency_signed')
     def _compute_payments_amount(self):
         for rec in self:
-            rec.payments_amount = sum((rec._origin.payment_ids | rec.payment_ids).mapped('l10n_ar_amount_company_currency_signed'))
+            # this hac is to make it work when creating payment groups with payments without saving + saved records
+            rec.payments_amount = sum((rec._origin.payment_ids + rec.payment_ids.filtered(lambda x: not x.ids)).mapped(
+                'l10n_ar_amount_company_currency_signed'))
 
     @api.depends('to_pay_move_line_ids.amount_residual')
     def _compute_selected_debt(self):
@@ -490,6 +492,12 @@ class AccountPaymentGroup(models.Model):
             if to_pay_partners and to_pay_partners != rec.partner_id:
                 raise ValidationError(_('Payment group for partner %s but payment lines are of partner %s') % (
                     rec.partner_id.name, to_pay_partners.name))
+
+    @api.constrains('partner_id', 'company_id')
+    def _check_no_transfer(self):
+        transfers = self.filtered(lambda x: x.company_id.partner_id == x.partner_id)
+        if transfers:
+            raise ValidationError(_("You can't make a payment/receipt to your same company, create an internal transfer instead"))
 
     # from old account_payment_document_number
 
