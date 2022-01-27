@@ -82,6 +82,9 @@
             <field name="partner_id" position="attributes">
                 <attribute name="invisible">1</attribute>
             </field>
+            <xpath expr="//field[@name='partner_id'][2]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
             <field name="is_internal_transfer" position="attributes">
                 <attribute name="invisible">1</attribute>
             </field>
