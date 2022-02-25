@@ -11,15 +11,14 @@ class AccountChartTemplate(models.Model):
         res = super(AccountChartTemplate, self)._create_bank_journals(company, acc_template_ref)
 
         if company.country_id.code in THIRD_CHECKS_COUNTRY_CODES:
-            self.env['account.journal'].with_context(third_checks_journal=True).create({
+            self.env['account.journal'].with_context(third_checks_journal=True).create([{
                 'name': _('Third Checks'),
                 'type': 'cash',
                 'company_id': company.id,
-            })
-            self.env['account.journal'].with_context(third_checks_journal=True).create({
+            }, {
                 'name': _('Rejected Third Checks'),
                 'type': 'cash',
                 'company_id': company.id,
-            })
+            }])
 
         return res
