@@ -10,79 +10,62 @@ class AccountPayment(models.Model):
 
     _inherit = 'account.payment'
 
-    # fix that should go in standard
-    payment_method_line_id = fields.Many2one(copy=False)
+    # Third check operation links
     l10n_latam_check_id = fields.Many2one(
         'account.payment', string='Check', readonly=True,
         states={'draft': [('readonly', False)]}, copy=False)
+    l10n_latam_check_operation_ids = fields.One2many(
+        'account.payment', 'l10n_latam_check_id', readonly=True, string='Check Operations')
     l10n_latam_check_current_journal_id = fields.Many2one(
         'account.journal', compute='_compute_l10n_latam_check_current_journal',
         string="Check Current Journal", store=True)
-    l10n_latam_check_operation_ids = fields.One2many(
-        'account.payment', 'l10n_latam_check_id', readonly=True, string='Check Operations')
+    # Warning message in case of unlogical third check operations
+    l10n_latam_check_warning_msg = fields.Html(compute='_compute_l10n_latam_check_warning_msg')
+
+    # Check number override as we want to set it manually
+    check_number = fields.Char(readonly=False)
+
+    # New third check info
     l10n_latam_check_bank_id = fields.Many2one(
-        'res.bank', readonly=False, states={'cancel': [('readonly', True)], 'posted': [('readonly', True)]},
-        compute='_compute_l10n_latam_check_data', store=True, string='Check Bank',)
+        'res.bank', readonly=True, states={'draft': [('readonly', False)]},
+        compute='_compute_l10n_latam_check_data', store=True, string='Check Bank')
     l10n_latam_check_issuer_vat = fields.Char(
-        readonly=False, states={'cancel': [('readonly', True)], 'posted': [('readonly', True)]},
+        readonly=True, states={'draft': [('readonly', False)]},
         compute='_compute_l10n_latam_check_data', store=True, string='Check Issuer VAT')
+    l10n_latam_check_payment_date = fields.Date(
+        string='Check Payment Date', readonly=True, states={'draft': [('readonly', False)]})
+
+    # Check book
     l10n_latam_use_checkbooks = fields.Boolean(related='journal_id.l10n_latam_use_checkbooks')
     l10n_latam_checkbook_type = fields.Selection(related='l10n_latam_checkbook_id.type')
     l10n_latam_checkbook_id = fields.Many2one(
         'l10n_latam.checkbook', 'Checkbook', store=True,
         compute='_compute_l10n_latam_checkbook', readonly=True, states={'draft': [('readonly', False)]})
-    l10n_latam_check_payment_date = fields.Date(
-        string='Check Payment Date', readonly=True, states={'draft': [('readonly', False)]})
-    l10n_latam_check_warning_msg = fields.Html(compute='_compute_l10n_latam_check_warning_msg')
-    check_number = fields.Char(readonly=False)
-
-    @api.constrains('check_number', 'journal_id')
-    def _constrains_check_number(self):
-        """ This odoo constraint should not check checks with checkbooks because when using checkbooks, number is
-        unique by checkbook type (deferred, current, electronic) """
-        checkbooks_checks = self.filtered('l10n_latam_checkbook_id')
-        return super(AccountPayment, self - checkbooks_checks)._constrains_check_number
-
-    @api.constrains('journal_id', 'check_number', 'l10n_latam_checkbook_id')
-    def _l10n_latam_check_unique(self):
-        """ The constraint _constrains_check_number is not usefull when using checkbooks for two reasons:
-        1. it is protecting to use same number because it check only posted payments and it doesn't re-check when
-        changing state
-        2. when using checkbooks the uniqueness is pero checkbook type on a journal"""
-        for rec in self.filtered('l10n_latam_checkbook_id'):
-            same_checks = self.search([
-                ('l10n_latam_checkbook_id.type', '=', rec.l10n_latam_checkbook_id.type),
-                ('journal_id', '=', rec.journal_id.id),
-                ('check_number', '=', rec.check_number),
-                ('id', '!=', rec.id),
-            ])
-            if same_checks:
-                raise ValidationError(_(
-                    'Check Number (%s) must be unique per Checkbook type (current, deferred or electronic)!\n'
-                    '* Check ids: %s') % (rec.check_number, same_checks.ids))
 
     @api.depends('payment_method_line_id.code', 'journal_id.l10n_latam_use_checkbooks')
     def _compute_l10n_latam_checkbook(self):
-        with_checkbooks = self.filtered(
-            lambda x: x.payment_method_line_id.code == 'check_printing' and x.journal_id.l10n_latam_use_checkbooks)
+        with_checkbooks = self.filtered(lambda x: x.payment_method_line_id.code == 'check_printing' and
+                                                  x.journal_id.l10n_latam_use_checkbooks)
         (self - with_checkbooks).l10n_latam_checkbook_id = False
         for rec in with_checkbooks:
-            checkbooks = rec.journal_id.with_context(active_test=True).l10n_latam_checkbook_ids
+            checkbooks = rec.journal_id.l10n_latam_checkbook_ids
             if rec.l10n_latam_checkbook_id and rec.l10n_latam_checkbook_id in checkbooks:
                 continue
             rec.l10n_latam_checkbook_id = checkbooks and checkbooks[0] or False
 
-    @api.depends('l10n_latam_checkbook_id')
+    @api.depends('l10n_latam_checkbook_id', 'journal_id', 'payment_method_code')
     def _compute_check_number(self):
-        no_print_checkbooks = self.filtered(lambda x: x.l10n_latam_checkbook_id)
-        for pay in no_print_checkbooks:
+        """ Override from account_check_printing"""
+        from_checkbooks = self.filtered(lambda x: x.l10n_latam_checkbook_id)
+        for pay in from_checkbooks:
             pay.check_number = pay.l10n_latam_checkbook_id.sequence_id.get_next_char(
                 pay.l10n_latam_checkbook_id.next_number)
-        return super(AccountPayment, self - no_print_checkbooks)._compute_check_number()
+        return super(AccountPayment, self - from_checkbooks)._compute_check_number()
 
-    def action_mark_sent(self):
+    def action_unmark_sent(self):
         """ Check that the recordset is valid, set the payments state to sent and call print_checks() """
-        self.write({'is_move_sent': True})
+        if self.filtered('l10n_latam_checkbook_id'):
+            raise UserError(_('Unmark sent is not implemented for checks that use checkbooks'))
 
     @api.onchange('l10n_latam_check_id')
     def _onchange_check(self):
@@ -100,7 +83,7 @@ class AccountPayment(models.Model):
 
     @api.depends(
         'payment_method_line_id', 'l10n_latam_check_issuer_vat', 'l10n_latam_check_bank_id', 'company_id',
-        'check_number', 'l10n_latam_check_id', 'state')
+        'check_number', 'l10n_latam_check_id', 'state', 'date', 'is_internal_transfer')
     def _compute_l10n_latam_check_warning_msg(self):
         self.l10n_latam_check_warning_msg = False
         for rec in self.filtered(lambda x: x.state == 'draft'):
@@ -115,7 +98,7 @@ class AccountPayment(models.Model):
                         "the check (%s). This may be wrong, please double check it. If continue, last operation on "
                         "the check will remain being %s") % (
                             format_date(self.env, date), last_operation.display_name, last_operation.display_name)
-                elif not rec.is_internal_transfer and rec.partner_type != last_operation.partner_type:
+                elif not rec.is_internal_transfer and rec.payment_type == 'inbound' and rec.partner_type != last_operation.partner_type:
                     rec.l10n_latam_check_warning_msg = _(
                         "It seems you're receiving back a check from '%s' with a different payment type than "
                         "when sending it. It is advisable to use the same payment type (customer payment / supplier "
@@ -155,14 +138,14 @@ class AccountPayment(models.Model):
                         rec.payment_type == 'outbound' and
                         rec.l10n_latam_check_id.l10n_latam_check_current_journal_id != rec.journal_id) or (
                         rec.payment_type == 'inbound' and rec.is_internal_transfer and
-                        rec.l10n_latam_check_current_journal_id != rec.destination_journal_id):
+                        rec.l10n_latam_check_id.l10n_latam_check_current_journal_id != rec.destination_journal_id):
                     # check outbound payment and transfer or inbound transfer
                     raise ValidationError(_(
                         'Check "%s" is not anymore in journal "%s", it seems it has been moved by another payment.') % (
                             rec.l10n_latam_check_id.display_name, rec.journal_id.name
                             if rec.payment_type == 'outbound' else rec.destination_journal_id.name))
                 elif rec.payment_type == 'inbound' and not rec.is_internal_transfer and \
-                        rec.l10n_latam_check_current_journal_id:
+                        rec.l10n_latam_check_id.l10n_latam_check_current_journal_id:
                     raise ValidationError(_("Check '%s' is on journal '%s', we can't receive it again") % (
                         rec.l10n_latam_check_id.display_name, rec.journal_id.name))
 
@@ -200,16 +183,14 @@ class AccountPayment(models.Model):
                 continue
             if last_operation.is_internal_transfer and last_operation.payment_type == 'outbound':
                 rec.l10n_latam_check_current_journal_id = last_operation.paired_internal_transfer_payment_id.journal_id
-            elif last_operation.is_internal_transfer and last_operation.payment_type == 'inbound':
-                rec.l10n_latam_check_current_journal_id = last_operation.journal_id
             elif last_operation.payment_type == 'inbound':
                 rec.l10n_latam_check_current_journal_id = last_operation.journal_id
             else:
                 rec.l10n_latam_check_current_journal_id = False
 
     @api.model
-    def _get_trigger_fields_to_sincronize(self):
-        res = super()._get_trigger_fields_to_sincronize()
+    def _get_trigger_fields_to_synchronize(self):
+        res = super()._get_trigger_fields_to_synchronize()
         return res + ('check_number',)
 
     def _prepare_move_line_default_vals(self, write_off_line_vals=None):
@@ -231,7 +212,7 @@ class AccountPayment(models.Model):
         res_names = super().name_get()
         for i, (res_name, rec) in enumerate(zip(res_names, self)):
             if rec.check_number:
-                res_names[i] = (res_name[0], "%s %s" % (res_name[1], _("(Check %s)") % rec.check_number))
+                res_names[i] = (res_name[0], "%s %s" % (res_name[1], _("(Check %s)", rec.check_number)))
         return res_names
 
     @api.model
@@ -266,7 +247,8 @@ class AccountPayment(models.Model):
 
     def _create_paired_internal_transfer_payment(self):
         """
-        1. On checks transfers, add check_id on paired transactions.
+        1. On checks transfers, add check_id on paired transactions. The check field on the paired transaction (for eg.
+        bank) helps on warnings, constrains and also when checking "check operations")
         2. If transfer to another checks journal choose 'check' payment mode on destination transfer
         """
         for rec in self.filtered(lambda x: x.payment_method_line_id.code in ['in_third_checks', 'out_third_checks']):
@@ -276,9 +258,9 @@ class AccountPayment(models.Model):
             if dest_payment_method:
                 super(AccountPayment, rec.with_context(
                     default_payment_method_line_id=dest_payment_method.id,
-                    default_check_id=rec.l10n_latam_check_id))._create_paired_internal_transfer_payment()
+                    default_l10n_latam_check_id=rec.l10n_latam_check_id))._create_paired_internal_transfer_payment()
             else:
                 super(AccountPayment, rec.with_context(
-                    default_check_id=rec.l10n_latam_check_id))._create_paired_internal_transfer_payment()
+                    default_l10n_latam_check_id=rec.l10n_latam_check_id))._create_paired_internal_transfer_payment()
             self -= rec
         super(AccountPayment, self)._create_paired_internal_transfer_payment()

@@ -19,7 +19,7 @@
 ##############################################################################
 {
     'name': 'Account Check Management',
-    'version': "1.0.0",
+    'version': "1.1.0",
     'category': 'Accounting',
     'summary': 'Checks Management',
     'description': """
