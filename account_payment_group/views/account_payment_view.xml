@@ -36,9 +36,6 @@
             <field name="payment_method_line_id" position="attributes">
                 <attribute name="invisible">1</attribute>
             </field>
-            <field name="display_name" position="attributes">
-                <attribute name="invisible">1</attribute>
-            </field>
             <field name="journal_id" position="after">
                 <field name="payment_method_description" string="Payment Method"/>
             </field>
