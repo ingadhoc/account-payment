@@ -420,6 +420,7 @@ class AccountPaymentGroup(models.Model):
         self.write({'state': 'confirmed'})
 
     def post(self):
+<<<<<<< HEAD
         """ Post payment group. If payment is created automatically when creating a payment (for eg. from website
         or expenses), then:
         1. do not post payments (posted by super method)
@@ -427,6 +428,15 @@ class AccountPaymentGroup(models.Model):
         3. do not check double validation
         TODO: may be we can improve code and actually do what we want for payments from payment groups"""
         created_automatically = self._context.get('created_automatically')
+=======
+        create_from_website = self._context.get('create_from_website', False)
+        create_from_statement = self._context.get('create_from_statement', False)
+        create_from_expense = self._context.get('create_from_expense', False)
+        posted_payment_groups = self.filtered(lambda x: x.state == 'posted')
+        if posted_payment_groups:
+            raise ValidationError(_(
+                "You can't post and already posted payment group. Payment group ids: %s") % posted_payment_groups.ids)
+>>>>>>> 99647f27... temp
         for rec in self:
             if not rec.document_number:
                 if rec.receiptbook_id and not rec.receiptbook_id.sequence_id:
