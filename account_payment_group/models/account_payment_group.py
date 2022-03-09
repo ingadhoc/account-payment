@@ -546,6 +546,10 @@ class AccountPaymentGroup(models.Model):
         create_from_website = self._context.get('create_from_website', False)
         create_from_statement = self._context.get('create_from_statement', False)
         create_from_expense = self._context.get('create_from_expense', False)
+        posted_payment_groups = self.filtered(lambda x: x.state == 'posted')
+        if posted_payment_groups:
+            raise ValidationError(_(
+                "You can't post and already posted payment group. Payment group ids: %s") % posted_payment_groups.ids)
         for rec in self:
             # TODO if we want to allow writeoff then we can disable this
             # constrain and send writeoff_journal_id and writeoff_acc_id
