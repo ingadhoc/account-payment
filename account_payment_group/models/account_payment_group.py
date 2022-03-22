@@ -427,6 +427,10 @@ class AccountPaymentGroup(models.Model):
         3. do not check double validation
         TODO: may be we can improve code and actually do what we want for payments from payment groups"""
         created_automatically = self._context.get('created_automatically')
+        posted_payment_groups = self.filtered(lambda x: x.state == 'posted')
+        if posted_payment_groups:
+            raise ValidationError(_(
+                "You can't post and already posted payment group. Payment group ids: %s") % posted_payment_groups.ids)
         for rec in self:
             if not rec.document_number:
                 if rec.receiptbook_id and not rec.receiptbook_id.sequence_id:
