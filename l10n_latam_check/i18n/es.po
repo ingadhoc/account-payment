@@ -7,9 +7,9 @@
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 15.0\n"
+"Project-Id-Version: Odoo Server 15.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-20 12:48+0000\n"
+"POT-Creation-Date: 2022-04-21 12:59+0000\n"
 "PO-Revision-Date: 2022-04-19 13:50+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2022\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/133229/es/)\n"
@@ -168,6 +168,7 @@ msgid "Checkbook"
 msgstr ""
 
 #. module: l10n_latam_check
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_bank_statement_import_journal_creation__l10n_latam_checkbook_ids
 #: model:ir.model.fields,field_description:l10n_latam_check.field_account_journal__l10n_latam_checkbook_ids
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check.view_account_checkbook_tree
 msgid "Checkbooks"
@@ -475,6 +476,7 @@ msgid "Unmark sent is not implemented for checks that use checkbooks"
 msgstr ""
 
 #. module: l10n_latam_check
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_bank_statement_import_journal_creation__l10n_latam_use_checkbooks
 #: model:ir.model.fields,field_description:l10n_latam_check.field_account_journal__l10n_latam_use_checkbooks
 #: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment__l10n_latam_use_checkbooks
 #: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment_register__l10n_latam_use_checkbooks
