@@ -10,5 +10,5 @@ class ResCompany(models.Model):
 
     product_surcharge_id = fields.Many2one(
         'product.product',
-        String="Product for use in financial surcharge"
+        "Product for use in financial surcharge"
     )
