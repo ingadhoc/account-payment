@@ -1,6 +1,6 @@
 {
     "name": "Payment Groups with Financial Surchange",
-    "version": "13.0.1.0.0",
+    "version": "15.0.1.0.0",
     "author": "ADHOC SA",
     "license": "AGPL-3",
     "category": "Payment",
@@ -20,6 +20,6 @@
     ],
     'images': [
     ],
-    'installable': False,
+    'installable': True,
     'auto_install': False,
 }
