@@ -114,15 +114,19 @@ class AccountPayment(models.Model):
                     ('id', '!=', rec._origin.id)])
                 if same_checks:
                     rec.l10n_latam_check_warning_msg = _(
-                        "Other checks where found with same number, issuer and bank. Please double check you're not "
+                        "Other checks were found with same number, issuer and bank. Please double check you are not "
                         "encoding the same check more than once<br/>"
                         "List of other payments/checks: %s") % (",".join(same_checks.mapped('display_name')))
 
-    @api.constrains('is_internal_transfer', 'payment_method_line_id')
-    def _check_transfer(self):
-        recs = self.filtered(lambda x: x.is_internal_transfer and x.payment_method_line_id.code == 'new_third_checks')
-        if recs:
-            raise UserError(_("You can't use New Third Checks on a transfer"))
+    def _get_payment_method_codes_to_exclude(self):
+        res = super(AccountPayment, self)._get_payment_method_codes_to_exclude()
+        if self.is_internal_transfer:
+            res.append('new_third_checks')
+        return res
+
+    @api.depends('is_internal_transfer')
+    def _compute_payment_method_line_fields(self):
+        return super()._compute_payment_method_line_fields()
 
     def action_post(self):
         # third checks validations
@@ -165,19 +169,24 @@ class AccountPayment(models.Model):
 
     @api.onchange('check_number')
     def _onchange_check_number(self):
-        for rec in self.filtered(lambda x: x.journal_id.company_id.country_id.code == "AR"):
-            try:
-                if rec.check_number:
-                    rec.check_number = '%08d' % int(rec.check_number)
-            except Exception:
-                pass
+        for rec in self.filtered(
+                lambda x: x.journal_id.company_id.country_id.code == "AR" and x.check_number and x.check_number.isdecimal()):
+            rec.check_number = '%08d' % int(rec.check_number)
 
     @api.depends('l10n_latam_check_operation_ids.state')
     def _compute_l10n_latam_check_current_journal(self):
         new_checks = self.filtered(lambda x: x.payment_method_line_id.code == 'new_third_checks')
+        payments = self.env['account.payment'].search(
+            [('l10n_latam_check_id', 'in', new_checks.ids), ('state', '=', 'posted')], order="date desc, id desc")
+
+        # we store on a dict the first payment (last operation) for each check
+        checks_mapping = {}
+        for payment in payments:
+            if payment.l10n_latam_check_id not in checks_mapping:
+                checks_mapping[payment.l10n_latam_check_id] = payment
+
         for rec in new_checks:
-            last_operation = rec.env['account.payment'].search(
-                [('l10n_latam_check_id', '=', rec.id), ('state', '=', 'posted')], order="date desc, id desc", limit=1)
+            last_operation = checks_mapping.get(rec)
             if not last_operation:
                 rec.l10n_latam_check_current_journal_id = rec.journal_id
                 continue
@@ -196,7 +205,8 @@ class AccountPayment(models.Model):
     def _prepare_move_line_default_vals(self, write_off_line_vals=None):
         """ Add check name and operation on liquidity line """
         res = super()._prepare_move_line_default_vals(write_off_line_vals=write_off_line_vals)
-        check = self if self.payment_method_line_id.code == 'new_third_checks' else self.l10n_latam_check_id
+        check = self if (self.payment_method_line_id.code == 'new_third_checks' or self.l10n_latam_checkbook_id) \
+            else self.l10n_latam_check_id
         if check:
             document_name = (_('Check %s received') if self.payment_type == 'inbound' else _('Check %s delivered')) % (
                 check.check_number)
@@ -211,7 +221,7 @@ class AccountPayment(models.Model):
         """ Add check number to display_name on check_id m2o field """
         res_names = super().name_get()
         for i, (res_name, rec) in enumerate(zip(res_names, self)):
-            if rec.check_number:
+            if rec.check_number and rec.payment_method_line_id.code == 'new_third_checks':
                 res_names[i] = (res_name[0], "%s %s" % (res_name[1], _("(Check %s)", rec.check_number)))
         return res_names
 
@@ -247,9 +257,12 @@ class AccountPayment(models.Model):
 
     def _create_paired_internal_transfer_payment(self):
         """
-        1. On checks transfers, add check_id on paired transactions. The check field on the paired transaction (for eg.
-        bank) helps on warnings, constrains and also when checking "check operations")
-        2. If transfer to another checks journal choose 'check' payment mode on destination transfer
+        Two modifications when only when transferring from a third checks journal:
+        1. When a paired transfer is created, the default odoo behavior is to use on the paired transfer the first
+        available payment method. If we are transferring to another third checks journal, then set as payment method
+        on the paired transfer 'in_third_checks' or 'out_third_checks'
+        2. On the paired transfer set the l10n_latam_check_id field, this field is needed for the
+        l10n_latam_check_operation_ids and also for some warnings and constrains.
         """
         for rec in self.filtered(lambda x: x.payment_method_line_id.code in ['in_third_checks', 'out_third_checks']):
             dest_payment_method_code = 'in_third_checks' if rec.payment_type == 'outbound' else 'out_third_checks'
