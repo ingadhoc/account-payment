@@ -7,8 +7,8 @@
         <field name="arch" type="xml">
             <tree string="Checkbooks" decoration-muted="not active" editable="bottom">
                 <field name="type"/>
-                <field name="next_number" force_save="1" attrs="{'readonly': [('type', '==', 'electronic')]}"/>
-                <field name="range_to" force_save="1" attrs="{'readonly': [('type', '==', 'electronic')]}"/>
+                <field name="next_number" attrs="{'invisible': [('type', '=', 'electronic')]}"/>
+                <field name="range_to" attrs="{'invisible': [('type', '=', 'electronic')]}"/>
                 <field name="active" widget="boolean_toggle"/>
             </tree>
         </field>

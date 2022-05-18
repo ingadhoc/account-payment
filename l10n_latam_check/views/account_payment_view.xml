@@ -7,6 +7,10 @@
         <field name="mode">primary</field>
         <field name="inherit_id" ref="account.view_account_payment_search"/>
         <field name="arch" type="xml">
+            <filter name="matched" position="after">
+                <filter string="Bank Unmatched" name="unmatched" domain="[('is_matched', '=', False)]"/>
+            </filter>
+
             <field name="journal_id" position="after">
                 <field name="l10n_latam_check_current_journal_id"/>
             </field>
@@ -15,7 +19,6 @@
                 <filter string="Checks on hand" name="checks_on_hand"
                         domain="[('state', '=', 'posted'),
                                  ('l10n_latam_check_current_journal_id.inbound_payment_method_line_ids.payment_method_id.code', '=', 'in_third_checks')]"/>
-                <!-- TODO: not possible with selected_payment_method and the ilike?-->
             </filter>
             <filter name="journal" position="after">
                 <filter name="groupby_third_check_current_journal" string="Third Check Current Journal" domain="[]"
@@ -39,24 +42,24 @@
             </sheet>
             <field name="check_number" position="attributes">
                 <attribute name="attrs">{'invisible': ['|', ('payment_method_code', '!=', 'check_printing'), ('check_number', '=', False), ('l10n_latam_checkbook_id', '=', False)], 'readonly': ['|', ('state', '!=', 'draft'), ('l10n_latam_checkbook_id', '=', False)], 'required': [('l10n_latam_checkbook_id', '!=', False)]}</attribute>
+                <attribute name="force_save">1</attribute>
             </field>
 
-            <xpath expr="//div[@name='amount_div']//field[@name='amount']" position="attributes">
-                <attribute name="attrs">{'readonly': ['|', ('state', '!=', 'draft'), ('payment_method_code', 'in', ['in_third_checks', 'out_third_checks'])]}</attribute>
-                <attribute name="force_save">1</attribute>
-            </xpath>
             <field name="destination_journal_id" position="after">
                 <!-- Move Third Checks -->
                 <field
                     name="l10n_latam_check_id"
-                    attrs="{'invisible': [('payment_method_code', 'not in', ['in_third_checks', 'out_third_checks']), ('l10n_latam_check_id', '=', False)],
+                    attrs="{
+                            'invisible': [('payment_method_code', 'not in', ['in_third_checks', 'out_third_checks']), ('l10n_latam_check_id', '=', False)],
                             'required': [('payment_method_code', 'in', ['in_third_checks', 'out_third_checks'])]}"
-                    domain="[('payment_method_code', '=', 'new_third_checks'), ('l10n_latam_check_current_journal_id', '=', journal_id), ('state', '=', 'posted')] if payment_type == 'outbound' else [('payment_method_code', '=', 'new_third_checks'), ('l10n_latam_check_current_journal_id', '=', destination_journal_id), ('state', '=', 'posted')] if is_internal_transfer else [('payment_method_code', '=', 'new_third_checks'), ('l10n_latam_check_current_journal_id', '=', False), ('state', '=', 'posted')]"
+                    domain="[
+                        ('payment_method_code', '=', 'new_third_checks'), ('l10n_latam_check_current_journal_id', '=', journal_id), ('state', '=', 'posted')]
+                            if payment_type == 'outbound' else
+                        [('payment_method_code', '=', 'new_third_checks'), ('l10n_latam_check_current_journal_id', '=', destination_journal_id), ('state', '=', 'posted')]
+                            if is_internal_transfer else
+                        [('payment_method_code', '=', 'new_third_checks'), ('l10n_latam_check_current_journal_id', '=', False), ('state', '=', 'posted')]"
                     options="{'no_create': True}"
-                /> <!-- TODO: l10n_latam_wanted_current_journal_id might be an option, but it might work-->
-            </field>
-            <field name="check_number" position="attributes">
-                <attribute name="force_save">1</attribute><!--TODO: is_move_sent, ...-->
+                />
             </field>
             <field name="payment_method_line_id" position="after">
                 <!-- Checkbooks -->
@@ -82,7 +85,7 @@
                        attrs="{'invisible': ['|', ('state', '!=', 'posted'), ('payment_method_code', '!=', 'new_third_checks')]}"/>
                 <div class="oe_inline" attrs="{'invisible': ['|', ('state', '!=', 'posted'), ('payment_method_code', '!=', 'new_third_checks')]}">
                     <field name="l10n_latam_check_current_journal_id"/>
-                    <span attrs="{'invisible': [('l10n_latam_check_current_journal_id', '!=', False)]}">Not on Wallet</span>
+                    <span attrs="{'invisible': [('l10n_latam_check_current_journal_id', '!=', False)]}">Not in Wallet</span>
                     <button name="button_open_check_operations" type="object" string="⇒ Check Operations" class="oe_link"/>
                 </div>
             </field>
@@ -132,7 +135,6 @@
 
  <!-- Own Check Views and menus -->
 
-
     <record model="ir.ui.view" id="view_account_own_check_tree">
         <field name="name">account.check.tree</field>
         <field name="model">account.payment</field>
@@ -163,7 +165,7 @@
         <field name="view_id" ref="view_account_own_check_tree"/>
         <field name="search_view_id" ref="view_account_payment_search"/>
         <field name="domain">[('payment_method_code', '=', 'check_printing')]</field>
-        <field name="context">{'search_default_matched': True}</field>
+        <field name="context">{'search_default_unmatched': True}</field>
     </record>
 
     <menuitem

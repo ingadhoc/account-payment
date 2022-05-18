@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-from odoo import models, fields, api, _
+from odoo import models, fields, api
 
 
 class AccountPaymentRegister(models.TransientModel):
@@ -71,9 +69,11 @@ class AccountPaymentRegister(models.TransientModel):
 
     @api.onchange('l10n_latam_check_number')
     def _onchange_l10n_latam_check_number(self):
-        for rec in self.filtered(lambda x: x.journal_id.company_id.country_id.code == "AR"):
-            try:
-                if rec.l10n_latam_check_number:
-                    rec.l10n_latam_check_number = '%08d' % int(rec.l10n_latam_check_number)
-            except Exception:
-                pass
+        for rec in self.filtered(
+                lambda x: x.journal_id.company_id.country_id.code == "AR" and x.l10n_latam_check_number and x.l10n_latam_check_number.isdecimal()):
+            rec.l10n_latam_check_number = '%08d' % int(rec.l10n_latam_check_number)
+
+    @api.onchange('payment_method_line_id', 'journal_id')
+    def reset_check_ids(self):
+        """ If any of this fields changes the domain of the selectable checks could change """
+        self.l10n_latam_check_id = False

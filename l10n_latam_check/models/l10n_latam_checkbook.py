@@ -3,15 +3,14 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
-class L10n_Latam_Checkbook(models.Model):
+class L10nLatamCheckbook(models.Model):
 
     _name = 'l10n_latam.checkbook'
     _description = 'Checkbook'
 
-    name = fields.Char(compute='_compute_name',)
+    name = fields.Char(compute='_compute_name', store=True)
     sequence_id = fields.Many2one(
-        'ir.sequence', 'Sequence', copy=False, domain=[('code', '=', 'own_check')],
-        help="Checks numbering sequence.", context={'default_code': 'l10n_latam.checkbook'},)
+        'ir.sequence', 'Sequence', copy=False, domain=[('code', '=', 'own_check')], help="Checks numbering sequence.")
     next_number = fields.Integer(related='sequence_id.number_next_actual', related_sudo=True, readonly=False)
     type = fields.Selection(
         [('deferred', 'Deferred'), ('currents', 'Currents'), ('electronic', 'Electronic')],
@@ -40,7 +39,7 @@ class L10n_Latam_Checkbook(models.Model):
                 'implementation': 'no_gap',
                 'padding': 8,
                 'number_increment': 1,
-                'code': 'acccount.checkbook',
+                'code': 'l10n_latam.checkbook',
                 'number_next_actual': next_number,
                 'company_id': rec.journal_id.company_id.id,
             })
