@@ -8,7 +8,7 @@
     <field name="arch" type="xml">
 
         <button id="account_invoice_payment_btn" position="attributes">
-            <attribute name="attrs">{'invisible': ['|', '|', ('state', '=', 'cancel'), ('invoice_payment_state', '!=', 'not_paid'), ('type', 'not in', ('out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt'))]}</attribute>
+            <attribute name="attrs">{'invisible': ['|', '|', ('state', '=', 'cancel'), ('payment_state', 'not in', ['not_paid', 'patial']), ('move_type', 'not in', ('out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt'))]}</attribute>
         </button>
 
     </field>

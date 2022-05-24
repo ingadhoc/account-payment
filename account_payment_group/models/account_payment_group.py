@@ -5,22 +5,38 @@ from odoo import models, api, fields, _
 from odoo.exceptions import ValidationError
 
 
-MAP_PARTNER_TYPE_ACCOUNT_TYPE = {
-    'customer': 'receivable',
-    'supplier': 'payable',
-}
-MAP_ACCOUNT_TYPE_PARTNER_TYPE = {
-    'receivable': 'customer',
-    'payable': 'supplier',
-}
-
-
 class AccountPaymentGroup(models.Model):
     _name = "account.payment.group"
     _description = "Payment Group"
-    _order = "payment_date desc"
+    _order = "payment_date desc, name desc"
     _inherit = 'mail.thread'
+    _check_company_auto = True
 
+    name = fields.Char(string='Number', readonly=True, copy=False)
+    document_sequence_id = fields.Many2one(
+        related='receiptbook_id.sequence_id',
+    )
+    receiptbook_id = fields.Many2one(
+        'account.payment.receiptbook',
+        'ReceiptBook',
+        readonly=True,
+        states={'draft': [('readonly', False)]},
+        auto_join=True,
+        check_company=True,
+        compute='_compute_receiptbook',
+        store=True,
+    )
+    document_type_id = fields.Many2one(
+        related='receiptbook_id.document_type_id',
+    )
+    next_number = fields.Integer(
+        # related='receiptbook_id.sequence_id.number_next_actual',
+        compute='_compute_next_number',
+        string='Next Number',
+    )
+    document_number = fields.Char(
+        compute='_compute_document_number', inverse='_inverse_document_number',
+        string='Document Number', readonly=True, states={'draft': [('readonly', False)]})
     company_id = fields.Many2one(
         'res.company',
         string='Company',
@@ -38,7 +54,7 @@ class AccountPaymentGroup(models.Model):
     )
     partner_type = fields.Selection(
         [('customer', 'Customer'), ('supplier', 'Vendor')],
-        track_visibility='always',
+        tracking=True,
         change_default=True,
     )
     partner_id = fields.Many2one(
@@ -47,9 +63,10 @@ class AccountPaymentGroup(models.Model):
         required=True,
         readonly=True,
         states={'draft': [('readonly', False)]},
-        track_visibility='always',
+        tracking=True,
         change_default=True,
         index=True,
+        check_company=True,
     )
     commercial_partner_id = fields.Many2one(
         related='partner_id.commercial_partner_id',
@@ -61,7 +78,7 @@ class AccountPaymentGroup(models.Model):
         default=lambda self: self.env.company.currency_id,
         readonly=True,
         states={'draft': [('readonly', False)]},
-        track_visibility='always',
+        tracking=True,
     )
     payment_date = fields.Date(
         string='Payment Date',
@@ -87,23 +104,9 @@ class AccountPaymentGroup(models.Model):
         compute='_compute_matched_amounts',
         currency_field='currency_id',
     )
-    matched_amount_untaxed = fields.Monetary(
-        compute='_compute_matched_amount_untaxed',
-        currency_field='currency_id',
-    )
-    selected_finacial_debt = fields.Monetary(
-        string='Selected Financial Debt',
-        compute='_compute_selected_debt',
-    )
     selected_debt = fields.Monetary(
         # string='To Pay lines Amount',
         string='Selected Debt',
-        compute='_compute_selected_debt',
-    )
-    # this field is to be used by others
-    selected_debt_untaxed = fields.Monetary(
-        # string='To Pay lines Amount',
-        string='Selected Debt Untaxed',
         compute='_compute_selected_debt',
     )
     unreconciled_amount = fields.Monetary(
@@ -119,26 +122,24 @@ class AccountPaymentGroup(models.Model):
         # string='Total To Pay Amount',
         readonly=True,
         states={'draft': [('readonly', False)]},
-        track_visibility='always',
+        tracking=True,
     )
     payments_amount = fields.Monetary(
         compute='_compute_payments_amount',
         string='Amount',
-        track_visibility='always',
+        tracking=True,
     )
     state = fields.Selection([
         ('draft', 'Draft'),
         ('confirmed', 'Confirmed'),
         ('posted', 'Posted'),
-        # ('sent', 'Sent'),
-        # ('reconciled', 'Reconciled')
         ('cancel', 'Cancelled'),
     ],
         readonly=True,
         default='draft',
         copy=False,
         string="Status",
-        track_visibility='onchange',
+        tracking=True,
         index=True,
     )
     has_outstanding = fields.Boolean(
@@ -150,22 +151,12 @@ class AccountPaymentGroup(models.Model):
         'payment_group_id',
         'to_pay_line_id',
         string="To Pay Lines",
+        compute='_compute_to_pay_move_lines', store=True,
         help='This lines are the ones the user has selected to be paid.',
         copy=False,
-        domain=[
-            # ('partner_id.commercial_partner_id', '=', commercial_partner_id),
-            # ('account_id.internal_type', '=', account_internal_type),
-            ('move_id.state', '=', 'posted'),
-            ('account_id.reconcile', '=', True),
-            ('reconciled', '=', False),
-            ('full_reconcile_id', '=', False),
-            # ('company_id', '=', company_id),
-        ],
         readonly=True,
         states={'draft': [('readonly', False)]},
-        # auto_join not yet implemented for m2m. TODO enable when implemented
-        # https://github.com/odoo/odoo/blob/master/odoo/osv/expression.py#L899
-        # auto_join=True,
+        check_company=True
     )
     matched_move_line_ids = fields.Many2many(
         'account.move.line',
@@ -176,16 +167,8 @@ class AccountPaymentGroup(models.Model):
     payment_subtype = fields.Char(
         compute='_compute_payment_subtype'
     )
-    pop_up = fields.Boolean(
-        # campo que agregamos porque el  invisible="context.get('pop_up')"
-        # en las pages no se comportaba bien con los attrs
-        compute='_compute_payment_pop_up',
-        default=lambda x: x._context.get('pop_up', False),
-    )
     payment_difference = fields.Monetary(
         compute='_compute_payment_difference',
-        # TODO rename field or remove string
-        # string='Remaining Residual',
         readonly=True,
         string="Payments Difference",
         help="Difference between selected debt (or to pay amount) and "
@@ -195,16 +178,12 @@ class AccountPaymentGroup(models.Model):
         'account.payment',
         'payment_group_id',
         string='Payment Lines',
-        ondelete='cascade',
         copy=False,
         readonly=True,
         states={
             'draft': [('readonly', False)],
             'confirmed': [('readonly', False)]},
         auto_join=True,
-    )
-    account_internal_type = fields.Char(
-        compute='_compute_account_internal_type'
     )
     move_line_ids = fields.Many2many(
         'account.move.line',
@@ -221,6 +200,10 @@ class AccountPaymentGroup(models.Model):
         copy=False,
         help="It indicates that the receipt has been sent."
     )
+
+    _sql_constraints = [
+        ('name_uniq', 'unique(name, receiptbook_id)',
+            'Document number must be unique per receiptbook!')]
 
     @api.depends(
         'state',
@@ -239,24 +222,6 @@ class AccountPaymentGroup(models.Model):
             rec.matched_amount = sign * sum(
                 rec.matched_move_line_ids.with_context(payment_group_id=rec.id).mapped('payment_group_matched_amount'))
             rec.unmatched_amount = rec.payments_amount - rec.matched_amount
-
-    def _compute_matched_amount_untaxed(self):
-        """ Lo separamos en otro metodo ya que es un poco mas costoso y no se
-        usa en conjunto con matched_amount
-        """
-        for rec in self:
-            rec.matched_amount_untaxed = 0.0
-            if rec.state != 'posted':
-                continue
-            matched_amount_untaxed = 0.0
-            sign = rec.partner_type == 'supplier' and -1.0 or 1.0
-            for line in rec.matched_move_line_ids.with_context(
-                    payment_group_id=rec.id):
-                invoice = line.move_id
-                factor = invoice and invoice._get_tax_factor() or 1.0
-                matched_amount_untaxed += \
-                    line.payment_group_matched_amount * factor
-            rec.matched_amount_untaxed = sign * matched_amount_untaxed
 
     @api.depends('to_pay_move_line_ids')
     def _compute_has_outstanding(self):
@@ -279,9 +244,6 @@ class AccountPaymentGroup(models.Model):
         return [('id', 'in', recs.ids)]
 
     def _compute_payment_methods(self):
-        # TODO tal vez sea interesante sumar al string el metodo en si mismo
-        # (manual, cheque, etc)
-
         # tuvmos que hacerlo asi sudo porque si no tenemos error, si agregamos
         # el sudo al self o al rec no se computa el valor, probamos tmb
         # haciendo compute sudo y no anduvo, la unica otra alternativa que
@@ -335,11 +297,6 @@ class AccountPaymentGroup(models.Model):
 
         return self.env.ref('account_payment_group.action_report_payment_group').report_action(self)
 
-    def _compute_payment_pop_up(self):
-        pop_up = self._context.get('pop_up', False)
-        for rec in self:
-            rec.pop_up = pop_up
-
     @api.depends('company_id.double_validation', 'partner_type')
     def _compute_payment_subtype(self):
         force_simple = self._context.get('force_simple')
@@ -351,7 +308,7 @@ class AccountPaymentGroup(models.Model):
                 payment_subtype = 'simple'
             rec.payment_subtype = payment_subtype
 
-    @api.depends('payment_ids.move_line_ids')
+    @api.depends('payment_ids.line_ids')
     def _compute_matched_move_line_ids(self):
         """
         Lar partial reconcile vinculan dos apuntes con credit_move_id y
@@ -362,22 +319,13 @@ class AccountPaymentGroup(models.Model):
         al revz (debit_move_id vs credit_move_id)
         """
         for rec in self:
-            payment_lines = rec.payment_ids.mapped('move_line_ids').filtered(lambda x: x.account_internal_type in ['receivable', 'payable'])
-            rec.matched_move_line_ids =  (payment_lines.mapped('matched_debit_ids.debit_move_id') | payment_lines.mapped('matched_credit_ids.credit_move_id')) - payment_lines
+            payment_lines = rec.payment_ids.mapped('line_ids').filtered(lambda x: x.account_internal_type in ['receivable', 'payable'])
+            rec.matched_move_line_ids = (payment_lines.mapped('matched_debit_ids.debit_move_id') | payment_lines.mapped('matched_credit_ids.credit_move_id')) - payment_lines
 
-    @api.depends('payment_ids.move_line_ids')
+    @api.depends('payment_ids.line_ids')
     def _compute_move_lines(self):
         for rec in self:
-            rec.move_line_ids = rec.payment_ids.mapped('move_line_ids')
-
-    @api.depends('partner_type')
-    def _compute_account_internal_type(self):
-        for rec in self:
-            if rec.partner_type:
-                rec.account_internal_type = MAP_PARTNER_TYPE_ACCOUNT_TYPE[
-                    rec.partner_type]
-            else:
-                rec.account_internal_type = False
+            rec.move_line_ids = rec.payment_ids.mapped('line_ids')
 
     @api.depends('to_pay_amount', 'payments_amount')
     def _compute_payment_difference(self):
@@ -386,43 +334,17 @@ class AccountPaymentGroup(models.Model):
             #     continue
             rec.payment_difference = rec.to_pay_amount - rec.payments_amount
 
-    @api.depends('payment_ids.signed_amount_company_currency')
+    @api.depends('payment_ids.l10n_ar_amount_company_currency_signed')
     def _compute_payments_amount(self):
         for rec in self:
-            rec.payments_amount = sum(rec.payment_ids.mapped(
-                'signed_amount_company_currency'))
-            # payments_amount = sum([
-            #     x.payment_type == 'inbound' and
-            #     x.amount_company_currency or -x.amount_company_currency for
-            #     x in rec.payment_ids])
-            # rec.payments_amount = (
-            #     rec.partner_type == 'supplier' and
-            #     -payments_amount or payments_amount)
+            # this hac is to make it work when creating payment groups with payments without saving + saved records
+            rec.payments_amount = sum((rec._origin.payment_ids + rec.payment_ids.filtered(lambda x: not x.ids)).mapped(
+                'l10n_ar_amount_company_currency_signed'))
 
-    @api.depends(
-        'to_pay_move_line_ids.amount_residual',
-        'to_pay_move_line_ids.amount_residual_currency',
-        'to_pay_move_line_ids.currency_id',
-        'to_pay_move_line_ids.move_id',
-        'payment_date',
-        'currency_id',
-    )
+    @api.depends('to_pay_move_line_ids.amount_residual')
     def _compute_selected_debt(self):
         for rec in self:
-            selected_finacial_debt = 0.0
-            selected_debt = 0.0
-            selected_debt_untaxed = 0.0
-            for line in rec.to_pay_move_line_ids._origin:
-                selected_finacial_debt += line.financial_amount_residual
-                selected_debt += line.amount_residual
-                # factor for total_untaxed
-                invoice = line.move_id
-                factor = invoice and invoice._get_tax_factor() or 1.0
-                selected_debt_untaxed += line.amount_residual * factor
-            sign = rec.partner_type == 'supplier' and -1.0 or 1.0
-            rec.selected_finacial_debt = selected_finacial_debt * sign
-            rec.selected_debt = selected_debt * sign
-            rec.selected_debt_untaxed = selected_debt_untaxed * sign
+            rec.selected_debt = sum(rec.to_pay_move_line_ids._origin.mapped('amount_residual')) * (-1.0 if rec.partner_type == 'supplier' else 1.0)
 
     @api.depends(
         'selected_debt', 'unreconciled_amount')
@@ -435,39 +357,18 @@ class AccountPaymentGroup(models.Model):
         for rec in self:
             rec.unreconciled_amount = rec.to_pay_amount - rec.selected_debt
 
-    def onchange(self, values, field_name, field_onchange):
-        """ Fix this issue https://github.com/ingadhoc/account-payment/issues/189
-        """
-        fields = []
-        for field in field_onchange.keys():
-            if field.startswith(('to_pay_move_line_ids.')):
-                fields.append(field)
-        for field in fields:
-            del field_onchange[field]
-        return super().onchange(values, field_name, field_onchange)
-
-    @api.onchange('partner_id', 'partner_type', 'company_id')
-    def _refresh_payments_and_move_lines(self):
-        if self._context.get('to_pay_move_line_ids'):
-            return
+    @api.depends('partner_id', 'partner_type', 'company_id')
+    def _compute_to_pay_move_lines(self):
         for rec in self:
             rec.add_all()
 
     def _get_to_pay_move_lines_domain(self):
         self.ensure_one()
         return [
-            ('partner_id.commercial_partner_id', '=',
-                self.commercial_partner_id.id),
-            ('account_id.internal_type', '=',
-                self.account_internal_type),
-            ('account_id.reconcile', '=', True),
-            ('reconciled', '=', False),
-            ('full_reconcile_id', '=', False),
-            ('company_id', '=', self.company_id.id),
-            ('move_id.state', '=', 'posted')
-            # '|',
-            # ('amount_residual', '!=', False),
-            # ('amount_residual_currency', '!=', False),
+            ('partner_id.commercial_partner_id', '=', self.commercial_partner_id.id),
+            ('company_id', '=', self.company_id.id), ('move_id.state', '=', 'posted'),
+            ('account_id.reconcile', '=', True), ('reconciled', '=', False), ('full_reconcile_id', '=', False),
+            ('account_id.internal_type', '=', 'receivable' if self.partner_type == 'customer' else 'payable'),
         ]
 
     def add_all(self):
@@ -480,29 +381,10 @@ class AccountPaymentGroup(models.Model):
 
     @api.model
     def default_get(self, defaul_fields):
-        # TODO si usamos los move lines esto no haria falta
-        rec = super().default_get(defaul_fields)
-        rec['payment_date'] = fields.Date.context_today(self)
-        to_pay_move_line_ids = self._context.get('to_pay_move_line_ids')
-        to_pay_move_lines = self.env['account.move.line'].browse(
-            to_pay_move_line_ids).filtered(lambda x: (
-                x.account_id.reconcile and
-                x.account_id.internal_type in ('receivable', 'payable')))
-        if to_pay_move_lines:
-            partner = to_pay_move_lines.mapped('partner_id')
-            if len(partner) != 1:
-                raise ValidationError(_('You can not send to pay lines from different partners'))
-
-            internal_type = to_pay_move_lines.mapped('account_id.internal_type')
-            if len(internal_type) != 1:
-                raise ValidationError(_('You can not send to pay lines from different partners'))
-            rec['partner_id'] = self._context.get('default_partner_id', partner[0].id)
-            if internal_type[0] == 'receivable':
-                rec['partner_type'] = 'customer'
-            else:
-                rec['partner_type'] = 'supplier'
-            rec['to_pay_move_line_ids'] = [(6, False, to_pay_move_line_ids)]
-        return rec
+        res = super().default_get(defaul_fields)
+        if not res.get('payment_date'):
+            res['payment_date'] = fields.Date.context_today(self)
+        return res
 
     def button_journal_entries(self):
         return {
@@ -515,25 +397,20 @@ class AccountPaymentGroup(models.Model):
             'domain': [('payment_id', 'in', self.payment_ids.ids)],
         }
 
-    def unreconcile(self):
-        self.mapped('payment_ids').unreconcile()
-        # TODO en alguos casos setear sent como en payment?
-        self.write({'state': 'posted'})
-
     def cancel(self):
-        self.mapped('payment_ids').cancel()
+        self.mapped('payment_ids').action_cancel()
         self.write({'state': 'cancel'})
         return True
 
     def action_draft(self):
         self.mapped('payment_ids').action_draft()
-        # rec.payment_ids.write({'invoice_ids': [(5, 0, 0)]})
         return self.write({'state': 'draft'})
 
-    def unlink(self):
-        if any(bool(rec.move_line_ids) for rec in self):
-            raise ValidationError(_("You can not delete a payment that is already posted"))
-        return super().unlink()
+    @api.ondelete(at_uninstall=False)
+    def _unlink_if_not_posted(self):
+        recs = self.filtered(lambda x: x.state == 'posted')
+        if recs:
+            raise ValidationError(_('You can not delete posted payment groups. Payment group ids: %s') % recs.ids)
 
     def confirm(self):
         for rec in self:
@@ -543,45 +420,62 @@ class AccountPaymentGroup(models.Model):
         self.write({'state': 'confirmed'})
 
     def post(self):
-        create_from_website = self._context.get('create_from_website', False)
-        create_from_statement = self._context.get('create_from_statement', False)
-        create_from_expense = self._context.get('create_from_expense', False)
+        """ Post payment group. If payment is created automatically when creating a payment (for eg. from website
+        or expenses), then:
+        1. do not post payments (posted by super method)
+        2. do not reconcile (reconciled by super)
+        3. do not check double validation
+        TODO: may be we can improve code and actually do what we want for payments from payment groups"""
+        created_automatically = self._context.get('created_automatically')
+        posted_payment_groups = self.filtered(lambda x: x.state == 'posted')
+        if posted_payment_groups:
+            raise ValidationError(_(
+                "You can't post and already posted payment group. Payment group ids: %s") % posted_payment_groups.ids)
         for rec in self:
-            # TODO if we want to allow writeoff then we can disable this
-            # constrain and send writeoff_journal_id and writeoff_acc_id
+            if not rec.document_number:
+                if rec.receiptbook_id and not rec.receiptbook_id.sequence_id:
+                    raise ValidationError(_(
+                        'Error!. Please define sequence on the receiptbook'
+                        ' related documents to this payment or set the '
+                        'document number.'))
+                if rec.receiptbook_id.sequence_id:
+                    rec.document_number = (
+                        rec.receiptbook_id.with_context(
+                            ir_sequence_date=rec.payment_date
+                        ).sequence_id.next_by_id())
+            rec.payment_ids.name = rec.name
+
             if not rec.payment_ids:
                 raise ValidationError(_(
-                    'You can not confirm a payment group without payment '
-                    'lines!'))
-            # si el pago se esta posteando desde statements y hay doble
-            # validacion no verificamos que haya deuda seleccionada
-            if (rec.payment_subtype == 'double_validation' and
-                    rec.payment_difference and (not create_from_statement and
-                                                not create_from_expense)):
-                raise ValidationError(_(
-                    'To Pay Amount and Payment Amount must be equal!'))
+                    'You can not confirm a payment group without payment lines!'))
+            # si todos los pagos hijos estan posteados es probable que venga de un pago creado en otro lugar
+            # (expenses por ejemplo), en ese caso salteamos la dobule validation
+            if (rec.payment_subtype == 'double_validation' and rec.payment_difference and not created_automatically):
+                raise ValidationError(_('To Pay Amount and Payment Amount must be equal!'))
 
-            writeoff_acc_id = False
-            writeoff_journal_id = False
             # if the partner of the payment is different of ht payment group we change it.
-            rec.payment_ids.filtered(lambda p : p.partner_id != rec.partner_id).write(
-                {'partner_id': rec.partner_id.id})
-            # al crear desde website odoo crea primero el pago y lo postea
-            # y no debemos re-postearlo
-            if not create_from_website and not create_from_expense:
-                rec.payment_ids.filtered(lambda x: x.state == 'draft').post()
+            rec.payment_ids.filtered(lambda p: p.partner_id != rec.partner_id.commercial_partner_id).write(
+                {'partner_id': rec.partner_id.commercial_partner_id.id})
 
-            counterpart_aml = rec.payment_ids.mapped('move_line_ids').filtered(
-                lambda r: not r.reconciled and r.account_id.internal_type in (
-                    'payable', 'receivable'))
+            # no volvemos a postear lo que estaba posteado
+            if not created_automatically:
+                rec.payment_ids.filtered(lambda x: x.state == 'draft').action_post()
 
-            # porque la cuenta podria ser no recivible y ni conciliable
-            # (por ejemplo en sipreco)
-            if counterpart_aml and rec.to_pay_move_line_ids:
-                (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile(
-                    writeoff_acc_id, writeoff_journal_id)
+            if not rec.receiptbook_id and not rec.name:
+                rec.name = any(
+                    rec.payment_ids.mapped('name')) and ', '.join(
+                    rec.payment_ids.mapped('name')) or False
+
+            if not created_automatically:
+                counterpart_aml = rec.payment_ids.mapped('line_ids').filtered(
+                    lambda r: not r.reconciled and r.account_id.internal_type in ('payable', 'receivable'))
+                if counterpart_aml and rec.to_pay_move_line_ids:
+                    (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile()
 
             rec.state = 'posted'
+
+            if rec.receiptbook_id.mail_template_id:
+                rec.message_post_with_template(rec.receiptbook_id.mail_template_id.id)
         return True
 
     @api.returns('mail.message', lambda value: value.id)
@@ -591,33 +485,82 @@ class AccountPaymentGroup(models.Model):
         return super(AccountPaymentGroup, self.with_context(
             mail_post_autofollow=True)).message_post(**kwargs)
 
-    def action_account_invoice_payment_group(self):
-        active_ids = self.env.context.get('active_ids')
-        if not active_ids:
-            return ''
-        move_ids = self.env['account.move'].browse(active_ids)
-        if move_ids.filtered(lambda x: x.state != 'posted') or \
-                move_ids.filtered(lambda x: x.invoice_payment_state != 'not_paid'):
-            raise ValidationError(_('You can only register payment if invoice is posted and unpaid'))
-        return {
-            'name': _('Register Payment'),
-            'view_type': 'form',
-            'view_mode': 'form',
-            'res_model': 'account.payment.group',
-            'view_id': False,
-            'target': 'current',
-            'type': 'ir.actions.act_window',
-            'context': {
-                # si bien el partner se puede adivinar desde los apuntes
-                # con el default de payment group, preferimos mandar por aca
-                # ya que puede ser un contacto y no el commercial partner (y
-                # en los apuntes solo hay commercial partner)
-                'to_pay_move_line_ids': move_ids.mapped('open_move_line_ids').ids,
-                'pop_up': True,
-                # We set this because if became from other view and in the
-                # context has 'create=False' you can't crate payment lines
-                #  (for ej: subscription)
-                'create': True,
-                'default_company_id': move_ids[0].company_id.id,
-            },
-        }
+    @api.constrains('partner_id', 'to_pay_move_line_ids')
+    def check_to_pay_lines(self):
+        for rec in self:
+            to_pay_partners = rec.to_pay_move_line_ids.mapped('partner_id')
+            if len(to_pay_partners) > 1:
+                raise ValidationError(_('All to pay lines must be of the same partner'))
+            if len(rec.to_pay_move_line_ids.mapped('company_id')) > 1:
+                raise ValidationError(_("You can't create payments for entries belonging to different companies."))
+            if to_pay_partners and to_pay_partners != rec.partner_id:
+                raise ValidationError(_('Payment group for partner %s but payment lines are of partner %s') % (
+                    rec.partner_id.name, to_pay_partners.name))
+
+    @api.constrains('partner_id', 'company_id')
+    def _check_no_transfer(self):
+        transfers = self.filtered(lambda x: x.company_id.partner_id == x.partner_id)
+        if transfers:
+            raise ValidationError(_("You can't make a payment/receipt to your same company, create an internal transfer instead"))
+
+    # from old account_payment_document_number
+
+    @api.depends('name')
+    def _compute_document_number(self):
+        recs_with_name = self.filtered('name')
+        for rec in recs_with_name:
+            name = rec.name
+            doc_code_prefix = rec.document_type_id.doc_code_prefix
+            if doc_code_prefix and name:
+                name = name.split(" ", 1)[-1]
+            rec.document_number = name
+        remaining = self - recs_with_name
+        remaining.document_number = False
+
+    @api.onchange('document_type_id', 'document_number')
+    def _inverse_document_number(self):
+        for rec in self.filtered('document_type_id'):
+            if not rec.document_number:
+                rec.name = False
+            else:
+                document_number = rec.document_type_id._format_document_number(rec.document_number)
+                if rec.document_number != document_number:
+                    rec.document_number = document_number
+                rec.name = "%s %s" % (rec.document_type_id.doc_code_prefix, document_number)
+
+    @api.depends(
+        'receiptbook_id.sequence_id.number_next_actual',
+    )
+    def _compute_next_number(self):
+        """
+        show next number only for payments without number and on draft state
+        """
+        for payment in self:
+            if payment.state != 'draft' or not payment.receiptbook_id or payment.document_number:
+                payment.next_number = False
+                continue
+            sequence = payment.receiptbook_id.sequence_id
+            # we must check if sequence use date ranges
+            if not sequence.use_date_range:
+                payment.next_number = sequence.number_next_actual
+            else:
+                dt = self.payment_date or fields.Date.today()
+                seq_date = self.env['ir.sequence.date_range'].search([
+                    ('sequence_id', '=', sequence.id),
+                    ('date_from', '<=', dt),
+                    ('date_to', '>=', dt)], limit=1)
+                if not seq_date:
+                    seq_date = sequence._create_date_range_seq(dt)
+                payment.next_number = seq_date.number_next_actual
+
+    @api.depends('company_id', 'partner_type')
+    def _compute_receiptbook(self):
+        for rec in self.filtered(lambda x: not x.receiptbook_id):
+            partner_type = self.partner_type or self._context.get(
+                'partner_type', self._context.get('default_partner_type', False))
+            receiptbook = self.env[
+                'account.payment.receiptbook'].search([
+                    ('partner_type', '=', partner_type),
+                    ('company_id', '=', self.company_id.id),
+                ], limit=1)
+            rec.receiptbook_id = receiptbook

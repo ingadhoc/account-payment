@@ -11,7 +11,7 @@
                     <div class="o_setting_left_pane"/>
                     <div class="o_setting_right_pane">
                         <label for="product_surcharge_id" string="Product to use in financing plans"/>
-                        <span class="fa fa-lg fa-building-o"/>
+                        <span class="fa fa-lg fa-building-o" title="Values set here are company-specific."/>
                         <div class="text-muted">
                             Select a product that will be used when applying a financing plan in payments.
                         </div>

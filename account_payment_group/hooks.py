@@ -6,7 +6,7 @@ _logger = logging.getLogger(__name__)
 
 def post_init_hook(cr, registry):
     """
-    Create a payment group for every existint payment
+    Create a payment group for every existint payment (no transfers)
     """
     env = api.Environment(cr, SUPERUSER_ID, {})
     # payments = env['account.payment'].search(
@@ -16,7 +16,7 @@ def post_init_hook(cr, registry):
     # on payment groups. So, we dont create payment groups for payments
     # without partner_id
     payments = env['account.payment'].search(
-        [('partner_id', '!=', False)])
+        [('partner_id', '!=', False), ('is_internal_transfer', '=', False)])
 
     for payment in payments:
 
@@ -27,11 +27,8 @@ def post_init_hook(cr, registry):
             'company_id': payment.company_id.id,
             'partner_type': payment.partner_type,
             'partner_id': payment.partner_id.id,
-            'payment_date': payment.payment_date,
-            # en realidad aparentemente odoo no migra nada a communication
-            # tal vez a este campo deberíamos llevar el viejo name que ahora
-            # name es la secuencia
-            'communication': payment.communication,
+            'payment_date': payment.date,
+            'communication': payment.ref,
             'payment_ids': [(4, payment.id, False)],
             'state': _state,
         })

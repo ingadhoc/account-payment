@@ -19,6 +19,51 @@ class AccountPaymentGroup(models.Model):
         readonly=True,
         states={'draft': [('readonly', False)]},
     )
+    selected_debt_untaxed = fields.Monetary(
+        # string='To Pay lines Amount',
+        string='Selected Debt Untaxed',
+        compute='_compute_selected_debt_untaxed',
+    )
+    matched_amount_untaxed = fields.Monetary(
+        compute='_compute_matched_amount_untaxed',
+        currency_field='currency_id',
+    )
+
+    def _compute_matched_amount_untaxed(self):
+        """ Lo separamos en otro metodo ya que es un poco mas costoso y no se
+        usa en conjunto con matched_amount
+        """
+        for rec in self:
+            rec.matched_amount_untaxed = 0.0
+            if rec.state != 'posted':
+                continue
+            matched_amount_untaxed = 0.0
+            sign = rec.partner_type == 'supplier' and -1.0 or 1.0
+            for line in rec.matched_move_line_ids.with_context(
+                    payment_group_id=rec.id):
+                invoice = line.move_id
+                factor = invoice and invoice._get_tax_factor() or 1.0
+                matched_amount_untaxed += \
+                    line.payment_group_matched_amount * factor
+            rec.matched_amount_untaxed = sign * matched_amount_untaxed
+
+    @api.depends(
+        'to_pay_move_line_ids.amount_residual',
+        'to_pay_move_line_ids.amount_residual_currency',
+        'to_pay_move_line_ids.currency_id',
+        'to_pay_move_line_ids.move_id',
+        'payment_date',
+        'currency_id',
+    )
+    def _compute_selected_debt_untaxed(self):
+        for rec in self:
+            selected_debt_untaxed = 0.0
+            for line in rec.to_pay_move_line_ids._origin:
+                # factor for total_untaxed
+                invoice = line.move_id
+                factor = invoice and invoice._get_tax_factor() or 1.0
+                selected_debt_untaxed += line.amount_residual * factor
+            rec.selected_debt_untaxed = selected_debt_untaxed * (rec.partner_type == 'supplier' and -1.0 or 1.0)
 
     @api.onchange('unreconciled_amount')
     def set_withholdable_advanced_amount(self):
@@ -32,8 +77,7 @@ class AccountPaymentGroup(models.Model):
     def _compute_withholdings_amount(self):
         for rec in self:
             rec.withholdings_amount = sum(
-                rec.payment_ids.filtered(
-                    lambda x: x.tax_withholding_id).mapped('amount'))
+                rec.payment_ids.filtered(lambda x: x.tax_withholding_id).mapped('amount'))
 
     def compute_withholdings(self):
         for rec in self:

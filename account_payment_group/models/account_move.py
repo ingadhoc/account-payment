@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from odoo import models, api, fields, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, UserError
 
 
 class AccountMove(models.Model):
@@ -32,6 +32,12 @@ class AccountMove(models.Model):
         compute_sudo=True,
     )
 
+    @api.constrains('name', 'journal_id', 'state')
+    def _check_unique_sequence_number(self):
+        payment_group_moves = self.filtered(
+            lambda x: x.journal_id.type in ['cash', 'bank'] and x.payment_id.payment_group_id)
+        return super(AccountMove, self - payment_group_moves)._check_unique_sequence_number()
+
     def _compute_payment_groups(self):
         """
         El campo en invoices "payment_id" no lo seteamos con los payment groups
@@ -40,11 +46,6 @@ class AccountMove(models.Model):
         for rec in self:
             rec.payment_group_ids = rec._get_reconciled_payments().mapped('payment_group_id')
 
-    def _get_tax_factor(self):
-        self.ensure_one()
-        return (self.amount_total and (
-            self.amount_untaxed / self.amount_total) or 1.0)
-
     @api.depends('line_ids.account_id.internal_type', 'line_ids.reconciled')
     def _compute_open_move_lines(self):
         for rec in self:
@@ -52,29 +53,26 @@ class AccountMove(models.Model):
                 lambda r: not r.reconciled and r.account_id.internal_type in (
                     'payable', 'receivable'))
 
-    def action_account_invoice_payment_group(self):
-        self.ensure_one()
-        if self.state == 'cancel' or self.invoice_payment_state != 'not_paid':
-            raise ValidationError(_('You can only register payment if invoice is not cancelled and unpaid'))
+    def action_register_payment_group(self):
+        to_pay_move_lines = self.open_move_line_ids
+        if not to_pay_move_lines:
+            raise UserError(_('Nothing to be paid on selected entries'))
+        to_pay_partners = self.mapped('commercial_partner_id')
+        if len(to_pay_partners) > 1:
+            raise UserError(_('Selected recrods must be of the same partner'))
+
         return {
             'name': _('Register Payment'),
-            'view_type': 'form',
             'view_mode': 'form',
             'res_model': 'account.payment.group',
-            'view_id': False,
             'target': 'current',
             'type': 'ir.actions.act_window',
             'context': {
-                # si bien el partner se puede adivinar desde los apuntes
-                # con el default de payment group, preferimos mandar por aca
-                # ya que puede ser un contacto y no el commercial partner (y
-                # en los apuntes solo hay commercial partner)
-                'default_partner_id': self.partner_id.id,
-                'to_pay_move_line_ids': self.open_move_line_ids.ids,
-                'pop_up': True,
-                # We set this because if became from other view and in the
-                # context has 'create=False' you can't crate payment lines
-                #  (for ej: subscription)
+                'default_partner_type': 'customer' if to_pay_move_lines[0].account_id.internal_type == 'receivable' else 'supplier',
+                'default_partner_id': to_pay_partners.id,
+                'default_to_pay_move_line_ids': to_pay_move_lines.ids,
+                # We set this because if became from other view and in the context has 'create=False'
+                # you can't crate payment lines (for ej: subscription)
                 'create': True,
                 'default_company_id': self.company_id.id,
             },
@@ -89,13 +87,13 @@ class AccountMove(models.Model):
         # validate_payment = not self._context.get('validate_payment')
         for rec in self:
             pay_journal = rec.pay_now_journal_id
-            if pay_journal and rec.state == 'posted' and rec.invoice_payment_state == 'not_paid':
+            if pay_journal and rec.state == 'posted' and rec.payment_state in ['not_paid', 'patial']:
                 # si bien no hace falta mandar el partner_type al paygroup
                 # porque el defaults lo calcula solo en funcion al tipo de
                 # cuenta, es mas claro mandarlo y podria evitar error si
                 # estamos usando cuentas cruzadas (payable, receivable) con
                 # tipo de factura
-                if rec.type in ['in_invoice', 'in_refund']:
+                if rec.move_type in ['in_invoice', 'in_refund']:
                     partner_type = 'supplier'
                 else:
                     partner_type = 'customer'
@@ -123,10 +121,10 @@ class AccountMove(models.Model):
                         partner_type == 'customer' and
                         payment_group.payment_difference < 0.0):
                     payment_type = 'outbound'
-                    payment_methods = pay_journal.outbound_payment_method_ids
+                    payment_methods = pay_journal.outbound_payment_method_line_ids.payment_method_id
                 else:
                     payment_type = 'inbound'
-                    payment_methods = pay_journal.inbound_payment_method_ids
+                    payment_methods = pay_journal.inbound_payment_method_line_ids.payment_method_id
 
                 payment_method = payment_methods.filtered(
                     lambda x: x.code == 'manual')
@@ -149,12 +147,10 @@ class AccountMove(models.Model):
                 payment_group.post()
 
     def action_view_payment_groups(self):
-        if self.type in ('in_invoice', 'in_refund'):
-            action = self.env.ref(
-                'account_payment_group.action_account_payments_group_payable')
+        if self.move_type in ('in_invoice', 'in_refund'):
+            action = self.env.ref('account_payment_group.action_account_payments_group_payable')
         else:
-            action = self.env.ref(
-                'account_payment_group.action_account_payments_group')
+            action = self.env.ref('account_payment_group.action_account_payments_group')
 
         result = action.read()[0]
 
@@ -173,6 +169,6 @@ class AccountMove(models.Model):
         # and then change journal
         self.pay_now_journal_id = False
 
-    def button_cancel(self):
-        self.filtered(lambda x: x.state == 'draft' and x.pay_now_journal_id).write({'pay_now_journal_id': False})
-        return super().button_cancel()
+    def button_draft(self):
+        self.filtered(lambda x: x.state == 'posted' and x.pay_now_journal_id).write({'pay_now_journal_id': False})
+        return super().button_draft()

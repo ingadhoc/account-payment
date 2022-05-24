@@ -1,0 +1,10 @@
+<odoo>
+
+<record id="account.action_account_invoice_from_list" model="ir.actions.server">
+    <field name="code">
+        if records:
+            action = records.action_register_payment_group()
+    </field>
+</record>
+
+</odoo>

@@ -3,18 +3,16 @@
 # 	* account_withholding_automatic
 # 
 # Translators:
-# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2020
-# Juan Carreras <jc@adhoc.com.ar>, 2020
-# Juan Rivero <jr@adhoc.com.ar>, 2021
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2022
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 13.0\n"
+"Project-Id-Version: Odoo Server 15.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-01-22 15:01+0000\n"
-"PO-Revision-Date: 2020-02-27 12:53+0000\n"
-"Last-Translator: Juan Rivero <jr@adhoc.com.ar>, 2021\n"
-"Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
+"POT-Creation-Date: 2022-04-25 13:23+0000\n"
+"PO-Revision-Date: 2022-04-19 13:52+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2022\n"
+"Language-Team: Spanish (https://www.transifex.com/adhoc/teams/133229/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
@@ -27,8 +25,8 @@ msgid ""
 "<span class=\"fa fa-lg fa-building-o\" title=\"Values set here are company-"
 "specific.\" groups=\"base.group_multi_company\"/>"
 msgstr ""
-"<span class=\"fa fa-lg fa-building-o\" title=\"Values set here are company-"
-"specific.\" groups=\"base.group_multi_company\"/>"
+"<span class=\"fa fa-lg fa-building-o\" title=\"Los valores configurados aquí"
+" son específicos de cada compañía.\" groups=\"base.group_multi_company\"/>"
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment__accumulated_amount
@@ -110,7 +108,7 @@ msgstr "Importe de retención calculado"
 #. module: account_withholding_automatic
 #: model:ir.model,name:account_withholding_automatic.model_res_config_settings
 msgid "Config Settings"
-msgstr "Parámetros de Configuración"
+msgstr "Opciones de configuración"
 
 #. module: account_withholding_automatic
 #: code:addons/account_withholding_automatic/models/account_tax.py:0
@@ -177,6 +175,11 @@ msgid "Importe imputado sujeto a retencion"
 msgstr "Importe imputado sujeto a retención"
 
 #. module: account_withholding_automatic
+#: model:ir.model,name:account_withholding_automatic.model_account_move
+msgid "Journal Entry"
+msgstr "Asiento contable"
+
+#. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule____last_update
 msgid "Last Modified on"
 msgstr "Última Modificación el"
@@ -201,6 +204,11 @@ msgstr "Hacer retenciones automáticas en las confirmaciones de pagos"
 #: model_terms:ir.ui.view,arch_db:account_withholding_automatic.res_config_settings_view_form
 msgid "Make withholdings automatically on payments confirmation."
 msgstr "Hacer retenciones automáticamente en la confirmación de los pagos."
+
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_group__matched_amount_untaxed
+msgid "Matched Amount Untaxed"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields.selection,name:account_withholding_automatic.selection__account_tax__withholding_accumulated_payments__month
@@ -285,10 +293,11 @@ msgid ""
 "(%s). Deberá quitar  dichos comprobantes de la deuda seleccionada para poder"
 " hacer el correcto cálculo de las retenciones."
 msgstr ""
-"Seleccionó deuda por %s pero aparentente desea pagar  %s. En la deuda "
-"seleccionada hay algunos comprobantes de mas que no van a poder ser pagados "
-"(%s). Deberá quitar  dichos comprobantes de la deuda seleccionada para poder"
-" hacer el correcto cálculo de las retenciones."
+
+#. module: account_withholding_automatic
+#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_group__selected_debt_untaxed
+msgid "Selected Debt Untaxed"
+msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__sequence
@@ -370,4 +379,4 @@ msgstr "Año"
 #. module: account_withholding_automatic
 #: model:ir.model,name:account_withholding_automatic.model_account_tax_withholding_rule
 msgid "account.tax.withholding.rule"
-msgstr "account.tax.withholding.rule"
+msgstr ""
