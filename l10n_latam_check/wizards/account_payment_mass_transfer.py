@@ -23,28 +23,28 @@ class AccountPaymentMassTransfer(models.TransientModel):
         if self._context.get('active_model') != 'account.payment':
             raise UserError(_("The register payment wizard should only be called on account.payment records."))
         payments = self.env['account.payment'].browse(self._context.get('active_ids', []))
-        checks = payments.filtered(lambda x: x.payment_method_line_id.code == 'new_third_checks')
+        checks = payments.filtered(lambda x: x.payment_method_line_id.code == 'new_third_party_checks')
         if not all(check.state == 'posted' for check in checks):
             raise UserError(_("All the selected checks must be posted"))
         if len(checks.mapped('l10n_latam_check_current_journal_id')) != 1:
             raise UserError(_("All selected checks must be on the same journal"))
-        self.filtered(lambda x: x.payment_method_line_id.code in ['in_third_checks', 'out_third_checks'])
+        self.filtered(lambda x: x.payment_method_line_id.code in ['in_third_party_checks', 'out_third_party_checks'])
         if not checks[0].l10n_latam_check_current_journal_id.inbound_payment_method_line_ids.filtered(
-                lambda x: x.code == 'in_third_checks'):
-            raise UserError(_("Checks must be on a third checks journal to be transfered by this wizard"))
+                lambda x: x.code == 'in_third_party_checks'):
+            raise UserError(_("Checks must be on a third party checks journal to be transfered by this wizard"))
         res['journal_id'] = checks[0].l10n_latam_check_current_journal_id.id
         return res
 
     def _create_payments(self):
         self.ensure_one()
         payments = self.env['account.payment'].browse(self._context.get('active_ids', []))
-        checks = payments.filtered(lambda x: x.payment_method_line_id.code == 'new_third_checks')
+        checks = payments.filtered(lambda x: x.payment_method_line_id.code == 'new_third_party_checks')
         payment_vals_list = []
 
         pay_method_line = self.journal_id._get_available_payment_method_lines('outbound').filtered(
-            lambda x: x.code == 'out_third_checks')
+            lambda x: x.code == 'out_third_party_checks')
         if not pay_method_line:
-            raise UserError(_("There is no 'out_third_checks' payment method configured on journal %s") % (
+            raise UserError(_("There is no 'out_third_party_checks' payment method configured on journal %s") % (
                 self.journal_id.name))
 
         for check in checks:

@@ -38,10 +38,10 @@ class L10nLatamCheckTest(AccountTestInvoicingCommon):
             'type': 'electronic',
         })
 
-        third_checks_journals = cls.env['account.journal'].search([('outbound_payment_method_line_ids.code', '=', 'new_third_checks'), ('inbound_payment_method_line_ids.code', '=', 'out_third_checks'), ('inbound_payment_method_line_ids.code', '=', 'new_third_checks')])
-        if len(third_checks_journals) == 2:
-            cls.third_check_journal = third_checks_journals[0]
-            cls.rejected_check_journal = third_checks_journals[1]
+        third_party_checks_journals = cls.env['account.journal'].search([('outbound_payment_method_line_ids.code', '=', 'new_third_party_checks'), ('inbound_payment_method_line_ids.code', '=', 'out_third_party_checks'), ('inbound_payment_method_line_ids.code', '=', 'new_third_party_checks')])
+        if len(third_party_checks_journals) == 2:
+            cls.third_party_check_journal = third_party_checks_journals[0]
+            cls.rejected_check_journal = third_party_checks_journals[1]
         else:
-            cls.third_check_journal = False
+            cls.third_party_check_journal = False
             cls.rejected_check_journal = False

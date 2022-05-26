@@ -1,7 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 {
     'name': 'Account Check Management',
-    'version': "1.2.0",
+    'version': "1.0.0",
     'category': 'Accounting/Localizations',
     'summary': 'Checks Management',
     'description': """
@@ -16,22 +16,22 @@ Extends 'Check Printing Base' module to manage own checks with more features:
 * add a menu to track own checks
 
 
-Third Check Management
+Third party check Management
 ----------------------
 
-Add new "Third Check Management" feature.
+Add new "Third party check Management" feature.
 
 There are 2 main Payment Methods additions:
 
-* New Third Checks:
+* New Third party checks:
 
    * allow the user create a check on the fly from a payment
-   * create a third check from a customer payment
+   * create a third party check from a customer payment
 
-* Third Check:
+* Third party check:
 
-   * allow the user to reuse a Third Check already created
-   * pay a vendor bill using an existing Third Check
+   * allow the user to reuse a Third party check already created
+   * pay a vendor bill using an existing Third party check
    * move an existing checks between journals (i.e. move to Rejected)
    * Send/Receive again a check already used in a Vendor Bill/Customer INV
    * allow the user to do mass check transfers
