@@ -18,10 +18,10 @@
                 <separator/>
                 <filter string="Checks on hand" name="checks_on_hand"
                         domain="[('state', '=', 'posted'),
-                                 ('l10n_latam_check_current_journal_id.inbound_payment_method_line_ids.payment_method_id.code', '=', 'in_third_checks')]"/>
+                                 ('l10n_latam_check_current_journal_id.inbound_payment_method_line_ids.payment_method_id.code', '=', 'in_third_party_checks')]"/>
             </filter>
             <filter name="journal" position="after">
-                <filter name="groupby_third_check_current_journal" string="Third Check Current Journal" domain="[]"
+                <filter name="groupby_third_party_check_current_journal" string="Third party check Current Journal" domain="[]"
                         context="{'group_by': 'l10n_latam_check_current_journal_id'}"/>
             </filter>
             <filter name="groupby_date" position="after">
@@ -46,18 +46,18 @@
             </field>
 
             <field name="destination_journal_id" position="after">
-                <!-- Move Third Checks -->
+                <!-- Move Third party checks -->
                 <field
                     name="l10n_latam_check_id"
                     attrs="{
-                            'invisible': [('payment_method_code', 'not in', ['in_third_checks', 'out_third_checks']), ('l10n_latam_check_id', '=', False)],
-                            'required': [('payment_method_code', 'in', ['in_third_checks', 'out_third_checks'])]}"
+                            'invisible': [('payment_method_code', 'not in', ['in_third_party_checks', 'out_third_party_checks']), ('l10n_latam_check_id', '=', False)],
+                            'required': [('payment_method_code', 'in', ['in_third_party_checks', 'out_third_party_checks'])]}"
                     domain="[
-                        ('payment_method_code', '=', 'new_third_checks'), ('l10n_latam_check_current_journal_id', '=', journal_id), ('state', '=', 'posted')]
+                        ('payment_method_code', '=', 'new_third_party_checks'), ('l10n_latam_check_current_journal_id', '=', journal_id), ('state', '=', 'posted')]
                             if payment_type == 'outbound' else
-                        [('payment_method_code', '=', 'new_third_checks'), ('l10n_latam_check_current_journal_id', '=', destination_journal_id), ('state', '=', 'posted')]
+                        [('payment_method_code', '=', 'new_third_party_checks'), ('l10n_latam_check_current_journal_id', '=', destination_journal_id), ('state', '=', 'posted')]
                             if is_internal_transfer else
-                        [('payment_method_code', '=', 'new_third_checks'), ('l10n_latam_check_current_journal_id', '=', False), ('state', '=', 'posted')]"
+                        [('payment_method_code', '=', 'new_third_party_checks'), ('l10n_latam_check_current_journal_id', '=', False), ('state', '=', 'posted')]"
                     options="{'no_create': True}"
                 />
             </field>
@@ -72,18 +72,18 @@
                 <field name="l10n_latam_check_payment_date" attrs="{'invisible': [('l10n_latam_checkbook_type', '!=', 'deferred')],
                                                                     'required': [('l10n_latam_checkbook_type', '=', 'deferred')]}"/>
 
-                <!-- Third checks -->
+                <!-- Third party checks -->
                 <field name="check_number"
-                       attrs="{'invisible': [('payment_method_code', '!=', 'new_third_checks')],
-                               'required': [('payment_method_code', '=', 'new_third_checks')], 'readonly': [('state', '!=', 'draft')]}"/>
-                <field name="l10n_latam_check_payment_date" attrs="{'invisible': [('payment_method_code', '!=', 'new_third_checks')]}"/>
+                       attrs="{'invisible': [('payment_method_code', '!=', 'new_third_party_checks')],
+                               'required': [('payment_method_code', '=', 'new_third_party_checks')], 'readonly': [('state', '!=', 'draft')]}"/>
+                <field name="l10n_latam_check_payment_date" attrs="{'invisible': [('payment_method_code', '!=', 'new_third_party_checks')]}"/>
                 <field name="l10n_latam_check_bank_id" string="Check Bank"
-                       attrs="{'invisible': [('payment_method_code', '!=', 'new_third_checks')]}"/>
+                       attrs="{'invisible': [('payment_method_code', '!=', 'new_third_party_checks')]}"/>
                 <field name="l10n_latam_check_issuer_vat" string="Check Issuer Vat"
-                       attrs="{'invisible': [('payment_method_code', '!=', 'new_third_checks')]}"/>
+                       attrs="{'invisible': [('payment_method_code', '!=', 'new_third_party_checks')]}"/>
                 <label for="l10n_latam_check_current_journal_id" string="Check Current Journal"
-                       attrs="{'invisible': ['|', ('state', '!=', 'posted'), ('payment_method_code', '!=', 'new_third_checks')]}"/>
-                <div class="oe_inline" attrs="{'invisible': ['|', ('state', '!=', 'posted'), ('payment_method_code', '!=', 'new_third_checks')]}">
+                       attrs="{'invisible': ['|', ('state', '!=', 'posted'), ('payment_method_code', '!=', 'new_third_party_checks')]}"/>
+                <div class="oe_inline" attrs="{'invisible': ['|', ('state', '!=', 'posted'), ('payment_method_code', '!=', 'new_third_party_checks')]}">
                     <field name="l10n_latam_check_current_journal_id"/>
                     <span attrs="{'invisible': [('l10n_latam_check_current_journal_id', '!=', False)]}">Not in Wallet</span>
                     <button name="button_open_check_operations" type="object" string="⇒ Check Operations" class="oe_link"/>
@@ -92,7 +92,7 @@
         </field>
     </record>
 
-    <record model="ir.ui.view" id="view_account_third_check_operations_tree">
+    <record model="ir.ui.view" id="view_account_third_party_check_operations_tree">
         <field name="name">account.check.operations.tree</field>
         <field name="model">account.payment</field>
         <field name="priority" eval="99"/>
@@ -174,9 +174,9 @@
         sequence="50"
         parent="account.menu_finance_payables"/>
 
-<!-- Third Check Views and menus -->
+<!-- Third party check Views and menus -->
 
-    <record model="ir.ui.view" id="view_account_third_check_tree">
+    <record model="ir.ui.view" id="view_account_third_party_check_tree">
         <field name="name">account.check.tree</field>
         <field name="model">account.payment</field>
         <field name="priority">110</field>
@@ -193,19 +193,19 @@
         </field>
     </record>
 
-    <record model="ir.actions.act_window" id="action_third_check">
-        <field name="name">Third Checks</field>
+    <record model="ir.actions.act_window" id="action_third_party_check">
+        <field name="name">Third party checks</field>
         <field name="res_model">account.payment</field>
         <field name="view_mode">tree,form,calendar,graph,pivot</field>
-        <field name="view_id" ref="view_account_third_check_tree"/>
+        <field name="view_id" ref="view_account_third_party_check_tree"/>
         <field name="search_view_id" ref="view_account_payment_search"/>
-        <field name="domain">[('payment_method_code', '=', 'new_third_checks')]</field>
+        <field name="domain">[('payment_method_code', '=', 'new_third_party_checks')]</field>
         <field name="context">{'search_default_checks_on_hand': 1}</field>
     </record>
 
     <menuitem
-        action="action_third_check"
-        id="menu_third_check"
+        action="action_third_party_check"
+        id="menu_third_party_check"
         sequence="40"
         parent="account.menu_finance_receivables"/>
 

@@ -19,8 +19,6 @@ class L10nLatamCheckbook(models.Model):
         'account.journal', 'Journal', readonly=True, required=True, ondelete='cascade',)
     range_to = fields.Integer(
         'To Number',
-        help='If you set a number here, this checkbook will be automatically'
-        ' set as used when this number is raised.'
     )
     active = fields.Boolean(default=True)
 

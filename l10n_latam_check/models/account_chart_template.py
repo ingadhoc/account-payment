@@ -12,25 +12,25 @@ class AccountChartTemplate(models.Model):
 
         if company.country_id.code in THIRD_CHECKS_COUNTRY_CODES:
             self.env['account.journal'].create({
-                'name': _('Third Checks'),
+                'name': _('Third party checks'),
                 'type': 'cash',
                 'company_id': company.id,
                 'outbound_payment_method_line_ids': [
-                    Command.create({'payment_method_id': self.env.ref('l10n_latam_check.account_payment_method_out_third_checks').id}),
+                    Command.create({'payment_method_id': self.env.ref('l10n_latam_check.account_payment_method_out_third_party_checks').id}),
                 ],
                 'inbound_payment_method_line_ids': [
-                    Command.create({'payment_method_id': self.env.ref('l10n_latam_check.account_payment_method_new_third_checks').id}),
-                    Command.create({'payment_method_id': self.env.ref('l10n_latam_check.account_payment_method_in_third_checks').id}),
+                    Command.create({'payment_method_id': self.env.ref('l10n_latam_check.account_payment_method_new_third_party_checks').id}),
+                    Command.create({'payment_method_id': self.env.ref('l10n_latam_check.account_payment_method_in_third_party_checks').id}),
                 ]})
             self.env['account.journal'].create({
-                'name': _('Rejected Third Checks'),
+                'name': _('Rejected Third party checks'),
                 'type': 'cash',
                 'company_id': company.id,
                 'outbound_payment_method_line_ids': [
-                    Command.create({'payment_method_id': self.env.ref('l10n_latam_check.account_payment_method_out_third_checks').id}),
+                    Command.create({'payment_method_id': self.env.ref('l10n_latam_check.account_payment_method_out_third_party_checks').id}),
                 ],
                 'inbound_payment_method_line_ids': [
-                    Command.create({'payment_method_id': self.env.ref('l10n_latam_check.account_payment_method_new_third_checks').id}),
-                    Command.create({'payment_method_id': self.env.ref('l10n_latam_check.account_payment_method_in_third_checks').id}),
+                    Command.create({'payment_method_id': self.env.ref('l10n_latam_check.account_payment_method_new_third_party_checks').id}),
+                    Command.create({'payment_method_id': self.env.ref('l10n_latam_check.account_payment_method_in_third_party_checks').id}),
                 ]})
         return res

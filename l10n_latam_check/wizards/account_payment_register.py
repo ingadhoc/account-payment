@@ -42,9 +42,9 @@ class AccountPaymentRegister(models.TransientModel):
 
     @api.depends('payment_method_line_id.code', 'partner_id')
     def _compute_l10n_latam_check_data(self):
-        new_third_checks = self.filtered(lambda x: x.payment_method_line_id.code == 'new_third_checks')
-        (self - new_third_checks).update({'l10n_latam_check_bank_id': False, 'l10n_latam_check_issuer_vat': False})
-        for rec in new_third_checks:
+        new_third_party_checks = self.filtered(lambda x: x.payment_method_line_id.code == 'new_third_party_checks')
+        (self - new_third_party_checks).update({'l10n_latam_check_bank_id': False, 'l10n_latam_check_issuer_vat': False})
+        for rec in new_third_party_checks:
             rec.update({
                 'l10n_latam_check_bank_id': rec.partner_id.bank_ids and rec.partner_id.bank_ids[0].bank_id or False,
                 'l10n_latam_check_issuer_vat': rec.partner_id.vat,

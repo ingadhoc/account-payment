@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 from odoo.addons.l10n_latam_check.tests.common import L10nLatamCheckTest
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, UserError
 from odoo.tests.common import tagged
 
 
@@ -9,20 +9,20 @@ from odoo.tests.common import tagged
 class TestThirdChecks(L10nLatamCheckTest):
 
     def test_01_journals_creation(self):
-        """ Verify journals for third checks are being created"""
-        self.assertTrue(self.third_check_journal, 'Third checks journal was not created properly')
+        """ Verify journals for third party checks are being created"""
+        self.assertTrue(self.third_party_check_journal, 'Third party checks journal was not created properly')
         self.assertTrue(self.rejected_check_journal, 'Rejected checks journal was not created properly')
 
-    def create_third_check(self, journal=False):
+    def create_third_party_check(self, journal=False):
         if not journal:
-            journal = self.third_check_journal
+            journal = self.third_party_check_journal
         vals = {
             'partner_id': self.partner_a.id,
             'amount': '00000001',
             'check_number': '00000001',
             'payment_type': 'inbound',
             'journal_id': journal.id,
-            'payment_method_line_id': self.third_check_journal._get_available_payment_method_lines('inbound').filtered(lambda x: x.code == 'new_third_checks').id,
+            'payment_method_line_id': self.third_party_check_journal._get_available_payment_method_lines('inbound').filtered(lambda x: x.code == 'new_third_party_checks').id,
         }
         payment = self.env['account.payment'].create(vals)
         payment.action_post()
@@ -34,25 +34,25 @@ class TestThirdChecks(L10nLatamCheckTest):
             'amount': '00000001',
             'check_number': '00000001',
             'payment_type': 'inbound',
-            'journal_id': self.third_check_journal.id,
-            'payment_method_line_id': self.third_check_journal._get_available_payment_method_lines('inbound').filtered(lambda x: x.code == 'new_third_checks').id,
+            'journal_id': self.third_party_check_journal.id,
+            'payment_method_line_id': self.third_party_check_journal._get_available_payment_method_lines('inbound').filtered(lambda x: x.code == 'new_third_party_checks').id,
         }, {
             'partner_id': self.partner_a.id,
             'amount': '00000002',
             'check_number': '00000002',
             'payment_type': 'inbound',
-            'journal_id': self.third_check_journal.id,
-            'payment_method_line_id': self.third_check_journal._get_available_payment_method_lines('inbound').filtered(lambda x: x.code == 'new_third_checks').id,
+            'journal_id': self.third_party_check_journal.id,
+            'payment_method_line_id': self.third_party_check_journal._get_available_payment_method_lines('inbound').filtered(lambda x: x.code == 'new_third_party_checks').id,
         }]
         payments = self.env['account.payment'].create(vals_list)
         payments.action_post()
         self.assertEqual(len(payments), 2, 'Checks where not created properly')
         for payment in payments:
             self.assertEqual(payment.state, 'posted', 'Check %s was not created properly' % payment.check_number)
-            self.assertEqual(payment.l10n_latam_check_current_journal_id, self.third_check_journal, 'Current journal was not computed properly')
+            self.assertEqual(payment.l10n_latam_check_current_journal_id, self.third_party_check_journal, 'Current journal was not computed properly')
 
-    def test_02_third_check_delivery(self):
-        check = self.create_third_check()
+    def test_02_third_party_check_delivery(self):
+        check = self.create_third_party_check()
 
         # Check Delivery
         vals = {
@@ -60,8 +60,8 @@ class TestThirdChecks(L10nLatamCheckTest):
             'amount': '00000001',
             'partner_id': self.partner_b.id,
             'payment_type': 'outbound',
-            'journal_id': self.third_check_journal.id,
-            'payment_method_line_id': self.third_check_journal._get_available_payment_method_lines('outbound').filtered(lambda x: x.code == 'out_third_checks').id,
+            'journal_id': self.third_party_check_journal.id,
+            'payment_method_line_id': self.third_party_check_journal._get_available_payment_method_lines('outbound').filtered(lambda x: x.code == 'out_third_party_checks').id,
         }
         delivery = self.env['account.payment'].create(vals)
         delivery.action_post()
@@ -78,7 +78,7 @@ class TestThirdChecks(L10nLatamCheckTest):
             'partner_id': self.partner_b.id,
             'payment_type': 'inbound',
             'journal_id': self.rejected_check_journal.id,
-            'payment_method_line_id': self.rejected_check_journal._get_available_payment_method_lines('inbound').filtered(lambda x: x.code == 'in_third_checks').id,
+            'payment_method_line_id': self.rejected_check_journal._get_available_payment_method_lines('inbound').filtered(lambda x: x.code == 'in_third_party_checks').id,
         }
         supplier_return = self.env['account.payment'].create(vals)
         supplier_return.action_post()
@@ -95,7 +95,7 @@ class TestThirdChecks(L10nLatamCheckTest):
             'partner_id': self.partner_a.id,
             'payment_type': 'outbound',
             'journal_id': self.rejected_check_journal.id,
-            'payment_method_line_id': self.rejected_check_journal._get_available_payment_method_lines('outbound').filtered(lambda x: x.code == 'out_third_checks').id,
+            'payment_method_line_id': self.rejected_check_journal._get_available_payment_method_lines('outbound').filtered(lambda x: x.code == 'out_third_party_checks').id,
         }
         customer_return = self.env['account.payment'].create(vals)
         customer_return.action_post()
@@ -112,7 +112,7 @@ class TestThirdChecks(L10nLatamCheckTest):
         self.assertEqual(operations[2], delivery, 'First operation should be customer delivery')
 
     def test_03_check_deposit(self):
-        check = self.create_third_check()
+        check = self.create_third_party_check()
         bank_journal = self.company_data_3['default_journal_bank']
 
         # Check Deposit
@@ -121,7 +121,7 @@ class TestThirdChecks(L10nLatamCheckTest):
         self.assertEqual(deposit.state, 'posted', 'Check %s was not deposited properly' % check.check_number)
         self.assertEqual(check.l10n_latam_check_current_journal_id, bank_journal, 'Current journal was not computed properly on delivery')
         # check dont deposit twice
-        with self.assertRaises(ValidationError), self.cr.savepoint():
+        with self.assertRaises(UserError), self.cr.savepoint():
             self.env['account.payment.mass.transfer'].with_context(
                 active_model='account.payment', active_ids=[check.id]).create({'destination_journal_id': bank_journal.id})._create_payments()
 
@@ -132,7 +132,7 @@ class TestThirdChecks(L10nLatamCheckTest):
             'payment_type': 'inbound',
             'journal_id': self.rejected_check_journal.id,
             'is_internal_transfer': True,
-            'payment_method_line_id': self.rejected_check_journal._get_available_payment_method_lines('inbound').filtered(lambda x: x.code == 'in_third_checks').id,
+            'payment_method_line_id': self.rejected_check_journal._get_available_payment_method_lines('inbound').filtered(lambda x: x.code == 'in_third_party_checks').id,
             'destination_journal_id': bank_journal.id,
         }
         bank_rejection = self.env['account.payment'].create(vals)
@@ -150,7 +150,7 @@ class TestThirdChecks(L10nLatamCheckTest):
             'partner_id': self.partner_a.id,
             'payment_type': 'outbound',
             'journal_id': self.rejected_check_journal.id,
-            'payment_method_line_id': self.rejected_check_journal._get_available_payment_method_lines('outbound').filtered(lambda x: x.code == 'out_third_checks').id,
+            'payment_method_line_id': self.rejected_check_journal._get_available_payment_method_lines('outbound').filtered(lambda x: x.code == 'out_third_party_checks').id,
         }
         customer_return = self.env['account.payment'].create(vals)
         customer_return.action_post()
@@ -167,16 +167,16 @@ class TestThirdChecks(L10nLatamCheckTest):
         self.assertEqual(operations[4], deposit, 'First operation should be customer delivery')
 
     def test_04_check_transfer(self):
-        """ Test transfer between third checks journals """
-        check = self.create_third_check()
+        """ Test transfer between third party checks journals """
+        check = self.create_third_party_check()
 
-        # Transfer to rejected checks journal (usually is to another third checks journal, but for test purpose is the same)
+        # Transfer to rejected checks journal (usually is to another third party checks journal, but for test purpose is the same)
         transfer1 = self.env['account.payment.mass.transfer'].with_context(
             active_model='account.payment', active_ids=[check.id]).create({'destination_journal_id': self.rejected_check_journal.id})._create_payments()
         self.assertEqual(transfer1.state, 'posted', 'Check %s was not deposited properly' % check.check_number)
         self.assertEqual(check.l10n_latam_check_current_journal_id, self.rejected_check_journal, 'Current journal was not computed properly on delivery')
 
         # test that checks created on different journals but that are on same current journal, can be transfered together
-        check2 = self.create_third_check(journal=self.rejected_check_journal)
+        check2 = self.create_third_party_check(journal=self.rejected_check_journal)
         self.env['account.payment.mass.transfer'].with_context(
-            active_model='account.payment', active_ids=[check.id, check2.id]).create({'destination_journal_id': self.third_check_journal.id})._create_payments()
+            active_model='account.payment', active_ids=[check.id, check2.id]).create({'destination_journal_id': self.third_party_check_journal.id})._create_payments()
