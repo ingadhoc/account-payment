@@ -37,6 +37,13 @@ class AccountPaymentGroup(models.Model):
                         force_price_include=True).compute_all(
                         self.financing_surcharge, currency=self.currency_id)['total_excluded'],
                 })
+            refund = self.env['account.move'].with_context(internal_type='debit_note').new({
+                'type': wiz.get_invoice_vals().get('type'),
+                'journal_id': journal.id,
+                'partner_id': self.partner_id.id,
+                'company_id': self.company_id.id,
+            })
+            wiz.journal_document_type_id = refund.l10n_latam_document_type_id
             wiz.change_payment_group()
             wiz.confirm()
         super().post()
