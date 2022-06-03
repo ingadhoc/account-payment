@@ -9,6 +9,7 @@
 
         <button id="account_invoice_payment_btn" position="attributes">
             <attribute name="attrs">{'invisible': ['|', '|', ('state', '=', 'cancel'), ('invoice_payment_state', '!=', 'not_paid'), ('type', 'not in', ('out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt'))]}</attribute>
+            <attribute name="context">{'open_invoice_payment': True}</attribute>
         </button>
 
     </field>
