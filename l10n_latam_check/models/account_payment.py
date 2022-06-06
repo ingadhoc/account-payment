@@ -62,10 +62,25 @@ class AccountPayment(models.Model):
                 pay.l10n_latam_checkbook_id.next_number)
         return super(AccountPayment, self - from_checkbooks)._compute_check_number()
 
+    def _inverse_check_number(self):
+        """ On third party checks or own checks with checkbooks, avoid calling super because is not needed to write the
+        sequence for these use case. """
+        avoid_inverse = self.filtered(
+            lambda x: x.l10n_latam_checkbook_id or x.payment_method_line_id.code == 'new_third_party_checks')
+        return super(AccountPayment, self - avoid_inverse)._inverse_check_number()
+
+    @api.constrains('check_number', 'journal_id', 'state')
+    def _constrains_check_number(self):
+        """ Don't enforce uniqueness for third party checks"""
+        third_party_checks = self.filtered(lambda x: x.payment_method_line_id.code == 'new_third_party_checks')
+        return super(AccountPayment, self - third_party_checks)._constrains_check_number()
+
     def action_unmark_sent(self):
-        """ Check that the recordset is valid, set the payments state to sent and call print_checks() """
+        """ Unmarking as sent for check with checkbooks would give the option to print and re-number check but
+        it's not implemented yet for this kind of checks"""
         if self.filtered('l10n_latam_checkbook_id'):
             raise UserError(_('Unmark sent is not implemented for checks that use checkbooks'))
+        return super().action_unmark_sent()
 
     @api.onchange('l10n_latam_check_id')
     def _onchange_check(self):
@@ -130,6 +145,7 @@ class AccountPayment(models.Model):
 
     @api.depends('is_internal_transfer')
     def _compute_payment_method_line_fields(self):
+        """ Add is_internal_transfer as a trigger to re-compute """
         return super()._compute_payment_method_line_fields()
 
     def action_post(self):
@@ -160,7 +176,7 @@ class AccountPayment(models.Model):
         res = super().action_post()
 
         # mark own checks that are not printed as sent
-        for rec in self.filtered(lambda x: x.check_number):
+        for rec in self.filtered('l10n_latam_checkbook_id'):
             sequence = rec.l10n_latam_checkbook_id.sequence_id
             sequence.sudo().write({'number_next_actual': int(rec.check_number) + 1})
             rec.write({'is_move_sent': True})
