@@ -1,16 +1,21 @@
-from odoo import models, Command, _
+from odoo import models, Command, api, _
 import logging
 _logger = logging.getLogger(__name__)
-THIRD_CHECKS_COUNTRY_CODES = ["AR"]
 
 
 class AccountChartTemplate(models.Model):
     _inherit = 'account.chart.template'
 
+    @api.model
+    def _get_third_party_checks_country_codes(self):
+        """ Return the list of country codes for the countries where third party checks journals should be created
+        when installing the COA"""
+        return ["AR"]
+
     def _create_bank_journals(self, company, acc_template_ref):
         res = super()._create_bank_journals(company, acc_template_ref)
 
-        if company.country_id.code in THIRD_CHECKS_COUNTRY_CODES:
+        if company.country_id.code in self._get_third_party_checks_country_codes():
             self.env['account.journal'].create({
                 'name': _('Third party checks'),
                 'type': 'cash',
