@@ -17,7 +17,7 @@ class AccountPayment(models.Model):
     @api.depends('amount')
     def _computed_net_amount(self):
         for rec in self:
-            rec.net_amount = rec.amount * (1 - rec.financing_plan_id.surcharge_coefficient / 100.0)
+            rec.net_amount = rec.amount / (1 + (rec.financing_plan_id.surcharge_coefficient / 100.0))
 
     @api.onchange('financing_plan_id')
     def _onchange_financing_plan(self):
@@ -29,7 +29,7 @@ class AccountPayment(models.Model):
     @api.onchange('net_amount',)
     def _inverse_net_amount(self):
         for rec in self:
-            rec.amount = rec.net_amount / (1 - rec.financing_plan_id.surcharge_coefficient / 100.0)
+            rec.amount = rec.net_amount * (1.0 + (rec.financing_plan_id.surcharge_coefficient / 100.0))
 
     @api.depends('available_financing_plan_ids', 'payment_type')
     def _compute_financing_plan(self):
@@ -37,3 +37,16 @@ class AccountPayment(models.Model):
         (self - with_plan).financing_plan_id = False
         for rec in with_plan:
             rec.financing_plan_id = rec._origin.available_financing_plan_ids[0]
+
+    @api.model
+    def default_get(self, default_fields):
+        if self._context.get('open_invoice_payment', False):
+            self = self.with_context(active_ids=None, active_model=None)
+        return super().default_get(default_fields)
+
+    @api.onchange('payment_group_id')
+    def onchange_payment_group_id(self):
+        payment_diff = self.payment_group_id.payment_difference
+        super().onchange_payment_group_id()
+        if self.payment_group_id and self.payment_group_id.financing_surcharge:
+            self.amount = payment_diff + self.payment_group_id.financing_surcharge
