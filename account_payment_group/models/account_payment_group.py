@@ -363,7 +363,7 @@ class AccountPaymentGroup(models.Model):
         """
         for rec in self:
             payment_lines = rec.payment_ids.mapped('move_line_ids').filtered(lambda x: x.account_internal_type in ['receivable', 'payable'])
-            rec.matched_move_line_ids =  (payment_lines.mapped('matched_debit_ids.debit_move_id') | payment_lines.mapped('matched_credit_ids.credit_move_id')) - payment_lines
+            rec.matched_move_line_ids =  (payment_lines.mapped('matched_debit_ids.debit_move_id').sorted(key=lambda x: x.date_maturity) | payment_lines.mapped('matched_credit_ids.credit_move_id')).sorted(key=lambda x: x.date_maturity) - payment_lines
 
     @api.depends('payment_ids.move_line_ids')
     def _compute_move_lines(self):
