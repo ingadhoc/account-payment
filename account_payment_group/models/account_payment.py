@@ -208,3 +208,13 @@ class AccountPayment(models.Model):
     def _get_trigger_fields_to_sincronize(self):
         res = super()._get_trigger_fields_to_sincronize()
         return res + ('force_amount_company_currency',)
+
+    @api.depends_context('default_is_internal_transfer')
+    def _compute_is_internal_transfer(self):
+        """ Este campo se recomputa cada vez que cambia un diario y queda en False porque el segundo diario no va a
+        estar completado. Como nosotros tenemos un menú especifico para poder registrar las transferencias internas,
+        entonces si estamos en este menu siempre es transferencia interna"""
+        if self._context.get('default_is_internal_transfer'):
+            self.is_internal_transfer = True
+        else:
+            return super()._compute_is_internal_transfer()
