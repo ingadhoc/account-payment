@@ -172,3 +172,24 @@ class AccountMove(models.Model):
     def button_draft(self):
         self.filtered(lambda x: x.state == 'posted' and x.pay_now_journal_id).write({'pay_now_journal_id': False})
         return super().button_draft()
+
+    def _get_last_sequence_domain(self, relaxed=False):
+        """ para transferencias no queremos que se enumere con el ultimo numero de asiento porque podria ser un
+        pago generado por un grupo de pagos y en ese caso el numero viene dado por el talonario de recibo/pago.
+        Entonces lo que hacemos es buscar ultimo numero solo en transferencias, pero como el campo
+        is_internal_transfer no está almacenado en el asiento, lo hacemos viendo que asientos no tienen
+        l10n_latam_document_type_id
+        TODO: tal vez mejorar y hacer join de alguna manera? tal vez llevar y hacer store el payment_group_id related
+        del payment_id? de esa manera no hacemos criterio segun si es transferencia si no que en ambos lados lo hacemos
+        segun si tiene payment_group_id o no?
+        """
+        where_string, param = super(AccountMove, self)._get_last_sequence_domain(relaxed)
+        if self.payment_id.is_internal_transfer:
+            where_string += " AND l10n_latam_document_type_id is Null"
+        # if self.company_id.account_fiscal_country_id.code == "AR" and self.l10n_latam_use_documents:
+        #     if not self.journal_id.l10n_ar_share_sequences:
+        #     elif self.journal_id.l10n_ar_share_sequences:
+        #         where_string += " AND l10n_latam_document_type_id in %(l10n_latam_document_type_ids)s"
+        #         param['l10n_latam_document_type_ids'] = tuple(self.l10n_latam_document_type_id.search(
+        #             [('l10n_ar_letter', '=', self.l10n_latam_document_type_id.l10n_ar_letter)]).ids)
+        return where_string, param
