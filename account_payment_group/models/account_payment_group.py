@@ -444,6 +444,10 @@ class AccountPaymentGroup(models.Model):
                             ir_sequence_date=rec.payment_date
                         ).sequence_id.next_by_id())
             rec.payment_ids.name = rec.name
+            # por ahora solo lo usamos en _get_last_sequence_domain para saber si viene de una transferencia (sin
+            # documen type) o es de un grupo de pagos. Pero mas alla de eso no tiene un gran uso, viene un poco legacy
+            # y ya está configurado en los receibooks
+            rec.payment_ids.l10n_latam_document_type_id = rec.document_type_id.id
 
             if not rec.payment_ids:
                 raise ValidationError(_(
