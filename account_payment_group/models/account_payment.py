@@ -47,6 +47,31 @@ class AccountPayment(models.Model):
         compute='_compute_payment_method_description',
         string='Payment Method Desc.',
     )
+    available_journal_ids = fields.Many2many(
+        comodel_name='account.journal',
+        compute='_compute_available_journal_ids'
+    )
+
+    @api.depends('payment_type', 'payment_group_id')
+    def _compute_available_journal_ids(self):
+        """
+        Este metodo odoo lo agrega en v16
+        Igualmente nosotros lo modificamos acá para que funcione con esta logica:
+        a) desde transferencias permitir elegir cualquier diario ya que no se selecciona compañía
+        b) desde grupos de pagos solo permitir elegir diarios de la misma compañía
+        NOTA: como ademas estamos mandando en el contexto del company_id, tal vez podriamos evitar pisar este metodo
+        y ande bien en v16 para que las lineas de pago de un payment group usen la compañia correspondiente, pero
+        lo que faltaria es hacer posible en las transferencias seleccionar una compañia distinta a la por defecto
+        """
+        journals = self.env['account.journal'].search([
+            ('company_id', 'in', self.env.companies.ids), ('type', 'in', ('bank', 'cash'))
+        ])
+        for pay in self:
+            filtered_domain = [('inbound_payment_method_line_ids', '!=', False)] if \
+                pay.payment_type == 'inbound' else [('outbound_payment_method_line_ids', '!=', False)]
+            if pay.payment_group_id:
+                filtered_domain.append(('company_id', '=', pay.payment_group_id.company_id.id))
+            pay.available_journal_ids = journals.filtered_domain(filtered_domain)
 
     @api.depends('payment_method_id')
     def _compute_payment_method_description(self):

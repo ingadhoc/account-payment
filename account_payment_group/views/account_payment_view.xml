@@ -59,7 +59,13 @@
         <field name="arch" type="xml">
             <form>
                 <field name="payment_group_id" invisible="1"/>
+                <field name="available_journal_ids" invisible="1"/>
             </form>
+
+            <!-- TODO en v16 no haria falta agregar este campo ni cambiar el dominio porque odoo ya lo agrega -->
+            <field name="journal_id" position="attributes">
+                <attribute name="domain">[('id', 'in', available_journal_ids)]</attribute>
+            </field>
 
             <!-- seccion para mejora pagos en otra moneda -->
             <div name="amount_div" position="after">
