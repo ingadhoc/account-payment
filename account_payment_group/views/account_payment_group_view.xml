@@ -134,7 +134,8 @@
                     </page>
                     <!-- no las pudimos hacer invisibles porque nos da error al venir de una factura y querer hacer las to pay lines tmb invisibles. lo bueno de hacerlas invisibles era que al confirmar se pasaba a las payment lines automaticamente -->
                     <page string="Payment Lines" attrs="{'invisible': [('payment_subtype', '=', 'double_validation'), ('state', '=', 'draft')]}">
-                        <field name="payment_ids" context="{'form_view_ref': 'account_payment_group.view_account_payment_from_group_form', 'tree_view_ref': 'account_payment_group.view_account_payment_from_group_tree', 'default_move_journal_types': ('bank', 'cash')}" attrs="{'readonly': [('state', 'not in', ['draft', 'confirmed'])]}"/>
+                        <!-- pasar en el contexto company_id es necesario para que se elija bien el primer diario sugerido -->
+                        <field name="payment_ids" context="{'form_view_ref': 'account_payment_group.view_account_payment_from_group_form', 'tree_view_ref': 'account_payment_group.view_account_payment_from_group_tree', 'default_move_journal_types': ('bank', 'cash'), 'default_company_id': company_id}" attrs="{'readonly': [('state', 'not in', ['draft', 'confirmed'])]}"/>
                     </page>
                     <page string="Debts" attrs="{'invisible': ['|', ('payment_subtype', '!=', 'simple'), ('state', '!=', 'draft')]}">
                         <p>
