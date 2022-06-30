@@ -104,33 +104,19 @@ class AccountPaymentReceiptbook(models.Model):
         for rec in self:
             if prefix and rec.sequence_id:
                 rec.sequence_id.prefix = prefix
-        return super(AccountPaymentReceiptbook, self).write(vals)
+        return super().write(vals)
 
     @api.model
     def create(self, vals):
-        sequence_type = vals.get(
-            'sequence_type',
-            self._context.get('default_sequence_type', False))
-        prefix = vals.get(
-            'prefix',
-            self._context.get('default_prefix', False))
-        company_id = vals.get(
-            'company_id',
-            self._context.get('default_company_id', False))
-
-        if (
-                sequence_type == 'automatic' and
-                not vals.get('sequence_id', False) and
-                company_id):
-            seq_vals = {
-                'name': vals['name'],
+        rec = super().create(vals)
+        if not rec.sequence_id and rec.sequence_type == 'automatic':
+            sequence = self.env['ir.sequence'].sudo().create({
+                'name': rec.name,
                 'implementation': 'no_gap',
-                'prefix': prefix,
+                'prefix': rec.prefix,
                 'padding': 8,
-                'number_increment': 1
-            }
-            sequence = self.env['ir.sequence'].sudo().create(seq_vals)
-            vals.update({
-                'sequence_id': sequence.id
+                'number_increment': 1,
+                'company_id': rec.company_id.id,
             })
-        return super(AccountPaymentReceiptbook, self).create(vals)
+            rec.sequence_id = sequence.id
+        return rec
