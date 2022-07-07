@@ -443,7 +443,6 @@ class AccountPaymentGroup(models.Model):
                         rec.receiptbook_id.with_context(
                             ir_sequence_date=rec.payment_date
                         ).sequence_id.next_by_id())
-            rec.payment_ids.name = rec.name
             # por ahora solo lo usamos en _get_last_sequence_domain para saber si viene de una transferencia (sin
             # documen type) o es de un grupo de pagos. Pero mas alla de eso no tiene un gran uso, viene un poco legacy
             # y ya está configurado en los receibooks
@@ -464,6 +463,8 @@ class AccountPaymentGroup(models.Model):
             # no volvemos a postear lo que estaba posteado
             if not created_automatically:
                 rec.payment_ids.filtered(lambda x: x.state == 'draft').action_post()
+            # escribimos despues del post para que odoo no renumere el payment
+            rec.payment_ids.name = rec.name
 
             if not rec.receiptbook_id and not rec.name:
                 rec.name = any(
