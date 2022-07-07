@@ -179,17 +179,26 @@ class AccountMove(models.Model):
         Entonces lo que hacemos es buscar ultimo numero solo en transferencias, pero como el campo
         is_internal_transfer no está almacenado en el asiento, lo hacemos viendo que asientos no tienen
         l10n_latam_document_type_id
+        Agregamos tambien en not self.payment_id para asientos que se generen a mano o asientos desde extractos
         TODO: tal vez mejorar y hacer join de alguna manera? tal vez llevar y hacer store el payment_group_id related
         del payment_id? de esa manera no hacemos criterio segun si es transferencia si no que en ambos lados lo hacemos
         segun si tiene payment_group_id o no?
+        TODO: tal vez lo mejor sea cambiar para no guardar mas numero de recibo en el asiento, pero eso es un cambio
+        gigante
         """
-        where_string, param = super(AccountMove, self)._get_last_sequence_domain(relaxed)
-        if self.payment_id.is_internal_transfer:
+        if self.journal_id.type in ('cash', 'bank') and (not self.payment_id or self.payment_id.is_internal_transfer):
+            # mandamos en contexto que estamos en esta condicion para poder meternos en el search que ejecuta super
+            # y que el pago de referencia que se usa para adivinar el tipo de secuencia sea un pago sin tipo de
+            # documento
+            where_string, param = super(
+                AccountMove, self.with_context(without_document_type=True))._get_last_sequence_domain(relaxed)
             where_string += " AND l10n_latam_document_type_id is Null"
-        # if self.company_id.account_fiscal_country_id.code == "AR" and self.l10n_latam_use_documents:
-        #     if not self.journal_id.l10n_ar_share_sequences:
-        #     elif self.journal_id.l10n_ar_share_sequences:
-        #         where_string += " AND l10n_latam_document_type_id in %(l10n_latam_document_type_ids)s"
-        #         param['l10n_latam_document_type_ids'] = tuple(self.l10n_latam_document_type_id.search(
-        #             [('l10n_ar_letter', '=', self.l10n_latam_document_type_id.l10n_ar_letter)]).ids)
+        else:
+            where_string, param = super(AccountMove, self)._get_last_sequence_domain(relaxed)
         return where_string, param
+
+    @api.model
+    def _search(self, args, offset=0, limit=None, order=None, count=False, access_rights_uid=None):
+        if self._context.get('without_document_type'):
+            args += [('l10n_latam_document_type_id', '=', False)]
+        return super()._search(args, offset=offset, limit=limit, order=order, count=count, access_rights_uid=access_rights_uid)
