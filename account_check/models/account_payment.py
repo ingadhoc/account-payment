@@ -206,7 +206,7 @@ class AccountPayment(models.Model):
                         # write with sudo for access rights over sequence
                         sequence.sudo().write(
                             {'number_next_actual': rec.check_number})
-                    check_name = rec.checkbook_id.sequence_id.next_by_id()
+                    check_name = sequence.get_next_char(sequence.number_next_actual)
                 else:
                     # in sipreco, for eg, no sequence on checkbooks
                     check_name = _get_name_from_number(rec.check_number)
@@ -511,6 +511,8 @@ class AccountPayment(models.Model):
                     'Para mandar a proceso de firma debe definir número '
                     'de cheque en cada línea de pago.\n'
                     '* ID del pago: %s') % rec.id)
+            if rec.payment_method_code == 'issue_check' and rec.check_number:
+                rec.checkbook_id.sequence_id.next_by_id()
         res = super(AccountPayment, self).post()
         return res
 
