@@ -11,15 +11,14 @@ class L10nLatamCheckTest(AccountTestInvoicingCommon):
     def setUpClass(cls, chart_template_ref=None):
         super().setUpClass(chart_template_ref=chart_template_ref)
 
-        if chart_template_ref:
-            chart_template = cls.env.ref(chart_template_ref)
-        else:
-            chart_template = cls.env.ref('l10n_generic_coa.configurable_chart_template', raise_if_not_found=False)
+        chart_template = cls.company_data['company'].chart_template_id
 
         cls.company_data_3 = cls.setup_company_data(
             'company_3_data', chart_template=chart_template, **{'country_id': cls.env.ref('base.ar').id})
 
         cls.bank_journal = cls.company_data_3['default_journal_bank']
+        # enable checkbooks on bank journal
+        cls.bank_journal.l10n_latam_use_checkbooks = True
         cls.deferred_checkbook = cls.env['l10n_latam.checkbook'].create({
             'journal_id': cls.bank_journal.id,
             'next_number': 50,
@@ -39,9 +38,5 @@ class L10nLatamCheckTest(AccountTestInvoicingCommon):
         })
 
         third_party_checks_journals = cls.env['account.journal'].search([('outbound_payment_method_line_ids.code', '=', 'new_third_party_checks'), ('inbound_payment_method_line_ids.code', '=', 'out_third_party_checks'), ('inbound_payment_method_line_ids.code', '=', 'new_third_party_checks')])
-        if len(third_party_checks_journals) == 2:
-            cls.third_party_check_journal = third_party_checks_journals[0]
-            cls.rejected_check_journal = third_party_checks_journals[1]
-        else:
-            cls.third_party_check_journal = False
-            cls.rejected_check_journal = False
+        cls.third_party_check_journal = third_party_checks_journals[0]
+        cls.rejected_check_journal = third_party_checks_journals[1]

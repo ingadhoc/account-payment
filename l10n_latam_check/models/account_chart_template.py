@@ -16,7 +16,7 @@ class AccountChartTemplate(models.Model):
         res = super()._create_bank_journals(company, acc_template_ref)
 
         if company.country_id.code in self._get_third_party_checks_country_codes():
-            self.env['account.journal'].create({
+            self.env['account.journal'].create([{
                 'name': _('Third party checks'),
                 'type': 'cash',
                 'company_id': company.id,
@@ -26,8 +26,8 @@ class AccountChartTemplate(models.Model):
                 'inbound_payment_method_line_ids': [
                     Command.create({'payment_method_id': self.env.ref('l10n_latam_check.account_payment_method_new_third_party_checks').id}),
                     Command.create({'payment_method_id': self.env.ref('l10n_latam_check.account_payment_method_in_third_party_checks').id}),
-                ]})
-            self.env['account.journal'].create({
+                ]}])
+            self.env['account.journal'].create([{
                 'name': _('Rejected Third party checks'),
                 'type': 'cash',
                 'company_id': company.id,
@@ -37,5 +37,5 @@ class AccountChartTemplate(models.Model):
                 'inbound_payment_method_line_ids': [
                     Command.create({'payment_method_id': self.env.ref('l10n_latam_check.account_payment_method_new_third_party_checks').id}),
                     Command.create({'payment_method_id': self.env.ref('l10n_latam_check.account_payment_method_in_third_party_checks').id}),
-                ]})
+                ]}])
         return res

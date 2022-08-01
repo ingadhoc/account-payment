@@ -8,11 +8,6 @@ from odoo.tests.common import tagged
 @tagged('post_install_l10n', 'post_install', '-at_install')
 class TestThirdChecks(L10nLatamCheckTest):
 
-    def test_01_journals_creation(self):
-        """ Verify journals for third party checks are being created"""
-        self.assertTrue(self.third_party_check_journal, 'Third party checks journal was not created properly')
-        self.assertTrue(self.rejected_check_journal, 'Rejected checks journal was not created properly')
-
     def create_third_party_check(self, journal=False):
         if not journal:
             journal = self.third_party_check_journal
@@ -116,13 +111,13 @@ class TestThirdChecks(L10nLatamCheckTest):
         bank_journal = self.company_data_3['default_journal_bank']
 
         # Check Deposit
-        deposit = self.env['account.payment.mass.transfer'].with_context(
+        deposit = self.env['l10n_latam.payment.mass.transfer'].with_context(
             active_model='account.payment', active_ids=[check.id]).create({'destination_journal_id': bank_journal.id})._create_payments()
         self.assertEqual(deposit.state, 'posted', 'Check %s was not deposited properly' % check.check_number)
         self.assertEqual(check.l10n_latam_check_current_journal_id, bank_journal, 'Current journal was not computed properly on delivery')
         # check dont deposit twice
         with self.assertRaises(UserError), self.cr.savepoint():
-            self.env['account.payment.mass.transfer'].with_context(
+            self.env['l10n_latam.payment.mass.transfer'].with_context(
                 active_model='account.payment', active_ids=[check.id]).create({'destination_journal_id': bank_journal.id})._create_payments()
 
         # Check Rejection
@@ -171,12 +166,12 @@ class TestThirdChecks(L10nLatamCheckTest):
         check = self.create_third_party_check()
 
         # Transfer to rejected checks journal (usually is to another third party checks journal, but for test purpose is the same)
-        transfer1 = self.env['account.payment.mass.transfer'].with_context(
+        transfer1 = self.env['l10n_latam.payment.mass.transfer'].with_context(
             active_model='account.payment', active_ids=[check.id]).create({'destination_journal_id': self.rejected_check_journal.id})._create_payments()
         self.assertEqual(transfer1.state, 'posted', 'Check %s was not deposited properly' % check.check_number)
         self.assertEqual(check.l10n_latam_check_current_journal_id, self.rejected_check_journal, 'Current journal was not computed properly on delivery')
 
         # test that checks created on different journals but that are on same current journal, can be transfered together
         check2 = self.create_third_party_check(journal=self.rejected_check_journal)
-        self.env['account.payment.mass.transfer'].with_context(
+        self.env['l10n_latam.payment.mass.transfer'].with_context(
             active_model='account.payment', active_ids=[check.id, check2.id]).create({'destination_journal_id': self.third_party_check_journal.id})._create_payments()
