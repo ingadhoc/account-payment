@@ -4,49 +4,29 @@ from odoo import models, fields, api
 class AccountPaymentRegister(models.TransientModel):
     _inherit = 'account.payment.register'
 
-    l10n_latam_check_id = fields.Many2one(
-        comodel_name='account.payment',
-        string='Check',
-    )
+    l10n_latam_check_id = fields.Many2one('account.payment', string='Check')
     l10n_latam_check_bank_id = fields.Many2one(
-        comodel_name='res.bank',
-        string='Check Bank',
-        compute='_compute_l10n_latam_check_data', store=True, readonly=False,
-    )
+        'res.bank', compute='_compute_l10n_latam_check_data', store=True, readonly=False, string='Check Bank')
     l10n_latam_check_issuer_vat = fields.Char(
-        string='Check Issuer VAT',
-        compute='_compute_l10n_latam_check_data', store=True, readonly=False,
-    )
+        store=True, compute='_compute_l10n_latam_check_data', readonly=False, string='Check Issuer VAT')
     l10n_latam_check_number = fields.Char(
-        string="Check Number",
-        compute='_compute_l10n_latam_check_number', inverse='_inverse_l10n_latam_check_number', store=True, readonly=False,
+        string="Check Number", store=True, readonly=False, copy=False,
+        compute='_compute_l10n_latam_check_number', inverse='_inverse_l10n_latam_check_number',
     )
-    l10n_latam_use_checkbooks = fields.Boolean(
-        related='journal_id.l10n_latam_use_checkbooks',
-    )
-    l10n_latam_checkbook_type = fields.Selection(
-        related='l10n_latam_checkbook_id.type',
-    )
+    l10n_latam_use_checkbooks = fields.Boolean(related='journal_id.l10n_latam_use_checkbooks')
+    l10n_latam_checkbook_type = fields.Selection(related='l10n_latam_checkbook_id.type')
     l10n_latam_checkbook_id = fields.Many2one(
-        comodel_name='l10n_latam.checkbook',
-        string='Checkbook',
-        compute='_compute_l10n_latam_checkbook', store=True,
-        readonly=False,
-    )
-    l10n_latam_check_payment_date = fields.Date(
-        string='Check Payment Date',
-    )
+        'l10n_latam.checkbook', 'Checkbook', store=True, compute='_compute_l10n_latam_checkbook', readonly=False)
+    l10n_latam_check_payment_date = fields.Date(string='Check Payment Date')
 
     @api.depends('payment_method_line_id.code', 'journal_id.l10n_latam_use_checkbooks')
     def _compute_l10n_latam_checkbook(self):
-        for payment in self:
-            if payment.payment_method_line_id.code == 'check_printing' and payment.journal_id.l10n_latam_use_checkbooks:
-                checkbooks = payment.journal_id.l10n_latam_checkbook_ids
-                if payment.l10n_latam_checkbook_id and payment.l10n_latam_checkbook_id in checkbooks:
-                    continue
-                payment.l10n_latam_checkbook_id = checkbooks[:1]
-            else:
-                payment.l10n_latam_checkbook_id = False
+        with_checkbooks = self.filtered(
+            lambda x: x.payment_method_line_id.code == 'check_printing' and x.journal_id.l10n_latam_use_checkbooks)
+        (self - with_checkbooks).l10n_latam_checkbook_id = False
+        for rec in with_checkbooks:
+            checkbook = rec.journal_id.with_context(active_test=True).l10n_latam_checkbook_ids
+            rec.l10n_latam_checkbook_id = checkbook and checkbook[0] or False
 
     @api.depends('journal_id', 'payment_method_code', 'l10n_latam_checkbook_id')
     def _compute_l10n_latam_check_number(self):
@@ -89,11 +69,11 @@ class AccountPaymentRegister(models.TransientModel):
 
     @api.onchange('l10n_latam_check_number')
     def _onchange_l10n_latam_check_number(self):
-        for rec in self.filtered(lambda x: x.journal_id.company_id.country_id.code == "AR" and x.l10n_latam_check_number
-                                 and x.l10n_latam_check_number.isdecimal()):
+        for rec in self.filtered(
+                lambda x: x.journal_id.company_id.country_id.code == "AR" and x.l10n_latam_check_number and x.l10n_latam_check_number.isdecimal()):
             rec.l10n_latam_check_number = '%08d' % int(rec.l10n_latam_check_number)
 
     @api.onchange('payment_method_line_id', 'journal_id')
-    def _onchange_to_reset_check_ids(self):
+    def reset_check_ids(self):
         """ If any of this fields changes the domain of the selectable checks could change """
         self.l10n_latam_check_id = False
