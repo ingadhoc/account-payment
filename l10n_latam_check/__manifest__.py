@@ -1,7 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 {
-    'name': 'Account Check Management',
-    'version': "1.0.0",
+    'name': 'Advanced Check Management',
+    'version': "1.4.0",
     'category': 'Accounting/Localizations',
     'summary': 'Checks Management',
     'description': """
@@ -9,23 +9,20 @@ Own Checks Management
 ---------------------
 
 Extends 'Check Printing Base' module to manage own checks with more features:
+
 * allow using own checks that are not printed but filled manually by the user
 * allow to use checkbooks to track numbering
 * allow to use different checkbooks type (deferred, electronic, current)
 * add an optional "payment date" for post-dated checks (deferred payments)
 * add a menu to track own checks
-* two modifications are done when using when using checkbooks:
+* two modifications are done when using checkbooks:
 
-    * the next number of the check is suggested but editable by the user. This is needed for electronic checks where
-    the next number is given by the bank and also when using pre-printed checkbooks where it's really common that the
-    order of filling checks is not the same as the one used on posting checks in odoo
-    * the printing functionality is disabled because there is not standard format and a report for each bank should be
-    implemented. It's a nice to have that could be implemented by customization if needed
+    * the next number of the check is suggested but editable by the user. This is needed for electronic checks where the next number is given by the bank and also when using pre-printed checkbooks where it's really common that the order of inputting checks in odoo is not the same as the numbering
+    * the printing functionality is disabled because there is not standard format and a report for each bank should be implemented. It's a nice to have that could be implemented by customization if needed
 
 
-
-Third party check Management
-----------------------
+Third Party Checks Management
+-----------------------------
 
 Add new "Third party check Management" feature.
 
@@ -59,9 +56,9 @@ There are 2 main Payment Methods additions:
         'views/l10n_latam_checkbook_view.xml',
         'views/account_journal_view.xml',
         'wizards/account_payment_register_views.xml',
-        'wizards/account_payment_mass_transfer_views.xml',
+        'wizards/l10n_latam_payment_mass_transfer_views.xml',
     ],
     'installable': True,
     'auto_install': False,
-    'application': True,
+    'application': False,
 }

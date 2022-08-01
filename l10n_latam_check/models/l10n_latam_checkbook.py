@@ -1,5 +1,4 @@
 from odoo import fields, models, api, _
-from odoo.osv import expression
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -8,27 +7,47 @@ class L10nLatamCheckbook(models.Model):
 
     _name = 'l10n_latam.checkbook'
     _description = 'Checkbook'
-    _rec_name = 'range_to'
+    _rec_name = 'sequence_id'
+    _order = 'active desc, range_to'
 
     sequence_id = fields.Many2one(
-        'ir.sequence', 'Sequence', copy=False, domain=[('code', '=', 'own_check')], help="Checks numbering sequence.")
-    next_number = fields.Integer(related='sequence_id.number_next_actual', related_sudo=True, readonly=False)
-    type = fields.Selection(
-        [('deferred', 'Deferred'), ('currents', 'Currents'), ('electronic', 'Electronic')],
-        string='Check type', required=True, default='deferred')
-    journal_id = fields.Many2one(
-        'account.journal', 'Journal', readonly=True, required=True, ondelete='cascade',)
-    range_to = fields.Integer(
-        'To Number',
+        comodel_name='ir.sequence',
+        string='Sequence',
+        domain=[('code', '=', 'own_check')],
+        copy=False,
+        help="Checks numbering sequence.",
     )
-    active = fields.Boolean(default=True)
+    next_number = fields.Integer(
+        related='sequence_id.number_next_actual', related_sudo=True,
+        readonly=False,
+    )
+    type = fields.Selection(
+        selection=[('deferred', 'Deferred'), ('currents', 'Currents'), ('electronic', 'Electronic')],
+        string='Check type',
+        default='deferred',
+        required=True,
+    )
+    journal_id = fields.Many2one(
+        comodel_name='account.journal',
+        string='Journal',
+        readonly=True,
+        required=True,
+        ondelete='cascade',
+    )
+    range_to = fields.Integer(
+        string='To Number',
+    )
+    active = fields.Boolean(
+        default=True,
+    )
 
-    @api.model
-    def create(self, vals):
-        rec = super().create(vals)
-        if not rec.sequence_id:
-            rec._create_sequence(vals.get('next_number', 0))
-        return rec
+    @api.model_create_multi
+    def create(self, vals_list):
+        recs = super().create(vals_list)
+        for rec, vals in zip(recs, vals_list):
+            if not rec.sequence_id:
+                rec._create_sequence(vals.get('next_number', 0))
+        return recs
 
     def _create_sequence(self, next_number):
         """ Create a check sequence for the checkbook """
@@ -49,8 +68,9 @@ class L10nLatamCheckbook(models.Model):
             name = {
                 'deferred': _('Deferred Checks'),
                 'currents': _('Currents Checks'),
-                'electronic': _('Electronic Checks')}.get(rec.type, '')
+                'electronic': _('Electronic Checks')
+            }.get(rec.type, '')
             if rec.range_to:
-                name += _(' up to %s') % rec.range_to
+                name += _(' up to %s', rec.range_to)
             result.append((rec.id, name))
         return result

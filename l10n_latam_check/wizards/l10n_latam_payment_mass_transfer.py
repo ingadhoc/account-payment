@@ -4,18 +4,30 @@ from odoo import models, api, fields, _
 from odoo.exceptions import UserError
 
 
-class AccountPaymentMassTransfer(models.TransientModel):
-    _name = 'account.payment.mass.transfer'
+class L10nLatamPaymentMassTransfer(models.TransientModel):
+    _name = 'l10n_latam.payment.mass.transfer'
     _description = 'Checks Mass Transfers'
 
-    payment_date = fields.Date(string="Payment Date", required=True, default=fields.Date.context_today)
+    payment_date = fields.Date(
+        string="Payment Date",
+        required=True,
+        default=fields.Date.context_today,
+    )
     destination_journal_id = fields.Many2one(
-        comodel_name='account.journal', string='Destination Journal',
+        comodel_name='account.journal',
+        string='Destination Journal',
         domain="[('type', 'in', ('bank', 'cash')), ('company_id', '=', company_id), ('id', '!=', journal_id)]",
     )
-    company_id = fields.Many2one(related='journal_id.company_id')
-    communication = fields.Char(string="Memo")
-    journal_id = fields.Many2one('account.journal', readonly=False)
+    company_id = fields.Many2one(
+        related='journal_id.company_id',
+    )
+    communication = fields.Char(
+        string="Memo",
+    )
+    journal_id = fields.Many2one(
+        comodel_name='account.journal',
+        readonly=False,
+    )
 
     @api.model
     def default_get(self, fields_list):
@@ -44,8 +56,8 @@ class AccountPaymentMassTransfer(models.TransientModel):
         pay_method_line = self.journal_id._get_available_payment_method_lines('outbound').filtered(
             lambda x: x.code == 'out_third_party_checks')
         if not pay_method_line:
-            raise UserError(_("There is no 'out_third_party_checks' payment method configured on journal %s") % (
-                self.journal_id.name))
+            raise UserError(_("There is no 'out_third_party_checks' payment method configured on journal %s",
+                            self.journal_id.name))
 
         for check in checks:
             payment_vals_list.append({
