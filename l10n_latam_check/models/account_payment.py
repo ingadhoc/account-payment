@@ -58,6 +58,9 @@ class AccountPayment(models.Model):
         """ Override from account_check_printing"""
         from_checkbooks = self.filtered(lambda x: x.l10n_latam_checkbook_id)
         for pay in from_checkbooks:
+            # we don't recompute when creating from a method and if check_number is sent
+            if pay.check_number and not isinstance(pay.id, models.NewId):
+                continue
             pay.check_number = pay.l10n_latam_checkbook_id.sequence_id.get_next_char(
                 pay.l10n_latam_checkbook_id.next_number)
         return super(AccountPayment, self - from_checkbooks)._compute_check_number()
