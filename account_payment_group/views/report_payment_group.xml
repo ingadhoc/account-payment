@@ -26,7 +26,7 @@
         report_type="qweb-pdf"
         name="account_payment_group.report_payment_group"
         file="account_payment_group.report_payment_group"
-        print_report_name="(object.partner_type == 'supplier' and 'Orden de pago' or 'Recibo') + ' ' + object.document_number"
+        print_report_name="(object.partner_type == 'supplier' and 'Orden de pago' or 'Recibo') + ' ' + (object.document_number or 'Borrador')"
     />
 
 </odoo>
