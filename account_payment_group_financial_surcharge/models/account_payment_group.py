@@ -16,10 +16,10 @@ class AccountPaymentGroup(models.Model):
     @api.depends('payment_ids.net_amount')
     def _computed_financing_surcharge(self):
         for rec in self:
-            rec.financing_surcharge = sum(rec.payment_ids.filtered('financing_plan_id').mapped(lambda x: x.amount - x.net_amount))
+            rec.financing_surcharge = sum(rec.payment_ids.filtered('installment_id').mapped(lambda x: x.amount - x.net_amount))
 
     def post(self):
-        if self.payment_ids.mapped('financing_plan_id'):
+        if self.payment_ids.mapped('installment_id'):
             product = self.company_id.product_surcharge_id
             if not product:
                 raise UserError(
@@ -48,7 +48,7 @@ class AccountPaymentGroup(models.Model):
                         'amount_total': self.financing_surcharge,
                     })
                 refund = self.env['account.move'].with_context(internal_type='debit_note').new({
-                    'type': wiz.get_invoice_vals().get('type'),
+                    'move_type': wiz.get_invoice_vals().get('move_type'),
                     'journal_id': journal.id,
                     'partner_id': self.partner_id.id,
                     'company_id': self.company_id.id,

@@ -16,6 +16,7 @@
         'security/ir.model.access.csv',
         'security/ir_rule.xml',
         'data/account_card.xml',
+        'data/decimal_installment_coeficent.xml',
         'views/account_card.xml',
     ],
     'demo': [

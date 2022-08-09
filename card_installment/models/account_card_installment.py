@@ -1,10 +1,13 @@
-# -*- coding: utf-8 -*-
-from odoo import models, fields, api
+##############################################################################
+# For copyright and license notices, see __manifest__.py file in module root
+# directory
+##############################################################################
+from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 from datetime import timedelta
 
-class AccountCardInstalment(models.Model):
-    _name = 'account.card.instalment'
+class AccountCardInstallment(models.Model):
+    _name = 'account.card.installment'
     _description = 'amount to add for collection in installments'
 
     card_id = fields.Many2one(
@@ -20,20 +23,16 @@ class AccountCardInstalment(models.Model):
         string='Divisor',
         min=1,
     )
-    instalment = fields.Integer(
-        string='instalment plan',
+    installment = fields.Integer(
+        string='installment plan',
         min=1,
-        help='Number of instalment'
+        help='Number of installment'
     )
-    coefficient = fields.Float(
+    surcharge_coefficient = fields.Float(
         string='coefficient',
         help='Value to multiply the amount',
         default=1.0,
-        digits='Instalment coefficient',
-    )
-    discount = fields.Float(
-        string='discount',
-        help='discount in amount'
+        digits='Installment coefficient',
     )
     bank_discount = fields.Float(
         string='bank discount',
@@ -53,34 +52,30 @@ class AccountCardInstalment(models.Model):
 
     def get_fees(self, amount):
         self.ensure_one()
-        discount = (100 - self.discount) / 100
-        return (amount * self.coefficient * discount) - amount
+        return amount * self.surcharge_coefficient  - amount
 
     def get_real_total(self, amount):
         self.ensure_one()
-        discount = (100 - self.discount) / 100
-        return amount * self.coefficient * discount
+        return amount * self.surcharge_coefficient
 
-    def card_instalment_tree(self, amount_total):
+    def card_installment_tree(self, amount_total):
         tree = {}
         for card in self.mapped('card_id'):
             tree[card.id] = card.map_card_values()
 
-        for instalment in self:
-            tree[instalment.card_id.id]['instalments'].append(instalment.map_instalment_values(amount_total))
+        for installment in self:
+            tree[installment.card_id.id]['installments'].append(installment.map_installment_values(amount_total))
         return tree
 
-    def map_instalment_values(self, amount_total):
+    def map_installment_values(self, amount_total):
 
         self.ensure_one()
-        discount = (100 - self.discount) / 100
-        amount = amount_total * self.coefficient * discount
+        amount = amount_total * self.surcharge_coefficient
         return {
                     'id': self.id,
                     'name': self.name,
-                    'instalment': self.instalment,
-                    'coefficient': self.coefficient,
-                    'discount': self.discount,
+                    'installment': self.installment,
+                    'coefficient': self.surcharge_coefficient,
                     'bank_discount': self.bank_discount,
                     'divisor': self.divisor,
                     'base_amount': amount_total,
