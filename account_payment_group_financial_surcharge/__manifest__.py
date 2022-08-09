@@ -6,9 +6,10 @@
     "category": "Payment",
     "depends": [
         "account_payment_group",
+        "card_installment",
     ],
     "data": [
-        'views/account_financing_plan_view.xml',
+        'views/card_installment_view.xml',
         'views/account_journal_views.xml',
         'views/account_payment_views.xml',
         'views/account_payment_group_views.xml',

@@ -32,18 +32,16 @@
 						<field name="name"/>
 					</h1>
 					<group col="4">
-						<field name="instalment_product_id"/>
 						<field name="company_id" groups="base.group_multi_company"/>
 					</group>
-					<group string="Instalment plan">
+					<group string="Installment plan">
 						<span>
-							<field name="instalment_ids">
+							<field name="installment_ids">
 								<tree editable="bottom">
 									<field name="name"/>
-									<field name="instalment"/>
+									<field name="installment"/>
 									<field name="divisor" optional="show"/>
-									<field name="coefficient"/>
-									<field name="discount" optional="hide"/>
+									<field name="surcharge_coefficient"/>
 									<field name="bank_discount" optional="hide"/>
 								</tree>
 							</field>
@@ -58,38 +56,37 @@
 		<field name="res_model">account.card</field>
 		<field name="view_mode">tree,form</field>
 	</record>
-	<record id="card_instalment_tree" model="ir.ui.view">
-		<field name="name">card_instalment.tree</field>
-		<field name="model">account.card.instalment</field>
+	<record id="card_installment_tree" model="ir.ui.view">
+		<field name="name">card_installment.tree</field>
+		<field name="model">account.card.installment</field>
 		<field name="arch" type="xml">
 			<tree editable="bottom">
 				<field name="card_id"/>
 				<field name="name"/>
-				<field name="instalment"/>
+				<field name="installment"/>
 				<field name="divisor" optional="hide"/>
-				<field name="coefficient"/>
-				<field name="discount"/>
+				<field name="surcharge_coefficient"/>
 				<field name="bank_discount"/>
                 <field name="active" widget="boolean_toggle" optional="hide"/>
 			</tree>
 		</field>
 	</record>
-	<record id="card_instalment_search" model="ir.ui.view">
-		<field name="name">card_instalment.search</field>
-		<field name="model">account.card.instalment</field>
+	<record id="card_installment_search" model="ir.ui.view">
+		<field name="name">card_installment.search</field>
+		<field name="model">account.card.installment</field>
 		<field name="arch" type="xml">
-			<search string="Card instalment">
+			<search string="Card installment">
 				<field name="card_id"/>
 				<field name="name"/>
-				<field name="instalment"/>
+				<field name="installment"/>
 				<field name="divisor"/>
 				<filter context="{'group_by' : 'card_id'}" domain="[]" name="by_card" string="By card"/>
 			</search>
 		</field>
 	</record>
-	<record id="action_card_instalment" model="ir.actions.act_window">
-		<field name="name">Instalments</field>
-		<field name="res_model">account.card.instalment</field>
+	<record id="action_card_installment" model="ir.actions.act_window">
+		<field name="name">Installments</field>
+		<field name="res_model">account.card.installment</field>
 		<field name="view_mode">tree</field>
 	</record>
 </odoo>

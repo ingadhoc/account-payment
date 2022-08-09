@@ -205,14 +205,14 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
             invoice_type += 'invoice'
 
         return {
-            'invoice_payment_ref': self.description,
+            #'invoice_payment_ref': self.description,
             'date': self.date,
             'invoice_date': self.invoice_date,
             'invoice_origin': _('Payment id %s') % payment_group.id,
             'journal_id': self.journal_id.id,
             'invoice_user_id': payment_group.partner_id.user_id.id,
             'partner_id': payment_group.partner_id.id,
-            'type': invoice_type,
+            'move_type': invoice_type,
         }
 
     def confirm(self):

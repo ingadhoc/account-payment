@@ -6,7 +6,7 @@
         <field name="inherit_id" ref="account.view_account_journal_form"/>
         <field name="arch" type="xml">
             <field name="company_id" position="after">
-                <field name="financing_plan_ids" widget="many2many_tags" attrs="{'invisible': [('type', 'not in', ['cash', 'bank'])]}"/>
+                <field name="available_card_ids" widget="many2many_tags" attrs="{'invisible': [('type', 'not in', ['cash', 'bank'])]}"/>
             </field>
         </field>
     </record>
