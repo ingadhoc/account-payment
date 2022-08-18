@@ -127,9 +127,8 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
             taxes = self.product_id.taxes_id
         company = self.company_id or self.env.company
         taxes = taxes.filtered(lambda r: r.company_id == company)
-        self.tax_ids = self.payment_group_id.partner_id.with_context(
-            force_company=company.id).property_account_position_id.map_tax(
-                taxes)
+        self.tax_ids = self.payment_group_id.partner_id.with_company(
+            company).property_account_position_id.map_tax(taxes)
 
     @api.onchange('amount_untaxed', 'tax_ids')
     def _inverse_amount_untaxed(self):
@@ -218,7 +217,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
     def confirm(self):
         self.ensure_one()
 
-        self = self.with_context(company_id=self.company_id.id, force_company=self.company_id.id)
+        self = self.with_company(self.company_id).with_context(company_id=self.company_id.id)
         invoice_vals = self.get_invoice_vals()
         line_vals =  {
             'product_id': self.product_id.id,

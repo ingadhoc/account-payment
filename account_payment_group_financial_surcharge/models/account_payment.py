@@ -12,7 +12,7 @@ class AccountPayment(models.Model):
     available_card_ids = fields.Many2many(
         'account.card',
         string='Cards',
-        related='journal_id.available_card_ids'
+        related='payment_method_line_id.available_card_ids'
     )
     card_id = fields.Many2one(
         'account.card',
@@ -33,14 +33,14 @@ class AccountPayment(models.Model):
         inverse='_inverse_net_amount'
     )
 
-
     @api.depends('available_card_ids', 'payment_type')
+    @api.onchange('payment_method_line_id')
     def _compute_financing_plan(self):
         with_plan = self.filtered(lambda x: x.payment_type == 'inbound' and x._origin.available_card_ids)
         (self - with_plan).card_id = False
+        (self - with_plan).installment_id = False
         for rec in with_plan:
             rec.card_id = rec._origin.available_card_ids[0]
-        
 
     @api.onchange('card_id')
     def _onchange_card_id(self):

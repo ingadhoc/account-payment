@@ -2,8 +2,8 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import models, fields, api
-import re 
+from odoo import models, fields
+
 
 class AccountCard(models.Model):
     _name = 'account.card'
