@@ -2,9 +2,8 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import models, fields, api, _
-from odoo.exceptions import ValidationError
-from datetime import timedelta
+from odoo import models, fields, _
+
 
 class AccountCardInstallment(models.Model):
     _name = 'account.card.installment'
@@ -21,11 +20,9 @@ class AccountCardInstallment(models.Model):
     )
     divisor = fields.Integer(
         string='Divisor',
-        min=1,
     )
     installment = fields.Integer(
         string='installment plan',
-        min=1,
         help='Number of installment'
     )
     surcharge_coefficient = fields.Float(
@@ -42,7 +39,7 @@ class AccountCardInstallment(models.Model):
         'Active',
         default=True
     )
-    
+
     def name_get(self):
         result = []
         for record in self:
@@ -52,7 +49,7 @@ class AccountCardInstallment(models.Model):
 
     def get_fees(self, amount):
         self.ensure_one()
-        return amount * self.surcharge_coefficient  - amount
+        return amount * self.surcharge_coefficient - amount
 
     def get_real_total(self, amount):
         self.ensure_one()
@@ -68,7 +65,6 @@ class AccountCardInstallment(models.Model):
         return tree
 
     def map_installment_values(self, amount_total):
-
         self.ensure_one()
         amount = amount_total * self.surcharge_coefficient
         return {
@@ -79,6 +75,7 @@ class AccountCardInstallment(models.Model):
                     'bank_discount': self.bank_discount,
                     'divisor': self.divisor,
                     'base_amount': amount_total,
-                    'amount': amount, 
+                    'amount': amount,
                     'fee': amount - amount_total,
+                    'description': _('%s installment of %.2f (total %.2f)' % (self.divisor, amount_total /  self.divisor, amount_total))
                 }
