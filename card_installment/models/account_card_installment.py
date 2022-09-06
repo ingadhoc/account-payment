@@ -27,9 +27,9 @@ class AccountCardInstallment(models.Model):
     )
     surcharge_coefficient = fields.Float(
         string='coefficient',
-        help='Value to multiply the amount',
         default=1.0,
         digits='Installment coefficient',
+        help='Coeficiente con iva incluido'
     )
     bank_discount = fields.Float(
         string='bank discount',
@@ -77,5 +77,5 @@ class AccountCardInstallment(models.Model):
                     'base_amount': amount_total,
                     'amount': amount,
                     'fee': amount - amount_total,
-                    'description': _('%s installment of %.2f (total %.2f)' % (self.divisor, amount_total /  self.divisor, amount_total))
+                    'description': _('%s installment of %.2f (total %.2f)' % (self.divisor, amount / self.divisor, amount))
                 }
