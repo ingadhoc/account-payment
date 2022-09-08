@@ -243,3 +243,8 @@ class AccountPayment(models.Model):
             self.is_internal_transfer = True
         else:
             return super()._compute_is_internal_transfer()
+
+    def _create_paired_internal_transfer_payment(self):
+        super(AccountPayment, self.with_context(
+            default_force_amount_company_currency=self.force_amount_company_currency
+        ))._create_paired_internal_transfer_payment()
