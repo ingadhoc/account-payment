@@ -7,7 +7,7 @@
     'website': "https://www.adhoc.com.ar",
     'category': 'Technical',
     'version': '15.0.0.0.2',
-    'depends': ['product'],
+    'depends': ['product', 'account'],
     'license': 'LGPL-3',
     'images': [
     ],

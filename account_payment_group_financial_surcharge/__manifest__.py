@@ -15,7 +15,6 @@
         'views/account_payment_group_views.xml',
         'views/account_move_views.xml',
         'wizards/res_config_settings_views.xml',
-        'security/ir.model.access.csv',
     ],
     "demo": [
     ],
