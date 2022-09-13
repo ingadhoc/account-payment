@@ -13,7 +13,7 @@ class AccountJournal(models.Model):
             })
             ctx.pop('group_by', None)
             action_rec = self.env.ref('account_payment_group.action_account_payments_transfer')
-            action = action_rec.read([])[0]
+            action = action_rec.sudo().read([])[0]
             action['context'] = ctx
             action['domain'] = [('journal_id', '=', self.id),
                                 ('payment_type', '=', payment_type)]
