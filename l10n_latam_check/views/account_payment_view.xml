@@ -7,6 +7,10 @@
         <field name="mode">primary</field>
         <field name="inherit_id" ref="account.view_account_payment_search"/>
         <field name="arch" type="xml">
+            <field name="name" position="before">
+                <field name="check_number"/>
+            </field>
+
             <filter name="matched" position="after">
                 <filter string="Bank Unmatched" name="unmatched" domain="[('is_matched', '=', False)]"/>
             </filter>
