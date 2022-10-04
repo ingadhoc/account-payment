@@ -412,6 +412,15 @@ class AccountPaymentGroup(models.Model):
         if recs:
             raise ValidationError(_('You can not delete posted payment groups. Payment group ids: %s') % recs.ids)
 
+    def unlink(self):
+        """ Hacemos unlink de esta manera y no con el ondelete cascade porque con este ultimo se hace eliminacion
+        por sql y no se llama el metodo unlin de odoo account.payment que se encarga de propagar la eliminacion al
+        account.move"""
+        payments = self.mapped('payment_ids')
+        res = super().unlink()
+        payments.unlink()
+        return res
+
     def confirm(self):
         for rec in self:
             accounts = rec.to_pay_move_line_ids.mapped('account_id')
