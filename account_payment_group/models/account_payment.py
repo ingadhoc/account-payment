@@ -14,7 +14,6 @@ class AccountPayment(models.Model):
     payment_group_id = fields.Many2one(
         'account.payment.group',
         'Payment Group',
-        ondelete='cascade',
         readonly=True,
     )
     amount_company_currency = fields.Monetary(
