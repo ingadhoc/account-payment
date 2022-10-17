@@ -53,17 +53,32 @@ class AccountPayment(models.Model):
                 continue
             rec.l10n_latam_checkbook_id = checkbooks and checkbooks[0] or False
 
-    @api.depends('l10n_latam_checkbook_id', 'journal_id', 'payment_method_code')
-    def _compute_check_number(self):
-        """ Override from account_check_printing"""
-        from_checkbooks = self.filtered(lambda x: x.l10n_latam_checkbook_id)
-        for pay in from_checkbooks:
-            # we don't recompute when creating from a method and if check_number is sent
-            if pay.check_number and not isinstance(pay.id, models.NewId):
-                continue
+    @api.onchange('l10n_latam_checkbook_id', 'journal_id', 'payment_method_code')
+    def _onchange_suggest_checknumber(self):
+        for pay in self.filtered(lambda x: x.l10n_latam_checkbook_id):
             pay.check_number = pay.l10n_latam_checkbook_id.sequence_id.get_next_char(
                 pay.l10n_latam_checkbook_id.next_number)
-        return super(AccountPayment, self - from_checkbooks)._compute_check_number()
+
+    def _compute_check_number(self):
+        """ Override from account_check_printing.
+        For own checks with checkbooks get next number from the checkbook
+        For third party checks don't call super so that number is not cleaned"""
+        latam_checks = self.filtered(
+            lambda x: x.payment_method_line_id.code == 'new_third_party_checks' or
+            (x.payment_method_line_id.code == 'check_printing' and x.l10n_latam_use_checkbooks))
+        return super(AccountPayment, self - latam_checks)._compute_check_number()
+        
+    # @api.depends('l10n_latam_checkbook_id', 'journal_id', 'payment_method_code')
+    # def _compute_check_number(self):
+    #     """ Override from account_check_printing"""
+    #     from_checkbooks = self.filtered(lambda x: x.l10n_latam_checkbook_id)
+    #     for pay in from_checkbooks:
+    #         # we don't recompute when creating from a method and if check_number is sent
+    #         if pay.check_number and not isinstance(pay.id, models.NewId):
+    #             continue
+    #         pay.check_number = pay.l10n_latam_checkbook_id.sequence_id.get_next_char(
+    #             pay.l10n_latam_checkbook_id.next_number)
+    #     return super(AccountPayment, self - from_checkbooks)._compute_check_number()
 
     def _inverse_check_number(self):
         """ On third party checks or own checks with checkbooks, avoid calling super because is not needed to write the
