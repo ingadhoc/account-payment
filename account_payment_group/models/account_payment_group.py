@@ -507,7 +507,7 @@ class AccountPaymentGroup(models.Model):
                 raise ValidationError(_('All to pay lines must be of the same partner'))
             if len(rec.to_pay_move_line_ids.mapped('company_id')) > 1:
                 raise ValidationError(_("You can't create payments for entries belonging to different companies."))
-            if to_pay_partners and to_pay_partners != rec.partner_id:
+            if to_pay_partners and to_pay_partners != rec.partner_id.commercial_partner_id:
                 raise ValidationError(_('Payment group for partner %s but payment lines are of partner %s') % (
                     rec.partner_id.name, to_pay_partners.name))
 
