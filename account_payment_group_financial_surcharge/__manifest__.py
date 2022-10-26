@@ -1,6 +1,12 @@
 {
     "name": "Payment Groups with Financial Surchange",
+<<<<<<< HEAD
     "version": "15.0.1.0.1",
+||||||| parent of 41e6761e... temp
+    "version": "13.0.1.1.0",
+=======
+    "version": "13.0.1.2.0",
+>>>>>>> 41e6761e... temp
     "author": "ADHOC SA",
     "license": "AGPL-3",
     "category": "Payment",
