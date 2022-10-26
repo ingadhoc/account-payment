@@ -15,7 +15,7 @@ class AccountFinancingPlan(models.Model):
         default=10,
     )
     name = fields.Char(required=True)
-    surcharge_coefficient = fields.Integer(
+    surcharge_coefficient = fields.Float(
         'Surcharge coefficient',
         required=True,
     )
