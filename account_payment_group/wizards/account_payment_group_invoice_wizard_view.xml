@@ -17,7 +17,11 @@
                             <field name="amount_untaxed"/>
                             <field name="tax_ids" widget="many2many_tags" options="{'no_create': True}"/>
                             <field name="amount_total"/>
-                            <field name="account_analytic_id" groups="analytic.group_analytic_accounting" domain="[('company_id', '=', company_id)]"/>
+                            <field name="analytic_distribution" widget="analytic_distribution"
+                                groups="analytic.group_analytic_accounting"
+                                optional="show"
+                                options="{'product_field': 'product_id', 'force_applicability': 'optional'}"
+                            />
                             <field name="description"/>
                          </group>
                          <group>

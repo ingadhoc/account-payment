@@ -17,7 +17,7 @@ class AccountChartTemplate(models.Model):
         self.ensure_one()
         self.generate_receiptbooks(company)
         return super(AccountChartTemplate, self)._load_template(
-            company, code_digits, account_ref, taxes_ref)
+            company, code_digits=code_digits, account_ref=account_ref, taxes_ref=taxes_ref)
 
     @api.model
     def generate_receiptbooks(self, company):

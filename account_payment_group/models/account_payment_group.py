@@ -319,7 +319,7 @@ class AccountPaymentGroup(models.Model):
         al revz (debit_move_id vs credit_move_id)
         """
         for rec in self:
-            payment_lines = rec.payment_ids.mapped('line_ids').filtered(lambda x: x.account_internal_type in ['receivable', 'payable'])
+            payment_lines = rec.payment_ids.mapped('line_ids').filtered(lambda x: x.account_type in ['asset_receivable', 'liability_payable'])
             rec.matched_move_line_ids = (payment_lines.mapped('matched_debit_ids.debit_move_id') | payment_lines.mapped('matched_credit_ids.credit_move_id')) - payment_lines
 
     @api.depends('payment_ids.line_ids')
@@ -368,7 +368,7 @@ class AccountPaymentGroup(models.Model):
             ('partner_id.commercial_partner_id', '=', self.commercial_partner_id.id),
             ('company_id', '=', self.company_id.id), ('move_id.state', '=', 'posted'),
             ('account_id.reconcile', '=', True), ('reconciled', '=', False), ('full_reconcile_id', '=', False),
-            ('account_id.internal_type', '=', 'receivable' if self.partner_type == 'customer' else 'payable'),
+            ('account_id.account_type', '=', 'asset_receivable' if self.partner_type == 'customer' else 'liability_payable'),
         ]
 
     def add_all(self):
@@ -482,7 +482,7 @@ class AccountPaymentGroup(models.Model):
 
             if not created_automatically:
                 counterpart_aml = rec.payment_ids.mapped('line_ids').filtered(
-                    lambda r: not r.reconciled and r.account_id.internal_type in ('payable', 'receivable'))
+                    lambda r: not r.reconciled and r.account_id.account_type in ('liability_payable', 'asset_receivable'))
                 if counterpart_aml and rec.to_pay_move_line_ids:
                     (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile()
 

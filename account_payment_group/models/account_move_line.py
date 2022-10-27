@@ -31,8 +31,7 @@ class AccountMoveLine(models.Model):
             self.payment_group_matched_amount = 0.0
             return False
         payments = self.env['account.payment.group'].browse(payment_group_id).payment_ids
-        payment_lines = payments.mapped('line_ids').filtered(lambda x: x.account_internal_type in ['receivable', 'payable'])
-
+        payment_lines = payments.mapped('line_ids').filtered(lambda x: x.account_type in ['asset_receivable', 'liability_payable'])
         for rec in self:
             debit_move_amount = sum(payment_lines.mapped('matched_debit_ids').filtered(lambda x: x.debit_move_id == rec).mapped('amount'))
             credit_move_amount = sum(payment_lines.mapped('matched_credit_ids').filtered(lambda x: x.credit_move_id == rec).mapped('amount'))

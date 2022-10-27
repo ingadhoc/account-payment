@@ -72,6 +72,8 @@ class AccountPayment(models.Model):
                 filtered_domain.append(('company_id', '=', pay.payment_group_id.company_id.id))
             pay.available_journal_ids = journals.filtered_domain(filtered_domain)
 
+
+
     @api.depends('payment_method_id')
     def _compute_payment_method_description(self):
         for rec in self:
@@ -125,6 +127,7 @@ class AccountPayment(models.Model):
     # rouding odoo believes amount has changed)
     @api.onchange('amount_company_currency')
     def _inverse_amount_company_currency(self):
+
         for rec in self:
             if rec.other_currency and rec.amount_company_currency != \
                     rec.currency_id._convert(
