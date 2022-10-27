@@ -91,7 +91,7 @@
 
                 <group>
                     <group name="group1">
-                        <field name="company_id" options="{'no_create': True, 'no_open': True}" groups="base.group_multi_company"/>
+                        <field name="company_id" options="{'no_create': True, 'no_open': True}" />
                         <field name="currency_id" invisible="1"/>
                         <field name="partner_id" context="{'default_is_company': True}" string="Customer"
                                 attrs="{'readonly':[('state', '!=', 'draft')],
@@ -130,7 +130,7 @@
                         <field
                             name="to_pay_move_line_ids"
                             context="{'tree_view_ref': 'account_payment_group.view_move_line_tree'}"
-                            domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.reconcile', '=', True),('reconciled', '=', False), ('full_reconcile_id', '=', False), ('company_id', '=', company_id), ('move_id.state', '=', 'posted'), ('account_id.internal_type', '=', 'receivable' if partner_type == 'customer' else 'payable')]"/>
+                            domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.reconcile', '=', True),('reconciled', '=', False), ('full_reconcile_id', '=', False), ('company_id', '=', company_id), ('move_id.state', '=', 'posted'), ('account_id.account_type', '=', 'asset_receivable' if partner_type == 'customer' else 'liability_payable')]"/>
                     </page>
                     <!-- no las pudimos hacer invisibles porque nos da error al venir de una factura y querer hacer las to pay lines tmb invisibles. lo bueno de hacerlas invisibles era que al confirmar se pasaba a las payment lines automaticamente -->
                     <page string="Payment Lines" attrs="{'invisible': [('payment_subtype', '=', 'double_validation'), ('state', '=', 'draft')]}">
@@ -148,7 +148,7 @@
                         <field
                             name="to_pay_move_line_ids"
                             context="{'tree_view_ref': 'account_payment_group.view_move_line_tree'}"
-                            domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.reconcile', '=', True),('reconciled', '=', False), ('full_reconcile_id', '=', False), ('company_id', '=', company_id), ('move_id.state', '=', 'posted'), ('account_id.internal_type', '=', 'receivable' if partner_type == 'customer' else 'payable')]" help="Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched."/>
+                            domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.reconcile', '=', True),('reconciled', '=', False), ('full_reconcile_id', '=', False), ('company_id', '=', company_id), ('move_id.state', '=', 'posted'), ('account_id.account_type', '=', 'asset_receivable' if partner_type == 'customer' else 'liability_payable')]" help="Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched."/>
                     </page>
                     <page string="Paid" states="posted">
                         <field name="matched_move_line_ids" context="{'payment_group_id': id, 'tree_view_ref': 'account_payment_group.view_move_line_with_matched_tree'}"/>

@@ -106,11 +106,11 @@ class AccountPaymentReceiptbook(models.Model):
                 rec.sequence_id.prefix = prefix
         return super().write(vals)
 
-    @api.model
-    def create(self, vals):
-        rec = super().create(vals)
-        if not rec.sequence_id and rec.sequence_type == 'automatic':
-            sequence = self.env['ir.sequence'].sudo().create({
+    @api.model_create_multi
+    def create(self, vals_list):
+        recs = super().create(vals_list)
+        for rec in recs.filtered(lambda x: not x.sequence_id and x.sequence_type == 'automatic'):
+            rec.sequence_id = self.env['ir.sequence'].sudo().create({
                 'name': rec.name,
                 'implementation': 'no_gap',
                 'prefix': rec.prefix,
@@ -118,5 +118,4 @@ class AccountPaymentReceiptbook(models.Model):
                 'number_increment': 1,
                 'company_id': rec.company_id.id,
             })
-            rec.sequence_id = sequence.id
-        return rec
+        return recs

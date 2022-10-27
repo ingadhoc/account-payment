@@ -65,9 +65,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
     company_id = fields.Many2one(
         related='payment_group_id.company_id',
     )
-    account_analytic_id = fields.Many2one(
-        'account.analytic.account',
-        'Analytic Account',
+    analytic_distribution = fields.Json(
     )
 
     use_documents = fields.Boolean(
@@ -222,8 +220,8 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
             'price_unit': self.amount_untaxed,
             'tax_ids': [(6, 0, self.tax_ids.ids)],
         }
-        if self.account_analytic_id:
-            line_vals['analytic_account_id'] = self.account_analytic_id.id
+        if self.analytic_distribution:
+            line_vals['analytic_distribution'] = self.analytic_distribution
         invoice_vals['invoice_line_ids'] = [(0, 0, line_vals)]
         invoice = self.env['account.move'].create(invoice_vals)
         invoice.action_post()
