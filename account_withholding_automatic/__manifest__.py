@@ -36,7 +36,7 @@
         'account_payment_group',
         'account_withholding',
     ],
-    'installable': True,
+    'installable': False,
     'name': 'Automatic Withholdings on Payments',
     'test': [],
     'version': "15.0.1.0.0",
