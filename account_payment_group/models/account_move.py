@@ -51,12 +51,13 @@ class AccountMove(models.Model):
         for rec in self:
             rec.payment_group_ids = rec._get_reconciled_payments().mapped('payment_group_id')
 
-    @api.depends('line_ids.account_id.internal_type', 'line_ids.reconciled')
+
+    @api.depends('line_ids.account_id.account_type', 'line_ids.reconciled')
     def _compute_open_move_lines(self):
         for rec in self:
             rec.open_move_line_ids = rec.line_ids.filtered(
-                lambda r: not r.reconciled and r.account_id.internal_type in (
-                    'payable', 'receivable'))
+                lambda r: not r.reconciled and r.account_id.account_type in ['asset_receivable','liability_payable'])
+
 
     def action_register_payment_group(self):
         to_pay_move_lines = self.open_move_line_ids
@@ -73,7 +74,7 @@ class AccountMove(models.Model):
             'target': 'current',
             'type': 'ir.actions.act_window',
             'context': {
-                'default_partner_type': 'customer' if to_pay_move_lines[0].account_id.internal_type == 'receivable' else 'supplier',
+                'default_partner_type': 'customer' if to_pay_move_lines[0].account_id.account_type == 'asset_receivable' else 'supplier',
                 'default_partner_id': to_pay_partners.id,
                 'default_to_pay_move_line_ids': to_pay_move_lines.ids,
                 # We set this because if became from other view and in the context has 'create=False'
