@@ -85,6 +85,14 @@ class AccountMove(models.Model):
         self.pay_now()
         return res
 
+    def pay_now_context(self, partner_type):
+        self.ensure_one()
+        return {
+            'to_pay_move_line_ids': (self.open_move_line_ids.ids),
+            'default_company_id': self.company_id.id,
+            'default_partner_type': partner_type,
+        }
+
     def pay_now(self):
         # validate_payment = not self._context.get('validate_payment')
         for rec in self:
@@ -100,11 +108,7 @@ class AccountMove(models.Model):
                 else:
                     partner_type = 'customer'
 
-                pay_context = {
-                    'to_pay_move_line_ids': (rec.open_move_line_ids.ids),
-                    'default_company_id': rec.company_id.id,
-                    'default_partner_type': partner_type,
-                }
+                pay_context = rec.pay_now_context(partner_type)
 
                 payment_group = rec.env[
                     'account.payment.group'].with_context(
