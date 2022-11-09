@@ -14,7 +14,7 @@
 Withholdings on Payments
 ========================
 
-TODO
+Extends payments (account.payment) and taxes (account.tax) to allow using withholding taxes on journals with an inbound/outbound payment method of type "withholding".
 
 Installation
 ============

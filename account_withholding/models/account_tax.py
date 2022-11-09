@@ -29,8 +29,8 @@ class AccountTax(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        res = super(AccountTax, self).create(self)
-        for tax in res.filtered(lambda x: x.type_tax_use == 'supplier' and not x.withholding_sequence_id):
+        recs = super(AccountTax, self).create(vals_list)
+        for tax in recs.filtered(lambda x: x.type_tax_use == 'supplier' and not x.withholding_sequence_id):
             tax.withholding_sequence_id = self.withholding_sequence_id.sudo().create({
                 'name': tax.name,
                 'implementation': 'no_gap',
@@ -40,4 +40,4 @@ class AccountTax(models.Model):
                 'code': 'account.tax.withholding',
                 'company_id': tax.company_id.id,
             }).id
-        return res
+        return recs
