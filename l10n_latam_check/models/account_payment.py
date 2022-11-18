@@ -57,7 +57,7 @@ class AccountPayment(models.Model):
     def _compute_check_number(self):
         """ Override from account_check_printing"""
         from_checkbooks = self.filtered(lambda x: x.l10n_latam_checkbook_id)
-        for pay in from_checkbooks:
+        for pay in from_checkbooks.filtered(lambda x: x.state == 'draft'):
             # we don't recompute when creating from a method and if check_number is sent
             if pay.check_number and not isinstance(pay.id, models.NewId):
                 continue
