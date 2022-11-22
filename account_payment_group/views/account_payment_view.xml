@@ -33,6 +33,9 @@
         <field name="priority">90</field>
         <field name="mode">primary</field>
         <field name="arch" type="xml">
+            <tree position="attributes">
+                <attribute name="create">0</attribute>
+            </tree>
             <field name="payment_method_line_id" position="attributes">
                 <attribute name="invisible">1</attribute>
             </field>
