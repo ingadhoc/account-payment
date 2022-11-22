@@ -286,6 +286,26 @@ class AccountPaymentGroup(models.Model):
             'context': ctx,
         }
 
+    def action_add_payment_line(self):
+        view = self.env.ref('account_payment_group.view_account_payment_from_group_form')
+        ctx = {
+            'default_move_journal_types': ('bank', 'cash'),
+            'default_company_id': self.company_id.id,
+            'default_payment_group_id': self.id
+        }
+        return {
+            'name': _('Pay'),
+            'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'account.payment',
+            'views': [(view.id, 'form')],
+            'view_id': view.id,
+            'target': 'new',
+            'context': ctx,
+        }
+
+
     def payment_print(self):
         self.ensure_one()
         self.sent = True
