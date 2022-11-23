@@ -56,16 +56,15 @@ class AccountPayment(models.Model):
             rec.net_amount = rec.amount / (rec.installment_id.surcharge_coefficient or 1)
 
     @api.onchange('installment_id')
-    def _onchlange_instalment(self):
+    def _onchange_instalment(self):
         """ no agregamos este onchange en el de _inverse_net_amount porque si no el amount se inicializa en cero.
         Eventualmente habria que mejorar esto. Se podria tal vez pasar el default por vista al net_amount tmb """
         for rec in self:
             rec._inverse_net_amount()
 
-    @api.onchange('net_amount',)
     def _inverse_net_amount(self):
         for rec in self:
-            rec.amount = rec.net_amount * (rec.installment_id.surcharge_coefficient or 1)
+            rec.with_context(skip_account_move_synchronization=True).amount = rec.net_amount * (rec.installment_id.surcharge_coefficient or 1)
 
     @api.model
     def default_get(self, default_fields):
