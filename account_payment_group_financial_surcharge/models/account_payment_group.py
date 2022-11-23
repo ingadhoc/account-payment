@@ -19,7 +19,7 @@ class AccountPaymentGroup(models.Model):
             rec.financing_surcharge = sum(rec.payment_ids.filtered('installment_id').mapped(lambda x: x.amount - x.net_amount))
 
     def post(self):
-        if self.payment_ids.mapped('installment_id'):
+        if self.financing_surcharge:
             product = self.company_id.product_surcharge_id
             if not product:
                 raise UserError(
