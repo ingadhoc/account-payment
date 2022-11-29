@@ -64,7 +64,7 @@ class AccountMove(models.Model):
             raise UserError(_('Nothing to be paid on selected entries'))
         to_pay_partners = self.mapped('commercial_partner_id')
         if len(to_pay_partners) > 1:
-            raise UserError(_('Selected recrods must be of the same partner'))
+            raise UserError(_('Selected records must be of the same partner'))
 
         return {
             'name': _('Register Payment'),
@@ -82,6 +82,11 @@ class AccountMove(models.Model):
                 'default_company_id': self.company_id.id,
             },
         }
+
+    def action_register_payment(self):
+        ''' This method is extended to work like action_register_payment_group() and not like the native odoo method,
+        the register payment button will act like the "Registrar Pago" server action '''
+        return self.action_register_payment_group()
 
     def action_post(self):
         res = super(AccountMove, self).action_post()
