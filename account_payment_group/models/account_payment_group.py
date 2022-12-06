@@ -35,6 +35,7 @@ class AccountPaymentGroup(models.Model):
         string='Payment Methods',
         compute='_compute_payment_methods',
         search='_search_payment_methods',
+        store = True,
     )
     partner_type = fields.Selection(
         [('customer', 'Customer'), ('supplier', 'Vendor')],
