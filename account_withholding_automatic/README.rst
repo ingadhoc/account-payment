@@ -14,7 +14,10 @@
 Automatic Withholdings on Payments
 ==================================
 
-TODO
+Extiende account_withholding agregando lógica para cálculo de retenciones de manera
+automática, agrega un botón en los payment groups para poder calcularla y también
+la opción en ajustes para que se calculen automáticamente al confirmar un pago.
+Los tipos de calculos automáticos que implementa son: "based on rule" and "python code"
 
 Installation
 ============
