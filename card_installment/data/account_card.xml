@@ -20,7 +20,7 @@
             <field name="name">Naranja</field>
         </record>
         <record id="card_maestro" model="account.card">
-            <field name="name">maestro</field>
+            <field name="name">Maestro</field>
         </record>
     </data>
 </odoo>

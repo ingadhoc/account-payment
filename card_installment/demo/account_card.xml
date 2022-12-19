@@ -1,5 +1,5 @@
 <odoo>
-    <data>
+    <data noupdate="1">
         <record id="card_visa_credit" model="account.card">
             <field name="installment_ids" eval="[
             (0, 0, {'name':1,'divisor':1,'installment':1,'surcharge_coefficient':1}),
