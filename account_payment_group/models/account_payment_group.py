@@ -365,8 +365,8 @@ class AccountPaymentGroup(models.Model):
             payment_lines = rec.payment_ids.mapped('move_line_ids').filtered(lambda x: x.account_internal_type in ['receivable', 'payable'])
             debit_moves = payment_lines.mapped('matched_debit_ids.debit_move_id')
             credit_moves = payment_lines.mapped('matched_credit_ids.credit_move_id')
-            debit_lines_sorted = debit_moves.filtered(lambda x: x.date_maturity != False).sorted(key=lambda x: x.date_maturity)
-            credit_lines_sorted = credit_moves.filtered(lambda x: x.date_maturity != False).sorted(key=lambda x: x.date_maturity)
+            debit_lines_sorted = debit_moves.filtered(lambda x: x.date_maturity != False).sorted(key=lambda x: (x.date_maturity, x.move_id.name))
+            credit_lines_sorted = credit_moves.filtered(lambda x: x.date_maturity != False).sorted(key=lambda x: (x.date_maturity, x.move_id.name))
             debit_lines_without_date_maturity = debit_moves - debit_lines_sorted
             credit_lines_without_date_maturity = credit_moves - credit_lines_sorted
             rec.matched_move_line_ids =  ((debit_lines_sorted + debit_lines_without_date_maturity) | (credit_lines_sorted + credit_lines_without_date_maturity)) - payment_lines
