@@ -3,6 +3,7 @@
 
 from odoo import models, api, fields, _
 from odoo.exceptions import ValidationError, UserError
+from odoo.tools.sql import index_exists, drop_index
 
 
 class AccountMove(models.Model):
@@ -37,12 +38,6 @@ class AccountMove(models.Model):
         store=True,
     )
 
-    @api.constrains('name', 'journal_id', 'state')
-    def _check_unique_sequence_number(self):
-        payment_group_moves = self.filtered(
-            lambda x: x.journal_id.type in ['cash', 'bank'] and x.payment_id.payment_group_id)
-        return super(AccountMove, self - payment_group_moves)._check_unique_sequence_number()
-
     def _compute_payment_groups(self):
         """
         El campo en invoices "payment_id" no lo seteamos con los payment groups
@@ -51,13 +46,11 @@ class AccountMove(models.Model):
         for rec in self:
             rec.payment_group_ids = rec._get_reconciled_payments().mapped('payment_group_id')
 
-
     @api.depends('line_ids.account_id.account_type', 'line_ids.reconciled')
     def _compute_open_move_lines(self):
         for rec in self:
             rec.open_move_line_ids = rec.line_ids.filtered(
                 lambda r: not r.reconciled and r.account_id.account_type in ['asset_receivable','liability_payable'])
-
 
     def action_register_payment_group(self):
         to_pay_move_lines = self.open_move_line_ids
@@ -204,3 +197,17 @@ class AccountMove(models.Model):
         if self._context.get('without_payment_group'):
             args += [('payment_group_id', '=', False)]
         return super()._search(args, offset=offset, limit=limit, order=order, count=count, access_rights_uid=access_rights_uid)
+
+    def _auto_init(self):
+        super()._auto_init()
+        # Update the generic unique name constraint to not consider the purchases in latam companies.
+        # The name should be unique by partner for those documents.
+        drop_index(self.env.cr, "account_move_unique_name", self._table)
+        self.env.cr.execute("""
+            CREATE UNIQUE INDEX account_move_unique_name
+                                ON account_move(name, journal_id)
+                            WHERE (state = 'posted' AND name != '/'
+                            AND (l10n_latam_document_type_id IS NULL OR move_type NOT IN ('in_invoice', 'in_refund', 'in_receipt')))
+                            AND payment_group_id IS NULL;
+        """)
+
