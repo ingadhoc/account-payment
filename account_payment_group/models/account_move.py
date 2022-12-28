@@ -109,7 +109,7 @@ class AccountMove(models.Model):
                     partner_type = 'customer'
 
                 pay_context = {
-                    'to_pay_move_line_ids': (rec.open_move_line_ids.ids),
+                    'default_to_pay_move_line_ids': (rec.open_move_line_ids.ids),
                     'default_company_id': rec.company_id.id,
                     'default_partner_type': partner_type,
                 }
