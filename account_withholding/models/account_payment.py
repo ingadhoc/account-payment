@@ -2,7 +2,7 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import models, fields, _
+from odoo import models, fields, Command,_
 from odoo.exceptions import UserError
 
 
@@ -52,6 +52,17 @@ class AccountPayment(models.Model):
             payment.withholding_number = \
                 payment.tax_withholding_id.withholding_sequence_id.next_by_id()
 
+        # anteriormente pasabamos el tax_repartition_line_id en _prepare_move_line_default_vals
+        # pero ahora nos da un error porque _sync_unbalanced_lines hace line_ids.filtered('tax_line_id').unlink()
+        # y termina modificando el asiento. Probamos mandr abajo tax_ids y tax_repartition_line_id pero no nos
+        # funcionó
+        withholdings = self.filtered(lambda x: x.tax_withholding_id)
+        for withholding in withholdings:
+            liquidity_lines, counterpart_lines, writeoff_lines = withholding._seek_for_lines()
+            rep_line = withholding._get_withholding_repartition_line()
+            counterpart_lines.tax_ids = [Command.set(rep_line.tax_id.ids)]
+            liquidity_lines.tax_repartition_line_id = rep_line
+
         return super(AccountPayment, self).action_post()
 
     def _get_withholding_repartition_line(self):
@@ -80,5 +91,4 @@ class AccountPayment(models.Model):
             rep_line = self._get_withholding_repartition_line()
             res[0]['name'] = self.withholding_number or '/'
             res[0]['account_id'] = rep_line.account_id.id
-            res[0]['tax_repartition_line_id'] = rep_line.id
         return res
