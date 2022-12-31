@@ -62,17 +62,6 @@ class AccountPayment(models.Model):
         readonly=True,
     )
 
-    def _get_counterpart_move_line_vals(self, invoice=False):
-        vals = super(AccountPayment, self)._get_counterpart_move_line_vals(
-            invoice=invoice)
-        if self.payment_group_id:
-            # we check they are code withholding and we get taxes
-            taxes = self.payment_group_id.payment_ids.filtered(
-                lambda x: x.payment_method_code == 'withholding').mapped(
-                'tax_withholding_id')
-            vals['tax_ids'] = [(6, False, taxes.ids)]
-        return vals
-
     @api.depends('payment_method_code', 'tax_withholding_id.name')
     def _compute_payment_method_description(self):
         payments = self.filtered(
