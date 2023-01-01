@@ -52,18 +52,34 @@ class AccountPayment(models.Model):
             payment.withholding_number = \
                 payment.tax_withholding_id.withholding_sequence_id.next_by_id()
 
-        # anteriormente pasabamos el tax_repartition_line_id en _prepare_move_line_default_vals
+        # en los apuntes de retenciones necesitamos que quede tax_line_id vinculado para poder hacer liquidaciones
+        # de impuestos. Anteriormente pasabamos el tax_repartition_line_id en _prepare_move_line_default_vals
         # pero ahora nos da un error porque _sync_unbalanced_lines hace line_ids.filtered('tax_line_id').unlink()
-        # y termina modificando el asiento. Probamos mandr abajo tax_ids y tax_repartition_line_id pero no nos
-        # funcionó
+        # y termina modificando el asiento. El cambio anterior funcionaba en algunos casos pero no en otros.
+        # Hacemos este parche feo total deberia ser solo por v16 ya que en v17 lo pondriamos nativo en odoo.
+        # Basicamente escribimos el dato luego de validar el payment (lo escribimos con ._write porque write hace
+        # unos chequeos y resetea). Ademas luego al pasar a borrador limpiamos el dato para no tener el mismo error.
+        res = super(AccountPayment, self).action_post()
         withholdings = self.filtered(lambda x: x.tax_withholding_id)
         for withholding in withholdings:
             liquidity_lines, counterpart_lines, writeoff_lines = withholding._seek_for_lines()
             rep_line = withholding._get_withholding_repartition_line()
-            counterpart_lines.tax_ids = [Command.set(rep_line.tax_id.ids)]
-            liquidity_lines.tax_repartition_line_id = rep_line
+            liquidity_lines._write({
+                'tax_repartition_line_id': rep_line.id,
+                'tax_line_id': rep_line.tax_id.id,
+            })
+        return res
 
-        return super(AccountPayment, self).action_post()
+    def action_draft(self):
+        ''' posted -> draft '''
+        withholdings = self.filtered(lambda x: x.tax_withholding_id)
+        for withholding in withholdings:
+            liquidity_lines, counterpart_lines, writeoff_lines = withholding._seek_for_lines()
+            liquidity_lines.write({
+                'tax_repartition_line_id': False,
+                'tax_line_id': False,
+            })
+        return super().action_draft()
 
     def _get_withholding_repartition_line(self):
         self.ensure_one()
