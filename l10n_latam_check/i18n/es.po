@@ -1,19 +1,23 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # 	* l10n_latam_check
-#
+# 
+# Translators:
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2022
+# 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 15.5alpha1+e\n"
+"Project-Id-Version: Odoo Server 15.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-07-29 22:05+0000\n"
-"PO-Revision-Date: 2022-07-29 22:05+0000\n"
-"Last-Translator: \n"
-"Language-Team: \n"
+"POT-Creation-Date: 2023-01-13 14:02+0000\n"
+"PO-Revision-Date: 2022-04-19 13:50+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2022\n"
+"Language-Team: Spanish (https://www.transifex.com/adhoc/teams/133229/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Plural-Forms: \n"
+"Language: es\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
 
 #. module: l10n_latam_check
 #: code:addons/l10n_latam_check/models/l10n_latam_checkbook.py:0
@@ -39,7 +43,7 @@ msgstr ""
 #. module: l10n_latam_check
 #: model:ir.model,name:l10n_latam_check.model_account_chart_template
 msgid "Account Chart Template"
-msgstr ""
+msgstr "Plantilla de Plan de Cuentas"
 
 #. module: l10n_latam_check
 #: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_checkbook__active
@@ -52,18 +56,24 @@ msgid "Actual Next Number"
 msgstr "Siguiente Número"
 
 #. module: l10n_latam_check
-#: model_terms:ir.ui.view,arch_db:l10n_latam_check.view_account_journal_tree
-msgid "All Checkbooks"
-msgstr "Todas las Chequeras"
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_chart_template__algolia_search
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_journal__algolia_search
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment__algolia_search
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment_mass_transfer__algolia_search
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment_method__algolia_search
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment_register__algolia_search
+#: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_checkbook__algolia_search
+msgid "Algolia Search"
+msgstr ""
 
 #. module: l10n_latam_check
-#: code:addons/l10n_latam_check/wizards/l10n_latam_payment_mass_transfer.py:0
+#: code:addons/l10n_latam_check/wizards/account_payment_mass_transfer.py:0
 #, python-format
 msgid "All selected checks must be on the same journal"
 msgstr "Todos los cheques seleccionados deben estan en el mismo Diario"
 
 #. module: l10n_latam_check
-#: code:addons/l10n_latam_check/wizards/l10n_latam_payment_mass_transfer.py:0
+#: code:addons/l10n_latam_check/wizards/account_payment_mass_transfer.py:0
 #, python-format
 msgid "All the selected checks must be posted"
 msgstr "Todos los cheques seleccionados deben estar publicados"
@@ -74,7 +84,7 @@ msgid "Bank Unmatched"
 msgstr "Sin Reconciliación Bancaria"
 
 #. module: l10n_latam_check
-#: model_terms:ir.ui.view,arch_db:l10n_latam_check.view_l10n_latam_payment_mass_transfer_form
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check.view_account_payment_mass_transfer_form
 msgid "Cancel"
 msgstr "Cancelar"
 
@@ -139,10 +149,10 @@ msgid "Check Issuer Vat"
 msgstr "CUIT Emisor del Cheque"
 
 #. module: l10n_latam_check
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment__check_number
 #: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment_register__l10n_latam_check_number
-#: model_terms:ir.ui.view,arch_db:l10n_latam_check.view_account_payment_form_inherited
 msgid "Check Number"
-msgstr "Número de Cheque"
+msgstr "Número de cheque"
 
 #. module: l10n_latam_check
 #: code:addons/l10n_latam_check/models/account_payment.py:0
@@ -159,20 +169,9 @@ msgid "Check Payment Date"
 msgstr "Fecha de Pago del Cheque"
 
 #. module: l10n_latam_check
-#: model:ir.actions.act_window,name:l10n_latam_check.action_view_l10n_latam_payment_mass_transfer
+#: model:ir.actions.act_window,name:l10n_latam_check.action_view_account_payment_mass_transfer
 msgid "Check Transfer"
 msgstr "Transferir Cheque"
-
-#. module: l10n_latam_check
-#: model:ir.model.fields,help:l10n_latam_check.field_account_journal__l10n_latam_use_checkbooks
-#: model:ir.model.fields,help:l10n_latam_check.field_account_payment__l10n_latam_use_checkbooks
-#: model:ir.model.fields,help:l10n_latam_check.field_account_payment_register__l10n_latam_use_checkbooks
-msgid ""
-"Check this option if you want to have a checkbook control and/or need to use deferred checks.\n"
-"This option disables the printing functionality."
-msgstr ""
-"Selecciona esta opcción si desea tener control de chequeras y/o necesita usar cheques diferidos.\n"
-"Esta opción desactiva la funcionalidad de impresión."
 
 #. module: l10n_latam_check
 #: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment__l10n_latam_checkbook_type
@@ -189,10 +188,9 @@ msgid "Checkbook"
 msgstr "Chequera"
 
 #. module: l10n_latam_check
-#: model:ir.actions.act_window,name:l10n_latam_check.action_l10n_latam_checkbook
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_bank_statement_import_journal_creation__l10n_latam_checkbook_ids
 #: model:ir.model.fields,field_description:l10n_latam_check.field_account_journal__l10n_latam_checkbook_ids
-#: model_terms:ir.ui.view,arch_db:l10n_latam_check.view_account_journal_tree
-#: model_terms:ir.ui.view,arch_db:l10n_latam_check.view_l10n_latam_checkbook_tree
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check.view_account_checkbook_tree
 msgid "Checkbooks"
 msgstr "Chequeras"
 
@@ -202,19 +200,19 @@ msgid "Checks Management"
 msgstr "Manejo de Cheques"
 
 #. module: l10n_latam_check
-#: model:ir.model,name:l10n_latam_check.model_l10n_latam_payment_mass_transfer
+#: model:ir.model,name:l10n_latam_check.model_account_payment_mass_transfer
 msgid "Checks Mass Transfers"
 msgstr "Transferencia Masiva de Cheques"
 
 #. module: l10n_latam_check
-#: code:addons/l10n_latam_check/wizards/l10n_latam_payment_mass_transfer.py:0
+#: code:addons/l10n_latam_check/wizards/account_payment_mass_transfer.py:0
 #, python-format
 msgid ""
 "Checks must be on a third party checks journal to be transfered by this "
 "wizard"
 msgstr ""
-"Los cheques deben estar en un diario de Cheques de Terceros para ser transferidos"
-" usando este wizard"
+"Los cheques deben estar en un diario de Cheques de Terceros para ser "
+"transferidos usando este wizard"
 
 #. module: l10n_latam_check
 #: model:ir.model.fields,help:l10n_latam_check.field_l10n_latam_checkbook__sequence_id
@@ -227,29 +225,29 @@ msgid "Checks on hand"
 msgstr "Cheque en mano"
 
 #. module: l10n_latam_check
-#: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_payment_mass_transfer__company_id
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment_mass_transfer__company_id
 msgid "Company"
 msgstr "Compañía"
 
 #. module: l10n_latam_check
-#: model:ir.model.fields,help:l10n_latam_check.field_l10n_latam_payment_mass_transfer__company_id
+#: model:ir.model.fields,help:l10n_latam_check.field_account_payment_mass_transfer__company_id
 msgid "Company related to this journal"
 msgstr "Compañía relacionada a este diario"
 
 #. module: l10n_latam_check
-#: model_terms:ir.ui.view,arch_db:l10n_latam_check.view_l10n_latam_payment_mass_transfer_form
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check.view_account_payment_mass_transfer_form
 msgid "Create Transfers"
 msgstr "Crear Transferencia"
 
 #. module: l10n_latam_check
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment_mass_transfer__create_uid
 #: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_checkbook__create_uid
-#: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_payment_mass_transfer__create_uid
 msgid "Created by"
 msgstr "Creado por"
 
 #. module: l10n_latam_check
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment_mass_transfer__create_date
 #: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_checkbook__create_date
-#: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_payment_mass_transfer__create_date
 msgid "Created on"
 msgstr "Creado el"
 
@@ -286,13 +284,13 @@ msgid "Deferred Checks"
 msgstr "Cheques Diferidos"
 
 #. module: l10n_latam_check
-#: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_payment_mass_transfer__destination_journal_id
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment_mass_transfer__destination_journal_id
 msgid "Destination Journal"
 msgstr "Diario de Destino"
 
 #. module: l10n_latam_check
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment_mass_transfer__display_name
 #: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_checkbook__display_name
-#: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_payment_mass_transfer__display_name
 msgid "Display Name"
 msgstr "Nombre Mostrado"
 
@@ -308,10 +306,10 @@ msgid "Electronic Checks"
 msgstr "Cheques Electrónicos"
 
 #. module: l10n_latam_check
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment_mass_transfer__id
 #: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_checkbook__id
-#: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_payment_mass_transfer__id
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #. module: l10n_latam_check
 #: code:addons/l10n_latam_check/models/account_payment.py:0
@@ -323,9 +321,9 @@ msgid ""
 "account is used"
 msgstr ""
 "Parece que estas recibiendo un cheque de regreso de '%s' en otro tipo de "
-"pago que cuando se envió. Es aconsejable usar el mismo tipo de pago "
-"(Pago de cliente / Pago de proveedor) para que la misma cuenta por cobrar / "
-"por pagar sea usada"
+"pago que cuando se envió. Es aconsejable usar el mismo tipo de pago (Pago de"
+" cliente / Pago de proveedor) para que la misma cuenta por cobrar / por "
+"pagar sea usada"
 
 #. module: l10n_latam_check
 #: code:addons/l10n_latam_check/models/account_payment.py:0
@@ -336,20 +334,16 @@ msgid ""
 "it. If continue, last operation on the check will remain being %s"
 msgstr ""
 "Parece que quieres mover un cheque con fecha (%s) previo a la última "
-"operación realizada con el cheque (%s). Esto puede ser incorrecto, por favor chequear. "
-"De continuar, la última operación en el cheque continuará siendo %s"
+"operación realizada con el cheque (%s). Esto puede ser incorrecto, por favor"
+" chequear. De continuar, la última operación en el cheque continuará siendo "
+"%s"
 
 #. module: l10n_latam_check
 #: model:ir.model,name:l10n_latam_check.model_account_journal
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment_mass_transfer__journal_id
 #: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_checkbook__journal_id
-#: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_payment_mass_transfer__journal_id
 msgid "Journal"
 msgstr "Diario"
-
-#. module: l10n_latam_check
-#: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment__l10n_latam_check_number
-msgid "L10N Latam Check Number"
-msgstr ""
 
 #. module: l10n_latam_check
 #: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment__l10n_latam_check_warning_msg
@@ -357,25 +351,25 @@ msgid "L10N Latam Check Warning Msg"
 msgstr ""
 
 #. module: l10n_latam_check
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment_mass_transfer____last_update
 #: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_checkbook____last_update
-#: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_payment_mass_transfer____last_update
 msgid "Last Modified on"
 msgstr "Última Modificación el"
 
 #. module: l10n_latam_check
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment_mass_transfer__write_uid
 #: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_checkbook__write_uid
-#: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_payment_mass_transfer__write_uid
 msgid "Last Updated by"
 msgstr "Última Actualización por"
 
 #. module: l10n_latam_check
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment_mass_transfer__write_date
 #: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_checkbook__write_date
-#: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_payment_mass_transfer__write_date
 msgid "Last Updated on"
 msgstr "Última Actualización el"
 
 #. module: l10n_latam_check
-#: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_payment_mass_transfer__communication
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment_mass_transfer__communication
 msgid "Memo"
 msgstr ""
 
@@ -390,18 +384,17 @@ msgid ""
 "Next number that will be used. This number can be incremented frequently so "
 "the displayed value might already be obsolete"
 msgstr ""
-"Próximo número a ser usado. Este número puede ser incrementado frecuentemente "
-"entonces el valor mostrado puede ya ser obsoleto"
+"Próximo número a ser usado. Este número puede ser incrementado "
+"frecuentemente entonces el valor mostrado puede ya ser obsoleto"
 
 #. module: l10n_latam_check
 #: code:addons/l10n_latam_check/models/account_payment.py:0
 #, python-format
 msgid ""
-"Other checks were found with same number, issuer and bank. Please double check you are not encoding the same check more than once.\n"
-"List of other payments/checks: %s"
+"Other checks were found with same number, issuer and bank. Please double "
+"check you are not encoding the same check more than once<br/>List of other "
+"payments/checks: %s"
 msgstr ""
-"Otros cheques fueron encontrados con el mismo número, emisor y banco. Por favor chquear que no estas ingresando el mismo cheque más de una vez.\n"
-"Lista de otros pagos/cheques: %s"
 
 #. module: l10n_latam_check
 #: model:ir.actions.act_window,name:l10n_latam_check.action_own_check
@@ -410,7 +403,7 @@ msgid "Own Checks"
 msgstr "Cheques Propios"
 
 #. module: l10n_latam_check
-#: model:ir.model.fields,field_description:l10n_latam_check.field_l10n_latam_payment_mass_transfer__payment_date
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment_mass_transfer__payment_date
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check.view_account_own_check_tree
 msgid "Payment Date"
 msgstr "Fecha de Pago"
@@ -418,10 +411,10 @@ msgstr "Fecha de Pago"
 #. module: l10n_latam_check
 #: model:ir.model,name:l10n_latam_check.model_account_payment_method
 msgid "Payment Methods"
-msgstr "Método de Pago"
+msgstr "Métodos de pago"
 
 #. module: l10n_latam_check
-#: code:addons/l10n_latam_check/wizards/l10n_latam_payment_mass_transfer.py:0
+#: code:addons/l10n_latam_check/wizards/account_payment_mass_transfer.py:0
 #: model:ir.model,name:l10n_latam_check.model_account_payment
 #, python-format
 msgid "Payments"
@@ -430,7 +423,7 @@ msgstr "Pagos"
 #. module: l10n_latam_check
 #: model:ir.model,name:l10n_latam_check.model_account_payment_register
 msgid "Register Payment"
-msgstr "Registrar Pago"
+msgstr "Registrar pago"
 
 #. module: l10n_latam_check
 #: code:addons/l10n_latam_check/models/account_chart_template.py:0
@@ -453,6 +446,15 @@ msgstr "Secuencia"
 #: code:addons/l10n_latam_check/models/account_payment.py:0
 #, python-format
 msgid ""
+"The <strong>check number %s is bigger</strong> than max number for this "
+"checkbook.<br/>Please check you're using the right check number and the "
+"right checkbook"
+msgstr ""
+
+#. module: l10n_latam_check
+#: code:addons/l10n_latam_check/models/account_payment.py:0
+#, python-format
+msgid ""
 "The amount of the payment (%s) does not match the amount of the selected check (%s).\n"
 "Please try to deselect and select check again."
 msgstr ""
@@ -460,17 +462,7 @@ msgstr ""
 "Intente deseleccionar y seleccionar nuevamente el cheque."
 
 #. module: l10n_latam_check
-#: code:addons/l10n_latam_check/models/account_payment.py:0
-#, python-format
-msgid ""
-"The check number %s is bigger than max number for this checkbook.\n"
-"Please check you're using the right check number and the right checkbook"
-msgstr ""
-"El número de cheque %s es mayor al número máximo para esta chequera.\n"
-"Corrobore que está utilizando el número de cheque y/o chequera correcta"
-
-#. module: l10n_latam_check
-#: code:addons/l10n_latam_check/wizards/l10n_latam_payment_mass_transfer.py:0
+#: code:addons/l10n_latam_check/wizards/account_payment_mass_transfer.py:0
 #, python-format
 msgid ""
 "The register payment wizard should only be called on account.payment "
@@ -480,7 +472,18 @@ msgstr ""
 "account.payment."
 
 #. module: l10n_latam_check
-#: code:addons/l10n_latam_check/wizards/l10n_latam_payment_mass_transfer.py:0
+#: model:ir.model.fields,help:l10n_latam_check.field_account_payment__check_number
+msgid ""
+"The selected journal is configured to print check numbers. If your pre-"
+"printed check paper already has numbers or if the current numbering is "
+"wrong, you can change it in the journal configuration page."
+msgstr ""
+"El diario seleccionado está configurado para imprimir números de cheque. Si "
+"sus cheques pre-impresos ya tienen números o si la numeración actual es "
+"incorrecta, puedes cambiarla en la página de configuración del diario."
+
+#. module: l10n_latam_check
+#: code:addons/l10n_latam_check/wizards/account_payment_mass_transfer.py:0
 #, python-format
 msgid ""
 "There is no 'out_third_party_checks' payment method configured on journal %s"
@@ -511,9 +514,11 @@ msgstr "Número Hasta"
 #: code:addons/l10n_latam_check/models/account_payment.py:0
 #, python-format
 msgid "Unmark sent is not implemented for checks that use checkbooks"
-msgstr "Desmarcar enviado no está implementado para cheques que usan chequeras"
+msgstr ""
+"Desmarcar enviado no está implementado para cheques que usan chequeras"
 
 #. module: l10n_latam_check
+#: model:ir.model.fields,field_description:l10n_latam_check.field_account_bank_statement_import_journal_creation__l10n_latam_use_checkbooks
 #: model:ir.model.fields,field_description:l10n_latam_check.field_account_journal__l10n_latam_use_checkbooks
 #: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment__l10n_latam_use_checkbooks
 #: model:ir.model.fields,field_description:l10n_latam_check.field_account_payment_register__l10n_latam_use_checkbooks
@@ -526,8 +531,8 @@ msgid ""
 "You can't use checks when paying invoices of different partners or same "
 "partner without grouping"
 msgstr ""
-"No puede utilizar cheques cuando esta pagando facturas de diferentes contactos o mismo "
-"contacto sin agrupar"
+"No puede utilizar cheques cuando esta pagando facturas de diferentes "
+"contactos o mismo contacto sin agrupar"
 
 #. module: l10n_latam_check
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check.view_account_payment_form_inherited

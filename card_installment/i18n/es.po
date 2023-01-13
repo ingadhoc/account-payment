@@ -1,0 +1,198 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* card_installment
+# 
+# Translators:
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2022
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-09-14 13:16+0000\n"
+"PO-Revision-Date: 2022-09-14 13:16+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2022\n"
+"Language-Team: Spanish (https://www.transifex.com/adhoc/teams/133229/es/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Language: es\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
+
+#. module: card_installment
+#: code:addons/card_installment/models/account_card_installment.py:0
+#, python-format
+msgid "%s installment of %.2f (total %.2f)"
+msgstr ""
+
+#. module: card_installment
+#: model:ir.model.fields,field_description:card_installment.field_account_card__active
+#: model:ir.model.fields,field_description:card_installment.field_account_card_installment__active
+msgid "Active"
+msgstr "Activo"
+
+#. module: card_installment
+#: model:ir.model.fields,help:card_installment.field_account_card_installment__bank_discount
+msgid "Bank discount"
+msgstr ""
+
+#. module: card_installment
+#: model_terms:ir.ui.view,arch_db:card_installment.card_installment_search
+msgid "By card"
+msgstr ""
+
+#. module: card_installment
+#: model:ir.model.fields,field_description:card_installment.field_account_card_installment__card_id
+msgid "Card"
+msgstr ""
+
+#. module: card_installment
+#: model_terms:ir.ui.view,arch_db:card_installment.card_installment_search
+msgid "Card installment"
+msgstr ""
+
+#. module: card_installment
+#: model:ir.actions.act_window,name:card_installment.action_account_card
+#: model:ir.ui.menu,name:card_installment.menu_account_card
+#: model_terms:ir.ui.view,arch_db:card_installment.account_card_form
+#: model_terms:ir.ui.view,arch_db:card_installment.account_card_search
+#: model_terms:ir.ui.view,arch_db:card_installment.account_card_tree
+msgid "Cards"
+msgstr ""
+
+#. module: card_installment
+#: model:ir.model.fields,help:card_installment.field_account_card_installment__surcharge_coefficient
+msgid "Coeficiente con iva incluido"
+msgstr ""
+
+#. module: card_installment
+#: model:ir.model,name:card_installment.model_res_company
+msgid "Companies"
+msgstr "Compañías"
+
+#. module: card_installment
+#: model:ir.model,name:card_installment.model_res_config_settings
+msgid "Config Settings"
+msgstr "Opciones de configuración"
+
+#. module: card_installment
+#: model:ir.model.fields,field_description:card_installment.field_account_card__create_uid
+#: model:ir.model.fields,field_description:card_installment.field_account_card_installment__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: card_installment
+#: model:ir.model.fields,field_description:card_installment.field_account_card__create_date
+#: model:ir.model.fields,field_description:card_installment.field_account_card_installment__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: card_installment
+#: model:ir.model,name:card_installment.model_account_card
+msgid "Credit Card"
+msgstr ""
+
+#. module: card_installment
+#: model:ir.model.fields,field_description:card_installment.field_account_card__display_name
+#: model:ir.model.fields,field_description:card_installment.field_account_card_installment__display_name
+msgid "Display Name"
+msgstr "Mostrar Nombre"
+
+#. module: card_installment
+#: model:ir.model.fields,field_description:card_installment.field_account_card_installment__divisor
+msgid "Divisor"
+msgstr ""
+
+#. module: card_installment
+#: model:ir.model.fields,field_description:card_installment.field_account_card_installment__name
+msgid "Fantasy name"
+msgstr ""
+
+#. module: card_installment
+#: model:product.product,name:card_installment.product_product_financial
+#: model:product.template,name:card_installment.product_product_financial_product_template
+msgid "Financial surchage"
+msgstr ""
+
+#. module: card_installment
+#: model:ir.model.fields,field_description:card_installment.field_account_card__id
+#: model:ir.model.fields,field_description:card_installment.field_account_card_installment__id
+msgid "ID"
+msgstr "ID (identificación)"
+
+#. module: card_installment
+#: model_terms:ir.ui.view,arch_db:card_installment.account_card_form
+msgid "Installment plan"
+msgstr ""
+
+#. module: card_installment
+#: model:ir.actions.act_window,name:card_installment.action_card_installment
+#: model:ir.model.fields,field_description:card_installment.field_account_card__installment_ids
+#: model:ir.ui.menu,name:card_installment.menu_account_finacial_plans
+msgid "Installments"
+msgstr "Cuotas"
+
+#. module: card_installment
+#: model:ir.model.fields,field_description:card_installment.field_account_card____last_update
+#: model:ir.model.fields,field_description:card_installment.field_account_card_installment____last_update
+msgid "Last Modified on"
+msgstr "Última modificación el"
+
+#. module: card_installment
+#: model:ir.model.fields,field_description:card_installment.field_account_card__write_uid
+#: model:ir.model.fields,field_description:card_installment.field_account_card_installment__write_uid
+msgid "Last Updated by"
+msgstr "Última Actualización por"
+
+#. module: card_installment
+#: model:ir.model.fields,field_description:card_installment.field_account_card__write_date
+#: model:ir.model.fields,field_description:card_installment.field_account_card_installment__write_date
+msgid "Last Updated on"
+msgstr "Última modificación el"
+
+#. module: card_installment
+#: model:ir.model.fields,help:card_installment.field_account_card_installment__installment
+msgid "Number of installment"
+msgstr ""
+
+#. module: card_installment
+#: model:ir.model.fields,field_description:card_installment.field_res_company__product_surcharge_id
+#: model:ir.model.fields,field_description:card_installment.field_res_config_settings__product_surcharge_id
+msgid "Product for use in financial surcharge"
+msgstr ""
+
+#. module: card_installment
+#: model:product.product,uom_name:card_installment.product_product_financial
+#: model:product.template,uom_name:card_installment.product_product_financial_product_template
+msgid "Units"
+msgstr "Unidades"
+
+#. module: card_installment
+#: model:ir.model,name:card_installment.model_account_card_installment
+msgid "amount to add for collection in installments"
+msgstr ""
+
+#. module: card_installment
+#: model:ir.model.fields,field_description:card_installment.field_account_card_installment__bank_discount
+msgid "bank discount"
+msgstr ""
+
+#. module: card_installment
+#: model:ir.model.fields,field_description:card_installment.field_account_card_installment__surcharge_coefficient
+msgid "coefficient"
+msgstr ""
+
+#. module: card_installment
+#: model:ir.model.fields,field_description:card_installment.field_account_card__company_id
+msgid "company"
+msgstr ""
+
+#. module: card_installment
+#: model:ir.model.fields,field_description:card_installment.field_account_card_installment__installment
+msgid "installment plan"
+msgstr ""
+
+#. module: card_installment
+#: model:ir.model.fields,field_description:card_installment.field_account_card__name
+msgid "name"
+msgstr ""
