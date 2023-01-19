@@ -319,8 +319,22 @@ class AccountPaymentGroup(models.Model):
         al revz (debit_move_id vs credit_move_id)
         """
         for rec in self:
+<<<<<<< HEAD
             payment_lines = rec.payment_ids.mapped('line_ids').filtered(lambda x: x.account_internal_type in ['receivable', 'payable'])
             rec.matched_move_line_ids = (payment_lines.mapped('matched_debit_ids.debit_move_id') | payment_lines.mapped('matched_credit_ids.credit_move_id')) - payment_lines
+||||||| parent of 3fc702af... temp
+            payment_lines = rec.payment_ids.mapped('move_line_ids').filtered(lambda x: x.account_internal_type in ['receivable', 'payable'])
+            rec.matched_move_line_ids =  (payment_lines.mapped('matched_debit_ids.debit_move_id').sorted(key=lambda x: x.date_maturity) | payment_lines.mapped('matched_credit_ids.credit_move_id')).sorted(key=lambda x: x.date_maturity) - payment_lines
+=======
+            payment_lines = rec.payment_ids.mapped('move_line_ids').filtered(lambda x: x.account_internal_type in ['receivable', 'payable'])
+            debit_moves = payment_lines.mapped('matched_debit_ids.debit_move_id')
+            credit_moves = payment_lines.mapped('matched_credit_ids.credit_move_id')
+            debit_lines_sorted = debit_moves.filtered(lambda x: x.date_maturity != False).sorted(key=lambda x: x.date_maturity)
+            credit_lines_sorted = credit_moves.filtered(lambda x: x.date_maturity != False).sorted(key=lambda x: x.date_maturity)
+            debit_lines_without_date_maturity = debit_moves - debit_lines_sorted
+            credit_lines_without_date_maturity = credit_moves - credit_lines_sorted
+            rec.matched_move_line_ids =  ((debit_lines_sorted + debit_lines_without_date_maturity) | (credit_lines_sorted + credit_lines_without_date_maturity)) - payment_lines
+>>>>>>> 3fc702af... temp
 
     @api.depends('payment_ids.line_ids')
     def _compute_move_lines(self):
