@@ -98,6 +98,28 @@
         </field>
     </record>
 
+    <record id="view_account_payment_form2" model="ir.ui.view">
+        <field name="name">account.payment.form</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <field name="journal_id" position="attributes">
+                <attribute name="nolabel">1</attribute>
+            </field>
+            <field name="destination_journal_id" position="attributes">
+                <attribute name="nolabel">1</attribute>
+            </field>
+            <xpath expr="//field[@name='journal_id']" position="before">
+                <field name="label_journal_id" nolabel="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name='destination_journal_id']" position="before">
+                <field name="label_destination_journal_id" nolabel="1"/>
+            </xpath>
+        </field>
+    </record>
+
     <record id="view_account_payment_from_group_form" model="ir.ui.view">
         <field name="name">account.payment.from payment group.form</field>
         <field name="model">account.payment</field>
@@ -131,7 +153,7 @@
         <field name="name">Transfers</field>
         <field name="res_model">account.payment</field>
         <field name="view_mode">tree,form,graph</field>
-        <field name="context">{'default_is_internal_transfer': True, 'default_move_journal_types': ('bank', 'cash')}</field>
+        <field name="context">{'form_view_ref': 'account_payment_group.view_account_payment_form2', 'default_payment_type': 'outbound', 'default_is_internal_transfer': True, 'default_move_journal_types': ('bank', 'cash')}</field>
         <field name="domain">[('is_internal_transfer', '=', 'transfer')]</field>
         <field name="help" type="html">
             <p class="oe_view_nocontent_create">
