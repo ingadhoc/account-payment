@@ -1,0 +1,40 @@
+<odoo>
+  <data>
+
+    <menuitem id="menu_pop_root"
+        name="Point of payment"
+        web_icon="point_of_payment,static/description/icon.png"
+        sequence="10"/>
+
+    <menuitem id="menu_pop_dashboard" action="pop_config_action" parent="menu_pop_root" name="Información general" sequence="1"/>
+
+    <menuitem id="menu_pop_session"
+        name="Sesiones"
+        parent="menu_pop_root"
+        sequence="200"
+        groups="point_of_payment.group_pop_manager"/>
+
+    <menuitem id="menu_pop_session_session"
+        name="Sesiones"
+        parent="menu_pop_session"
+        action="pop_session_action"
+        sequence="200"
+        groups="point_of_payment.group_pop_manager"/>
+
+
+    <menuitem id="menu_pop_configuracion"
+        name="Configuración"
+        parent="menu_pop_root"
+        sequence="300"
+        groups="point_of_payment.group_pop_manager"/>
+
+    <menuitem id="menu_pop_config"
+        name="Cajas"
+        parent="point_of_payment.menu_pop_configuracion"
+        action="pop_config_action"
+        sequence="100"
+        groups="point_of_payment.group_pop_manager"/>
+
+
+  </data>
+</odoo>

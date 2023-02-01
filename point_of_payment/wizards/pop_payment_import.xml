@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="pop_payment_import_view_form" model="ir.ui.view">
+        <field name="name">pop_payment_import.view.form</field>
+        <field name="model">pop.payment.import</field>
+        <field name="arch" type="xml">
+            <form string="">
+                <sheet>
+                    <group>
+                        <field name="pop_id"></field>
+                        <field name="pop_session_id" domain="[('pop_id', '=', pop_id)]"></field>
+                        <field name="payment_ids" attrs="{'invisible':1}"></field>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_import_payment" type="object" string="Import"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="pop_payent_import_action" model="ir.actions.act_window">
+        <field name="name">Action Name</field>
+        <field name="res_model">pop.payment.import</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- <record id="action_account_payments" model="ir.actions.act_window">
+        <field name="name">Payments</field>
+        <field name="res_model">account.payment</field>
+        <field name="view_mode">tree,kanban,form,graph</field>
+        <field name="context">{
+            'default_payment_type': 'inbound',
+            'default_partner_type': 'customer',
+            'search_default_inbound_filter': 1,
+            'default_move_journal_types': ('bank', 'cash'),
+        }</field>
+        <field name="view_id" ref="view_account_payment_tree"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+              Register a payment
+            </p><p>
+              Payments are used to register liquidity movements. You can process those payments by your own means or by using installed facilities.
+            </p>
+        </field>
+    </record> -->
+</odoo>
