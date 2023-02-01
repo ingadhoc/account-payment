@@ -1,0 +1,116 @@
+<odoo>
+  <data>
+
+    <record id="view_pop_session_form" model="ir.ui.view">
+        <field name="name">pop.session.form.view</field>
+        <field name="model">pop.session</field>
+        <field name="arch" type="xml">
+            <form string="Sesión de caja" create="false" delete="false" edit="true">
+                <field name="require_cash_control" invisible="True"/>
+                <header>
+
+                    <button name="action_pop_session_open" type="object" string="Open session"
+                        attrs="{'invisible' : [('state', '!=', 'opening_control')]}" class="oe_highlight"/>
+                    <button name="action_pop_session_close" type="object" string="Close"
+                            attrs="{'invisible' : ['|', ('state', '!=', 'opened'), ('require_cash_control', '=', True)]}"
+                            class="oe_highlight"/>
+                    <button name="action_closing_control" type="object" string="Control"
+                            attrs="{'invisible' : ['|', ('state', '!=', 'opened'), ('require_cash_control', '=', False)]}"
+                            class="oe_highlight"/>
+
+                    <button name="action_session_validate" type="object" string="Validate"
+                            attrs="{'invisible' : [('state', '!=', 'closing_control')]}"
+                            class="oe_highlight"/>
+
+                    <field name="state" widget="statusbar" statusbar_visible="opening_control,opened,closing_control,closed" nolabel="1" />
+
+                </header>
+
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+
+                    </div>
+                    <h1 class="oe_title">
+                        Sesión:
+                        <field name="name" attrs="{'invisible': [('name','=','/')]}" class="oe_inline"/>
+                    </h1>
+                    <group>
+                        <group>
+                            <field name="user_ids" widget="many2many_tags" />
+                            <field name="pop_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="start_at" attrs="{'invisible' : [('state', '=', 'opening_control')]}"/>
+                            <field name="stop_at" attrs="{'invisible' : [('state', '!=', 'closed')]}"/>
+                        </group>
+                        <newline/>
+
+                    </group>
+                    <group>
+                        <field nolabel="1" colspan="2" name="journal_control_ids">
+                            <tree editable="top">
+                                <field name="journal_id" attrs="{'readonly':True}"/>
+                                <field name="currency_id" attrs="{'readonly':True}" groups="base.group_multi_currency"/>
+                                <field name="balance_start" attrs="{'readonly':[('parent.state', '!=', 'opening_control')], 'column_invisible':[('parent.require_cash_control', '=', False)]}"/>
+                                <field name="amount" attrs="{'readonly':True}"/>
+                                <field name="balance_end" attrs="{'readonly':[('parent.state', '!=', 'closing_control')], 'column_invisible':[('parent.require_cash_control', '=', False)]}"/>
+                                <field name="diff" attrs="{'readonly':True, 'column_invisible':['|',('parent.require_cash_control', '=', False), ('parent.state', 'not in', ['closing_control', 'closed'])]}"/>
+                            </tree>
+                            <form>
+                                <sheet>
+                                    <group >
+                                        <field name="journal_id" attrs="{'readonly':True}"/>
+                                        <field name="currency_id" attrs="{'readonly':True}" groups="base.group_multi_currency"/>
+                                        <field name="balance_start" attrs="{'readonly':True}"/>
+                                        <field name="amount" attrs="{'readonly':True}"/>
+                                        <field name="balance_end" attrs="{'readonly':True}"/>
+                                        <field name="diff" attrs="{'readonly':True}"/>
+                                    </group>
+                                </sheet>
+                            </form>
+                        </field>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers" />
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread" />
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_pop_session_tree" model="ir.ui.view">
+        <field name="name">pop.session.tree.view</field>
+        <field name="model">pop.session</field>
+        <field name="arch" type="xml">
+            <tree create="false" delete="false" edit="false">
+                <!-- <field name="id"/> -->
+                <field name="pop_id"/>
+                <field name="start_at"/>
+                <field name="stop_at"/>
+                <field name="user_ids"/>
+                <field name="name" string="Descripción"/>
+                <field name="state" string="Estado actual"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="pop_session_action" model="ir.actions.act_window">
+        <field name="name">Sesiones de caja</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">pop.session</field>
+        <field name="context">{'search_default_sesiones_iniciadas_hoy': True}</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="view_id" eval="False"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Iniciar la primer sessión
+            </p><p>
+                Gestión de sesiones de caja
+            </p>
+        </field>
+    </record>
+
+  </data>
+</odoo>

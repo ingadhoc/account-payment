@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_payment_register_form" model="ir.ui.view">
+        <field name="name">account.payment.form</field>
+        <field name="model">account.payment.register</field>
+        <field name="inherit_id" ref="account.view_account_payment_register_form"/>
+        <field name="arch" type="xml">
+            <field name="journal_id" position="before">
+                <field name="available_pop_session_ids" invisible="1"/>
+                <field name="pop_id" invisible="1"/>
+                <field
+                    name="pop_session_id"
+                    domain="[('id', 'in', available_pop_session_ids)]"
+                    attrs="{'invisible':[('available_pop_session_ids', '=', [])]}"
+                />
+
+            </field>
+
+        </field>
+    </record>
+
+</odoo>
