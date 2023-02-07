@@ -41,7 +41,7 @@ class AccountPaymentGroup(models.Model):
             else:
                 journal = self.env['account.journal'].search([('type', '=', 'sale'), ('company_id', '=', self.company_id.id)], limit=1)
                 wiz = self.env['account.payment.group.invoice.wizard'].with_context(
-                    active_id=self.id, internal_type='debit_note').create({
+                    is_automatic_subcharge=True, active_id=self.id, internal_type='debit_note').create({
                         'journal_id': journal.id,
                         'product_id': product.id,
                         'tax_ids': [(6, 0, taxes.ids)],
