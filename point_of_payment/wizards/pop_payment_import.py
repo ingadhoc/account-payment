@@ -8,7 +8,7 @@ from odoo.exceptions import ValidationError, UserError
 from datetime import datetime
 
 
-class PopPaymentImport(models.Model):
+class PopPaymentImport(models.TransientModel):
     _name = 'pop.payment.import'
     _description = 'Import Payment into session'
 
@@ -31,5 +31,5 @@ class PopPaymentImport(models.Model):
             rec.pop_session_id = rec.pop_id.session_ids[-1]
 
     def action_import_payment(self):
-        update_payment_ids  = self.payment_ids.filtered(lambda p: p.pop_session_id is False and p.journal_id in p.journal_ids.ids)
+        update_payment_ids  = self.payment_ids.filtered(lambda p: p.pop_session_id is False ) #and p.journal_id in p.journal_ids.ids
         update_payment_ids.pop_session_id = self.pop_session_id.id

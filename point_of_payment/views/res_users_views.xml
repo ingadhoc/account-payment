@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-<!-- Copyright 2021 ITSur - Juan Pablo Garza <jgarza@itsur.com.ar>
-     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html). -->
         <record id="view_users_form_extend" model="ir.ui.view">
             <field name="name">res.users.form.extend</field>
             <field name="model">res.users</field>
@@ -10,8 +8,8 @@
             <field name="arch" type="xml">
                 <group name="preferences" position="after">
                     <group name="pop_users_conf" string="Cajas">
-                        <field name="default_pop_id" invisible="0"/>
-                        <field name="selected_pop_id" invisible="0"/>
+                        <field name="allowed_pos_config_ids" widget="many2many_tags"/>
+                        <field name="requiere_pos_session"/>
                     </group>
                 </group>
             </field>
@@ -24,7 +22,7 @@
             <field name="arch" type="xml">
                 <group name="preferences" position="after">
                     <group name="pop_users_conf" string="Cajas" groups="point_of_payment.group_pop_user" >
-                        <field name="selected_pop_id" invisible="0"/>
+                        <field name="requiere_pos_session"/>
                     </group>
                 </group>
             </field>

@@ -7,6 +7,7 @@
         <field name="arch" type="xml">
             <form string="Sesión de caja" create="false" delete="false" edit="true">
                 <field name="require_cash_control" invisible="True"/>
+                <field name="allow_concurrent_sessions" invisible="True" />
                 <header>
 
                     <button name="action_pop_session_open" type="object" string="Open session"
@@ -25,14 +26,17 @@
                     <field name="state" widget="statusbar" statusbar_visible="opening_control,opened,closing_control,closed" nolabel="1" />
 
                 </header>
-
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-
+                        <button name="action_import_payments" type="object" class="oe_stat_button" icon="fa-plus">
+                            <span>Import</span>
+                        </button>
+                        <button name="action_session_payments" type="object" class="oe_stat_button" icon="fa-money">
+                            <span>Payments</span>
+                        </button>
                     </div>
                     <h1 class="oe_title">
-                        Sesión:
-                        <field name="name" attrs="{'invisible': [('name','=','/')]}" class="oe_inline"/>
+                        <field name="name" attrs="{'readonly':[('allow_concurrent_sessions', '=', False)]}" class="oe_inline"/>
                     </h1>
                     <group>
                         <group>
@@ -49,12 +53,14 @@
                     <group>
                         <field nolabel="1" colspan="2" name="journal_control_ids">
                             <tree editable="top">
+                                <field name="require_cash_control" invisible="True"/>
                                 <field name="journal_id" attrs="{'readonly':True}"/>
                                 <field name="currency_id" attrs="{'readonly':True}" groups="base.group_multi_currency"/>
-                                <field name="balance_start" attrs="{'readonly':[('parent.state', '!=', 'opening_control')], 'column_invisible':[('parent.require_cash_control', '=', False)]}"/>
+                                <field name="balance_start" attrs="{'readonly':[('parent.state', '!=', 'opening_control')], 'invisible':[('require_cash_control', '=', False)],'column_invisible':['|',('parent.allow_concurrent_sessions', '=', True),('parent.require_cash_control', '=', False)]}"/>
                                 <field name="amount" attrs="{'readonly':True}"/>
-                                <field name="balance_end" attrs="{'readonly':[('parent.state', '!=', 'closing_control')], 'column_invisible':[('parent.require_cash_control', '=', False)]}"/>
-                                <field name="diff" attrs="{'readonly':True, 'column_invisible':['|',('parent.require_cash_control', '=', False), ('parent.state', 'not in', ['closing_control', 'closed'])]}"/>
+                                <field name="balance_end" attrs="{'readonly':[('parent.state', '!=', 'closing_control')], 'invisible':[('require_cash_control', '=', False)], 'column_invisible':[('parent.require_cash_control', '=', False)]}"/>
+                                <field name="diff" attrs="{'readonly':True, 'invisible':[('require_cash_control', '=', False)], 'column_invisible':['|',('parent.require_cash_control', '=', False), ('parent.state', 'not in', ['closing_control', 'closed'])]}"/>
+                                <button name="action_session_payments" type="object" title="Payments" icon="fa-search"></button>
                             </tree>
                             <form>
                                 <sheet>

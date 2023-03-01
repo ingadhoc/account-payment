@@ -16,6 +16,18 @@
                 />
 
             </field>
+            <field name="destination_journal_id" position='before'>
+                <field name="dest_pop_id"
+                attrs="{'invisible': [('is_internal_transfer', '=', True), ('destination_journal_id', '!=', False)],
+                'readonly': [('state', '!=', 'draft')], 'required': [('is_internal_transfer', '=', True),('state', '=', 'draft'),('destination_journal_id', '=', False)]}"/>
+            </field>
+            <field name="destination_journal_id" position='attributes'>
+                <attribute name="attrs" value="{'invisible': [('is_internal_transfer', '=', False),('dest_pop_id', '!=', False)],
+                'readonly': [('state', '!=', 'draft')], 'required': [('is_internal_transfer', '=', True),('state', '=', 'draft'), ('dest_pop_id', '=', False)]}"></attribute>
+            </field>
+
+
+
 
         </field>
     </record>

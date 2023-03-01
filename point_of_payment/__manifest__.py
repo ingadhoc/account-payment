@@ -29,3 +29,8 @@
     "installable": True,
     "application": True,
 }
+# """- Agregar users_ids en los config y regas de acceso a las seccione y cajas
+# - grupo de unica session de caja
+# - Maxima diferencia de caja en la configuracion y generar asiento de  diferencia
+# - las transferencias internas pueden elegir caja destino y en la caja destino cuando habro una session importo esas trasnferecias
+# """
