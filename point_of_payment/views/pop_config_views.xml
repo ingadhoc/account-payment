@@ -7,7 +7,8 @@
             <field name="arch" type="xml">
                 <form string="Configuración de caja">
                     <header>
-                        <button string="Start" name="open_session_cb" type="object" class="oe_highlight"/>
+                        <button string="Open session" attrs="{'invisible':[('allow_concurrent_sessions', '=', True)]}" name="action_open_session" type="object" class="oe_highlight"/>
+                        <button string="New session" attrs="{'invisible':[('allow_concurrent_sessions', '=', False)]}" name="action_open_session" type="object" class="oe_highlight"/>
                     </header>
                     <sheet>
                         <div class="oe_button_box" name="button_box">
@@ -18,9 +19,28 @@
                         </div>
                         <group name="payments" string="Payments">
                             <field name="code"/>
+                            <field name="allowed_res_users_ids" widget="many2many_tags"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
                             <field name="journal_ids" context="{'default_type': 'cash'}" widget="many2many_tags"/>
                             <field name="cash_control_journal_ids" domain="[('id', 'in', journal_ids) , ('type', '=', 'cash')]" widget="many2many_checkboxes"/>
-                            <field name="sequence_id"/>
+                            <field name="sequence_id" groups="base.group_no_one"/>
+                            <field name="allow_concurrent_sessions"/>
+                        </group>
+                        <group name="sessions" string="Sesions">
+                            <field name="current_concurrent_session_ids" attrs="{'invisible':[('allow_concurrent_sessions', '=', False)]}">
+                                <tree>
+                                    <field name="name" string="Descrition"/>
+                                    <field name="start_at"/>
+                                    <field name="stop_at"/>
+                                    <field name="state"/>
+                                    <button name="action_open_session" string="Open" type="object"/>
+                                </tree>
+                            </field>
+                            <field name="current_session_id"  attrs="{'invisible':[('allow_concurrent_sessions', '=', True)]}"/>
+                            <field name="current_session_state"  attrs="{'invisible':[('allow_concurrent_sessions', '=', True)]}"/>
+                            <field name="pop_session_username"  attrs="{'invisible':[('allow_concurrent_sessions', '=', True)]}"/>
+                            <field name="pop_session_state"  attrs="{'invisible':[('allow_concurrent_sessions', '=', True)]}"/>
+                            <field name="pop_session_duration"  attrs="{'invisible':[('allow_concurrent_sessions', '=', True)]}"/>
                         </group>
                     </sheet>
                 </form>
@@ -49,6 +69,7 @@
                     <field name="current_session_state"/>
                     <field name="pop_session_username"/>
                     <field name="pop_session_state"/>
+                    <field name="allow_concurrent_sessions"/>
                     <templates>
                         <t t-name="kanban-box">
                             <div>
@@ -76,9 +97,9 @@
                                 <div class="container o_kanban_card_content">
                                     <div class="row">
                                         <div class="col-6 o_kanban_primary_left">
-
-                                            <button class="btn btn-primary" name="open_session_cb" type="object" groups="point_of_payment.group_pop_manager">Abrir Sesión</button>
-
+                                            <button class="btn btn-primary" t-if="!record.allow_concurrent_sessions.raw_value" name="action_open_session" type="object" groups="point_of_payment.group_pop_manager,point_of_payment.group_pop_user">Abrir Sesión</button>
+                                            <button class="btn btn-primary" t-if="record.allow_concurrent_sessions.raw_value" name="action_open_session" type="object" groups="point_of_payment.group_pop_manager,point_of_payment.group_pop_user">Nueva Sesión</button>
+                                            <button class="btn btn-primary" t-if="record.allow_concurrent_sessions.raw_value" name="action_open_config" type="object" groups="point_of_payment.group_pop_manager,point_of_payment.group_pop_user">Abrir</button>
                                         </div>
                                         <div class="col-6 o_kanban_primary_right">
 

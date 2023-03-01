@@ -9,18 +9,10 @@ from odoo.exceptions import UserError, ValidationError
 class ResUsers(models.Model):
     _inherit = 'res.users'
 
-    default_pop_id = fields.Many2one(
+    allowed_pos_config_ids = fields.Many2many(
         'pop.config',
-        string='Caja por defecto',
-        help="Caja por defecto para el usuario.")
-
-    selected_pop_id = fields.Many2one(
-        'pop.config',
-        string='Caja seleccionada',
-        help="Caja con la que está actualmente operando el usuario.")
-
-    def get_selected_pop_id(self):
-        if self.selected_pop_id:
-            return self.selected_pop_id
-        else:
-            raise UserError("Debe seleccionar una caja")
+        relation= 'pos_config_users_rel',
+        column1= 'user_id',
+        column2= 'config_id',
+    )
+    requiere_pos_session = fields.Boolean()
