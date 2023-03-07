@@ -1,11 +1,10 @@
 <odoo>
-  <data>
 
     <record id="view_pop_session_form" model="ir.ui.view">
         <field name="name">pop.session.form.view</field>
         <field name="model">pop.session</field>
         <field name="arch" type="xml">
-            <form string="Sesión de caja" create="false" delete="false" edit="true">
+            <form>
                 <field name="require_cash_control" invisible="True"/>
                 <field name="allow_concurrent_sessions" invisible="True" />
                 <header>
@@ -19,16 +18,21 @@
                             attrs="{'invisible' : ['|', ('state', '!=', 'opened'), ('require_cash_control', '=', False)]}"
                             class="oe_highlight"/>
 
-                    <button name="action_session_validate" type="object" string="Validate"
+                    <button name="action_pop_session_close" type="object" string="Validate"
                             attrs="{'invisible' : [('state', '!=', 'closing_control')]}"
                             class="oe_highlight"/>
 
-                    <field name="state" widget="statusbar" statusbar_visible="opening_control,opened,closing_control,closed" nolabel="1" />
+                    <button name="action_pop_session_reopen" type="object" string="Re-Open"
+                            attrs="{'invisible' : [('state', '!=', 'closed')]}"
+                            groups="account.group_account_manager"/>
+
+                    <field name="state" widget="statusbar" attrs="{'invisible': [('require_cash_control', '=', False)]}" statusbar_visible="opening_control,opened,closing_control,closed" nolabel="1" />
+                    <field name="state" widget="statusbar" attrs="{'invisible': [('require_cash_control', '=', True)]}" statusbar_visible="opened,closed" nolabel="1" />
 
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_import_payments" type="object" class="oe_stat_button" icon="fa-plus">
+                        <button name="action_import_payments" attrs="{'invisible': [('state', '!=', 'opened')]}" type="object" class="oe_stat_button" icon="fa-plus">
                             <span>Import</span>
                         </button>
                         <button name="action_session_payments" type="object" class="oe_stat_button" icon="fa-money">
@@ -36,31 +40,31 @@
                         </button>
                     </div>
                     <h1 class="oe_title">
-                        <field name="name" attrs="{'readonly':[('allow_concurrent_sessions', '=', False)]}" class="oe_inline"/>
+                        <field name="name" placeholder='Nombre de la sesion' attrs="{'readonly':[('allow_concurrent_sessions', '=', False)]}" class="oe_inline"/>
                     </h1>
                     <group>
                         <group>
-                            <field name="user_ids" widget="many2many_tags" />
-                            <field name="pop_id" readonly="1"/>
+                            <field name="pop_id" options="{'no_create':True}" invisible="context.get('hide_pop_id')"/>
+                            <field name="user_ids" widget="many2many_tags" options="{'no_create':True}"/>
                         </group>
                         <group>
-                            <field name="start_at" attrs="{'invisible' : [('state', '=', 'opening_control')]}"/>
-                            <field name="stop_at" attrs="{'invisible' : [('state', '!=', 'closed')]}"/>
+                            <field name="opening_date" attrs="{'invisible' : [('state', '=', 'opening_control')]}"/>
+                            <field name="closing_date" attrs="{'invisible' : [('state', '!=', 'closed')]}"/>
                         </group>
                         <newline/>
 
                     </group>
                     <group>
                         <field nolabel="1" colspan="2" name="journal_control_ids">
-                            <tree editable="top">
+                            <tree editable="top" create="false" delete="false">
                                 <field name="require_cash_control" invisible="True"/>
-                                <field name="journal_id" attrs="{'readonly':True}"/>
-                                <field name="currency_id" attrs="{'readonly':True}" groups="base.group_multi_currency"/>
+                                <field name="journal_id" attrs="{'readonly':True}" force_save="True"/>
+                                <field name="currency_id" invisible="1"/>
                                 <field name="balance_start" attrs="{'readonly':[('parent.state', '!=', 'opening_control')], 'invisible':[('require_cash_control', '=', False)],'column_invisible':['|',('parent.allow_concurrent_sessions', '=', True),('parent.require_cash_control', '=', False)]}"/>
-                                <field name="amount" attrs="{'readonly':True}"/>
-                                <field name="balance_end" attrs="{'readonly':[('parent.state', '!=', 'closing_control')], 'invisible':[('require_cash_control', '=', False)], 'column_invisible':[('parent.require_cash_control', '=', False)]}"/>
-                                <field name="diff" attrs="{'readonly':True, 'invisible':[('require_cash_control', '=', False)], 'column_invisible':['|',('parent.require_cash_control', '=', False), ('parent.state', 'not in', ['closing_control', 'closed'])]}"/>
+                                <field name="amount"/>
                                 <button name="action_session_payments" type="object" title="Payments" icon="fa-search"></button>
+                                <field name="balance_end" attrs="{'invisible':[('require_cash_control', '=', False)], 'column_invisible':[('parent.require_cash_control', '=', False)]}"/>
+                                <field name="balance_end_real" attrs="{'readonly':[('parent.state', '!=', 'closing_control')], 'invisible':[('require_cash_control', '=', False)], 'column_invisible':[('parent.require_cash_control', '=', False)]}"/>
                             </tree>
                             <form>
                                 <sheet>
@@ -70,7 +74,7 @@
                                         <field name="balance_start" attrs="{'readonly':True}"/>
                                         <field name="amount" attrs="{'readonly':True}"/>
                                         <field name="balance_end" attrs="{'readonly':True}"/>
-                                        <field name="diff" attrs="{'readonly':True}"/>
+                                        <field name="balance_end_real"/>
                                     </group>
                                 </sheet>
                             </form>
@@ -86,15 +90,29 @@
         </field>
     </record>
 
+    <record id="view_pop_session_search" model="ir.ui.view">
+        <field name="name">pop.session.search.view</field>
+        <field name="model">pop.session</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="pop_id"/>
+                <field name="opening_date"/>
+                <field name="closing_date"/>
+                <field name="user_ids"/>
+                <field name="name" string="Descripción"/>
+                <field name="state" string="Estado actual"/>
+            </search>
+        </field>
+    </record>
+
     <record id="view_pop_session_tree" model="ir.ui.view">
         <field name="name">pop.session.tree.view</field>
         <field name="model">pop.session</field>
         <field name="arch" type="xml">
-            <tree create="false" delete="false" edit="false">
-                <!-- <field name="id"/> -->
+            <tree>
                 <field name="pop_id"/>
-                <field name="start_at"/>
-                <field name="stop_at"/>
+                <field name="opening_date"/>
+                <field name="closing_date"/>
                 <field name="user_ids"/>
                 <field name="name" string="Descripción"/>
                 <field name="state" string="Estado actual"/>
@@ -118,5 +136,4 @@
         </field>
     </record>
 
-  </data>
 </odoo>

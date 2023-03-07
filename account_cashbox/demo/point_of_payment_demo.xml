@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Journals -->
+
+    <record id="journal_cajas" model="account.journal">
+        <field name="name">Cajas</field>
+        <field name="type">cash</field>
+        <field name="code">CAJAS</field>
+    </record>
+
+    <record id="journal_caja_central" model="account.journal">
+        <field name="name">Caja Central</field>
+        <field name="type">cash</field>
+        <field name="code">CAJAC</field>
+    </record>
+
+    <record id="journal_billetera_virtual" model="account.journal">
+        <field name="name">Billetera Virtual</field>
+        <field name="type">bank</field>
+        <field name="code">BILL1</field>
+    </record>
+
+    <record id="journal_viaticos" model="account.journal">
+        <field name="name">Viaticos</field>
+        <field name="type">cash</field>
+        <field name="code">VIA01</field>
+    </record>
+
+    <!-- Sequences and pop.configs -->
+
+    <record id="sequence_pop_config_caja_1" model="ir.sequence">
+        <field name="name">Caja 01</field>
+        <field name="code">pop_config_sequence</field>
+        <field name="prefix">caja1-</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <!-- Caja 1, para demo pero admin tambien puede usarla por ser admin -->
+    <record id="pop_config_caja_1" model="pop.config">
+        <field name="name">Caja 01 (sin cash control)</field>
+        <field name="sequence_id" ref="sequence_pop_config_caja_1" />
+        <field name="journal_ids" eval="[(6, 0, [ref('journal_cajas'), ref('journal_billetera_virtual')])]"/>
+        <field name="cash_control_journal_ids" eval="[(6, 0, [ref('journal_cajas')])]"/>
+        <field name="allowed_res_users_ids" eval="[(6,0,[ref('base.user_demo')])]"/>
+    </record>
+
+    <record id="sequence_pop_config_caja_2" model="ir.sequence">
+        <field name="name">Caja 02</field>
+        <field name="code">pop_config_sequence</field>
+        <field name="prefix">caja2-</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <!-- Caja 2, solo para admin y sin cash control -->
+    <record id="pop_config_caja_2" model="pop.config">
+        <field name="name">Caja 02 (con cash control)</field>
+        <field name="sequence_id" ref="sequence_pop_config_caja_2" />
+        <field name="journal_ids" eval="[(6, 0, [ref('journal_billetera_virtual')])]"/>
+        <field name="allowed_res_users_ids" eval="[(6,0,[ref('base.user_admin')])]"/>
+    </record>
+
+    <!-- Viaticos, solo para admin -->
+    <record id="pop_config_viaticos" model="pop.config">
+        <field name="name">Viaticos</field>
+        <field name="allow_concurrent_sessions" eval="True" />
+        <field name="journal_ids" eval="[(6,0,[ref('journal_viaticos')])]"/>
+        <field name="cash_control_journal_ids" eval="[(6,0,[ref('journal_viaticos')])]"/>
+        <field name="allowed_res_users_ids" eval="[(6,0,[ref('base.user_admin')])]"/>
+    </record>
+
+    <!-- Caja central, para probar las transferencias e importar -->
+    <record id="sequence_pop_config_caja_central" model="ir.sequence">
+        <field name="name">Caja Central</field>
+        <field name="code">pop_config_sequence</field>
+        <field name="prefix">CC-</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="pop_config_caja_central" model="pop.config">
+        <field name="name">Caja Central</field>
+        <field name="sequence_id" ref="sequence_pop_config_caja_central" />
+        <field name="journal_ids" eval="[(6,0,[ref('journal_caja_central')])]"/>
+        <field name="cash_control_journal_ids" eval="[(6,0,[ref('journal_caja_central')])]"/>
+        <field name="allowed_res_users_ids" eval="[(6,0,[ref('base.user_admin')])]"/>
+    </record>
+
+</odoo>
