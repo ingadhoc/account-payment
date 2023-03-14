@@ -47,13 +47,7 @@ class AccountPaymentGroup(models.Model):
                         'tax_ids': [(6, 0, taxes.ids)],
                         'amount_total': self.financing_surcharge,
                     })
-                refund = self.env['account.move'].with_context(internal_type='debit_note').new({
-                    'move_type': wiz.get_invoice_vals().get('move_type'),
-                    'journal_id': journal.id,
-                    'partner_id': self.partner_id.id,
-                    'company_id': self.company_id.id,
-                })
-                wiz.journal_document_type_id = refund.l10n_latam_document_type_id
+                wiz._onchange_journal_id()
                 wiz.change_payment_group()
                 wiz.amount_total = self.financing_surcharge
                 wiz.confirm()
