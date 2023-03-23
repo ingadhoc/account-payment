@@ -3,7 +3,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 {
     "name": "Cashbox management",
-    "summary": "Introduces concept of point of payment and accounting journal sessions",
+    "summary": "Introduces concept cashbox and accounting journal sessions",
     "version": "16.0.1.0.1",
     "category": "Accounting",
     "website": "www.adhoc.com.ar",
@@ -17,18 +17,18 @@
         # ya que los mismos no se usan con payment group
         ],
     "demo": [
-        'demo/point_of_payment_demo.xml',
+        'demo/cashbox_demo.xml',
     ],
     "data": [
-        'security/pop_security.xml',
+        'security/cashbox_security.xml',
         'security/ir.model.access.csv',
-        'views/pop_session_views.xml',
-        'views/pop_config_views.xml',
+        'views/account_cashbox_session.xml',
+        'views/account_cashbox.xml',
         'views/res_users_views.xml',
         'views/account_payment.xml',
         # 'views/templates.xml',
-        'wizards/pop_payment_import.xml',
+        'wizards/account_cashbox_payment_import.xml',
         ],
     "installable": True,
-    "application": True,
+    "application": False,
 }

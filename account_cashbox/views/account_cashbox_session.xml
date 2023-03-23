@@ -1,33 +1,33 @@
 <odoo>
 
-    <record id="view_pop_session_form" model="ir.ui.view">
-        <field name="name">pop.session.form.view</field>
-        <field name="model">pop.session</field>
+    <record id="view_account_cashbox_session_form" model="ir.ui.view">
+        <field name="name">account.cashbox.session.form.view</field>
+        <field name="model">account.cashbox.session</field>
         <field name="arch" type="xml">
             <form>
                 <field name="require_cash_control" invisible="True"/>
                 <field name="allow_concurrent_sessions" invisible="True" />
                 <header>
 
-                    <button name="action_pop_session_open" type="object" string="Open session"
-                        attrs="{'invisible' : [('state', '!=', 'opening_control')]}" class="oe_highlight"/>
-                    <button name="action_pop_session_close" type="object" string="Close"
+                    <button name="action_account_cashbox_session_open" type="object" string="Open session"
+                        attrs="{'invisible' : [('state', '!=', 'draft')]}" class="oe_highlight"/>
+                    <button name="action_account_cashbox_session_close" type="object" string="Close"
                             attrs="{'invisible' : ['|', ('state', '!=', 'opened'), ('require_cash_control', '=', True)]}"
                             class="oe_highlight"/>
                     <button name="action_closing_control" type="object" string="Control"
                             attrs="{'invisible' : ['|', ('state', '!=', 'opened'), ('require_cash_control', '=', False)]}"
                             class="oe_highlight"/>
 
-                    <button name="action_pop_session_close" type="object" string="Validate"
+                    <button name="action_account_cashbox_session_close" type="object" string="Validate"
                             attrs="{'invisible' : [('state', '!=', 'closing_control')]}"
                             class="oe_highlight"/>
 
-                    <button name="action_pop_session_reopen" type="object" string="Re-Open"
+                    <button name="action_account_cashbox_session_reopen" type="object" string="Re-Open"
                             attrs="{'invisible' : [('state', '!=', 'closed')]}"
                             groups="account.group_account_manager"/>
 
-                    <field name="state" widget="statusbar" attrs="{'invisible': [('require_cash_control', '=', False)]}" statusbar_visible="opening_control,opened,closing_control,closed" nolabel="1" />
-                    <field name="state" widget="statusbar" attrs="{'invisible': [('require_cash_control', '=', True)]}" statusbar_visible="opened,closed" nolabel="1" />
+                    <field name="state" widget="statusbar" attrs="{'invisible': [('require_cash_control', '=', False)]}" statusbar_visible="draft,opened,closing_control,closed" nolabel="1" />
+                    <field name="state" widget="statusbar" attrs="{'invisible': [('require_cash_control', '=', True)]}" statusbar_visible="draft,opened,closed" nolabel="1" />
 
                 </header>
                 <sheet>
@@ -40,27 +40,27 @@
                         </button>
                     </div>
                     <h1 class="oe_title">
-                        <field name="name" placeholder='Nombre de la sesion' attrs="{'readonly':[('allow_concurrent_sessions', '=', False)]}" class="oe_inline"/>
+                        <field name="name" placeholder='Session name' attrs="{'readonly':[('allow_concurrent_sessions', '=', False)]}" class="oe_inline"/>
                     </h1>
                     <group>
                         <group>
-                            <field name="pop_id" options="{'no_create':True}" invisible="context.get('hide_pop_id')"/>
+                            <field name="cashbox_id" options="{'no_create':True}" invisible="context.get('hide_cashbox_id')"/>
                             <field name="user_ids" widget="many2many_tags" options="{'no_create':True}"/>
                         </group>
                         <group>
-                            <field name="opening_date" attrs="{'invisible' : [('state', '=', 'opening_control')]}"/>
+                            <field name="opening_date" attrs="{'invisible' : [('state', '=', 'draft')]}"/>
                             <field name="closing_date" attrs="{'invisible' : [('state', '!=', 'closed')]}"/>
                         </group>
                         <newline/>
 
                     </group>
                     <group>
-                        <field nolabel="1" colspan="2" name="journal_control_ids">
+                        <field nolabel="1" colspan="2" name="line_ids">
                             <tree editable="top" create="false" delete="false">
                                 <field name="require_cash_control" invisible="True"/>
                                 <field name="journal_id" attrs="{'readonly':True}" force_save="True"/>
                                 <field name="currency_id" invisible="1"/>
-                                <field name="balance_start" attrs="{'readonly':[('parent.state', '!=', 'opening_control')], 'invisible':[('require_cash_control', '=', False)],'column_invisible':['|',('parent.allow_concurrent_sessions', '=', True),('parent.require_cash_control', '=', False)]}"/>
+                                <field name="balance_start" attrs="{'readonly':[('parent.state', '!=', 'draft')], 'invisible':[('require_cash_control', '=', False)],'column_invisible':['|',('parent.allow_concurrent_sessions', '=', True),('parent.require_cash_control', '=', False)]}"/>
                                 <field name="amount"/>
                                 <button name="action_session_payments" type="object" title="Payments" icon="fa-search"></button>
                                 <field name="balance_end" attrs="{'invisible':[('require_cash_control', '=', False)], 'column_invisible':[('parent.require_cash_control', '=', False)]}"/>
@@ -90,27 +90,28 @@
         </field>
     </record>
 
-    <record id="view_pop_session_search" model="ir.ui.view">
-        <field name="name">pop.session.search.view</field>
-        <field name="model">pop.session</field>
+    <record id="view_account_cashbox_session_search" model="ir.ui.view">
+        <field name="name">account.cashbox.session.search.view</field>
+        <field name="model">account.cashbox.session</field>
         <field name="arch" type="xml">
             <search>
-                <field name="pop_id"/>
+                <field name="cashbox_id"/>
                 <field name="opening_date"/>
                 <field name="closing_date"/>
                 <field name="user_ids"/>
                 <field name="name" string="Descripción"/>
                 <field name="state" string="Estado actual"/>
+                <filter name="opened" string="Opened" domain="[('state', 'in', ['opened','closing_control'])]"/>
             </search>
         </field>
     </record>
 
-    <record id="view_pop_session_tree" model="ir.ui.view">
-        <field name="name">pop.session.tree.view</field>
-        <field name="model">pop.session</field>
+    <record id="view_account_cashbox_session_tree" model="ir.ui.view">
+        <field name="name">account.cashbox.session.tree.view</field>
+        <field name="model">account.cashbox.session</field>
         <field name="arch" type="xml">
             <tree>
-                <field name="pop_id"/>
+                <field name="cashbox_id"/>
                 <field name="opening_date"/>
                 <field name="closing_date"/>
                 <field name="user_ids"/>
@@ -120,12 +121,12 @@
         </field>
     </record>
 
-    <record id="pop_session_action" model="ir.actions.act_window">
-        <field name="name">Sesiones de caja</field>
+    <record id="account_cashbox_session_action" model="ir.actions.act_window">
+        <field name="name">Cashbox</field>
         <field name="type">ir.actions.act_window</field>
-        <field name="res_model">pop.session</field>
-        <field name="context">{'search_default_sesiones_iniciadas_hoy': True}</field>
-        <field name="view_mode">tree,kanban,form</field>
+        <field name="res_model">account.cashbox.session</field>
+        <field name="context">{}</field>
+        <field name="view_mode">tree,form</field>
         <field name="view_id" eval="False"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">

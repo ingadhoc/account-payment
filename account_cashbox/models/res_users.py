@@ -9,10 +9,10 @@ from odoo import models, fields
 class ResUsers(models.Model):
     _inherit = 'res.users'
 
-    allowed_pop_config_ids = fields.Many2many(
-        'pop.config',
-        relation='pop_config_users_rel',
+    allowed_cashbox_ids = fields.Many2many(
+        'account.cashbox',
+        relation='account_cashbox_users_rel',
         column1='user_id',
-        column2='config_id',
+        column2='cashbox_id',
     )
-    requiere_pop_session = fields.Boolean()
+    requiere_account_cashbox_session = fields.Boolean()
