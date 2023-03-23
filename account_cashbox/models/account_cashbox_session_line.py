@@ -7,10 +7,10 @@ from odoo import models, fields, api
 
 class PopSessionJournalControl(models.Model):
 
-    _name = 'pop.session.journal_control'
+    _name = 'account.cashbox.session.line'
     _description = 'session journal'
 
-    pop_session_id = fields.Many2one('pop.session', string='Session', required=True, ondelete='cascade')
+    cashbox_session_id = fields.Many2one('account.cashbox.session', string='Session', required=True, ondelete='cascade')
     journal_id = fields.Many2one('account.journal', required=True, ondelete='cascade')
     # a balance_start por ahora lo estamos almacenando y no lo hacemos computado directamente cosa de que si cambia
     # algo en el orden o en el medio no se recompute todo. Balance end por ahora si lo computamos on the fly porque de
@@ -23,15 +23,15 @@ class PopSessionJournalControl(models.Model):
     currency_id = fields.Many2one('res.currency', compute="_compute_curency")
     require_cash_control = fields.Boolean('require_cash_control', compute='_compute_require_cash_control')
 
-    _sql_constraints = [('uniq_line', 'unique(pop_session_id, journal_id)', "Control line must be unique")]
+    _sql_constraints = [('uniq_line', 'unique(cashbox_session_id, journal_id)', "Control line must be unique")]
 
-    @api.depends('pop_session_id.payment_ids.state', 'balance_start')
+    @api.depends('cashbox_session_id.payment_ids.state', 'balance_start')
     def _compute_amounts(self):
         # agrupamos por session porque lo mas usual es ver todos los registors de una misma session
-        for session in self.mapped('pop_session_id'):
-            session_recs = self.filtered(lambda x: x.pop_session_id == session)
+        for session in self.mapped('cashbox_session_id'):
+            session_recs = self.filtered(lambda x: x.cashbox_session_id == session)
             balance_lines = self.env['account.payment'].read_group([
-                ('pop_session_id', '=', session.id), ('state', '=', 'posted'),
+                ('account_cashbox_session_id', '=', session.id), ('state', '=', 'posted'),
                 ('journal_id', 'in', session_recs.mapped('journal_id').ids)],
                 ['amount_total_signed'], ['journal_id'], lazy=False)
             for balance_line in balance_lines:
@@ -42,10 +42,10 @@ class PopSessionJournalControl(models.Model):
         self.amount = False
         self.balance_end = False
 
-    @api.depends('pop_session_id.pop_id.cash_control_journal_ids', 'journal_id')
+    @api.depends('cashbox_session_id.cashbox_id.cash_control_journal_ids', 'journal_id')
     def _compute_require_cash_control(self):
         for rec in self:
-            rec.require_cash_control = rec.journal_id.id in rec.pop_session_id.pop_id.cash_control_journal_ids.ids
+            rec.require_cash_control = rec.journal_id.id in rec.cashbox_session_id.cashbox_id.cash_control_journal_ids.ids
 
     @api.depends('journal_id')
     def _compute_curency(self):
@@ -54,4 +54,4 @@ class PopSessionJournalControl(models.Model):
 
     def action_session_payments(self):
         view = self.env.ref('account.view_account_payment_tree')
-        return self.with_context(search_default_journal_id=self.journal_id.id).pop_session_id.action_session_payments()
+        return self.with_context(search_default_journal_id=self.journal_id.id).cashbox_session_id.action_session_payments()

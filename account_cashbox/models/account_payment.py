@@ -69,10 +69,10 @@ class AccountPayment(models.Model):
     def _compute_available_journal_ids(self):
         super()._compute_available_journal_ids()
         for pay in self.filtered('account_cashbox_session_id'):
-            # hacemos dominio sobre los journal_control_ids y no los diarios del pop config porque
+            # hacemos dominio sobre los line_ids y no los diarios del pop config porque
             # puede ser que sea una sesion vieja y que el setting pop config cambie
             pay.available_journal_ids = pay.available_journal_ids._origin.filtered(
-                lambda x: x in pay.account_cashbox_session_id.journal_control_ids.mapped('journal_id'))
+                lambda x: x in pay.account_cashbox_session_id.line_ids.mapped('journal_id'))
 
     @api.onchange('account_cashbox_session_id')
     def _onchange_cashbox_session(self):

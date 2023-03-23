@@ -30,7 +30,7 @@ class AccountCashboxSession(models.Model):
         POP_SESSION_STATE, required=True, readonly=False, tracking=True,
         index=True, copy=False, default='draft')
     line_ids = fields.One2many(
-        'account.cashbox.session.line', 'account_cashbox_session_id', compute='_compute_line_ids', store=True, readonly=False)
+        'account.cashbox.session.line', 'cashbox_session_id', compute='_compute_line_ids', store=True, readonly=False)
     payment_ids = fields.One2many('account.payment', 'account_cashbox_session_id')
     require_cash_control = fields.Boolean('require_cash_control', compute='_compute_require_cash_control')
     allow_concurrent_sessions = fields.Boolean(related='cashbox_id.allow_concurrent_sessions')
@@ -47,12 +47,12 @@ class AccountCashboxSession(models.Model):
     def _compute_line_ids(self):
         for rec in self:
             balance_start = {}
-            if rec.allow_concurrent_sessions:
+            if not rec.allow_concurrent_sessions:
                 # TODO se podria hacer un read group aunque balance_end por ahora no es stored
                 for journal in rec.cashbox_id.cash_control_journal_ids:
-                    balance_start[journal.id] = rec.env['pop.session.journal_control'].sudo().search([
-                        ('account_cashbox_session_id.cashbox_id', '=', rec.cashbox_id.id),
-                        ('journal_id', '=', journal.id), ('account_cashbox_session_id.state', '=', 'closed')], limit=1).balance_end
+                    balance_start[journal.id] = rec.env['account.cashbox.session.line'].sudo().search([
+                        ('cashbox_session_id.cashbox_id', '=', rec.cashbox_id.id),
+                        ('journal_id', '=', journal.id), ('cashbox_session_id.state', '=', 'closed')], limit=1).balance_end
             rec.line_ids = [Command.clear()] + [
                 Command.create({
                     'journal_id': journal.id,
@@ -68,17 +68,17 @@ class AccountCashboxSession(models.Model):
         return super().create(vals_list)
 
     def action_import_payments(self):
-        view_id = self.env.ref('point_of_payment.pop_payment_import_view_form').id
+        view_id = self.env.ref('account_cashbox.cashbox_payment_import_view_form').id
         view = {
             "name": _("Import payment"),
             "view_mode": "form",
             "view_id": view_id,
             "view_type": "form",
-            "res_model": "pop.payment.import",
+            "res_model": "account.cashbox.payment.import",
             "res_id": False,
             "type": "ir.actions.act_window",
             "target": "new",
-            "context": {"default_cashbox_id": self.cashbox_id.id, 'default_account_cashbox_session_id': self.id},
+            "context": {"default_cashbox_id": self.cashbox_id.id, 'default_cashbox_session_id': self.id},
         }
         return view
 
@@ -87,10 +87,10 @@ class AccountCashboxSession(models.Model):
         for rec in self:
             rec.require_cash_control = bool(len(rec.cashbox_id.cash_control_journal_ids))
 
-    def action_pop_session_reopen(self):
+    def action_account_cashbox_session_reopen(self):
         self.state = 'draft'
 
-    def action_pop_session_open(self):
+    def action_account_cashbox_session_open(self):
         for session in self:
             values = {}
             if not session.opening_date:
@@ -106,7 +106,7 @@ class AccountCashboxSession(models.Model):
             values['state'] = 'closing_control'
             session.write(values)
 
-    def action_pop_session_close(self):
+    def action_account_cashbox_session_close(self):
         self.write({'state': 'closed'})
 
     @api.constrains('state')
@@ -116,10 +116,10 @@ class AccountCashboxSession(models.Model):
                 # if amounts are the same do not check
                 if rec.company_id.currency_id.compare_amounts(line.balance_end, line.balance_end_real) == 0:
                     continue
-                max_diff_in_currency = line.account_cashbox_session_id.cashbox_id.max_diff
+                max_diff_in_currency = line.cashbox_session_id.cashbox_id.max_diff
                 if line.journal_id.currency_id:
                     max_diff_in_currency = line.journal_id.currency_id._convert(
-                        line.account_cashbox_session_id.cashbox_id.max_diff, line.account_cashbox_session_id.cashbox_id.company_id.currency_id)
+                        line.cashbox_session_id.cashbox_id.max_diff, line.cashbox_session_id.cashbox_id.company_id.currency_id)
 
                 diff = abs(line.balance_end - line.balance_end_real)
                 if diff > max_diff_in_currency:
