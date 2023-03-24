@@ -31,7 +31,7 @@ class AccountCashboxSession(models.Model):
         index=True, copy=False, default='draft')
     line_ids = fields.One2many(
         'account.cashbox.session.line', 'cashbox_session_id', compute='_compute_line_ids', store=True, readonly=False)
-    payment_ids = fields.One2many('account.payment', 'account_cashbox_session_id')
+    payment_ids = fields.One2many('account.payment', 'cashbox_session_id')
     require_cash_control = fields.Boolean('require_cash_control', compute='_compute_require_cash_control')
     allow_concurrent_sessions = fields.Boolean(related='cashbox_id.allow_concurrent_sessions')
     company_id = fields.Many2one(related='cashbox_id.company_id', store=True)
@@ -137,10 +137,10 @@ class AccountCashboxSession(models.Model):
             'view_type': 'tree',
             'view_mode': 'tree',
             'res_model': 'account.payment',
-            'domain': [('account_cashbox_session_id', '=', self.id)],
+            'domain': [('cashbox_session_id', '=', self.id)],
             'view_id': view.id,
             'type': 'ir.actions.act_window',
-            'context': self._context,
+            'context': {'search_default_state_posted':True},
         }
 
     @api.ondelete(at_uninstall=False)
