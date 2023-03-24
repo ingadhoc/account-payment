@@ -7,10 +7,10 @@
         <field name="arch" type="xml">
             <form string="">
                 <sheet>
-                    <field name="account_cashbox_session_id" invisible="1"/>
+                    <field name="cashbox_session_id" invisible="1"/>
                     <field name="available_journal_ids" invisible="1"/>
                     <group>
-                        <field name="payment_ids" domain="[('account_cashbox_session_id','=', False), ('journal_id', 'in', available_journal_ids)]"></field>
+                        <field name="payment_ids" domain="[('cashbox_session_id','=', False), ('journal_id', 'in', available_journal_ids)]"></field>
                     </group>
                 </sheet>
                 <footer>

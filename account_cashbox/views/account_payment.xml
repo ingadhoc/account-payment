@@ -10,7 +10,7 @@
                 <field name="requiere_account_cashbox_session" invisible="1"/>
                 <!-- filtramos por usuario para que a los admin solo les aparezcan en donde estan involucrados. Total siendo admin se pueden agregar en la que quieran -->
                 <field
-                    name="account_cashbox_session_id"
+                    name="cashbox_session_id"
                     domain="[('user_ids', '=', uid), ('state', '=', 'opened'), ('company_id', '=', company_id)]"
                     attrs="{'required': [('requiere_account_cashbox_session', '=', True), ('state', '=', 'draft')], 'readonly': [('state', '!=', 'draft')]}"
                 />
