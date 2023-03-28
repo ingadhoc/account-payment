@@ -631,3 +631,6 @@ class AccountPaymentGroup(models.Model):
                 'default_company_id': move_ids[0].company_id.id,
             },
         }
+
+    def get_print_report_name(self):
+        return (self.partner_type == 'supplier' and 'Orden de pago' or 'Recibo')

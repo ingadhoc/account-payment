@@ -149,3 +149,9 @@ class AccountPaymentGroup(models.Model):
                     rec.receiptbook_id.mail_template_id.id,
                 )
         return True
+
+    def get_print_report_name(self):
+        res = super().get_print_report_name()
+        if self.company_id._localization_use_documents() and self.receiptbook_id:
+            res += ' ' + (self.document_number or 'Borrador')
+        return res
