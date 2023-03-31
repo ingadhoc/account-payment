@@ -31,8 +31,8 @@
             <field name="display_name" filter_domain="['|', ('name','ilike',self), ('communication','ilike',self)]" string="Description"/>
             <separator/>
             <field name="payment_methods"/>
-            <field name="partner_id" invisible="context.get('default_partner_type') == 'supplier'" string="Vendor"/>
-            <field name="partner_id" invisible="context.get('default_partner_type') == 'customer'" string="Customer"/>
+            <field name="partner_id" invisible="context.get('default_partner_type') == 'supplier'" string="Customer"/>
+            <field name="partner_id" invisible="context.get('default_partner_type') == 'customer'" string="Vendor"/>
             <field name="company_id" groups="base.group_multi_company" />
             <separator/>
             <filter string="Draft" domain="[('state','=','draft')]" name='state_draft'/>
