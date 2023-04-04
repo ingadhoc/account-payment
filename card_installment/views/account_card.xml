@@ -6,7 +6,7 @@
 		<field name="arch" type="xml">
 			<tree string="Cards">
 				<field name="name"/>
-                <field name="company_id" groups="base.group_multi_company"/>
+				<field name="company_id" groups="base.group_multi_company"/>
 			</tree>
 		</field>
 	</record>
@@ -35,17 +35,15 @@
 						<field name="company_id" groups="base.group_multi_company"/>
 					</group>
 					<group string="Installment plan">
-						<span>
-							<field name="installment_ids">
-								<tree editable="bottom">
-									<field name="name"/>
-									<field name="installment"/>
-									<field name="divisor" optional="show"/>
-									<field name="surcharge_coefficient"/>
-									<field name="bank_discount" optional="hide"/>
-								</tree>
-							</field>
-						</span>
+						<field name="installment_ids" colspan="2" nolabel="1">
+							<tree editable="bottom">
+								<field name="name"/>
+								<field name="installment"/>
+								<field name="divisor" optional="show"/>
+								<field name="surcharge_coefficient"/>
+								<field name="bank_discount" optional="hide"/>
+							</tree>
+						</field>
 					</group>
 				</sheet>
 			</form>
@@ -67,7 +65,7 @@
 				<field name="divisor" optional="hide"/>
 				<field name="surcharge_coefficient"/>
 				<field name="bank_discount"/>
-                <field name="active" widget="boolean_toggle" optional="hide"/>
+				<field name="active" widget="boolean_toggle" optional="hide"/>
 			</tree>
 		</field>
 	</record>
