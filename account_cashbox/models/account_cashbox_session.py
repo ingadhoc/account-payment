@@ -6,16 +6,16 @@ from odoo import models, fields, api, _, Command
 from odoo.exceptions import UserError, ValidationError
 
 POP_SESSION_STATE = [
-    ('draft', 'CONTROL DE APERTURA'),  # method action_pop_session_open
-    ('opened', 'EN PROCESO'),               # method action_pop_session_closing_control
-    ('closing_control', 'CONTROL DE CIERRE'),  # method action_pop_session_close
-    ('closed', 'CERRADO & PUBLICADO'),
+    ('draft', 'Draft'),
+    ('opened', 'Opened'),
+    ('closing_control', 'Close control'),
+    ('closed', 'Published'),
 ]
 
 
 class AccountCashboxSession(models.Model):
     _name = 'account.cashbox.session'
-    _order = 'id desc'
+    _order = 'opening_date desc'
     _description = 'Cashbox session'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
@@ -52,7 +52,7 @@ class AccountCashboxSession(models.Model):
                 for journal in rec.cashbox_id.cash_control_journal_ids:
                     balance_start[journal.id] = rec.env['account.cashbox.session.line'].sudo().search([
                         ('cashbox_session_id.cashbox_id', '=', rec.cashbox_id.id),
-                        ('journal_id', '=', journal.id), ('cashbox_session_id.state', '=', 'closed')], limit=1).balance_end
+                        ('journal_id', '=', journal.id), ('cashbox_session_id.state', '=', 'closed')], limit=1).balance_end_real
             rec.line_ids = [Command.clear()] + [
                 Command.create({
                     'journal_id': journal.id,
@@ -146,4 +146,11 @@ class AccountCashboxSession(models.Model):
     @api.ondelete(at_uninstall=False)
     def _unlink_check_state(self):
         if any(x.state != 'draft' for x in self):
-            raise UserError(_('Solo puede borrar sesiones en estado "CONTROL DE APERTURA".'))
+            raise UserError(_('You can only delete sessions in "OPEN CONTROL" status.'))
+
+    @api.constrains('state', 'cashbox_id')
+    def _check_active_cashbox(self):
+        for rec in self.filtered(lambda x: x.state != 'closed' and not x.cashbox_id.allow_concurrent_sessions ):
+            other_opened_sessions = self.search([('state', '!=', 'closed'), ('id', '!=', rec.id), ('cashbox_id', '=', rec.cashbox_id.id)])
+            if other_opened_sessions:
+                raise UserError(_('You can only have one open Session for %s' % rec.cashbox_id.display_name))

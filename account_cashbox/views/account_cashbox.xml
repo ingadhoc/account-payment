@@ -7,9 +7,9 @@
         <field name="view_mode">kanban</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Definir una caja nueva
+                Create cahsbox
             </p><p>
-                Gestión de cajas
+                Cashbox management
             </p>
         </field>
     </record>
@@ -20,9 +20,9 @@
         <field name="view_mode">tree,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Definir una caja nueva
+                Create cahsbox
             </p><p>
-                Gestión de cajas
+                Cashbox management
             </p>
         </field>
     </record>
@@ -85,7 +85,6 @@
                         <a class="o_kanban_manage_toggle_button o_dropdown_kanban" href="#" >
                             <i class="fa fa-ellipsis-v" role="img" aria-label="Manage" title="Manage"/>
                         </a>
-
                         <div class="oe_kanban_content oe_kanban_card">
                             <div class="container o_kanban_card_manage_pane dropdown-menu" role="menu" >
                                 <div class="row">
@@ -116,11 +115,11 @@
                                         </div>
                                     </div>
                                     <div class="col-6 o_kanban_primary_right" t-if="!record.allow_concurrent_sessions.raw_value">
-                                        <button class="btn btn-primary" t-if="record.current_session_id.raw_value" name="action_open_session" type="object">Abrir Sesión</button>
-                                        <button class="btn btn-primary" t-if="!record.current_session_id.raw_value" name="action_open_session" type="object">Nueva Sesión</button>
+                                        <button class="btn btn-primary" t-if="record.current_session_id.raw_value" name="action_open_session" type="object">Open Session</button>
+                                        <button class="btn btn-primary" t-if="!record.current_session_id.raw_value" name="action_open_session" type="object">New Session</button>
                                     </div>
                                     <div class="col-6 o_kanban_primary_right" t-if="record.allow_concurrent_sessions.raw_value">
-                                        <button class="btn btn-primary" name="%(account_cashbox_action)d" context="{'search_default_pop_id': id}" type="action">Ver Sesiones</button>
+                                        <button class="btn btn-primary" name="%(account_cashbox_session_action)d" context="{'search_default_cashbox_id': id,'search_default_opened': 'opened', 'default_cashbox_id': id}" type="action">View Sessions</button>
                                     </div>
                                 </div>
                             </div>
@@ -132,28 +131,24 @@
             </kanban>
         </field>
     </record>
-
     <record id="view_account_cashbox_search" model="ir.ui.view">
         <field name="name">account.cashbox.search.view</field>
         <field name="model">account.cashbox</field>
         <field name="arch" type="xml">
-            <search string="Configuración de caja">
+            <search string="Cashbox">
                 <field name="name"/>
                 <!-- <filter string="Inactive" name="inactive" domain="[('active', '=', False)]" /> -->
                 <!-- <field name="stock_location_id" groups="stock.group_stock_multi_locations" /> -->
             </search>
         </field>
     </record>
-
-
     <menuitem id="menu_pop_dashboard"
         name="Cashbox"
         action="account_cashbox_action"
         parent="account_payment_group.menu_finance_bank_and_cash"
         sequence="1"/>
-
     <menuitem id="menu_account_cashbox"
-        name="Cashbox"
+        name="Cashbox manangment"
         parent="account.root_payment_menu"
         action="account_cashbox_settings_action"
         sequence="100"/>

@@ -1,5 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="partner_demo_invoicing" model="res.partner">
+        <field name="name">Cashbox demo</field>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="company_name">ADHOC S.A.</field>
+        <field name="street">Ovidio Lagos 41 Bis</field>
+        <field name="city">Rosario</field>
+        <field name="state_id"  model="res.country.state" search="[('code','ilike','AR')]"/>
+        <field name="zip">2000</field>
+        <field name="country_id" ref="base.ar"/>
+        <field name="tz">America/Buenos_Aires</field>
+        <field name="email">demo.invoice@adhoc.com.ar</field>
+        <field name="phone">+549 341 512 2208</field>
+    </record>
+
+    <record id="user_demo_invoicing" model="res.users">
+        <field name="partner_id" ref="account_cashbox.partner_demo_invoicing"/>
+        <field name="login">demo_invoicing</field>
+        <field name="password">demo_invoicing</field>
+        <field name="signature" type="html"><span>-- <br/>+Mr demo invoicing</span></field>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="requiere_account_cashbox_session" eval="True"/>
+        <field name="groups_id" eval="[Command.set([ref('base.group_user'), ref('base.group_partner_manager'), ref('account.group_account_user')])]"/>
+        <field name="image_1920" type="base64" file="account_cashbox/static/img/user_demo_invoicing-image.jpg"/>
+    </record>
+
     <!-- Journals -->
 
     <record id="journal_cajas" model="account.journal">
@@ -40,9 +65,8 @@
     <record id="pop_config_caja_1" model="account.cashbox">
         <field name="name">Caja 01 (sin cash control)</field>
         <field name="sequence_id" ref="sequence_account_cashbox_caja_1" />
-        <field name="journal_ids" eval="[(6, 0, [ref('journal_cajas'), ref('journal_billetera_virtual')])]"/>
-        <field name="cash_control_journal_ids" eval="[(6, 0, [ref('journal_cajas')])]"/>
-        <field name="allowed_res_users_ids" eval="[(6,0,[ref('base.user_demo')])]"/>
+        <field name="journal_ids" eval="[(6, 0, [ref('journal_billetera_virtual')])]"/>
+        <field name="allowed_res_users_ids" eval="[(6,0,[ref('base.user_admin'),ref('account_cashbox.user_demo_invoicing'),])]"/>
     </record>
 
     <record id="sequence_account_cashbox_caja_2" model="ir.sequence">
@@ -57,8 +81,9 @@
     <record id="pop_config_caja_2" model="account.cashbox">
         <field name="name">Caja 02 (con cash control)</field>
         <field name="sequence_id" ref="sequence_account_cashbox_caja_2" />
-        <field name="journal_ids" eval="[(6, 0, [ref('journal_billetera_virtual')])]"/>
-        <field name="allowed_res_users_ids" eval="[(6,0,[ref('base.user_admin')])]"/>
+        <field name="journal_ids" eval="[(6, 0, [ref('journal_cajas'), ref('journal_billetera_virtual')])]"/>
+        <field name="allowed_res_users_ids" eval="[(6,0,[ref('base.user_admin'),ref('account_cashbox.user_demo_invoicing'),])]"/>
+        <field name="cash_control_journal_ids" eval="[(6, 0, [ref('journal_cajas')])]"/>
     </record>
 
     <!-- Viaticos, solo para admin -->
@@ -66,8 +91,7 @@
         <field name="name">Viaticos</field>
         <field name="allow_concurrent_sessions" eval="True" />
         <field name="journal_ids" eval="[(6,0,[ref('journal_viaticos')])]"/>
-        <field name="cash_control_journal_ids" eval="[(6,0,[ref('journal_viaticos')])]"/>
-        <field name="allowed_res_users_ids" eval="[(6,0,[ref('base.user_admin')])]"/>
+        <field name="allowed_res_users_ids" eval="[(6,0,[ref('base.user_admin'),ref('account_cashbox.user_demo_invoicing'),])]"/>
     </record>
 
     <!-- Caja central, para probar las transferencias e importar -->
