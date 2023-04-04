@@ -99,8 +99,8 @@
                 <field name="opening_date"/>
                 <field name="closing_date"/>
                 <field name="user_ids"/>
-                <field name="name" string="Descripción"/>
-                <field name="state" string="Estado actual"/>
+                <field name="name" string="Description"/>
+                <field name="state" string="State"/>
                 <filter name="opened" string="Opened" domain="[('state', 'in', ['opened','closing_control'])]"/>
             </search>
         </field>
@@ -115,12 +115,11 @@
                 <field name="opening_date"/>
                 <field name="closing_date"/>
                 <field name="user_ids"/>
-                <field name="name" string="Descripción"/>
-                <field name="state" string="Estado actual"/>
+                <field name="name" string="Description"/>
+                <field name="state" string="State"/>
             </tree>
         </field>
     </record>
-
     <record id="account_cashbox_session_action" model="ir.actions.act_window">
         <field name="name">Cashbox</field>
         <field name="type">ir.actions.act_window</field>
@@ -130,9 +129,9 @@
         <field name="view_id" eval="False"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Iniciar la primer sessión
+                Start the first session
             </p><p>
-                Gestión de sesiones de caja
+                Cash session management
             </p>
         </field>
     </record>

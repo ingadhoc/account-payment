@@ -48,7 +48,7 @@ class PopSessionJournalControl(models.Model):
     @api.depends('cashbox_session_id.payment_ids','cashbox_session_id.payment_ids.state', 'balance_start')
     def _compute_amounts(self):
         payments_lines = self.env['account.payment'].search([
-                ('cashbox_session_id', '=', self.mapped('cashbox_session_id').ids), ('state', '=', 'posted')])
+                ('cashbox_session_id', 'in', self.mapped('cashbox_session_id').ids), ('state', '=', 'posted')])
         for record in self:
             amount = sum(payments_lines.filtered(
                 lambda p: p.cashbox_session_id == record.cashbox_session_id and p.journal_id == record.journal_id

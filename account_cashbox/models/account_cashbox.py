@@ -20,7 +20,7 @@ class AccountCashbox(models.Model):
         string='Payment method', domain=[('type', 'in', ['bank', 'cash'])], check_company=True)
     allowed_res_users_ids = fields.Many2many(
         'res.users', relation='account_cashbox_users_rel', column1='cashbox_id', column2='user_id',)
-    cash_control_journal_ids = fields.Many2many('account.journal')
+    cash_control_journal_ids = fields.Many2many('account.journal', string='Journals with Open / Close control')
     session_ids = fields.One2many('account.cashbox.session', 'cashbox_id')
     sequence_id = fields.Many2one('ir.sequence', help="Numbering of cash sessions.", copy=False,check_company=True,)
     allow_concurrent_sessions = fields.Boolean()
