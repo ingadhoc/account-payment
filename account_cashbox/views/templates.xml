@@ -1,0 +1,125 @@
+<odoo>
+
+    <record id="action_report_pop_session_summary" model="ir.actions.report">
+        <field name="name">Resumen de caja</field>
+        <field name="model">pop.session</field>
+        <field name="binding_model_id" ref="point_of_payment.model_pop_session"/>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">point_of_payment.report_session_summary</field>
+        <field name="report_file">point_of_payment.report_session_summary</field>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_session_summary">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2><span t-field="o.pop_id.name"/></h2>
+                        <h3>Resumen de sesión: <span t-field="o.name"/></h3>
+
+                        <div class="row mt32 mb32">
+                            <div class="col-auto mw-100 mb-3">
+                                <strong>Responsable</strong>:<br/>
+                                <span t-field="o.user_id"/>
+                            </div>
+                            <div class="col-auto mw-100 mb-3">
+                                <strong>Caja</strong>:<br/>
+                                <span t-field="o.pop_id"/>
+                            </div>
+                            <div class="col-auto mw-100 mb-3">
+                                <strong>Apertura</strong>:<br/>
+                                <span t-field="o.opening_date"/>
+                            </div>
+                            <div class="col-auto mw-100 mb-3">
+                                <strong>Cierre</strong>:<br/>
+                                <span t-field="o.closing_date"/>
+                            </div>
+                        </div>
+
+                        <h4>Resumen</h4>
+
+                        <table class="table table-sm o_main_table">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <strong>Medio de pago</strong>
+                                    </th>
+                                    <th class="text-right">
+                                        <strong>Saldo inicial</strong>
+                                    </th>
+                                    <th class="text-right">
+                                        <strong>Ingresos</strong>
+                                    </th>
+                                    <th class="text-right">
+                                        <strong>Egresos</strong>
+                                    </th>
+                                    <th class="text-right">
+                                        <strong>Total de transac.</strong>
+                                    </th>
+                                    <th class="text-right">
+                                        <strong>Saldo final</strong>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.pop_session_journal_ids" t-as="statement">
+                                    <td><span t-field="statement.journal_id"/></td>
+                                    <td class="text-right">
+                                        <span t-field="statement.balance_start"
+                                            t-field-options='{"widget": "monetary", "display_currency": "statement.currency_id"}'/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="statement.total_entry_encoding_in"
+                                            t-field-options='{"widget": "monetary", "display_currency": "statement.currency_id"}'/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="statement.total_entry_encoding_out"
+                                            t-field-options='{"widget": "monetary", "display_currency": "statement.currency_id"}'/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="statement.total_entry_encoding"
+                                            t-field-options='{"widget": "monetary", "display_currency": "statement.currency_id"}'/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="statement.balance_end_real"
+                                            t-field-options='{"widget": "monetary", "display_currency": "statement.currency_id"}'/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <t t-foreach="o.pop_session_journal_ids" t-as="statement">
+                            <h4 t-if="statement.line_ids">Medio de pago: <span t-esc="statement.journal_id.name"/></h4>
+
+                            <table class="table table-sm o_main_table" t-if="statement.line_ids">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Descripción</th>
+                                        <th>Socio</th>
+                                        <th>Pago</th>
+                                        <th class="text-right">Importe</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="statement.line_ids" t-as="line">
+                                        <td><span t-field="line.date"/></td>
+                                        <td><span t-field="line.ref"/></td>
+                                        <td><span t-field="line.partner_id"/></td>
+                                        <td><span t-field="line.account_payment_id"/></td>
+                                        <td class="text-right">
+                                            <span t-field="line.amount"
+                                                t-field-options='{"widget": "monetary", "display_currency": "statement.currency_id"}'/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

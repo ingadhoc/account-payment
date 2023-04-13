@@ -1,0 +1,156 @@
+<odoo>
+
+    <record id="account_cashbox_action" model="ir.actions.act_window">
+        <field name="name">Cashbox</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">account.cashbox</field>
+        <field name="view_mode">kanban</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create cahsbox
+            </p><p>
+                Cashbox management
+            </p>
+        </field>
+    </record>
+    <record id="account_cashbox_settings_action" model="ir.actions.act_window">
+        <field name="name">Cashbox</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">account.cashbox</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create cahsbox
+            </p><p>
+                Cashbox management
+            </p>
+        </field>
+    </record>
+    <record id="account_cashbox_view_form" model="ir.ui.view">
+        <field name="name">account.cashbox.form.view</field>
+        <field name="model">account.cashbox</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button icon="fa-list" attrs="{'invisible':[('allow_concurrent_sessions', '=', True)]}" string="Sessions" name="%(account_cashbox_session_action)d" type="action" context="{'search_default_cashbox_id': id}" class="oe_stat_button"/>
+                        <button icon="fa-list" attrs="{'invisible':[('allow_concurrent_sessions', '=', False)]}" string="Sessions" name="%(account_cashbox_session_action)d" type="action" context="{'search_default_cashbox_id': id, 'search_default_opened': True}" class="oe_stat_button"/>
+                    </div>
+                    <div class="oe_title" id="title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="id" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="allow_concurrent_sessions"/>
+                            <field name="sequence_id" attrs="{'invisible': [('allow_concurrent_sessions', '=', True)], 'required': [('allow_concurrent_sessions', '=', False)]}" domain="[('code', '=', 'account_cashbox_sequence')]" context="{
+                                'default_padding': 6,
+                                'default_prefix': 'CODE-',
+                                'default_code': 'account_cashbox_sequence'}"/>
+                            <field name="allowed_res_users_ids" widget="many2many_tags"/>
+                        </group>
+                        <group>
+                            <field name="journal_ids" context="{'default_type': 'cash'}" widget="many2many_tags"/>
+                            <field name="cash_control_journal_ids" domain="[('id', 'in', journal_ids) , ('type', '=', 'cash')]" widget="many2many_checkboxes"/>
+                            <field name="max_diff" attrs="{'invisible': [('cash_control_journal_ids', '=', [])]}"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_account_cashbox_view_tree" model="ir.ui.view">
+        <field name="name">view_account_cashbox.view.tree</field>
+        <field name="model">account.cashbox</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_account_cashbox_kanban" model="ir.ui.view">
+        <field name="name">account.cashbox.kanban.view</field>
+        <field name="model">account.cashbox</field>
+        <field name="arch" type="xml">
+            <kanban create="false" class="o_kanban_dashboard">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="current_session_id"/>
+                <field name="allow_concurrent_sessions"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <a class="o_kanban_manage_toggle_button o_dropdown_kanban" href="#" >
+                            <i class="fa fa-ellipsis-v" role="img" aria-label="Manage" title="Manage"/>
+                        </a>
+                        <div class="oe_kanban_content oe_kanban_card">
+                            <div class="container o_kanban_card_manage_pane dropdown-menu" role="menu" >
+                                <div class="row">
+                                    <div class="col-6 o_kanban_card_manage_section o_kanban_manage_view">
+                                        <div role="menuitem" class="o_kanban_card_manage_title">
+                                            <span>Manage</span>
+                                        </div>
+                                        <div role="menuitem">
+                                            <a name="action_open_cashbox" type="object">Edit config</a>
+                                            <a name="%(account_cashbox_session_action)d" context="{'search_default_cashbox_id': id}" type="action">List Sessions</a>
+
+                                        </div>
+                                    </div>
+                                    </div>
+                            </div>
+                                <div class="o_kanban_card_header">
+                                <div class="o_kanban_card_header_title mb16">
+                                    <div class="o_primary">
+                                        <t t-esc="record.name.value"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="container o_kanban_card_content">
+                                <div class="row">
+                                    <div class="col-6 o_kanban_primary_left">
+                                        <div class="oe_kanban_bottom_right float-end">
+                                            <field name="allowed_res_users_ids" widget="many2many_avatar_user"/>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 o_kanban_primary_right" t-if="!record.allow_concurrent_sessions.raw_value">
+                                        <button class="btn btn-primary" t-if="record.current_session_id.raw_value" name="action_open_session" type="object">Open Session</button>
+                                        <button class="btn btn-primary" t-if="!record.current_session_id.raw_value" name="action_open_session" type="object">New Session</button>
+                                    </div>
+                                    <div class="col-6 o_kanban_primary_right" t-if="record.allow_concurrent_sessions.raw_value">
+                                        <button class="btn btn-primary" name="%(account_cashbox_session_action)d" context="{'search_default_cashbox_id': id,'search_default_opened': 'opened', 'default_cashbox_id': id}" type="action">View Sessions</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <record id="view_account_cashbox_search" model="ir.ui.view">
+        <field name="name">account.cashbox.search.view</field>
+        <field name="model">account.cashbox</field>
+        <field name="arch" type="xml">
+            <search string="Cashbox">
+                <field name="name"/>
+                <!-- <filter string="Inactive" name="inactive" domain="[('active', '=', False)]" /> -->
+                <!-- <field name="stock_location_id" groups="stock.group_stock_multi_locations" /> -->
+            </search>
+        </field>
+    </record>
+    <menuitem id="menu_pop_dashboard"
+        name="Cashbox"
+        action="account_cashbox_action"
+        parent="account_payment_group.menu_finance_bank_and_cash"
+        sequence="1"/>
+    <menuitem id="menu_account_cashbox"
+        name="Cashbox manangment"
+        parent="account.root_payment_menu"
+        action="account_cashbox_settings_action"
+        sequence="100"/>
+
+</odoo>

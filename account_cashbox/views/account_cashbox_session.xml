@@ -1,0 +1,139 @@
+<odoo>
+
+    <record id="view_account_cashbox_session_form" model="ir.ui.view">
+        <field name="name">account.cashbox.session.form.view</field>
+        <field name="model">account.cashbox.session</field>
+        <field name="arch" type="xml">
+            <form>
+                <field name="require_cash_control" invisible="True"/>
+                <field name="allow_concurrent_sessions" invisible="True" />
+                <header>
+
+                    <button name="action_account_cashbox_session_open" type="object" string="Open session"
+                        attrs="{'invisible' : [('state', '!=', 'draft')]}" class="oe_highlight"/>
+                    <button name="action_account_cashbox_session_close" type="object" string="Close"
+                            attrs="{'invisible' : ['|', ('state', '!=', 'opened'), ('require_cash_control', '=', True)]}"
+                            class="oe_highlight"/>
+                    <button name="action_closing_control" type="object" string="Control"
+                            attrs="{'invisible' : ['|', ('state', '!=', 'opened'), ('require_cash_control', '=', False)]}"
+                            class="oe_highlight"/>
+
+                    <button name="action_account_cashbox_session_close" type="object" string="Validate"
+                            attrs="{'invisible' : [('state', '!=', 'closing_control')]}"
+                            class="oe_highlight"/>
+
+                    <button name="action_account_cashbox_session_reopen" type="object" string="Re-Open"
+                            attrs="{'invisible' : [('state', '!=', 'closed')]}"
+                            groups="account.group_account_manager"/>
+
+                    <field name="state" widget="statusbar" attrs="{'invisible': [('require_cash_control', '=', False)]}" statusbar_visible="draft,opened,closing_control,closed" nolabel="1" />
+                    <field name="state" widget="statusbar" attrs="{'invisible': [('require_cash_control', '=', True)]}" statusbar_visible="draft,opened,closed" nolabel="1" />
+
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_import_payments" attrs="{'invisible': [('state', '!=', 'opened')]}" type="object" class="oe_stat_button" icon="fa-plus">
+                            <span>Import</span>
+                        </button>
+                        <button name="action_session_payments" type="object" class="oe_stat_button" icon="fa-money">
+                            <span>Payments</span>
+                        </button>
+                    </div>
+                    <h1 class="oe_title">
+                        <field name="name" placeholder='Session name' attrs="{'readonly':[('allow_concurrent_sessions', '=', False)]}" class="oe_inline"/>
+                    </h1>
+                    <group>
+                        <group>
+                            <field name="cashbox_id" options="{'no_create':True}" invisible="context.get('hide_cashbox_id')"/>
+                            <field name="user_ids" widget="many2many_tags" options="{'no_create':True}"/>
+                        </group>
+                        <group>
+                            <field name="opening_date" attrs="{'invisible' : [('state', '=', 'draft')]}"/>
+                            <field name="closing_date" attrs="{'invisible' : [('state', '!=', 'closed')]}"/>
+                        </group>
+                        <newline/>
+
+                    </group>
+                    <group>
+                        <field nolabel="1" colspan="2" name="line_ids">
+                            <tree editable="top" create="false" delete="false">
+                                <field name="require_cash_control" invisible="True"/>
+                                <field name="journal_id" attrs="{'readonly':True}" force_save="True"/>
+                                <field name="currency_id" invisible="1"/>
+                                <field name="balance_start" attrs="{'readonly':[('parent.state', '!=', 'draft')], 'invisible':[('require_cash_control', '=', False)],'column_invisible':['|',('parent.allow_concurrent_sessions', '=', True),('parent.require_cash_control', '=', False)]}"/>
+                                <field name="amount"/>
+                                <button name="action_session_payments" type="object" title="Payments" icon="fa-search"></button>
+                                <field name="balance_end" attrs="{'invisible':[('require_cash_control', '=', False)], 'column_invisible':[('parent.require_cash_control', '=', False)]}"/>
+                                <field name="balance_end_real" attrs="{'readonly':[('parent.state', '!=', 'closing_control')], 'invisible':[('require_cash_control', '=', False)], 'column_invisible':[('parent.require_cash_control', '=', False)]}"/>
+                            </tree>
+                            <form>
+                                <sheet>
+                                    <group >
+                                        <field name="journal_id" attrs="{'readonly':True}"/>
+                                        <field name="currency_id" attrs="{'readonly':True}" groups="base.group_multi_currency"/>
+                                        <field name="balance_start" attrs="{'readonly':True}"/>
+                                        <field name="amount" attrs="{'readonly':True}"/>
+                                        <field name="balance_end" attrs="{'readonly':True}"/>
+                                        <field name="balance_end_real"/>
+                                    </group>
+                                </sheet>
+                            </form>
+                        </field>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers" />
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread" />
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_account_cashbox_session_search" model="ir.ui.view">
+        <field name="name">account.cashbox.session.search.view</field>
+        <field name="model">account.cashbox.session</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="cashbox_id"/>
+                <field name="opening_date"/>
+                <field name="closing_date"/>
+                <field name="user_ids"/>
+                <field name="name" string="Description"/>
+                <field name="state" string="State"/>
+                <filter name="opened" string="Opened" domain="[('state', 'in', ['opened','closing_control'])]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_account_cashbox_session_tree" model="ir.ui.view">
+        <field name="name">account.cashbox.session.tree.view</field>
+        <field name="model">account.cashbox.session</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="cashbox_id"/>
+                <field name="opening_date"/>
+                <field name="closing_date"/>
+                <field name="user_ids"/>
+                <field name="name" string="Description"/>
+                <field name="state" string="State"/>
+            </tree>
+        </field>
+    </record>
+    <record id="account_cashbox_session_action" model="ir.actions.act_window">
+        <field name="name">Cashbox</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">account.cashbox.session</field>
+        <field name="context">{}</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" eval="False"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Start the first session
+            </p><p>
+                Cash session management
+            </p>
+        </field>
+    </record>
+
+</odoo>
