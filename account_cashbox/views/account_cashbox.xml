@@ -82,25 +82,30 @@
                 <field name="allow_concurrent_sessions"/>
                 <templates>
                     <t t-name="kanban-box">
-                        <a class="o_kanban_manage_toggle_button o_dropdown_kanban" href="#" >
+                        <!-- <a class="o_kanban_manage_toggle_button o_dropdown_kanban" href="#" >
                             <i class="fa fa-ellipsis-v" role="img" aria-label="Manage" title="Manage"/>
-                        </a>
+                        </a> -->
                         <div class="oe_kanban_content oe_kanban_card">
-                            <div class="container o_kanban_card_manage_pane dropdown-menu" role="menu" >
-                                <div class="row">
-                                    <div class="col-6 o_kanban_card_manage_section o_kanban_manage_view">
-                                        <div role="menuitem" class="o_kanban_card_manage_title">
-                                            <span>Manage</span>
-                                        </div>
-                                        <div role="menuitem">
-                                            <a name="action_open_cashbox" type="object">Edit config</a>
-                                            <a name="%(account_cashbox_session_action)d" context="{'search_default_cashbox_id': id}" type="action">List Sessions</a>
+                            <div class="o_dropdown_kanban dropdown">
+                                <a role="button" class="dropdown-toggle o-no-caret btn" data-toggle="dropdown" href="#" aria-label="Dropdown menu" title="Dropdown menu">
+                                    <span class="fa fa-ellipsis-v" aria-hidden="false"/>
+                                </a>
+                                <div class="container o_kanban_card_manage_pane dropdown-menu" role="menu" >
+                                    <div class="row">
+                                        <div class="col-6 o_kanban_card_manage_section o_kanban_manage_view">
+                                            <div role="menuitem" class="o_kanban_card_manage_title">
+                                                <span>Manage</span>
+                                            </div>
+                                            <div role="menuitem">
+                                                <a name="action_open_cashbox" type="object">Edit config</a>
+                                                <a name="%(account_cashbox_session_action)d" context="{'search_default_cashbox_id': active_id}" type="action">List Sessions</a>
 
+                                            </div>
                                         </div>
                                     </div>
-                                    </div>
+                                </div>
                             </div>
-                                <div class="o_kanban_card_header">
+                            <div class="o_kanban_card_header">
                                 <div class="o_kanban_card_header_title mb16">
                                     <div class="o_primary">
                                         <t t-esc="record.name.value"/>

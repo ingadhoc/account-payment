@@ -134,7 +134,6 @@ class AccountCashboxSession(models.Model):
         view = self.env.ref('account.view_account_payment_tree')
         return {
             'name': self.name,
-            'view_type': 'tree',
             'view_mode': 'tree',
             'res_model': 'account.payment',
             'domain': [('cashbox_session_id', '=', self.id)],
