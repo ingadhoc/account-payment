@@ -50,9 +50,13 @@ class AccountCashboxSession(models.Model):
             if not rec.allow_concurrent_sessions:
                 # TODO se podria hacer un read group aunque balance_end por ahora no es stored
                 for journal in rec.cashbox_id.cash_control_journal_ids:
-                    balance_start[journal.id] = rec.env['account.cashbox.session.line'].sudo().search([
+                    session_line = rec.env['account.cashbox.session.line'].sudo().search([
                         ('cashbox_session_id.cashbox_id', '=', rec.cashbox_id.id),
-                        ('journal_id', '=', journal.id), ('cashbox_session_id.state', '=', 'closed')], limit=1).balance_end_real
+                        ('journal_id', '=', journal.id), ('cashbox_session_id.state', '=', 'closed')]).sorted('id',reverse=True)
+                    if session_line:
+                        balance_start[journal.id] = session_line[0].balance_end_real
+                    else:
+                        balance_start[journal.id] = 0
             rec.line_ids = [Command.clear()] + [
                 Command.create({
                     'journal_id': journal.id,
