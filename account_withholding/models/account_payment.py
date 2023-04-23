@@ -74,7 +74,14 @@ class AccountPayment(models.Model):
         ''' posted -> draft '''
         withholdings = self.filtered(lambda x: x.tax_withholding_id)
         for withholding in withholdings:
+            # no podemos llamar a action_draft sin hacer esto porque action_draft termina llamando a
+            # move_id.button_draft y eso genera recomputo de lineas porque hay tax_ids involucrados. Es recomputo
+            # genera cambios no compatibles con un pago.
+            # por eso antes de llamar a super tenemos que borrar toda la info de impuestos
             liquidity_lines, counterpart_lines, writeoff_lines = withholding._seek_for_lines()
+            # antes de poder hacer el write hacemos este hack para poder pasar esta constraint
+            # https://github.com/odoo/odoo/blob/b03d4c643647/addons/account/models/account_move_line.py#L1416
+            liquidity_lines.parent_state = 'draft'
             liquidity_lines.write({
                 'tax_repartition_line_id': False,
                 'tax_line_id': False,
