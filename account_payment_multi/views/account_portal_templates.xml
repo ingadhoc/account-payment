@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="portal_my_invoices_payment" name="Payment on My Invoices" inherit_id="account.portal_my_invoices">
+        <xpath expr="//t[@t-call='portal.portal_table']/thead/tr/th[1]" position="before">
+            <th></th>
+        </xpath>
+        <xpath expr="//t[@t-foreach='invoices']/tr/td[1]" position="before">
+            <td class="text-center">
+                <input 
+                id="pay_amount_residual"
+                t-att-data-invoice-group = "'%s-%s-%s' % (invoice.currency_id.id, invoice.commercial_partner_id.id , invoice.company_id.id)"
+                t-att-data-invoice-id = "invoice.id"
+                t-att-data-currency-name = "invoice.currency_id.name"
+                t-att-data-access-token = "invoice.access_token"
+                t-att-data-amount-residual = "invoice.amount_residual"
+                type="checkbox" 
+                t-att-class="'checkbox_amount_residual'"
+                t-if="invoice.state == 'posted' and invoice.payment_state in ('not_paid', 'partial') and invoice.amount_total and invoice.move_type == 'out_invoice'"/>
+            </td>
+        </xpath>
+        <xpath expr="//t[@t-foreach='invoices']" position="before">
+            <tr>
+                <td class="text-center"><i class="fa fa-arrow-down"></i></td>
+                <td><strong class="oe_zeroAmount">Select invoices to pay</strong></td>
+                <td colspan="10">
+                   <span class="multi_payment_selector invisible">
+                         <a href="#" title="Pay Now" aria-label="Pay now" class="btn btn-sm btn-primary oe_multi_pay_now" role="button">
+                            <i class="fa fa-arrow-circle-right"/><span class='d-none d-md-inline'> Pay  <span class="oe_amount"></span> Now</span>
+                        </a>
+                    </span> 
+                </td>
+            </tr>
+        </xpath>
+
+        <xpath expr="//t[@t-foreach='invoices']" position="after">
+            <tr>
+                <td class="text-center"></td>
+                <td></td>
+                <td colspan="10">
+                   <span class="multi_payment_selector invisible">
+                         <a href="#" title="Pay Now" aria-label="Pay now" class="btn btn-sm btn-primary oe_multi_pay_now" role="button">
+                            <i class="fa fa-arrow-circle-right"/><span class='d-none d-md-inline'> Pay  <span class="oe_amount"></span> Now</span>
+                        </a>
+                    </span> 
+                </td>
+            </tr>
+        </xpath>
+        <t t-call="portal.portal_table" position="before">
+            <t t-set="classes" t-value="'payment_multi_table'"/>
+        </t>
+    
+    </template>
+
+</odoo>
