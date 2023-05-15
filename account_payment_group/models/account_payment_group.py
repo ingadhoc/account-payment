@@ -365,6 +365,9 @@ class AccountPaymentGroup(models.Model):
 
     @api.depends('partner_id', 'partner_type', 'company_id')
     def _compute_to_pay_move_lines(self):
+        # if payment group is being created from a payment we dont want to compute to_pay_move_lines
+        if self._context.get('created_automatically'):
+            return
         for rec in self:
             rec.add_all()
 
