@@ -173,7 +173,7 @@ class AccountPayment(models.Model):
             if not rec.partner_id:
                 raise ValidationError(_(
                     'Manual payments should not be created manually but created from Customer Receipts / Supplier Payments menus'))
-            rec.payment_group_id = self.env['account.payment.group'].create({
+            rec.payment_group_id = rec.env['account.payment.group'].create({
                 'company_id': rec.company_id.id,
                 'partner_type': rec.partner_type,
                 'partner_id': rec.partner_id.id,
