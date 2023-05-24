@@ -199,7 +199,7 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
 
         return {
             'ref': self.description,
-            'date': self.date,
+            'date': self.date or self.invoice_date or fields.Date.context_today(self),
             'invoice_date': self.invoice_date,
             'invoice_origin': _('Payment id %s') % payment_group.id,
             'journal_id': self.journal_id.id,
