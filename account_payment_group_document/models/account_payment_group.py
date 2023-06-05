@@ -110,11 +110,22 @@ class AccountPaymentGroup(models.Model):
         self.ensure_one()
         partner_type = self.partner_type or self._context.get(
             'partner_type', self._context.get('default_partner_type', False))
-        receiptbook = self.env[
-            'account.payment.receiptbook'].search([
-                ('partner_type', '=', partner_type),
-                ('company_id', '=', self.company_id.id),
-            ], limit=1)
+
+        # Toma en cuenta si el usuario tiene definido o no un talonario por
+        # defecto, si es asi usa ese.
+        receiptbook = self.receiptbook_id
+        if not receiptbook:
+            receiptbook = self.default_get(['receiptbook_id']).get('receiptbook_id')
+
+        # Si no hay talonario por defecto, o si el talonario no coincide con el
+        # del tipo de grupo de pago (cobro/pago) obtenemos nuestro el primer
+        # elemento via un search
+        if not receiptbook or (receiptbook.partner_type != partner_type):
+            receiptbook = self.env[
+                'account.payment.receiptbook'].search([
+                    ('partner_type', '=', partner_type),
+                    ('company_id', '=', self.company_id.id),
+                ], limit=1)
         return receiptbook
 
     def post(self):
