@@ -64,10 +64,8 @@ class AccountPayment(models.Model):
         for withholding in withholdings:
             liquidity_lines, counterpart_lines, writeoff_lines = withholding._seek_for_lines()
             rep_line = withholding._get_withholding_repartition_line()
-            liquidity_lines._write({
-                'tax_repartition_line_id': rep_line.id,
-                'tax_line_id': rep_line.tax_id.id,
-            })
+            liquidity_lines.tax_repartition_line_id = rep_line
+            liquidity_lines.tax_line_id = rep_line.tax_id
         return res
 
     def action_draft(self):
