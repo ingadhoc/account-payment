@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-14 00:41+0000\n"
+"POT-Creation-Date: 2023-06-16 19:02+0000\n"
 "PO-Revision-Date: 2023-04-14 00:41+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2023\n"
 "Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
@@ -24,7 +24,7 @@ msgstr ""
 #: code:addons/card_installment/models/account_card_installment.py:0
 #, python-format
 msgid "%s installment of %.2f (total %.2f)"
-msgstr ""
+msgstr "%s cuota de $%.2f (total $%.2f)"
 
 #. module: card_installment
 #: model:ir.model.fields,field_description:card_installment.field_account_card__active
@@ -40,7 +40,7 @@ msgstr "Descuento bancario"
 #. module: card_installment
 #: model_terms:ir.ui.view,arch_db:card_installment.card_installment_search
 msgid "By card"
-msgstr ""
+msgstr "Por tarjeta"
 
 #. module: card_installment
 #: model:ir.model.fields,field_description:card_installment.field_account_card_installment__card_id
@@ -54,6 +54,7 @@ msgstr "Plan de Cuotas"
 
 #. module: card_installment
 #: model:ir.actions.act_window,name:card_installment.action_account_card
+#: model:ir.ui.menu,name:card_installment.menu_account_card
 #: model_terms:ir.ui.view,arch_db:card_installment.account_card_form
 #: model_terms:ir.ui.view,arch_db:card_installment.account_card_search
 #: model_terms:ir.ui.view,arch_db:card_installment.account_card_tree
@@ -127,6 +128,7 @@ msgstr "Plan de Cuotas"
 #. module: card_installment
 #: model:ir.actions.act_window,name:card_installment.action_card_installment
 #: model:ir.model.fields,field_description:card_installment.field_account_card__installment_ids
+#: model:ir.ui.menu,name:card_installment.menu_account_finacial_plans
 msgid "Installments"
 msgstr "Cuotas"
 

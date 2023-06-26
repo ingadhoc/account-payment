@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-13 12:16+0000\n"
+"POT-Creation-Date: 2023-04-17 21:25+0000\n"
 "PO-Revision-Date: 2023-04-13 12:16+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2023\n"
 "Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
@@ -38,7 +38,7 @@ msgstr ""
 #. module: account_cashbox
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_form
 msgid "<span>Payments</span>"
-msgstr ""
+msgstr "Pagos"
 
 #. module: account_cashbox
 #. odoo-python
@@ -256,7 +256,7 @@ msgstr "Borrador"
 #. module: account_cashbox
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_kanban
 msgid "Edit config"
-msgstr ""
+msgstr "Editar configuración"
 
 #. module: account_cashbox
 #: model:ir.model.constraint,message:account_cashbox.constraint_account_cashbox_session_uniq_name
@@ -474,12 +474,12 @@ msgstr "Número de sesiones de caja"
 #. module: account_cashbox
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_kanban
 msgid "Open Session"
-msgstr "Abrir Sesión"
+msgstr "Sesiones Abiertas"
 
 #. module: account_cashbox
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_form
 msgid "Open session"
-msgstr "Sesiones Abiertas"
+msgstr "Abrir Sesión"
 
 #. module: account_cashbox
 #: model:ir.model.fields.selection,name:account_cashbox.selection__account_cashbox_session__state__opened

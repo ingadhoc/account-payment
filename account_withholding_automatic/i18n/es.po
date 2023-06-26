@@ -9,10 +9,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-13 14:02+0000\n"
+"POT-Creation-Date: 2023-06-08 17:05+0000\n"
 "PO-Revision-Date: 2023-01-13 14:02+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2023\n"
-"Language-Team: Spanish (https://www.transifex.com/adhoc/teams/46451/es/)\n"
+"Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
@@ -48,17 +48,6 @@ msgstr "Ajuste / Avance (sin impuestos)"
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax__withholding_advances
 msgid "Advances are Withholdable?"
 msgstr "Adelantos sujetos a retención?"
-
-#. module: account_withholding_automatic
-#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_move__algolia_search
-#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment__algolia_search
-#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_payment_group__algolia_search
-#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax__algolia_search
-#: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__algolia_search
-#: model:ir.model.fields,field_description:account_withholding_automatic.field_res_company__algolia_search
-#: model:ir.model.fields,field_description:account_withholding_automatic.field_res_config_settings__algolia_search
-msgid "Algolia Search"
-msgstr ""
 
 #. module: account_withholding_automatic
 #: model:ir.model.fields,field_description:account_withholding_automatic.field_account_tax_withholding_rule__fix_amount
@@ -104,7 +93,7 @@ msgstr "Basado en Regla"
 #. module: account_withholding_automatic
 #: model:ir.model,name:account_withholding_automatic.model_res_company
 msgid "Companies"
-msgstr "Empresas"
+msgstr "Compañías"
 
 #. module: account_withholding_automatic
 #: model_terms:ir.ui.view,arch_db:account_withholding_automatic.view_account_payment_group_form
