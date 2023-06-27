@@ -120,7 +120,7 @@ class AccountPaymentGroup(models.Model):
         # Si no hay talonario por defecto, o si el talonario no coincide con el
         # del tipo de grupo de pago (cobro/pago) obtenemos nuestro el primer
         # elemento via un search
-        if not receiptbook or (receiptbook.partner_type != partner_type):
+        if not receiptbook or (receiptbook.partner_type != partner_type) or (receiptbook.company_id != self.company_id):
             receiptbook = self.env[
                 'account.payment.receiptbook'].search([
                     ('partner_type', '=', partner_type),
