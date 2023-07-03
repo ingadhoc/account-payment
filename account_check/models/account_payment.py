@@ -331,7 +331,7 @@ class AccountPayment(models.Model):
         self.ensure_one()
         vals = {}
         rec = self
-        if not rec.check_type:
+        if not rec.check_type or rec.check_id:
             # continue
             return vals
         if (
