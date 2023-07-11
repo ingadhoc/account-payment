@@ -8,14 +8,13 @@ class AccountJournal(models.Model):
         if payment_type == 'transfer':
             ctx = self._context.copy()
             ctx.update({
-                'default_payment_type': payment_type,
-                'default_journal_id': self.id
+                'default_journal_id': self.id,
             })
             ctx.pop('group_by', None)
             action_rec = self.env.ref('account_payment_group.action_account_payments_transfer')
             action = action_rec.sudo().read([])[0]
             action['context'] = ctx
             action['domain'] = [('journal_id', '=', self.id),
-                                ('payment_type', '=', payment_type)]
+                                ('is_internal_transfer', '=', True)]
             return action
         return super(AccountJournal, self).open_payments_action(payment_type, mode=mode)
