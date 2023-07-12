@@ -489,8 +489,12 @@ class AccountPaymentGroup(models.Model):
                     rec.payment_ids.mapped('name')) and ', '.join(
                     rec.payment_ids.mapped('name')) or False
 
-            if not created_automatically:
-                counterpart_aml = rec.payment_ids.mapped('line_ids').filtered(
+            # Filtro porque los pagos electronicos solo pueden estar en pending si la transaccion esta en pending 
+            # y no los puedo conciliar esto no es un comportamiento del core
+            # sino que esta implementado en account_payment_ux
+            posted_payments = rec.payment_ids.filtered(lambda x: x.state == 'posted')
+            if not created_automatically and posted_payments:
+                counterpart_aml = posted_payments.mapped('line_ids').filtered(
                     lambda r: not r.reconciled and r.account_id.account_type in ('liability_payable', 'asset_receivable'))
                 if counterpart_aml and rec.to_pay_move_line_ids:
                     (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile()
