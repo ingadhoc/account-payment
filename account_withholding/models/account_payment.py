@@ -66,6 +66,10 @@ class AccountPayment(models.Model):
             rep_line = withholding._get_withholding_repartition_line()
             liquidity_lines.tax_repartition_line_id = rep_line
             liquidity_lines.tax_line_id = rep_line.tax_id
+        # Hacemos esto para que en los apuntes contables de retenciones en el campo etiqueta se muestre el número de retención del pago.
+        moves_lines_withholding_name = self.line_ids.filtered(lambda x: x.payment_id.withholding_number and x.tax_line_id)
+        for move in moves_lines_withholding_name:
+            move.name = move.payment_id.withholding_number or '/'
         return res
 
     def action_draft(self):
