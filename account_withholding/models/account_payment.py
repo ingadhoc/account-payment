@@ -2,7 +2,7 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import models, fields, Command,_
+from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
 
@@ -30,7 +30,16 @@ class AccountPayment(models.Model):
     def _get_valid_liquidity_accounts(self):
         res = super()._get_valid_liquidity_accounts()
         if self.tax_withholding_id:
-            res += (self._get_withholding_repartition_line().account_id,)
+            # si es un withholding payment entonces la cuenta de liquidez puede ser cualquier cuenta utilizda en una
+            # repatition line ya que podemos estar cambiando de impuesto (y al llegar a este paso no sabemos el
+            # impuesto anterior) o estar cambiando entre rep line "invoice y refund". De hecho deberiamos ser hasta
+            # mas permisivos (tal vez assets account con reconcile = False? solo para este caso de withholding payment?)
+            # igual asi por ahora estamos y en 17 esto se depreciaria
+            rep_lines = self.env['account.tax.repartition.line'].search(
+                [('company_id', '=', self.company_id.id), '|',
+                    ('invoice_tax_id.type_tax_use', 'in', ['supplier', 'customer']),
+                    ('refund_tax_id.type_tax_use', 'in', ['supplier', 'customer'])])
+            res += tuple(rep_lines.mapped('account_id'))
 
         return res
 
@@ -113,3 +122,8 @@ class AccountPayment(models.Model):
             res[0]['name'] = self.withholding_number or '/'
             res[0]['account_id'] = rep_line.account_id.id
         return res
+
+    @api.model
+    def _get_trigger_fields_to_synchronize(self):
+        res = super()._get_trigger_fields_to_synchronize()
+        return res + ('withholding_number', 'tax_withholding_id')
