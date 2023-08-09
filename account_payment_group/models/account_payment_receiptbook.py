@@ -70,8 +70,7 @@ class AccountPaymentReceiptbook(models.Model):
         'res.company',
         'Company',
         required=True,
-        default=lambda self: self.env[
-            'res.company']._company_default_get('account.payment.receiptbook')
+        default=lambda self: self.env.company
     )
     prefix = fields.Char(
         'Prefix',
