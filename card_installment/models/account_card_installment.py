@@ -77,5 +77,5 @@ class AccountCardInstallment(models.Model):
                     'base_amount': amount_total,
                     'amount': amount,
                     'fee': amount - amount_total,
-                    'description': _('%s installment of %.2f (total %.2f)' % (self.divisor, amount / self.divisor, amount))
+                    'description': _('%s installment of %.2f (total %.2f)') % (self.divisor, amount / self.divisor, amount)
                 }
