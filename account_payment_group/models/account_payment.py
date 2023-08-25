@@ -59,6 +59,16 @@ class AccountPayment(models.Model):
         compute='_compute_label'
     )
 
+    @api.onchange('available_journal_ids')
+    def _onchange_available_journal_ids(self):
+        """ No es lo más elegante meter un onchange hoy en dia. Pero aca funciona y lo hacemos para que
+        el primer diario que se elija en un pago sea uno de los diarios disponibles.
+        No vimos otra manera facil (o menos invasiva) porque odoo esto lo computa en account.move en metodo
+        _compute_journal_id y en ese llamado, en el create, todavia no hay link al payment_id ni al payment_group_id.
+        Podriamos mandar data por contexto pero creo que seria mas feo."""
+        if not self.journal_id or self.journal_id not in self.available_journal_ids._origin:
+            self.journal_id = self.available_journal_ids._origin[:1]
+
     @api.depends('payment_type', 'payment_group_id')
     def _compute_available_journal_ids(self):
         """
