@@ -211,3 +211,7 @@ class AccountMove(models.Model):
                             AND payment_group_id IS NULL;
         """)
 
+    def _compute_l10n_latam_document_type(self):
+        """ No queremos que el campo l10n_latam_document_type_id se setee en False si el payment group tiene asignado tipo de documento """
+        payments = self.filtered(lambda x: x.journal_id.type in ['bank', 'cash'] or x.move_type == 'entry')
+        return super(AccountMove, self - payments)._compute_l10n_latam_document_type()
