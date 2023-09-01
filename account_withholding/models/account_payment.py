@@ -118,12 +118,20 @@ class AccountPayment(models.Model):
         if self.payment_method_code == 'withholding':
             if self.payment_type == 'transfer':
                 raise UserError(_('You can not use withholdings on transfers!'))
-            rep_line = self._get_withholding_repartition_line()
             res[0]['name'] = self.withholding_number or '/'
-            res[0]['account_id'] = rep_line.account_id.id
         return res
 
     @api.model
     def _get_trigger_fields_to_synchronize(self):
         res = super()._get_trigger_fields_to_synchronize()
         return res + ('withholding_number', 'tax_withholding_id')
+
+    def _compute_outstanding_account_id(self):
+        withholding_payments = self.filtered(lambda x: x.payment_method_code == 'withholding')
+        for withholding_payment in withholding_payments:
+            account = False
+            if self.tax_withholding_id:
+                rep_line = withholding_payment._get_withholding_repartition_line()
+                account = rep_line.account_id.id
+            withholding_payment.outstanding_account_id = account
+        return super(AccountPayment, self - withholding_payments)._compute_outstanding_account_id()
