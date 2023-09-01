@@ -480,7 +480,10 @@ class AccountPaymentGroup(models.Model):
 
             # no volvemos a postear lo que estaba posteado
             if not created_automatically:
-                rec.payment_ids.filtered(lambda x: x.state == 'draft').action_post()
+                # lo hacemos de a uno porque sino el super de cheques ( https://github.com/odoo/odoo/blob/16.0/addons/l10n_latam_check/models/account_payment.py#L262 )
+                # permite pagar 2 o más veces con el mismo cheque
+                for pay in rec.payment_ids.filtered(lambda x: x.state == 'draft'):
+                    pay.action_post()
             # escribimos despues del post para que odoo no renumere el payment
             rec.payment_ids.name = rec.name
 
