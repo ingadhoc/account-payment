@@ -173,6 +173,11 @@ class AccountPayment(models.Model):
         for rec in recs.filtered(lambda x: not x.payment_group_id and not x.is_internal_transfer).with_context(
                 created_automatically=True):
             if not rec.partner_id:
+                # avoid creating payment group when creating entry of expenses paid by company.
+                # In this cases odoo creates a payment but is't not line a normal one, it's a payment without partner
+                # and custom journal items so we better avoid the payment group on top of it
+                if rec._fields.get('expense_sheet_id') and rec.expense_sheet_id:
+                    continue
                 raise ValidationError(_(
                     'Manual payments should not be created manually but created from Customer Receipts / Supplier Payments menus'))
             rec.payment_group_id = rec.env['account.payment.group'].create({
