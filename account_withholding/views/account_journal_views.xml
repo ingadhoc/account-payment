@@ -5,10 +5,9 @@
         <field name="model">account.journal</field>
         <field name="inherit_id" ref="account.view_account_journal_form"/>
         <field name="arch" type="xml">
-            <!-- make default_account_id optional if withholdings journal -->
             <field name="default_account_id" position="attributes">
                 <attribute name="attrs">{'required': ['|', '&amp;', '&amp;', ('id', '!=', False), ('type', 'in', ('bank', 'cash')), '!', ('selected_payment_method_codes', 'like', 'withholding'), ('type', 'in', ('sale', 'purchase'))],
-                                                       'invisible': [('type', '=', False)]}</attribute>
+                                                       'invisible': [('type', '!=', 'cash')]}</attribute>
             </field>
         </field>
     </record>
