@@ -80,8 +80,6 @@ class AccountPayment(models.Model):
                 filtered_domain.append(('company_id', '=', pay.payment_group_id.company_id.id))
             pay.available_journal_ids = journals.filtered_domain(filtered_domain)
 
-
-
     @api.depends('payment_method_id')
     def _compute_payment_method_description(self):
         for rec in self:
@@ -247,8 +245,8 @@ class AccountPayment(models.Model):
         return res
 
     @api.model
-    def _get_trigger_fields_to_sincronize(self):
-        res = super()._get_trigger_fields_to_sincronize()
+    def _get_trigger_fields_to_synchronize(self):
+        res = super()._get_trigger_fields_to_synchronize()
         return res + ('force_amount_company_currency',)
 
     @api.depends_context('default_is_internal_transfer')
