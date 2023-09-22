@@ -244,10 +244,10 @@ class AccountPayment(models.Model):
             })
         return res
 
-    @api.model
-    def _get_trigger_fields_to_synchronize(self):
-        res = super()._get_trigger_fields_to_synchronize()
-        return res + ('force_amount_company_currency',)
+    # @api.model
+    # def _get_trigger_fields_to_synchronize(self):
+    #     res = super()._get_trigger_fields_to_synchronize()
+    #     return res + ('force_amount_company_currency',)
 
     @api.depends_context('default_is_internal_transfer')
     def _compute_is_internal_transfer(self):
