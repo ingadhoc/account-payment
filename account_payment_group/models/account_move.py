@@ -216,3 +216,8 @@ class AccountMove(models.Model):
         """ No queremos que el campo l10n_latam_document_type_id se setee en False si el payment group tiene asignado tipo de documento """
         payments = self.filtered(lambda x: x.journal_id.type in ['bank', 'cash'] or x.move_type == 'entry')
         return super(AccountMove, self - payments)._compute_l10n_latam_document_type()
+    
+    def _compute_made_sequence_hole(self):
+        pay_group_recs = self.filtered(lambda x: x.journal_id.type not in ('bank', 'cash') and x.payment_group_id)
+        pay_group_recs.made_sequence_hole = False
+        super(AccountMove, self - pay_group_recs)._compute_made_sequence_hole()
