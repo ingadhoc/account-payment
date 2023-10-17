@@ -580,11 +580,11 @@ class AccountPaymentGroup(models.Model):
     @api.depends('company_id', 'partner_type')
     def _compute_receiptbook(self):
         for rec in self.filtered(lambda x: not x.receiptbook_id or x.receiptbook_id.company_id != x.company_id):
-            partner_type = self.partner_type or self._context.get(
+            partner_type = rec.partner_type or self._context.get(
                 'partner_type', self._context.get('default_partner_type', False))
             receiptbook = self.env[
                 'account.payment.receiptbook'].search([
                     ('partner_type', '=', partner_type),
-                    ('company_id', '=', self.company_id.id),
+                    ('company_id', '=', rec.company_id.id),
                 ], limit=1)
             rec.receiptbook_id = receiptbook
