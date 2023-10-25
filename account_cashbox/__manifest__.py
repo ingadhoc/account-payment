@@ -29,6 +29,6 @@
         # 'views/templates.xml',
         'wizards/account_cashbox_payment_import.xml',
         ],
-    "installable": True,
+    'installable': False,
     "application": False,
 }

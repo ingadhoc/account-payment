@@ -31,7 +31,7 @@
     'depends': [
         'account',
     ],
-    'installable': True,
+    'installable': False,
     'name': 'Withholdings on Payments',
     'test': [],
     'version': "16.0.3.1.0",
