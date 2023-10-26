@@ -91,13 +91,13 @@
 
                 <group>
                     <group name="group1">
-                        <field name="company_id" options="{'no_create': True, 'no_open': True}" />
+                        <field name="company_id" options="{'no_create': True, 'no_open': True}" invisible="context.get('pop_up')"/>
                         <field name="currency_id" invisible="1"/>
-                        <field name="partner_id" context="{'default_is_company': True}" string="Customer"
+                        <field name="partner_id" context="{'default_is_company': True}" string="Customer" invisible="context.get('pop_up')"
                                 attrs="{'readonly':[('state', '!=', 'draft')],
                                         'invisible':[('partner_type','!=','customer')],
-                                        'required': [('partner_type','=','customer')]}"/>
-                        <field name="partner_id" context="{'default_is_company': True}" string="Vendor"
+                                        'required': [('partner_type','=','customer')]}" />
+                        <field name="partner_id" context="{'default_is_company': True}" string="Vendor" invisible="context.get('pop_up')"
                                 attrs="{'readonly':[('state', '!=', 'draft')],
                                         'invisible':[('partner_type','!=','supplier')],
                                         'required': [('partner_type','=','supplier')]}"/>
