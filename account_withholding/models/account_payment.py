@@ -39,7 +39,7 @@ class AccountPayment(models.Model):
                 [('company_id', '=', self.company_id.id), '|',
                     ('invoice_tax_id.type_tax_use', 'in', ['supplier', 'customer']),
                     ('refund_tax_id.type_tax_use', 'in', ['supplier', 'customer'])])
-            res += tuple(rep_lines.mapped('account_id'))
+            res |= rep_lines.mapped('account_id')
 
         return res
 
