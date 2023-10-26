@@ -30,7 +30,7 @@ class AccountPayment(models.Model):
     def _get_valid_liquidity_accounts(self):
         res = super()._get_valid_liquidity_accounts()
         if self.tax_withholding_id:
-            res += (self._get_withholding_repartition_line().account_id,)
+            res |= self._get_withholding_repartition_line().account_id
 
         return res
 
