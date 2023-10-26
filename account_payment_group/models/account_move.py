@@ -74,6 +74,7 @@ class AccountMove(models.Model):
                 # you can't crate payment lines (for ej: subscription)
                 'create': True,
                 'default_company_id': self.company_id.id,
+                'pop_up': True,
             },
         }
 
