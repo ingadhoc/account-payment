@@ -62,6 +62,7 @@ class AccountPayment(models.Model):
         for rec in self:
             rec._inverse_net_amount()
 
+    @api.onchange('net_amount')
     def _inverse_net_amount(self):
         for rec in self:
             rec.with_context(skip_account_move_synchronization=True).amount = rec.net_amount * (rec.installment_id.surcharge_coefficient or 1)
