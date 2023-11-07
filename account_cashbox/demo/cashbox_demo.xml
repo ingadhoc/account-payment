@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="partner_demo_invoicing" model="res.partner">
+        <field name="name">Cashbox demo</field>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="company_name">ADHOC S.A.</field>
+        <field name="street">Ovidio Lagos 41 Bis</field>
+        <field name="city">Rosario</field>
+        <field name="state_id"  model="res.country.state" search="[('code','ilike','AR')]"/>
+        <field name="zip">2000</field>
+        <field name="country_id" ref="base.ar"/>
+        <field name="tz">America/Buenos_Aires</field>
+        <field name="email">demo.invoice@adhoc.com.ar</field>
+        <field name="phone">+549 341 512 2208</field>
+    </record>
+
+    <record id="user_demo_invoicing" model="res.users">
+        <field name="partner_id" ref="account_cashbox.partner_demo_invoicing"/>
+        <field name="login">demo_invoicing</field>
+        <field name="password">demo_invoicing</field>
+        <field name="signature" type="html"><span>-- <br/>+Mr demo invoicing</span></field>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="requiere_account_cashbox_session" eval="True"/>
+        <field name="groups_id" eval="[Command.set([ref('base.group_user'), ref('base.group_partner_manager'), ref('account.group_account_user')])]"/>
+        <field name="image_1920" type="base64" file="account_cashbox/static/img/user_demo_invoicing-image.jpg"/>
+    </record>
+
+    <!-- Journals -->
+
+    <record id="journal_cajas" model="account.journal">
+        <field name="name">Cajas</field>
+        <field name="type">cash</field>
+        <field name="code">CAJAS</field>
+    </record>
+
+    <record id="journal_caja_central" model="account.journal">
+        <field name="name">Caja Central</field>
+        <field name="type">cash</field>
+        <field name="code">CAJAC</field>
+    </record>
+
+    <record id="journal_billetera_virtual" model="account.journal">
+        <field name="name">Billetera Virtual</field>
+        <field name="type">bank</field>
+        <field name="code">BILL1</field>
+    </record>
+
+    <record id="journal_viaticos" model="account.journal">
+        <field name="name">Viaticos</field>
+        <field name="type">cash</field>
+        <field name="code">VIA01</field>
+    </record>
+
+    <!-- Sequences and cashbox -->
+
+    <record id="sequence_account_cashbox_caja_1" model="ir.sequence">
+        <field name="name">Caja 01</field>
+        <field name="code">account_cashbox_sequence</field>
+        <field name="prefix">caja1-</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <!-- Caja 1, para demo pero admin tambien puede usarla por ser admin -->
+    <record id="pop_config_caja_1" model="account.cashbox">
+        <field name="name">Caja 01 (sin cash control)</field>
+        <field name="sequence_id" ref="sequence_account_cashbox_caja_1" />
+        <field name="journal_ids" eval="[(6, 0, [ref('journal_billetera_virtual')])]"/>
+        <field name="allowed_res_users_ids" eval="[(6,0,[ref('base.user_admin'),ref('account_cashbox.user_demo_invoicing'),])]"/>
+    </record>
+
+    <record id="sequence_account_cashbox_caja_2" model="ir.sequence">
+        <field name="name">Caja 02</field>
+        <field name="code">account_cashbox_sequence</field>
+        <field name="prefix">caja2-</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <!-- Caja 2, solo para admin y sin cash control -->
+    <record id="pop_config_caja_2" model="account.cashbox">
+        <field name="name">Caja 02 (con cash control)</field>
+        <field name="sequence_id" ref="sequence_account_cashbox_caja_2" />
+        <field name="journal_ids" eval="[(6, 0, [ref('journal_cajas'), ref('journal_billetera_virtual')])]"/>
+        <field name="allowed_res_users_ids" eval="[(6,0,[ref('base.user_admin'),ref('account_cashbox.user_demo_invoicing'),])]"/>
+        <field name="cash_control_journal_ids" eval="[(6, 0, [ref('journal_cajas')])]"/>
+    </record>
+
+    <!-- Viaticos, solo para admin -->
+    <record id="pop_config_viaticos" model="account.cashbox">
+        <field name="name">Viaticos</field>
+        <field name="allow_concurrent_sessions" eval="True" />
+        <field name="journal_ids" eval="[(6,0,[ref('journal_viaticos')])]"/>
+        <field name="allowed_res_users_ids" eval="[(6,0,[ref('base.user_admin'),ref('account_cashbox.user_demo_invoicing'),])]"/>
+    </record>
+
+    <!-- Caja central, para probar las transferencias e importar -->
+    <record id="sequence_account_cashbox_caja_central" model="ir.sequence">
+        <field name="name">Caja Central</field>
+        <field name="code">account_cashbox_sequence</field>
+        <field name="prefix">CC-</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="pop_config_caja_central" model="account.cashbox">
+        <field name="name">Caja Central</field>
+        <field name="sequence_id" ref="sequence_account_cashbox_caja_central" />
+        <field name="journal_ids" eval="[(6,0,[ref('journal_caja_central')])]"/>
+        <field name="cash_control_journal_ids" eval="[(6,0,[ref('journal_caja_central')])]"/>
+        <field name="allowed_res_users_ids" eval="[(6,0,[ref('base.user_admin')])]"/>
+    </record>
+
+</odoo>
