@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<record id="view_pos_payment_form" model="ir.ui.view">
+		<field name="name">view_pos_payment.form</field>
+		<field name="model">pos.make.payment</field>
+		<field name="inherit_id" ref="point_of_sale.view_pos_payment"/>
+		<field name="arch" type="xml">
+			<field name="payment_method_id" position="after">
+				<field invisible="True" name="card_id"/>
+				<field invisible="True" name="card_type"/>
+				<field attrs="{'required':[('card_type','in',['debit','credit'])], 'invisible':[('card_type','not in',['debit','credit'])]}" domain="[('card_id','=',card_id)]" name="instalment_id" options="{'no_open':True,'no_create':1,'no_create_edit':1}"/>
+			</field>
+			<xpath expr="//group[1]" position="after">
+				<group attrs="{'invisible':[('card_type','not in',['debit','credit'])]}" col="4" name="instalment">
+					<field attrs="{'readonly':True}" name="total_amount"/>
+					<field name="fee"/>
+					<field colspan="4" name="magnet_bar" password="True"/>
+					<field name="card_number"/>
+					<field name="tiket_number"/>
+					<field name="lot_number"/>
+				</group>
+			</xpath>
+		</field>
+	</record>
+</odoo>
