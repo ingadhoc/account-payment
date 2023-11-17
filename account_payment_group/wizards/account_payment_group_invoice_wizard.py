@@ -6,6 +6,7 @@ from odoo.exceptions import ValidationError
 
 
 class AccountPaymentGroupInvoiceWizard(models.TransientModel):
+    _inherit = "analytic.mixin"
     _name = "account.payment.group.invoice.wizard"
     _description = "account.payment.group.invoice.wizard"
 
@@ -65,9 +66,6 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
     company_id = fields.Many2one(
         related='payment_group_id.company_id',
     )
-    analytic_distribution = fields.Json(
-    )
-
     use_documents = fields.Boolean(
         related='journal_id.l10n_latam_use_documents',
         string='Use Documents?',
