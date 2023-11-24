@@ -1,7 +1,7 @@
 # © 2016 ADHOC SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import models, api, fields, _
+from odoo import models, api, fields, _, Command
 from odoo.exceptions import ValidationError
 
 
@@ -382,8 +382,7 @@ class AccountPaymentGroup(models.Model):
 
     def add_all(self):
         for rec in self:
-            rec.to_pay_move_line_ids = rec.env['account.move.line'].search(
-                rec._get_to_pay_move_lines_domain())
+            rec.to_pay_move_line_ids = [Command.clear(), Command.set(self.env['account.move.line'].search(rec._get_to_pay_move_lines_domain()).ids)]
 
     def remove_all(self):
         self.to_pay_move_line_ids = False
