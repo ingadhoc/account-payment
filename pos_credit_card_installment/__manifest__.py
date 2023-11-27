@@ -10,8 +10,6 @@
     "depends": ['card_installment'],
     "data": [
         "views/pos_payment_method.xml",
-        "views/account_card.xml",
-        "views/product_product_views.xml",
     ],
     'assets': {
         'point_of_sale.assets': [

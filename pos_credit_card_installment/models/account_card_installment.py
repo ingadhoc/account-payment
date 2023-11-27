@@ -14,4 +14,4 @@ class AccountCardInstallment(models.Model):
         [("credit", "credit"), ("debit", "debit")], related="card_id.card_type"
     )
 
-    financial_surcharge = fields.Float(string='Financial charge')
+
