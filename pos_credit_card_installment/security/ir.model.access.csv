@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_credit_card_instalment_pos_credit_card_instalment_pos,credit_card_instalment_pos.credit_card_instalment_pos,model_credit_card_instalment_pos_credit_card_instalment_pos,base.group_user,1,1,1,1

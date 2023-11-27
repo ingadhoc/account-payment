@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<record id="account_card_financial_charge_form" model="ir.ui.view">
+		<field name="name">account.card.financial.charge.form</field>
+		<field name="model">account.card</field>
+		<field name="inherit_id" ref="card_installment.account_card_form"/>
+		<field name="arch" type="xml">
+			<xpath expr="//field[@name='installment_ids']/tree/field[@name='bank_discount']" position='after'>
+				<field name="financial_surcharge"/>
+			</xpath>
+		</field>
+	</record>
+</odoo>

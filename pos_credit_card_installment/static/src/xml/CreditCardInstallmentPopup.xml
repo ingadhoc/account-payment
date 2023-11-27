@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="CreditCardInstallmentPopup" owl="1">
+		<div role="dialog" class="modal-dialog">
+			<div class="popup popup-text">
+				<header class="tittle drag-handle">
+					<div class="title">Payment Method Card</div>
+				</header>
+				<main class="body">
+					<div>
+						<br/>
+						<br/>
+<!--						<select class="detail" name="instalment">-->
+<!--                            <option value="">None</option>-->
+<!--                            <t t-foreach="env.pos.get_order().paymentlines" t-as="instalment" t-key="instalment.id">-->
+<!--                                <option t-att-value="instalment.id">-->
+<!--                                    <t t-esc="instalment_id.name" />-->
+<!--                                </option>-->
+<!--                            </t>-->
+<!--                        </select>-->
+						<label>Card number</label>
+						<option type="select"
+							   t-model="state.card_number"
+							   name="card_number"
+							   required="1"/>
+						<br/>
+						<br/>
+						<label>Lot number</label>
+						<br/>
+						<input type="number"
+							   t-model="state.lot_number"
+							   name="lot_number"
+							   required="1"/>
+						<br/>
+						<br/>
+						<label>Ticket number</label>
+						<br/>
+						<input type="number"
+							   t-model="state.ticket_number"
+							   name="ticket_number"
+							   required="1"/>
+					</div>
+				</main>
+				<footer class="footer">
+					<div class="button confirm" t-on-click="confirm">
+						<t t-esc="props.confirmText"/>
+					</div>
+					<div class="button cancel" t-on-click="cancel">
+						<t t-esc="props.cancelText"/>
+					</div>
+				</footer>
+			</div>
+	    </div>
+	</t>
+</templates>
