@@ -30,7 +30,6 @@ class PosSession(models.Model):
     def _loader_params_account_card_installment(self):
         return {
             'search_params': {
-                'domain': [('card_id', '!=', False)],
                 'fields': [
                     'card_id', 'name', 'installment', 'divisor', 'surcharge_coefficient', 'bank_discount', 'active', 'financial_surcharge'
                 ],
