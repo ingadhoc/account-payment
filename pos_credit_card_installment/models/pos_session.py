@@ -14,7 +14,6 @@ class PosSession(models.Model):
 
     def _loader_params_pos_payment_method(self):
         params = super(PosSession, self)._loader_params_pos_payment_method()
-        params['search_params']['domain'] = [('card_id', '!=', False)]
         params['search_params']['fields'].append('card_id')
         params['search_params']['fields'].append('instalment_ids')
         params['search_params']['fields'].append('instalment_product_id')
@@ -30,6 +29,7 @@ class PosSession(models.Model):
     def _loader_params_account_card_installment(self):
         return {
             'search_params': {
+                'domain': [('card_id', '!=', False)],
                 'fields': [
                     'card_id', 'name', 'installment', 'divisor', 'surcharge_coefficient', 'bank_discount', 'active', 'financial_surcharge'
                 ],
