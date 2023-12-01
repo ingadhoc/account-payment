@@ -1,3 +1,0 @@
-<odoo>
-    <menuitem id="menu_finance_bank_and_cash" parent="account.menu_finance" sequence="4" groups="account.group_account_user" name="Bank and Cash"/>
-</odoo>
