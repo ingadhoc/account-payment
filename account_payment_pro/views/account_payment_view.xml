@@ -1,0 +1,81 @@
+<odoo>
+
+    <record id="view_account_payment_form" model="ir.ui.view">
+        <field name="name">account.payment.form</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="arch" type="xml">
+            <form>
+                <field name="commercial_partner_id"/>
+            </form>
+
+            <!-- seccion para mejora pagos en otra moneda -->
+            <div name="amount_div" position="after">
+                <field name="company_currency_id" invisible="1"/>
+                <field name="other_currency" invisible="1"/>
+                <field name="force_amount_company_currency" invisible="1"/>
+                <label for="amount_company_currency" string="(on company currency)" invisible="not other_currency"/>
+                <div name="amount_company_currency" class="o_row" invisible="not other_currency">
+                    x <field name="exchange_rate"/> = <field name="amount_company_currency" readonly="state != 'draft'"/>
+                </div>
+            </div>
+            <group name="group2" position="after">
+                <group name="group3">
+                    <field name="selected_debt" invisible="state not in ('draft')"/>
+                    <field name="matched_amount" invisible="state != 'posted'"/>
+                    <field name="amount_residual" invisible="state != 'posted'"/>
+                    <field name="unreconciled_amount" invisible="state not in ['draft'] or partner_type != 'supplier'" readonly="state not in ['draft']"/>
+                    <field name="to_pay_amount" invisible="state not in ['draft'] or partner_type != 'supplier'"/>
+                </group>
+                <group name="group4">
+                    <field name="amount_company_currency_signed_pro" invisible="state not in ('draft')"/>
+                    <field name="payment_difference" invisible="state not in ('draft')"/>
+                </group>
+            </group>
+            <sheet>
+                <notebook>
+                    <page string="Debts" invisible="state != 'draft'">
+                        <p>
+                            Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched.
+                        </p>
+                        <button name="add_all" string="Add All / Refresh" invisible="state != 'draft'" type="object"/>
+                        <button name="remove_all" string="Remove All" invisible="state != 'draft'" type="object"/>
+                        <button name="%(action_account_payment_invoice_wizard)d" string="+ Debit Note" invisible="state != 'draft'" type="action" context="{'internal_type': 'debit_note'}"/>
+                        <button name="%(action_account_payment_invoice_wizard)d" string="+ Credit Note" invisible="state != 'draft'" context="{'refund': True}" type="action"/>
+                        <field
+                            name="to_pay_move_line_ids"
+                            context="{'tree_view_ref': 'account_payment_group.view_move_line_tree'}"
+                            domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.reconcile', '=', True),('reconciled', '=', False), ('full_reconcile_id', '=', False), ('company_id', '=', company_id), ('move_id.state', '=', 'posted'), ('account_id.account_type', '=', 'asset_receivable' if partner_type == 'customer' else 'liability_payable')]" help="Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched."/>
+                    </page>
+                    <page string="Paid" invisible="state != 'posted'">
+                        <field name="matched_move_line_ids" context="{'payment_group_id': id, 'tree_view_ref': 'account_payment_group.view_move_line_with_matched_tree'}"/>
+                    </page>
+                </notebook>
+            </sheet>
+
+        </field>
+    </record>
+
+    <!-- <record id="view_account_payment_form2" model="ir.ui.view">
+        <field name="name">account.payment.form</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <field name="journal_id" position="attributes">
+                <attribute name="nolabel">1</attribute>
+            </field>
+            <field name="destination_journal_id" position="attributes">
+                <attribute name="nolabel">1</attribute>
+            </field>
+            <xpath expr="//field[@name='journal_id']" position="before">
+                <field name="label_journal_id" nolabel="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name='destination_journal_id']" position="before">
+                <field name="label_destination_journal_id" nolabel="1"/>
+            </xpath>
+        </field>
+    </record> -->
+
+</odoo>
