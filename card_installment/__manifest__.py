@@ -6,18 +6,19 @@
     'author': 'ADHOC SA',
     'website': "https://www.adhoc.com.ar",
     'category': 'Technical',
-    'version': "16.0.1.0.0",
+    'version': "17.0.1.0.0",
     'depends': ['product', 'account'],
     'license': 'LGPL-3',
     'images': [
     ],
-    'installable': False,
+    'installable': True,
     'data': [
         'security/ir.model.access.csv',
         'security/ir_rule.xml',
         'data/account_card.xml',
         'data/decimal_installment_coeficent.xml',
         'views/account_card.xml',
+        'views/card_installment_view.xml',
     ],
     'demo': [
         'demo/product_product.xml',

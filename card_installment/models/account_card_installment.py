@@ -15,25 +15,25 @@ class AccountCardInstallment(models.Model):
         required=True,
     )
     name = fields.Char(
-        'Fantasy name',
-        default='/'
+        'Fantasy Name',
+        default='/',
+        help = 'Nombre informativo del plan a mostrar'
     )
     divisor = fields.Integer(
         string='Divisor',
+        help = 'Número por el cual se dividirá el total de cuotas que pagará el usuario final'
     )
     installment = fields.Integer(
-        string='installment plan',
-        help='Number of installment'
+        string='Installment Plan',
+        help='Plan de cuotas a informar, en caso de utilizar método de pago electrónico: el valor del plan a informar al gateway de pago'
     )
     surcharge_coefficient = fields.Float(
-        string='coefficient',
         default=1.0,
         digits='Installment coefficient',
-        help='Coeficiente con iva incluido'
+        help='Factor a aplicar sobre el monto total para calcular el cargo financiero'
     )
     bank_discount = fields.Float(
-        string='bank discount',
-        help='Bank discount'
+        help='Porcentaje de reintegro (el reintegro se efectúa sobre el total incluído el recargo financiero) que acuerda el vendedor con el banco o marca de tarjeta para devolución en compra'
     )
     active = fields.Boolean(
         'Active',
