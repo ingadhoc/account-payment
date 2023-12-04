@@ -3,6 +3,7 @@
 # directory
 ##############################################################################
 from odoo import models, fields, api
+from odoo.tools import plaintext2html
 
 
 class AccountMove(models.Model):
@@ -31,19 +32,22 @@ class AccountMove(models.Model):
 
     def create_electronic_payment(self):
         tx_obj = self.env['payment.transaction']
-        values = []
         for rec in self:
             active_transaction_amount = sum(rec.transaction_ids.filtered(lambda tx: tx.state in ['authorized', 'done','pending']).mapped('amount'))
             if rec.currency_id.compare_amounts(rec.amount_total, active_transaction_amount) > 0.0:
-                values.append({
-                    'provider_id': rec.payment_token_id.provider_id.id,
-                    'amount': rec.amount_total - active_transaction_amount,
-                    'currency_id': rec.currency_id.id,
-                    'partner_id': rec.partner_id.id,
-                    'token_id': rec.payment_token_id.id,
-                    'operation': 'offline',
-                    'invoice_ids': [(6, 0, [rec.id])],
-                })
-        transactions = tx_obj.create(values)
-        for tx in transactions:
-            tx._send_payment_request()
+                try:
+                    transaction = tx_obj.create({
+                                                'provider_id': rec.payment_token_id.provider_id.id,
+                                                'amount': rec.amount_total - active_transaction_amount,
+                                                'currency_id': rec.currency_id.id,
+                                                'partner_id': rec.partner_id.id,
+                                                'token_id': rec.payment_token_id.id,
+                                                'operation': 'offline',
+                                                'invoice_ids': [(6, 0, [rec.id])],
+                                            })
+                    transaction._send_payment_request()
+                    transaction._cr.commit()
+                except Exception as exp:
+                    rec.message_post(
+                        body=_('We tried to validate this payment but got this error') + ': \n\n' + plaintext2html(str(exp), 'em'),
+                        partner_ids=rec.get_internal_partners().ids)
