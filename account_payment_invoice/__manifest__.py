@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 {
     "name": "Account Payment invoice token",
-    "version": "16.0.1.0.0",
+    "version": "16.0.2.0.0",
     "category": "Accounting",
     "description": """This module allows you to associate an invoice with a payment token and make the electronic payment of the invoice.
                       - add a filter Electronic payment pending
@@ -11,6 +11,7 @@
     "website": "www.adhoc.com.ar",
     "author": "ADHOC SA",
     "license": "AGPL-3",
+    "sequence": 100,
     "application": False,
     'installable': True,
     "external_dependencies": {
