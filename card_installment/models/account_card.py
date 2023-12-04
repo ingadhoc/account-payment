@@ -8,6 +8,7 @@ from odoo import models, fields
 class AccountCard(models.Model):
     _name = 'account.card'
     _description = 'Credit Card'
+    _check_company_auto = True
 
     name = fields.Char(
         'name',
@@ -20,7 +21,6 @@ class AccountCard(models.Model):
     )
     company_id = fields.Many2one(
         'res.company',
-        string='company',
         default=lambda self: self.env.company.id
     )
     active = fields.Boolean(
