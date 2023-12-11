@@ -11,6 +11,7 @@ class AccountCashbox(models.Model):
 
     _name = 'account.cashbox'
     _description = 'Cashbox'
+    _check_company_auto = True
 
     name = fields.Char(required=True,)
     company_id = fields.Many2one(

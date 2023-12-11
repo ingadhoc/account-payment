@@ -12,8 +12,8 @@
                 <field
                     name="cashbox_session_id"
                     domain="[('user_ids', '=', uid), ('state', '=', 'opened'), ('company_id', '=', company_id)]"
-                    attrs="{'required': [('requiere_account_cashbox_session', '=', True), ('state', '=', 'draft')], 'readonly': [('state', '!=', 'draft')]}"
-                />
+                    required="requiere_account_cashbox_session and state == 'draft'"
+                    readonly = "state != 'draft'"/>
             </field>
         </field>
     </record>

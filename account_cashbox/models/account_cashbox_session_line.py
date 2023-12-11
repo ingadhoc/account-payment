@@ -17,9 +17,9 @@ class PopSessionJournalControl(models.Model):
     # ultima los cambios afectarian solo esta session.
     # Luego tal vez veremos de trackear y/o guardar lo efectivamente contado
     balance_start = fields.Monetary(currency_field='currency_id')
-    balance_end_real = fields.Monetary(currency_field='currency_id')
-    balance_end = fields.Monetary(currency_field='currency_id', compute='_compute_amounts')
-    amount = fields.Monetary('amount',  currency_field='currency_id', compute='_compute_amounts')
+    balance_end_real = fields.Monetary('Real Ending Balance', currency_field='currency_id')
+    balance_end = fields.Monetary('Ending Balance', currency_field='currency_id', compute='_compute_amounts')
+    amount = fields.Monetary('Amount',  currency_field='currency_id', compute='_compute_amounts')
     currency_id = fields.Many2one('res.currency', compute="_compute_curency")
     require_cash_control = fields.Boolean('require_cash_control', compute='_compute_require_cash_control')
 
@@ -31,7 +31,7 @@ class PopSessionJournalControl(models.Model):
     #     # agrupamos por session porque lo mas usual es ver todos los registors de una misma session
     #     for session in self.mapped('cashbox_session_id'):
     #         session_recs = self.filtered(lambda x: x.cashbox_session_id == session)
-    #         balance_lines = self.env['account.payment'].read_group([
+    #         balance_lines = self.env['account.payment']._read_group([
     #             ('cashbox_session_id', '=', session.id), ('state', '=', 'posted'),
     #             ('journal_id', 'in', session_recs.mapped('journal_id').ids)],
     #             ['amount','payment_type'], ['journal_id','payment_type'], lazy=False)

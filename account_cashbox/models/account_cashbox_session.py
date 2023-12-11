@@ -19,10 +19,9 @@ class AccountCashboxSession(models.Model):
     _description = 'Cashbox session'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    cashbox_id = fields.Many2one('account.cashbox', required=True, states={'draft': [('readonly', False)]}, readonly=True)
-    name = fields.Char(required=True, compute='_compute_name', store=True, readonly=False, states={'draft': [('readonly', False)]})
-    user_ids = fields.Many2many('res.users', required=True, readonly=True,
-        states={'draft': [('readonly', False)]}, tracking=True,
+    cashbox_id = fields.Many2one('account.cashbox', required=True, readonly=False)
+    name = fields.Char(required=True, compute='_compute_name', store=True, readonly=False)
+    user_ids = fields.Many2many('res.users', required=True, readonly=False, tracking=True,
         default=lambda self: [(4, self.env.uid)])
     opening_date = fields.Datetime(readonly=True, copy=False)
     closing_date = fields.Datetime(readonly=True, copy=False)

@@ -10,29 +10,33 @@
                 <header>
 
                     <button name="action_account_cashbox_session_open" type="object" string="Open session"
-                        attrs="{'invisible' : [('state', '!=', 'draft')]}" class="oe_highlight"/>
+                            invisible = "state != 'draft'" 
+                            class="oe_highlight"/>
                     <button name="action_account_cashbox_session_close" type="object" string="Close"
-                            attrs="{'invisible' : ['|', ('state', '!=', 'opened'), ('require_cash_control', '=', True)]}"
+                            invisible = "state != 'opened' or require_cash_control"
                             class="oe_highlight"/>
                     <button name="action_closing_control" type="object" string="Control"
-                            attrs="{'invisible' : ['|', ('state', '!=', 'opened'), ('require_cash_control', '=', False)]}"
+                            invisible = "state != 'opened' or require_cash_control==False"
                             class="oe_highlight"/>
-
                     <button name="action_account_cashbox_session_close" type="object" string="Validate"
-                            attrs="{'invisible' : [('state', '!=', 'closing_control')]}"
+                            invisible = "state != 'closing_control'"
                             class="oe_highlight"/>
-
                     <button name="action_account_cashbox_session_reopen" type="object" string="Re-Open"
-                            attrs="{'invisible' : [('state', '!=', 'closed')]}"
+                            invisible = "state != 'closed'" 
                             groups="account.group_account_manager"/>
 
-                    <field name="state" widget="statusbar" attrs="{'invisible': [('require_cash_control', '=', False)]}" statusbar_visible="draft,opened,closing_control,closed" nolabel="1" />
-                    <field name="state" widget="statusbar" attrs="{'invisible': [('require_cash_control', '=', True)]}" statusbar_visible="draft,opened,closed" nolabel="1" />
+                    <field name="state" widget="statusbar" 
+                        invisible = "require_cash_control == False" 
+                        statusbar_visible="draft,opened,closing_control,closed" nolabel="1" />
+                    <field name="state" widget="statusbar" 
+                        invisible="require_cash_control" 
+                        statusbar_visible="draft,opened,closed" nolabel="1" />
 
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_import_payments" attrs="{'invisible': [('state', '!=', 'opened')]}" type="object" class="oe_stat_button" icon="fa-plus">
+                        <button name="action_import_payments" 
+                            invisible="state != 'opened'" type="object" class="oe_stat_button" icon="fa-plus">
                             <span>Import</span>
                         </button>
                         <button name="action_session_payments" type="object" class="oe_stat_button" icon="fa-money">
@@ -40,7 +44,8 @@
                         </button>
                     </div>
                     <h1 class="oe_title">
-                        <field name="name" placeholder='Session name' attrs="{'readonly':[('allow_concurrent_sessions', '=', False)]}" class="oe_inline"/>
+                        <field name="name" placeholder='Session name' 
+                        readonly="allow_concurrent_sessions == False" class="oe_inline"/>
                     </h1>
                     <group>
                         <group>
@@ -48,8 +53,8 @@
                             <field name="user_ids" widget="many2many_tags" options="{'no_create':True}"/>
                         </group>
                         <group>
-                            <field name="opening_date" attrs="{'invisible' : [('state', '=', 'draft')]}"/>
-                            <field name="closing_date" attrs="{'invisible' : [('state', '!=', 'closed')]}"/>
+                            <field name="opening_date" invisible="state =='draft'"/>
+                            <field name="closing_date" invisible="state != 'closed'"/>
                         </group>
                         <newline/>
 
@@ -57,23 +62,28 @@
                     <group>
                         <field nolabel="1" colspan="2" name="line_ids">
                             <tree editable="top" create="false" delete="false">
-                                <field name="require_cash_control" invisible="True"/>
-                                <field name="journal_id" attrs="{'readonly':True}" force_save="True"/>
+                                <field name="require_cash_control" invisible="True" column_invisible="True"/>
+                                <field name="journal_id" readonly="True" force_save="True"/>
                                 <field name="currency_id" invisible="1"/>
-                                <field name="balance_start" attrs="{'readonly':[('parent.state', '!=', 'draft')], 'invisible':[('require_cash_control', '=', False)],'column_invisible':['|',('parent.allow_concurrent_sessions', '=', True),('parent.require_cash_control', '=', False)]}"/>
+                                <field name="balance_start" readonly = "parent.state != 'draft'" invisible ="require_cash_control == False"
+                                    column_invisible = "parent.allow_concurrent_sessions or parent.require_cash_control == False "/>
                                 <field name="amount"/>
                                 <button name="action_session_payments" type="object" title="Payments" icon="fa-search"></button>
-                                <field name="balance_end" attrs="{'invisible':[('require_cash_control', '=', False)], 'column_invisible':[('parent.require_cash_control', '=', False)]}"/>
-                                <field name="balance_end_real" attrs="{'readonly':[('parent.state', '!=', 'closing_control')], 'invisible':[('require_cash_control', '=', False)], 'column_invisible':[('parent.require_cash_control', '=', False)]}"/>
+                                <field name="balance_end" invisible = "require_cash_control == False"
+                                    column_invisible="parent.require_cash_control == False"/>
+                                <field name="balance_end_real" 
+                                    readonly=" parent.state !='closing_control'"
+                                    invisible = "require_cash_control == False" 
+                                    column_invisible="parent.require_cash_control == False"/>
                             </tree>
                             <form>
                                 <sheet>
                                     <group >
-                                        <field name="journal_id" attrs="{'readonly':True}"/>
-                                        <field name="currency_id" attrs="{'readonly':True}" groups="base.group_multi_currency"/>
-                                        <field name="balance_start" attrs="{'readonly':True}"/>
-                                        <field name="amount" attrs="{'readonly':True}"/>
-                                        <field name="balance_end" attrs="{'readonly':True}"/>
+                                        <field name="journal_id" readonly ="True"/>
+                                        <field name="currency_id" readonly ="True" groups="base.group_multi_currency"/>
+                                        <field name="balance_start" readonly ="True"/>
+                                        <field name="amount" readonly ="True"/>
+                                        <field name="balance_end" readonly ="True"/>
                                         <field name="balance_end_real"/>
                                     </group>
                                 </sheet>
@@ -111,10 +121,10 @@
         <field name="model">account.cashbox.session</field>
         <field name="arch" type="xml">
             <tree>
-                <field name="cashbox_id"/>
+                <field name="cashbox_id" readonly="state != 'draft'"/>
                 <field name="opening_date"/>
                 <field name="closing_date"/>
-                <field name="user_ids"/>
+                <field name="user_ids" readonly="state != 'draft'"/>
                 <field name="name" string="Description"/>
                 <field name="state" string="State"/>
             </tree>
