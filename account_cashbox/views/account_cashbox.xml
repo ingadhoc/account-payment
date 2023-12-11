@@ -7,7 +7,7 @@
         <field name="view_mode">kanban</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Create cahsbox
+                Create cashbox
             </p><p>
                 Cashbox management
             </p>
@@ -20,7 +20,7 @@
         <field name="view_mode">tree,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Create cahsbox
+                Create cashbox
             </p><p>
                 Cashbox management
             </p>
@@ -33,8 +33,8 @@
             <form>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button icon="fa-list" attrs="{'invisible':[('allow_concurrent_sessions', '=', True)]}" string="Sessions" name="%(account_cashbox_session_action)d" type="action" context="{'search_default_cashbox_id': id}" class="oe_stat_button"/>
-                        <button icon="fa-list" attrs="{'invisible':[('allow_concurrent_sessions', '=', False)]}" string="Sessions" name="%(account_cashbox_session_action)d" type="action" context="{'search_default_cashbox_id': id, 'search_default_opened': True}" class="oe_stat_button"/>
+                        <button icon="fa-list" invisible = "allow_concurrent_sessions" string="Sessions" name="%(account_cashbox_session_action)d" type="action" context="{'search_default_cashbox_id': id}" class="oe_stat_button"/>
+                        <button icon="fa-list" invisible = "allow_concurrent_sessions == False" string="Sessions" name="%(account_cashbox_session_action)d" type="action" context="{'search_default_cashbox_id': id, 'search_default_opened': True}" class="oe_stat_button"/>
                     </div>
                     <div class="oe_title" id="title">
                         <label for="name" class="oe_edit_only"/>
@@ -43,9 +43,9 @@
                     <group>
                         <group>
                             <field name="id" invisible="1"/>
-                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="company_id"/>
                             <field name="allow_concurrent_sessions"/>
-                            <field name="sequence_id" attrs="{'invisible': [('allow_concurrent_sessions', '=', True)], 'required': [('allow_concurrent_sessions', '=', False)]}" domain="[('code', '=', 'account_cashbox_sequence')]" context="{
+                            <field name="sequence_id" invisible = "allow_concurrent_sessions" required = "allow_concurrent_sessions == False" domain="[('code', '=', 'account_cashbox_sequence')]" context="{
                                 'default_padding': 6,
                                 'default_prefix': 'CODE-',
                                 'default_code': 'account_cashbox_sequence'}"/>
@@ -53,8 +53,8 @@
                         </group>
                         <group>
                             <field name="journal_ids" context="{'default_type': 'cash'}" widget="many2many_tags"/>
-                            <field name="cash_control_journal_ids" domain="[('id', 'in', journal_ids) , ('type', '=', 'cash')]" widget="many2many_checkboxes"/>
-                            <field name="max_diff" attrs="{'invisible': [('cash_control_journal_ids', '=', [])]}"/>
+                            <field name="cash_control_journal_ids" domain="[('id', 'in', journal_ids) , ('type', '=', 'cash')]" widget="many2many_checkboxes" />
+                            <field name="max_diff" invisible="cash_control_journal_ids == []" />
                         </group>
                     </group>
                 </sheet>
@@ -145,7 +145,7 @@
     <menuitem id="menu_pop_dashboard"
         name="Cashbox"
         action="account_cashbox_action"
-        parent="account_payment_group.menu_finance_bank_and_cash"
+        parent="account_ux.menu_finance_bank_and_cash"
         sequence="1"/>
     <menuitem id="menu_account_cashbox"
         name="Cashbox manangment"

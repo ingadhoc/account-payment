@@ -11,17 +11,23 @@
    :alt: License: AGPL-3
 
 ================
-Point of Payment
+Account Cashbox
 ================
 
-NOTA: por el momento se requiere modulo account_accountant para disponibilizar los full accounting features y ver el menú banco y caja (de account_payment_group)
+Module for cash management.
+
+- Creates a menu for Cash Management where users can set cashbox configurations. 
+
+- Creates a menu for Cash Sessions management.
+
+- Allows to require cashbox session for users
 
 Installation
 ============
 
 To install this module, you need to:
 
-#. Do this ...
+#. account_ux
 
 Configuration
 =============
