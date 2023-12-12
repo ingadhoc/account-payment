@@ -27,14 +27,16 @@ class AccountPayment(models.Model):
         compute='_compute_exchange_rate',
         # readonly=False,
         # inverse='_inverse_exchange_rate',
-        digits=(16, 4),
+        # digits=(16, 4),
     )
     # TODO deberiamos ver de borrar esto. el tema es que los campos nativos de odoo no refelajn importe en moenda de cia
     # hasta en tanto se guarde el payment (en parte porque vienen heredados desde el move)
+    # no solo eso si no que tmb viene pisado en los payments y computa solo si hay liquidity lines pero no cuentas de
+    # outstanding
     # TODO de hecho tenemos que analizar si queremos mantener todo lo de matched y demas en moneda de cia o moneda de
     # pago
     amount_company_currency_signed_pro = fields.Monetary(
-        currency_field='company_currency_id', compute='_compute_amount_company_currency_signed_pro')
+        currency_field='company_currency_id', compute='_compute_amount_company_currency_signed_pro',)
     available_journal_ids = fields.Many2many(
         comodel_name='account.journal',
         compute='_compute_available_journal_ids'
