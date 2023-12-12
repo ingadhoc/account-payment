@@ -6,7 +6,7 @@
         <field name="inherit_id" ref="account.view_account_payment_form"/>
         <field name="arch" type="xml">
             <form>
-                <field name="commercial_partner_id"/>
+                <field name="commercial_partner_id" invisible="1"/>
             </form>
 
             <!-- seccion para mejora pagos en otra moneda -->
