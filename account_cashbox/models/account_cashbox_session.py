@@ -63,7 +63,7 @@ class AccountCashboxSession(models.Model):
                     'balance_start': balance_start.get(journal.id),
                 }) for journal in rec.cashbox_id.journal_ids]
 
-    
+    @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
             account_cashbox = self.env['account.cashbox'].browse(vals['cashbox_id'])
