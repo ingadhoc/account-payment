@@ -8,21 +8,21 @@
     <field eval="99" name="priority"/>
     <field name="arch" type="xml">
          <tree string="Journal Items" edit="0">
-            <field name="date"/>
-            <field name="date_maturity"/>
-            <field name="move_id" required="0"/>
-            <field name="journal_id" options='{"no_open":True}'/>
-            <field name="name"/>
-            <field name="ref"/>
-            <field name="statement_id" invisible="1"/>
-            <field name="account_id" options='{"no_open":True}' domain="[('company_id', '=', company_id)]"/>
-            <field name="balance" string="Amount"/>
-            <field name="amount_residual" sum="Total"/>
-            <field name="amount_currency" groups="base.group_multi_currency"/>
-            <field name="amount_residual_currency" groups="base.group_multi_currency"/>
-            <field name="currency_id" invisible="1"/>
-            <field name="company_currency_id" invisible="1"/>
-            <field name="company_id" invisible="1"/>
+            <field name="date" readonly="True"/>
+            <field name="date_maturity" readonly="True"/>
+            <field name="move_id" required="0" readonly="True"/>
+            <field name="journal_id" options='{"no_open":True}' readonly="True"/>
+            <field name="name" readonly="True"/>
+            <field name="ref" readonly="True"/>
+            <field name="statement_id" invisible="1" readonly="True"/>
+            <field name="account_id" options='{"no_open":True}' domain="[('company_id', '=', company_id)]" readonly="True"/>
+            <field name="balance" string="Amount" readonly="True"/>
+            <field name="amount_residual" sum="Total" readonly="True"/>
+            <field name="amount_currency" groups="base.group_multi_currency" readonly="True"/>
+            <field name="amount_residual_currency" groups="base.group_multi_currency" readonly="True"/>
+            <field name="currency_id" invisible="1" readonly="True"/>
+            <field name="company_currency_id" invisible="1" readonly="True"/>
+            <field name="company_id" invisible="1" readonly="True"/>
             <!--button type="object" icon="fa-external-link" help="Open Related Document" name="action_open_related_document"/-->
         </tree>
     </field>
