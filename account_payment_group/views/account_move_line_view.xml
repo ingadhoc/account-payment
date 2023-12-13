@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<!-- Journal Items -->
+<record id="view_move_line_tree" model="ir.ui.view">
+    <field name="name">account.move.line.tree</field>
+    <field name="model">account.move.line</field>
+    <field eval="99" name="priority"/>
+    <field name="arch" type="xml">
+         <tree string="Journal Items" edit="0">
+            <field name="date" readonly="True"/>
+            <field name="date_maturity" readonly="True"/>
+            <field name="move_id" required="0" readonly="True"/>
+            <field name="journal_id" options='{"no_open":True}' readonly="True"/>
+            <field name="name" readonly="True"/>
+            <field name="ref" readonly="True"/>
+            <field name="statement_id" invisible="1" readonly="True"/>
+            <field name="account_id" options='{"no_open":True}' domain="[('company_id', '=', company_id)]" readonly="True"/>
+            <field name="balance" string="Amount" readonly="True"/>
+            <field name="amount_residual" sum="Total" readonly="True"/>
+            <field name="amount_currency" groups="base.group_multi_currency" readonly="True"/>
+            <field name="amount_residual_currency" groups="base.group_multi_currency" readonly="True"/>
+            <field name="currency_id" invisible="1" readonly="True"/>
+            <field name="company_currency_id" invisible="1" readonly="True"/>
+            <field name="company_id" invisible="1" readonly="True"/>
+            <!--button type="object" icon="fa-external-link" help="Open Related Document" name="action_open_related_document"/-->
+        </tree>
+    </field>
+</record>
+
+<!-- Journal Items -->
+<record id="view_move_line_with_matched_tree" model="ir.ui.view">
+    <field name="name">account.move.line.tree</field>
+    <field name="model">account.move.line</field>
+    <field eval="99" name="priority"/>
+    <field name="mode">primary</field>
+    <field name="inherit_id" ref="account_payment_group.view_move_line_tree"/>
+    <field name="arch" type="xml">
+        <field name="amount_residual" position="replace">
+            <field name="payment_group_matched_amount" string="Paid Amount" sum="Total"/>
+        </field>
+    </field>
+</record>
+
+<record id="view_move_form" model="ir.ui.view">
+    <field name="name">account.move</field>
+    <field name="model">account.move</field>
+    <field name="inherit_id" ref="account.view_move_form"/>
+    <field name="arch" type="xml">
+        <group id="header_left_group">
+            <!-- only allow pay now if manual method available -->
+            <field name="pay_now_journal_id" attrs="{'invisible': [('move_type', 'not in', ('in_invoice', 'in_refund'))]}" options="{'no_create': True}" domain="[('company_id', '=', company_id), ('type', 'in', ['bank', 'cash']), ('outbound_payment_method_line_ids.payment_method_id.code', '=', 'manual')]" groups="account_payment_group.group_pay_now_vendor_invoices"/>
+            <field name="pay_now_journal_id" attrs="{'invisible': [('move_type', 'not in', ('out_invoice', 'out_refund'))]}" options="{'no_create': True}" domain="[('company_id', '=', company_id), ('type', 'in', ['bank', 'cash']), ('inbound_payment_method_line_ids.payment_method_id.code', '=', 'manual')]" groups="account_payment_group.group_pay_now_customer_invoices"/>
+        </group>
+
+        <button id="account_invoice_payment_btn" position="attributes">
+            <attribute name="name">action_register_payment_group</attribute>
+        </button>
+
+        <field name="invoice_payments_widget" position="after">
+            <field name="payment_group_ids" invisible="1"/>
+            <button type="object"  name="action_view_payment_groups"
+                    class="oe_link" string="View Payments"
+                    colspan="2"
+                    groups="account.group_account_invoice"
+                    attrs="{'invisible':[('payment_group_ids','=',[])]}"/>
+        </field>
+    </field>
+</record>
+
+</odoo>
