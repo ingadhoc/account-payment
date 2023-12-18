@@ -26,7 +26,7 @@
         'views/account_cashbox.xml',
         'views/res_users_views.xml',
         'views/account_payment.xml',
-        # 'views/templates.xml',
+        'views/menuitem.xml',
         'wizards/account_cashbox_payment_import.xml',
         ],
     'installable': True,
