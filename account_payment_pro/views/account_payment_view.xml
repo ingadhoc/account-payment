@@ -6,14 +6,14 @@
         <field name="inherit_id" ref="account.view_account_payment_form"/>
         <field name="arch" type="xml">
             <form>
-                <field name="commercial_partner_id" invisible="1"/>
+                <field name="commercial_partner_id" invisible="True"/>
             </form>
 
             <!-- seccion para mejora pagos en otra moneda -->
             <div name="amount_div" position="after">
-                <field name="company_currency_id" invisible="1"/>
-                <field name="other_currency" invisible="1"/>
-                <field name="force_amount_company_currency" invisible="1"/>
+                <field name="company_currency_id" invisible="True"/>
+                <field name="other_currency" invisible="True"/>
+                <field name="force_amount_company_currency" invisible="True"/>
                 <label for="amount_company_currency" string="(on company currency)" invisible="not other_currency"/>
                 <div name="amount_company_currency" class="o_row" invisible="not other_currency">
                     x <field name="exchange_rate"/> = <field name="amount_company_currency" readonly="state != 'draft'"/>
@@ -44,18 +44,57 @@
                         <button name="%(action_account_payment_invoice_wizard)d" string="+ Credit Note" invisible="state != 'draft'" context="{'refund': True}" type="action"/>
                         <field
                             name="to_pay_move_line_ids"
-                            context="{'tree_view_ref': 'account_payment_group.view_move_line_tree'}"
-                            domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.reconcile', '=', True),('reconciled', '=', False), ('full_reconcile_id', '=', False), ('company_id', '=', company_id), ('move_id.state', '=', 'posted'), ('account_id.account_type', '=', 'asset_receivable' if partner_type == 'customer' else 'liability_payable')]" help="Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched."/>
+                            readonly="state != 'Draft'"
+                            context="{'tree_view_ref': 'account_payment_pro.view_move_line_tree'}"
+                            domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.reconcile', '=', True),('reconciled', '=', False), ('full_reconcile_id', '=', False), ('company_id', '=', company_id), ('move_id.state', '=', 'posted'), ('account_id.account_type', '=', 'asset_receivable' if partner_type == 'customer' else 'liability_payable')]" 
+                            help="Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched."/>
                     </page>
                     <page string="Paid" invisible="state != 'posted'">
-                        <field name="matched_move_line_ids" context="{'payment_group_id': id, 'tree_view_ref': 'account_payment_group.view_move_line_with_matched_tree'}"/>
+                        <field name="matched_move_line_ids" context="{'matched_payment_id': id, 'tree_view_ref': 'account_payment_pro.view_move_line_with_matched_tree'}"/>
                     </page>
                 </notebook>
             </sheet>
 
         </field>
     </record>
+    <record id="view_move_line_tree" model="ir.ui.view">
+        <field name="name">account.move.line.tree</field>
+        <field name="model">account.move.line</field>
+        <field eval="99" name="priority"/>
+        <field name="arch" type="xml">
+            <tree string="Journal Items" edit="1">
+                <field name="date" readonly="True"/>
+                <field name="date_maturity" optional="hide" readonly="True"/>
+                <field name="move_id" required="0" readonly="True"/>
+                <field name="journal_id" options='{"no_open":True}' readonly="True"/>
+                <field name="name" readonly="True"/>
+                <field name="ref" optional="hide"  readonly="True"/>
+                <field name="statement_id" column_invisible="True" readonly="True"/>
+                <field name="account_id" options='{"no_open":True}' domain="[('company_id', '=', company_id)]" readonly="True"/>
+                <field name="balance"  optional="hide" string="Amount" readonly="True"/>
+                <field name="amount_residual" sum="Total" readonly="True"/>
+                <field name="amount_currency" groups="base.group_multi_currency" readonly="True"/>
+                <field name="amount_residual_currency"  optional="hide" groups="base.group_multi_currency" readonly="True"/>
+                <field name="currency_id" column_invisible="True" readonly="True"/>
+                <field name="company_currency_id" column_invisible="True" readonly="True"/>
+                <field name="company_id" column_invisible="True" readonly="True"/>
+                <!--button type="object" icon="fa-external-link" help="Open Related Document" name="action_open_related_document"/-->
+            </tree>
+        </field>
+    </record>
 
+    <record id="view_move_line_with_matched_tree" model="ir.ui.view">
+        <field name="name">account.move.line.tree</field>
+        <field name="model">account.move.line</field>
+        <field eval="99" name="priority"/>
+        <field name="mode">primary</field>
+        <field name="inherit_id" ref="account_payment_pro.view_move_line_tree"/>
+        <field name="arch" type="xml">
+            <field name="amount_residual" position="replace">
+                <field name="payment_matched_amount" string="Paid Amount" sum="Total"/>
+            </field>
+        </field>
+    </record>
     <!-- <record id="view_account_payment_form2" model="ir.ui.view">
         <field name="name">account.payment.form</field>
         <field name="model">account.payment</field>

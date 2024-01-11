@@ -89,7 +89,7 @@ class AccountPayment(models.Model):
         compute='_compute_to_pay_move_lines', store=True,
         help='This lines are the ones the user has selected to be paid.',
         copy=False,
-        readonly=True,
+        readonly=False,
         check_company=True
     )
     matched_move_line_ids = fields.Many2many(
@@ -216,11 +216,10 @@ class AccountPayment(models.Model):
             })
         return res
 
-    # TODO falta re-incorporar cuando arreglemos en 16
-    # @api.model
-    # def _get_trigger_fields_to_synchronize(self):
-    #     res = super()._get_trigger_fields_to_synchronize()
-    #     return res + ('force_amount_company_currency',)
+    @api.model
+    def _get_trigger_fields_to_synchronize(self):
+        res = super()._get_trigger_fields_to_synchronize()
+        return res + ('force_amount_company_currency',)
 
     # TODO traer de account_ux y verificar si es necesario
     # @api.depends_context('default_is_internal_transfer')
@@ -377,3 +376,18 @@ class AccountPayment(models.Model):
             if to_pay_partners and to_pay_partners != rec.partner_id.commercial_partner_id:
                 raise ValidationError(_('Payment group for partner %s but payment lines are of partner %s') % (
                     rec.partner_id.name, to_pay_partners.name))
+
+    def action_post(self):
+        res = super().action_post()
+        # Filtro porque los pagos electronicos solo pueden estar en pending si la transaccion esta en pending
+        # y no los puedo conciliar esto no es un comportamiento del core
+        # sino que esta implementado en account_payment_ux
+        # posted_payments = rec.payment_ids.filtered(lambda x: x.state == 'posted')
+        # if not created_automatically and posted_payments:
+        for rec in self:
+            counterpart_aml = rec.mapped('line_ids').filtered(
+                lambda r: not r.reconciled and r.account_id.account_type in ('liability_payable', 'asset_receivable'))
+            if counterpart_aml and rec.to_pay_move_line_ids:
+                (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile()
+
+        return res
