@@ -1,0 +1,115 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_payment_multi
+# 
+# Translators:
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2024
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-10 13:19+0000\n"
+"PO-Revision-Date: 2024-01-10 13:19+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2024\n"
+"Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Language: es\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
+
+#. module: account_payment_multi
+#: model_terms:ir.ui.view,arch_db:account_payment_multi.portal_my_invoices_payment
+msgid ""
+"<i class=\"fa fa-arrow-circle-right\"/><span class=\"d-none d-md-inline\"> "
+"Pay  <span class=\"oe_amount\"/> Now</span>"
+msgstr ""
+
+#. module: account_payment_multi
+#. odoo-javascript
+#: code:addons/account_payment_multi/static/src/js/payment_multi.js:0
+#, python-format
+msgid ""
+"<p>selected invoices must be in the same currency, partner and company</p>"
+msgstr ""
+
+#. module: account_payment_multi
+#: model_terms:ir.ui.view,arch_db:account_payment_multi.portal_my_invoices_payment
+msgid "<strong class=\"oe_zeroAmount\">Select invoices to pay</strong>"
+msgstr ""
+
+#. module: account_payment_multi
+#. odoo-javascript
+#: code:addons/account_payment_multi/static/src/js/payment_multi.js:0
+#, python-format
+msgid "Error in selection"
+msgstr ""
+
+#. module: account_payment_multi
+#: model:ir.model,name:account_payment_multi.model_payment_link_wizard
+msgid "Generate Payment Link"
+msgstr "Generar enlace de pago"
+
+#. module: account_payment_multi
+#: model:ir.actions.act_window,name:account_payment_multi.action_invoice_multi_generate_link
+msgid "Generate a Payment Link"
+msgstr ""
+
+#. module: account_payment_multi
+#. odoo-python
+#: code:addons/account_payment_multi/controllers/portal.py:0
+#, python-format
+msgid "Incorrect amount"
+msgstr ""
+
+#. module: account_payment_multi
+#. odoo-javascript
+#: code:addons/account_payment_multi/static/src/js/payment_multi.js:0
+#, python-format
+msgid "Ok"
+msgstr ""
+
+#. module: account_payment_multi
+#. odoo-python
+#: code:addons/account_payment_multi/controllers/portal.py:0
+#, python-format
+msgid "Only pay invoices from the same company."
+msgstr ""
+
+#. module: account_payment_multi
+#. odoo-python
+#: code:addons/account_payment_multi/controllers/portal.py:0
+#, python-format
+msgid "Only pay invoices from the same currency."
+msgstr ""
+
+#. module: account_payment_multi
+#. odoo-python
+#: code:addons/account_payment_multi/controllers/portal.py:0
+#: code:addons/account_payment_multi/wizards/payment_link_wizard.py:0
+#, python-format
+msgid "Only pay invoices from the same customer."
+msgstr ""
+
+#. module: account_payment_multi
+#: model_terms:ir.ui.view,arch_db:account_payment_multi.portal_my_invoices_payment
+msgid "Pay Now"
+msgstr ""
+
+#. module: account_payment_multi
+#: model_terms:ir.ui.view,arch_db:account_payment_multi.portal_my_invoices_payment
+msgid "Pay now"
+msgstr ""
+
+#. module: account_payment_multi
+#: model:ir.model.fields,field_description:account_payment_multi.field_payment_link_wizard__res_ids
+msgid "Related Document IDS"
+msgstr ""
+
+#. module: account_payment_multi
+#. odoo-python
+#: code:addons/account_payment_multi/controllers/portal.py:0
+#, python-format
+msgid "The provided parameters are invalid."
+msgstr ""
