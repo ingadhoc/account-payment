@@ -386,7 +386,7 @@ class AccountPayment(models.Model):
         # if not created_automatically and posted_payments:
         for rec in self:
             counterpart_aml = rec.mapped('line_ids').filtered(
-                lambda r: not r.reconciled and r.account_id.account_type in ('liability_payable', 'asset_receivable'))
+                lambda r: not r.reconciled and r.account_id.account_type in self._get_valid_payment_account_types())
             if counterpart_aml and rec.to_pay_move_line_ids:
                 (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile()
 
