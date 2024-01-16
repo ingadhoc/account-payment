@@ -3,15 +3,14 @@
 # 	* account_cashbox
 # 
 # Translators:
-# Mariana Torres <mt@adhoc.com.ar>, 2023
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2023
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 16.0+e\n"
+"Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-17 21:25+0000\n"
-"PO-Revision-Date: 2023-04-13 12:16+0000\n"
+"POT-Creation-Date: 2023-12-29 12:46+0000\n"
+"PO-Revision-Date: 2023-12-28 20:16+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2023\n"
 "Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
@@ -93,6 +92,11 @@ msgid "Allowed Res Users"
 msgstr "Usuarios permitidos"
 
 #. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__amount
+msgid "Amount"
+msgstr "Cantidad"
+
+#. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__message_attachment_count
 msgid "Attachment Count"
 msgstr "Contar Adjunto"
@@ -103,24 +107,25 @@ msgid "Available Journal"
 msgstr "Diario disponible"
 
 #. module: account_cashbox
-#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__balance_end
-msgid "Balance End"
-msgstr "Saldo Final"
-
-#. module: account_cashbox
-#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__balance_end_real
-msgid "Balance End Real"
-msgstr "Saldo Final Real"
-
-#. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__balance_start
 msgid "Balance Start"
 msgstr "Saldo Inicial"
 
 #. module: account_cashbox
+#: model:account.journal,name:account_cashbox.journal_billetera_virtual
+msgid "Billetera Virtual"
+msgstr ""
+
+#. module: account_cashbox
+#: model:account.journal,name:account_cashbox.journal_caja_central
+msgid "Caja Central"
+msgstr ""
+
+#. module: account_cashbox
+#: model:account.journal,name:account_cashbox.journal_cajas
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_users_form_extend
 msgid "Cajas"
-msgstr "Cajas"
+msgstr ""
 
 #. module: account_cashbox
 #. odoo-python
@@ -190,7 +195,7 @@ msgstr "Compañía"
 #. module: account_cashbox
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_form
 msgid "Control"
-msgstr "Control"
+msgstr ""
 
 #. module: account_cashbox
 #: model:ir.model.constraint,message:account_cashbox.constraint_account_cashbox_session_line_uniq_line
@@ -200,8 +205,8 @@ msgstr "La linea de control debe ser única"
 #. module: account_cashbox
 #: model_terms:ir.actions.act_window,help:account_cashbox.account_cashbox_action
 #: model_terms:ir.actions.act_window,help:account_cashbox.account_cashbox_settings_action
-msgid "Create cahsbox"
-msgstr "Crear caja"
+msgid "Create cashbox"
+msgstr ""
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__create_uid
@@ -271,6 +276,11 @@ msgid ""
 "En el diario \"%s\" el Balance Final Real (%s) excede la máxima diferencia "
 "permitida (%s)."
 msgstr ""
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__balance_end
+msgid "Ending Balance"
+msgstr "Saldo Final"
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__message_follower_ids
@@ -355,14 +365,6 @@ msgid "Journals with Open / Close control"
 msgstr "Diarios con control de Apertura/Cierre"
 
 #. module: account_cashbox
-#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox____last_update
-#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_payment_import____last_update
-#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session____last_update
-#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line____last_update
-msgid "Last Modified on"
-msgstr "Última Modificación el"
-
-#. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__write_uid
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_payment_import__write_uid
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__write_uid
@@ -387,11 +389,6 @@ msgstr "Línea"
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_kanban
 msgid "List Sessions"
 msgstr "Listar Sesiones"
-
-#. module: account_cashbox
-#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__message_main_attachment_id
-msgid "Main Attachment"
-msgstr "Adjuntos principales"
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__max_diff
@@ -458,7 +455,7 @@ msgstr "Número de error"
 
 #. module: account_cashbox
 #: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__message_needaction_counter
-msgid "Number of messages which requires an action"
+msgid "Number of messages requiring action"
 msgstr "Número de mensajes que requieren una acción"
 
 #. module: account_cashbox
@@ -523,6 +520,11 @@ msgstr "Publicado"
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_form
 msgid "Re-Open"
 msgstr "Re Abrir"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__balance_end_real
+msgid "Real Ending Balance"
+msgstr "Saldo Final Real"
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_payment__requiere_account_cashbox_session
@@ -610,6 +612,11 @@ msgid "Validate"
 msgstr "Validar"
 
 #. module: account_cashbox
+#: model:account.journal,name:account_cashbox.journal_viaticos
+msgid "Viaticos"
+msgstr ""
+
+#. module: account_cashbox
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_kanban
 msgid "View Sessions"
 msgstr "Ver Sesiones"
@@ -651,11 +658,6 @@ msgstr ""
 #, python-format
 msgid "Your user requires to use payment session on each payment"
 msgstr "Su usuario requiere que use sesiones de caja en cada pago"
-
-#. module: account_cashbox
-#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__amount
-msgid "amount"
-msgstr "Cantidad"
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__require_cash_control

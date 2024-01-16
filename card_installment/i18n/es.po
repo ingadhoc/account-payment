@@ -7,10 +7,10 @@
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 16.0+e\n"
+"Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-16 19:02+0000\n"
-"PO-Revision-Date: 2023-04-14 00:41+0000\n"
+"POT-Creation-Date: 2023-12-13 14:43+0000\n"
+"PO-Revision-Date: 2023-12-13 14:43+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2023\n"
 "Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
@@ -33,8 +33,8 @@ msgid "Active"
 msgstr "Activo"
 
 #. module: card_installment
-#: model:ir.model.fields,help:card_installment.field_account_card_installment__bank_discount
-msgid "Bank discount"
+#: model:ir.model.fields,field_description:card_installment.field_account_card_installment__bank_discount
+msgid "Bank Discount"
 msgstr "Descuento bancario"
 
 #. module: card_installment
@@ -62,14 +62,14 @@ msgid "Cards"
 msgstr "Tarjetas"
 
 #. module: card_installment
-#: model:ir.model.fields,help:card_installment.field_account_card_installment__surcharge_coefficient
-msgid "Coeficiente con iva incluido"
-msgstr "Coeficiente con IVA incluído"
-
-#. module: card_installment
 #: model:ir.model,name:card_installment.model_res_company
 msgid "Companies"
 msgstr "Compañías"
+
+#. module: card_installment
+#: model:ir.model.fields,field_description:card_installment.field_account_card__company_id
+msgid "Company"
+msgstr "Compañía"
 
 #. module: card_installment
 #: model:ir.model,name:card_installment.model_res_config_settings
@@ -102,11 +102,17 @@ msgstr "Nombre a Mostrar"
 #. module: card_installment
 #: model:ir.model.fields,field_description:card_installment.field_account_card_installment__divisor
 msgid "Divisor"
-msgstr "Divisor"
+msgstr ""
+
+#. module: card_installment
+#: model:ir.model.fields,help:card_installment.field_account_card_installment__surcharge_coefficient
+msgid ""
+"Factor a aplicar sobre el monto total para calcular el cargo financiero"
+msgstr "Coeficiente con IVA incluído"
 
 #. module: card_installment
 #: model:ir.model.fields,field_description:card_installment.field_account_card_installment__name
-msgid "Fantasy name"
+msgid "Fantasy Name"
 msgstr "Nombre de Fantasía"
 
 #. module: card_installment
@@ -121,6 +127,11 @@ msgid "ID"
 msgstr "ID (identificación)"
 
 #. module: card_installment
+#: model:ir.model.fields,field_description:card_installment.field_account_card_installment__installment
+msgid "Installment Plan"
+msgstr "Plan de Cuotas"
+
+#. module: card_installment
 #: model_terms:ir.ui.view,arch_db:card_installment.account_card_form
 msgid "Installment plan"
 msgstr "Plan de Cuotas"
@@ -131,12 +142,6 @@ msgstr "Plan de Cuotas"
 #: model:ir.ui.menu,name:card_installment.menu_account_finacial_plans
 msgid "Installments"
 msgstr "Cuotas"
-
-#. module: card_installment
-#: model:ir.model.fields,field_description:card_installment.field_account_card____last_update
-#: model:ir.model.fields,field_description:card_installment.field_account_card_installment____last_update
-msgid "Last Modified on"
-msgstr "Última Modificación el"
 
 #. module: card_installment
 #: model:ir.model.fields,field_description:card_installment.field_account_card__write_uid
@@ -151,9 +156,31 @@ msgid "Last Updated on"
 msgstr "Última actualización el"
 
 #. module: card_installment
+#: model:ir.model.fields,help:card_installment.field_account_card_installment__name
+msgid "Nombre informativo del plan a mostrar"
+msgstr ""
+
+#. module: card_installment
+#: model:ir.model.fields,help:card_installment.field_account_card_installment__divisor
+msgid ""
+"Número por el cual se dividirá el total de cuotas que pagará el usuario "
+"final"
+msgstr ""
+
+#. module: card_installment
 #: model:ir.model.fields,help:card_installment.field_account_card_installment__installment
-msgid "Number of installment"
+msgid ""
+"Plan de cuotas a informar, en caso de utilizar método de pago electrónico: "
+"el valor del plan a informar al gateway de pago"
 msgstr "Cantidad de Cuotas"
+
+#. module: card_installment
+#: model:ir.model.fields,help:card_installment.field_account_card_installment__bank_discount
+msgid ""
+"Porcentaje de reintegro (el reintegro se efectúa sobre el total incluído el "
+"recargo financiero) que acuerda el vendedor con el banco o marca de tarjeta "
+"para devolución en compra"
+msgstr "Descuento bancario"
 
 #. module: card_installment
 #: model:ir.model.fields,field_description:card_installment.field_res_company__product_surcharge_id
@@ -162,29 +189,14 @@ msgid "Product for use in financial surcharge"
 msgstr "Producto para uso en recargo financiero"
 
 #. module: card_installment
-#: model:ir.model,name:card_installment.model_account_card_installment
-msgid "amount to add for collection in installments"
-msgstr ""
-
-#. module: card_installment
-#: model:ir.model.fields,field_description:card_installment.field_account_card_installment__bank_discount
-msgid "bank discount"
-msgstr "Descuento bancario"
-
-#. module: card_installment
 #: model:ir.model.fields,field_description:card_installment.field_account_card_installment__surcharge_coefficient
-msgid "coefficient"
+msgid "Surcharge Coefficient"
 msgstr "Coeficiente"
 
 #. module: card_installment
-#: model:ir.model.fields,field_description:card_installment.field_account_card__company_id
-msgid "company"
-msgstr "Compañía"
-
-#. module: card_installment
-#: model:ir.model.fields,field_description:card_installment.field_account_card_installment__installment
-msgid "installment plan"
-msgstr "Plan de Cuotas"
+#: model:ir.model,name:card_installment.model_account_card_installment
+msgid "amount to add for collection in installments"
+msgstr ""
 
 #. module: card_installment
 #: model:ir.model.fields,field_description:card_installment.field_account_card__name
