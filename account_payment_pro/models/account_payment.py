@@ -216,10 +216,10 @@ class AccountPayment(models.Model):
             })
         return res
 
-    @api.model
-    def _get_trigger_fields_to_synchronize(self):
-        res = super()._get_trigger_fields_to_synchronize()
-        return res + ('force_amount_company_currency',)
+    # @api.model
+    # def _get_trigger_fields_to_synchronize(self):
+    #     res = super()._get_trigger_fields_to_synchronize()
+    #     return res + ('force_amount_company_currency',)
 
     # TODO traer de account_ux y verificar si es necesario
     # @api.depends_context('default_is_internal_transfer')
@@ -265,7 +265,7 @@ class AccountPayment(models.Model):
         al menso podremos re-usar codigo sql para optimizar performance
         """
         for rec in self:
-            payment_lines = rec.line_ids.filtered(lambda x: x.account_type in ['asset_receivable', 'liability_payable'])
+            payment_lines = rec.line_ids.filtered(lambda x: x.account_type in self._get_valid_payment_account_types())
             debit_moves = payment_lines.mapped('matched_debit_ids.debit_move_id')
             credit_moves = payment_lines.mapped('matched_credit_ids.credit_move_id')
             debit_lines_sorted = debit_moves.filtered(lambda x: x.date_maturity != False).sorted(key=lambda x: (x.date_maturity, x.move_id.name))

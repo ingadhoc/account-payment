@@ -39,7 +39,7 @@ class AccountMoveLine(models.Model):
         to_pay_partners = self.mapped('move_id.commercial_partner_id')
         if len(to_pay_partners) > 1:
             raise UserError(_('Selected recrods must be of the same partner'))
-
+        partner_type = 'customer' if to_pay_move_lines[0].account_id.account_type == 'asset_receivable' else 'supplier'
         return {
             'name': _('Register Payment'),
             'res_model': 'account.payment',
@@ -48,7 +48,8 @@ class AccountMoveLine(models.Model):
             'context': {
                 'active_model': 'account.move.line',
                 'active_ids': self.ids,
-                'default_partner_type': 'customer' if to_pay_move_lines[0].account_id.account_type == 'asset_receivable' else 'supplier',
+                'default_payment_type': 'inbound' if partner_type == 'customer' else 'outbound',
+                'default_partner_type': partner_type,
                 'default_partner_id': to_pay_partners.id,
                 'default_to_pay_move_line_ids': to_pay_move_lines.ids,
                 # We set this because if became from other view and in the context has 'create=False'

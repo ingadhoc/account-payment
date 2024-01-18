@@ -18,9 +18,11 @@
         "l10n_latam_invoice_document",
     ],
     "data": [
+        'security/payment_security.xml',
+        'security/ir.model.access.csv',
         'wizards/account_payment_invoice_wizard_view.xml',
         'views/account_payment_view.xml',
-        'security/ir.model.access.csv',
+        'views/account_move.xml',
     ],
     "demo": [
     ],
