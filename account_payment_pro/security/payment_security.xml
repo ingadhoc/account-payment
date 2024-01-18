@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <record model="res.groups" id="group_pay_now_customer_invoices">
+            <field name="category_id" ref="base.module_category_hidden"/>
+            <field name="name">Allow pay now on customer invoices</field>
+        </record>
+        <record model="res.groups" id="group_pay_now_vendor_invoices">
+            <field name="category_id" ref="base.module_category_hidden"/>
+            <field name="name">Allow pay now on vendor invoices</field>
+        </record>
+    </data>
+</odoo>
