@@ -19,7 +19,7 @@ class AccountMove(models.Model):
     @api.depends('transaction_ids.state')
     def _compute_payment_state(self):
         super()._compute_payment_state()
-        for rec in self.filtered(lambda x: x.payment_state=='not_paid' and {'done','pending','authorized'}.intersection(set(x.transaction_ids.mapped('state')))):
+        for rec in self.filtered(lambda x: x.payment_state=='not_paid' and {'pending','authorized'}.intersection(set(x.transaction_ids.mapped('state')))):
             rec.payment_state = 'electronic_pending'
 
     def _post(self, soft=True):
@@ -27,7 +27,7 @@ class AccountMove(models.Model):
         to_pay_moves = self.filtered(
                 lambda x: x.payment_token_id and x.state == 'posted' and
                 x.payment_state in ['not_paid', 'electronic_pending'] and x.move_type == 'out_invoice')
-        to_pay_moves.create_electronic_payment()
+        to_pay_moves.sudo().create_electronic_payment()
         return res
 
     def create_electronic_payment(self):
