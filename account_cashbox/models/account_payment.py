@@ -53,7 +53,7 @@ class AccountPayment(models.Model):
                         rec.id, rec.cashbox_session_id.name
                     )))
 
-            if self.env.user.requiere_account_cashbox_session and not rec.cashbox_session_id:
+            if self.env.user.requiere_account_cashbox_session and not rec.cashbox_session_id and not rec.paired_internal_transfer_payment_id:
                 raise UserError(_('Your user requires to use payment session on each payment'))
 
         super().action_post()
