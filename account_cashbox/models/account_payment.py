@@ -45,6 +45,9 @@ class AccountPayment(models.Model):
                 raise ValidationError(
                     _('The currency of the journal must be the of the payment.'))
 
+    def _create_paired_internal_transfer_payment(self):
+        super(AccountPayment, self.with_context(paired_transfer=True))._create_paired_internal_transfer_payment()
+
     def action_post(self):
         for rec in self:
             if rec.cashbox_session_id and rec.cashbox_session_id.state != 'opened':
@@ -53,7 +56,7 @@ class AccountPayment(models.Model):
                         rec.id, rec.cashbox_session_id.name
                     )))
 
-            if self.env.user.requiere_account_cashbox_session and not rec.cashbox_session_id:
+            if  not self.env.context.get('paired_transfer') and self.env.user.requiere_account_cashbox_session and not rec.cashbox_session_id:
                 raise UserError(_('Your user requires to use payment session on each payment'))
 
         super().action_post()
