@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- © 2016 ADHOC SA
+     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
+
+<odoo>
+
+<!-- hide default payments menus -->
+<record id="account.menu_action_account_payments_receivable" model="ir.ui.menu">
+    <field eval="[(6, 0, [ref('account_see_payment_menu')])]" name="groups_id"/>
+</record>
+
+<record id="account.menu_action_account_payments_payable" model="ir.ui.menu">
+    <field eval="[(6, 0, [ref('account_see_payment_menu')])]" name="groups_id"/>
+</record>
+
+<!-- TODO check if needed -->
+<!-- we dont want to use supplier tree view because is the same as default tree view -->
+<record id="account.view_account_supplier_payment_tree" model="ir.ui.view">
+    <field name="priority">90</field>
+</record>
+
+<!-- TODO check if needed -->
+<!-- change tree view of supplier action -->
+<record id="account.action_account_payments_payable" model="ir.actions.act_window">
+    <field name="view_id" ref="account.view_account_payment_tree"/>
+</record>
+
+    <!-- view for payments from payment group, we need edit = true and create = true, we also clean some fields, we could also make and inherited view -->
+    <record id="view_account_payment_tree" model="ir.ui.view">
+        <field name="name">account.payment.tree</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_tree"/>
+        <field name="arch" type="xml">
+            <field name="payment_method_line_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="journal_id" position="after">
+                <field name="payment_method_description" string="Payment Method" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- view for payments from payment group, we need edit = true and create = true, we also clean some fields, we could also make and inherited view -->
+    <record id="view_account_payment_from_group_tree" model="ir.ui.view">
+        <field name="name">account.payment.tree</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_tree"/>
+        <field name="priority">90</field>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <field name="name" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="amount_company_currency_signed" position="after">
+                <field name="l10n_ar_amount_company_currency_signed" widget="monetary" string="Amount" sum="Total"/>
+            </field>
+            <field name="amount_company_currency_signed" position="replace"/>
+            <field name="partner_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_account_payment_form" model="ir.ui.view">
+        <field name="name">account.payment.form</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="arch" type="xml">
+            <form>
+                <field name="payment_group_id" invisible="1"/>
+            </form>
+
+            <!-- TODO en v16 no haria falta agregar este campo ni cambiar el dominio porque odoo ya lo agrega -->
+            <field name="journal_id" position="attributes">
+                <attribute name="domain">[('id', 'in', available_journal_ids)]</attribute>
+            </field>
+
+            <!-- seccion para mejora pagos en otra moneda -->
+            <div name="amount_div" position="after">
+                <field name="company_currency_id" invisible="1"/>
+                <field name="other_currency" invisible="1"/>
+                <field name="force_amount_company_currency" invisible="1"/>
+                <label for="amount_company_currency" string="(on company currency)" attrs="{'invisible': [('other_currency', '=', False)]}"/>
+                <div name="amount_company_currency" class="o_row" attrs="{'invisible': [('other_currency', '=', False)]}">
+                    x <field name="exchange_rate"/> = <field name="amount_company_currency" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                </div>
+            </div>
+
+            <button name="button_open_invoices" position="before">
+                <button name="button_open_payment_group" attrs="{'invisible': [('payment_group_id', '=', False)]}" type="object" class="oe_stat_button" icon="fa-circle">
+                    Payment Group
+                </button>
+            </button>
+
+            <!-- Hide this fields. On payment groups comes from pay group, on transfers no need to set them -->
+            <field name="partner_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <xpath expr="//field[@name='partner_id'][2]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <field name="is_internal_transfer" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+
+        </field>
+    </record>
+
+    <record id="view_account_payment_form2" model="ir.ui.view">
+        <field name="name">account.payment.form</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <field name="journal_id" position="attributes">
+                <attribute name="nolabel">1</attribute>
+            </field>
+            <field name="destination_journal_id" position="attributes">
+                <attribute name="nolabel">1</attribute>
+            </field>
+            <xpath expr="//field[@name='journal_id']" position="before">
+                <field name="label_journal_id" nolabel="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name='destination_journal_id']" position="before">
+                <field name="label_destination_journal_id" nolabel="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_account_payment_from_group_form" model="ir.ui.view">
+        <field name="name">account.payment.from payment group.form</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="priority">90</field>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+
+            <button name="action_post" position="attributes">
+                <attribute name="groups">base.group_no_one</attribute>
+                <attribute name="confirm">IMPORTANTE: La validación de la línea de pago se debe hacer desde el recibo. La validación manual de una línea de pago se usa solo para correcciones y usos avanzados. Seguro desea continuar?</attribute>
+            </button>
+
+            <button name="action_draft" position="attributes">
+                <attribute name="groups">base.group_no_one</attribute>
+                <attribute name="confirm">IMPORTANTE: La validación de la línea de pago se debe hacer desde el recibo. La cancelación manual de una línea de pago se usa solo para correcciones y usos avanzados. Seguro desea continuar?</attribute>
+            </button>
+
+            <button name="action_cancel" position="attributes">
+                <attribute name="groups">base.group_no_one</attribute>
+                <attribute name="confirm">IMPORTANTE: La validación de la línea de pago se debe hacer desde el recibo. La cancelación manual de una línea de pago se usa solo para correcciones y usos avanzados. Seguro desea continuar?</attribute>
+            </button>
+
+            <!-- when coming from payment group no need to show it -->
+            <button name="button_open_payment_group" position="replace"/>
+
+        </field>
+    </record>
+
+    <record id="action_account_payments_transfer" model="ir.actions.act_window">
+        <field name="name">Transfers</field>
+        <field name="res_model">account.payment</field>
+        <field name="view_mode">tree,form,graph</field>
+        <field name="context">
+            {'form_view_ref': 'account_payment_group.view_account_payment_form2', 
+            'default_payment_type': 'outbound', 
+            'default_is_internal_transfer': True, 
+            'default_move_journal_types': ('bank', 'cash')}
+        </field>
+        <field name="domain">[('is_internal_transfer', '=', 'transfer')]</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+              Click to register a transfer between liquidity journals
+            </p>
+        </field>
+    </record>
+
+    <record id="view_account_payment_kanban_mobile" model="ir.ui.view">
+            <field name="name">account.payment.kanban.mobile</field>
+            <field name="model">account.payment</field>
+            <field name="arch" type="xml">
+                <kanban class="o_kanban_mobile">
+                    <field name="payment_type"/>
+                    <field name="amount"/>
+                    <field name="date"/>
+                    <field name="ref"/>
+                    <field name="journal_id"/>
+                    <field name="payment_method_line_id"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_global_click">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <span><field name="payment_type" widget="radio"/></span>
+                                        <span><field name="amount" /></span>
+                                    </div>
+                                    <div class="col-6">
+                                        <span class="float-end">
+                                           <field name="date" />
+                                           <field name="ref" string="Memo"/>
+                                        </span>
+                                    </div>
+                                    <div class="col-6">
+                                        <span class="float-end">
+                                           <field name="journal_id"/>
+                                            <field name="payment_method_line_id" required="1" options="{'no_create': True, 'no_open': True}"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+    </record>
+
+
+    <menuitem action="action_account_payments_transfer" id="menu_action_account_payments_transfer" parent="menu_finance_bank_and_cash" sequence="30" groups="account.group_account_user"/>
+
+</odoo>
