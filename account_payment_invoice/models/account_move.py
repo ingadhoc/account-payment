@@ -22,8 +22,8 @@ class AccountMove(models.Model):
         for rec in self.filtered(lambda x: x.payment_state=='not_paid' and {'pending','authorized'}.intersection(set(x.transaction_ids.mapped('state')))):
             rec.payment_state = 'electronic_pending'
 
-    def _post(self, soft=True):
-        res = super()._post(soft=soft)
+    def action_post(self):
+        res = super().action_post()
         to_pay_moves = self.filtered(
                 lambda x: x.payment_token_id and x.state == 'posted' and
                 x.payment_state in ['not_paid', 'electronic_pending'] and x.move_type == 'out_invoice')
