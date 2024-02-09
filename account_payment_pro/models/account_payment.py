@@ -262,7 +262,9 @@ class AccountPayment(models.Model):
         (debit_move_id), son cosas que se pagaron con este pago. Repetimos
         al revz (debit_move_id vs credit_move_id)
         TODO v18, ver si podemos reutilizar reconciled_invoice_ids y/o reconciled_bill_ids
-        al menso podremos re-usar codigo sql para optimizar performance
+        al menos podremos re-usar codigo sql para optimizar performance
+        Por ahora no lo estamos usando porque el actual código de odoo solo muestra facturas o algo así (por ej. si hay
+        conciliacion de deuda de un asiento normal no lo muestra)
         """
         for rec in self:
             payment_lines = rec.line_ids.filtered(lambda x: x.account_type in self._get_valid_payment_account_types())
