@@ -25,7 +25,6 @@ class PopSessionJournalControl(models.Model):
 
     _sql_constraints = [('uniq_line', 'unique(cashbox_session_id, journal_id)', "Control line must be unique")]
 
-
     # @api.depends('cashbox_session_id.payment_ids.state', 'balance_start')
     # def _compute_amounts_old(self):
     #     # agrupamos por session porque lo mas usual es ver todos los registors de una misma session
