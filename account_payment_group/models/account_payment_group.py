@@ -9,7 +9,7 @@ class AccountPaymentGroup(models.Model):
     _name = "account.payment.group"
     _description = "Payment Group"
     _order = "payment_date desc, name desc"
-    _inherit = 'mail.thread'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _check_company_auto = True
 
     name = fields.Char(string='Number', readonly=True, copy=False)
