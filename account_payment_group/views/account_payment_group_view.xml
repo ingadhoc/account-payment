@@ -39,6 +39,10 @@
             <filter string="Posted" domain="[('state','=','posted')]" name='state_posted'/>
             <filter string="Not Cancelled" domain="[('state','!=','cancel')]" name='not_cancelled'/>
             <separator/>
+            <filter invisible="1" string="Late Activities" name="activities_overdue" domain="[('my_activity_date_deadline', '&lt;', context_today().strftime('%Y-%m-%d'))]" help="Show all records which has next action date is before today"/>
+            <filter invisible="1" string="Today Activities" name="activities_today" domain="[('my_activity_date_deadline', '=', context_today().strftime('%Y-%m-%d'))]"/>
+            <filter invisible="1" string="Future Activities" name="activities_upcoming_all" domain="[('my_activity_date_deadline', '&gt;', context_today().strftime('%Y-%m-%d'))]"/>
+            <separator/>
             <filter name="partner_id" string="Partner" domain="[]" context="{'group_by': 'partner_id'}"/>
             <filter name="state" string="State" domain="[]" context="{'group_by': 'state'}"/>
             <filter name="currency_id" string="Currency" domain="[]" context="{'group_by': 'currency_id'}" groups="base.group_multi_currency"/>
@@ -170,6 +174,8 @@
         <div class="oe_chatter">
             <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
             <field name="message_ids" widget="mail_thread"/>
+            <field name="activity_ids" widget="mail_activity"/>
+            <field name="activity_ids" widget="mail_activity"/>
         </div>
         </form>
     </field>
