@@ -140,7 +140,7 @@
                     <page string="Payment Lines" attrs="{'invisible': [('payment_subtype', '=', 'double_validation'), ('state', '=', 'draft')]}">
                         <!-- pasar en el contexto company_id es necesario para que se elija bien el primer diario sugerido -->
                         <field name="payment_ids"
-                            mode="form,tree,kanban" 
+                            mode="form,tree" 
                             context="{
                                 'form_view_ref': 'account_payment_group.view_account_payment_from_group_form', 
                                 'tree_view_ref': 'account_payment_group.view_account_payment_from_group_tree', 
