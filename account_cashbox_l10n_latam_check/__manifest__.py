@@ -2,7 +2,7 @@
 {
     "name": "Check Cashbox management",
     "summary": "Add cashbox for check operations",
-    "version": "17.0.1.0.0",
+    "version": "17.0.1.1.0",
     "category": "Accounting",
     "website": "www.adhoc.com.ar",
     "author": "ADHOC SA",
@@ -13,6 +13,7 @@
         ],
     "demo": [],
     "data": [
+        'views/account_payment_view.xml',
         'wizards/l10n_latam_payment_mass_transfer_views.xml',
         ],
     "installable": True,
