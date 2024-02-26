@@ -11,6 +11,7 @@
     "license": "AGPL-3",
     "depends": [
         "account_payment_group",
+        "l10n_latam_check"
         # la dependencia con payment group es solo para forzar utilizar el metodo parcheado
         # _compute_available_journal_ids. En v17 depreciariamos payment group y ya no seria necesario
         # ademas, al depender de payment group, por ahora no implementamos los wizard de payment register

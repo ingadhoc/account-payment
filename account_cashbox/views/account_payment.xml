@@ -18,4 +18,30 @@
         </field>
     </record>
 
+    <record model="ir.ui.view" id="view_account_third_party_check_tree_with_account_invoice_group_permission">
+        <field name="name">account.check.tree</field>
+        <field name="model">account.payment</field>
+        <field name="priority">110</field>
+        <field name="mode">primary</field>
+        <field name="inherit_id" ref="l10n_latam_check.view_account_third_party_check_tree"/>
+        <field name="arch" type="xml">
+            <tree position="replace">
+                <header>
+                    <button name="%(l10n_latam_check.action_view_l10n_latam_payment_mass_transfer)d" type="action" string="Check Transfer" groups="account.group_account_invoice"/>
+                </header>
+            </tree>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="action_third_party_check">
+        <field name="name">Third Party Checks</field>
+        <field name="res_model">account.payment</field>
+        <field name="view_mode">tree,form,calendar,graph,pivot</field>
+        <field name="view_id" ref="view_account_third_party_check_tree_with_account_invoice_group_permission"/>
+        <field name="search_view_id" ref="l10n_latam_check.view_account_payment_third_party_checks_search"/>
+        <field name="domain">[('payment_method_code', '=', 'new_third_party_checks')]</field>
+        <field name="context">{'search_default_checks_on_hand': 1}</field>
+    </record>
+
+
 </odoo>
