@@ -1,0 +1,16 @@
+<odoo>
+
+<!-- Third party check Views and menus -->
+
+    <record model="ir.ui.view" id="view_account_third_party_check_tree">
+        <field name="name">account.check.tree</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="l10n_latam_check.view_account_third_party_check_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='%(l10n_latam_check.action_view_l10n_latam_payment_mass_transfer)d']" position="attributes">
+                <attribute name="groups" separator="," add="account.group_account_invoice"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
