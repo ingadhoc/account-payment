@@ -82,8 +82,8 @@ class AccountPayment(models.Model):
     )
     to_pay_move_line_ids = fields.Many2many(
         'account.move.line',
-        'account_move_line_payment_group_to_pay_rel',
-        'payment_group_id',
+        'account_move_line_payment_to_pay_rel',
+        'payment_id',
         'to_pay_line_id',
         string="To Pay Lines",
         compute='_compute_to_pay_move_lines', store=True,
