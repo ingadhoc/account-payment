@@ -63,7 +63,7 @@ class AccountPayment(models.Model):
                 continue
             pay.check_number = pay.l10n_latam_checkbook_id.sequence_id.get_next_char(
                 pay.l10n_latam_checkbook_id.next_number)
-        return super(AccountPayment, self - from_checkbooks)._compute_check_number()
+        return super(AccountPayment, self.filtered(lambda x: not x.check_number) - from_checkbooks)._compute_check_number()
 
     def _inverse_check_number(self):
         """ On third party checks or own checks with checkbooks, avoid calling super because is not needed to write the
