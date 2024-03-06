@@ -51,10 +51,9 @@
                             domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.reconcile', '=', True),('reconciled', '=', False), ('full_reconcile_id', '=', False), ('company_id', '=', company_id), ('move_id.state', '=', 'posted'), ('account_id.account_type', '=', 'asset_receivable' if partner_type == 'customer' else 'liability_payable')]" 
                             help="Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched."/>
                     </page>
-                    <!-- Todo activar cuando logremos propagar contexto en las vistas a los campos calculados 
-                        <page string="Paid" invisible="state != 'posted'">
-                        <field name="matched_move_line_ids" context="{'matched_payment_id': id, 'tree_view_ref': 'account_payment_pro.view_move_line_with_matched_tree'}"/>
-                    </page> -->
+                    <page string="Paid" invisible="state != 'posted'">
+                        <field name="matched_move_line_ids" context="{'tree_view_ref': 'account_payment_pro.view_move_line_with_matched_tree'}"/>
+                    </page>
                 </notebook>
             </sheet>
 
