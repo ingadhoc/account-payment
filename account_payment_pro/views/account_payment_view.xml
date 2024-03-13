@@ -30,7 +30,7 @@
                     <field name="to_pay_amount" invisible="state not in ['draft'] or partner_type != 'supplier'"/>
                 </group>
                 <group name="group4" invisible="is_internal_transfer">
-                    <field name="amount_company_currency_signed_pro" invisible="state not in ('draft')" string="Payment Total"/>
+                    <field name="payment_total"/>
                     <field name="payment_difference" invisible="state not in ('draft')"/>
                 </group>
             </group>

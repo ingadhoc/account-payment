@@ -37,6 +37,12 @@ class AccountPayment(models.Model):
     # pago
     amount_company_currency_signed_pro = fields.Monetary(
         currency_field='company_currency_id', compute='_compute_amount_company_currency_signed_pro',)
+    payment_total = fields.Monetary(
+        compute='_compute_payment_total',
+        string='Payment Total',
+        tracking=True,
+        currency_field='company_currency_id'
+    )
     available_journal_ids = fields.Many2many(
         comodel_name='account.journal',
         compute='_compute_available_journal_ids'
@@ -53,10 +59,10 @@ class AccountPayment(models.Model):
         compute='_compute_matched_amounts',
         currency_field='company_currency_id',
     )
-    # unmatched_amount = fields.Monetary(
-    #     compute='_compute_matched_amounts',
-    #     currency_field='currency_id',
-    # )
+    unmatched_amount = fields.Monetary(
+        compute='_compute_matched_amounts',
+        currency_field='currency_id',
+    )
     selected_debt = fields.Monetary(
         # string='To Pay lines Amount',
         string='Selected Debt',
@@ -283,13 +289,16 @@ class AccountPayment(models.Model):
     def _compute_matched_amounts(self):
         for rec in self:
             rec.matched_amount = 0.0
+            rec.unmatched_amount = 0.0
             if rec.state != 'posted':
                 continue
-            # damos vuelta signo porque el amount_company_currency_signed_pro tmb lo da vuelta,
+            # damos vuelta signo porque el payments_amount tmb lo da vuelta,
             # en realidad porque siempre es positivo y se define en funcion
             # a si es pago entrante o saliente
-            rec.matched_amount = rec.amount_company_currency_signed_pro - rec.amount_residual
-            # rec.matched_amount = sign * sum(rec.matched_move_line_ids.with_context(payment_group_id=rec.id).mapped('payment_group_matched_amount'))
+            sign = rec.partner_type == 'supplier' and -1.0 or 1.0
+            rec.matched_amount = sign * sum(
+                rec.matched_move_line_ids.with_context(matched_payment_id=rec.id).mapped('payment_matched_amount'))
+            rec.unmatched_amount = rec.payment_total - rec.matched_amount
 
     @api.depends('to_pay_move_line_ids')
     def _compute_has_outstanding(self):
@@ -303,6 +312,11 @@ class AccountPayment(models.Model):
                 lines = rec.to_pay_move_line_ids.filtered(lambda x: x.amount_residual < 0.0)
             if len(lines) != 0:
                 rec.has_outstanding = True
+
+    @api.depends('amount_company_currency_signed_pro')
+    def _compute_payment_total(self):
+        for rec in self:
+            rec.payment_total = rec.amount_company_currency_signed_pro
 
     @api.depends('amount_company_currency', 'payment_type')
     def _compute_amount_company_currency_signed_pro(self):
