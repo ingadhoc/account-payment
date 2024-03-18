@@ -18,6 +18,7 @@ class AccountCashbox(models.Model):
     journal_ids = fields.Many2many(
         'account.journal', 'cashbox_journal_rel', 'cashbox_id', 'journal_id', required=True,
         string='Payment method', domain=[('type', 'in', ['bank', 'cash'])], check_company=True)
+    restrict_users = fields.Boolean(help="If you do not restrict users, any user with access can operate the cash register.")
     allowed_res_users_ids = fields.Many2many(
         'res.users', relation='account_cashbox_users_rel', column1='cashbox_id', column2='user_id',)
     cash_control_journal_ids = fields.Many2many('account.journal', string='Journals with Open / Close control')

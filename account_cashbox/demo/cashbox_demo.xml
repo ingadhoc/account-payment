@@ -66,6 +66,7 @@
         <field name="name">Caja 01 (sin cash control)</field>
         <field name="sequence_id" ref="sequence_account_cashbox_caja_1" />
         <field name="journal_ids" eval="[(6, 0, [ref('journal_billetera_virtual')])]"/>
+        <field name="restrict_users" eval="True"/>
         <field name="allowed_res_users_ids" eval="[(6,0,[ref('base.user_admin'),ref('account_cashbox.user_demo_invoicing'),])]"/>
     </record>
 
@@ -83,6 +84,7 @@
         <field name="sequence_id" ref="sequence_account_cashbox_caja_2" />
         <field name="journal_ids" eval="[(6, 0, [ref('journal_cajas'), ref('journal_billetera_virtual')])]"/>
         <field name="allowed_res_users_ids" eval="[(6,0,[ref('base.user_admin'),ref('account_cashbox.user_demo_invoicing'),])]"/>
+        <field name="restrict_users" eval="True"/>
         <field name="cash_control_journal_ids" eval="[(6, 0, [ref('journal_cajas')])]"/>
     </record>
 
@@ -91,6 +93,7 @@
         <field name="name">Viaticos</field>
         <field name="allow_concurrent_sessions" eval="True" />
         <field name="journal_ids" eval="[(6,0,[ref('journal_viaticos')])]"/>
+        <field name="restrict_users" eval="True"/>
         <field name="allowed_res_users_ids" eval="[(6,0,[ref('base.user_admin'),ref('account_cashbox.user_demo_invoicing'),])]"/>
     </record>
 
@@ -108,7 +111,18 @@
         <field name="sequence_id" ref="sequence_account_cashbox_caja_central" />
         <field name="journal_ids" eval="[(6,0,[ref('journal_caja_central')])]"/>
         <field name="cash_control_journal_ids" eval="[(6,0,[ref('journal_caja_central')])]"/>
+        <field name="restrict_users" eval="True"/>
         <field name="allowed_res_users_ids" eval="[(6,0,[ref('base.user_admin')])]"/>
+    </record>
+
+    <!-- Caja sin usuarios -->
+    <record id="pop_config_not_restrict" model="account.cashbox">
+        <field name="name">Sin usuario</field>
+        <field name="allow_concurrent_sessions" eval="True" />
+        <field name="journal_ids" eval="[(6,0,[ref('journal_viaticos'), ref('journal_billetera_virtual')])]"/>
+        <field name="cash_control_journal_ids" eval="[(6,0,[ref('journal_viaticos'), ref('journal_billetera_virtual')])]"/>
+        <field name="restrict_users" eval="False"/>
+        <field name="allowed_res_users_ids" eval="False"/>
     </record>
 
 </odoo>
