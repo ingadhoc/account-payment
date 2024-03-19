@@ -21,7 +21,7 @@ class AccountCashboxSession(models.Model):
 
     cashbox_id = fields.Many2one('account.cashbox', required=True, states={'draft': [('readonly', False)]}, readonly=True)
     name = fields.Char(required=True, compute='_compute_name', store=True, readonly=False, states={'draft': [('readonly', False)]})
-    user_ids = fields.Many2many('res.users', required=True, readonly=True,
+    user_ids = fields.Many2many('res.users',  readonly=True,
         states={'draft': [('readonly', False)]}, tracking=True,
         default=lambda self: [(4, self.env.uid)])
     opening_date = fields.Datetime(readonly=True, copy=False)
@@ -55,7 +55,6 @@ class AccountCashboxSession(models.Model):
                     last_session = rec.env['account.cashbox.session'].sudo().search([('cashbox_id', '=', rec.cashbox_id.id), ('state', '=', 'closed')], order="closing_date desc", limit=1)
                     if last_session:
                         leaf.append(('cashbox_session_id', '=', last_session.id))
-                        
                     balance_start[journal.id] = rec.env['account.cashbox.session.line'].sudo().search(leaf, limit=1).balance_end_real
             rec.line_ids = [Command.clear()] + [
                 Command.create({
