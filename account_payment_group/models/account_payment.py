@@ -244,11 +244,17 @@ class AccountPayment(models.Model):
             })
         return res
 
-    # @api.model
-    # def _get_trigger_fields_to_synchronize(self):
-    #     res = super()._get_trigger_fields_to_synchronize()
-    #     return res + ('force_amount_company_currency',)
-
+    @api.model
+    def _get_trigger_fields_to_synchronize(self):
+        res = super()._get_trigger_fields_to_synchronize()
+        # si bien es un metodo api.model usamos este hack para chequear si es la creacion de un payment que termina
+        # triggereando un write y luego llamando a este metodo y dando error, por ahora no encontramos una mejor forma
+        # esto esta ligado de alguna manera a un llamado que se hace dos veces por "culpa" del método
+        # "_inverse_amount_company_currency". Si bien no es elegante para todas las pruebas que hicimos funcionó bien.
+        if self.mapped('open_move_line_ids'):
+            return res + ('force_amount_company_currency',)
+        return res
+    
     @api.depends_context('default_is_internal_transfer')
     def _compute_is_internal_transfer(self):
         """ Este campo se recomputa cada vez que cambia un diario y queda en False porque el segundo diario no va a
