@@ -112,6 +112,25 @@ class AccountPayment(models.Model):
         help="Difference between selected debt (or to pay amount) and "
         "payments amount"
     )
+    payment_difference_handling = fields.Selection(
+        string="Payment Difference Handling",
+        selection=[('open', 'Keep open'), ('reconcile', 'Mark as fully paid')],
+        # compute='_compute_payment_difference_handling',
+        # store=True,
+        # readonly=False,
+    )
+    writeoff_account_id = fields.Many2one(
+        comodel_name='account.account',
+        string="Difference Account",
+        copy=False,
+        domain="[('deprecated', '=', False)]",
+        check_company=True,
+        # compute='_compute_writeoff_account_id',
+        # store=True,
+        # readonly=False,
+    )
+    writeoff_label = fields.Char(string='Journal Item Label', default='Write-Off',
+                                 help='Change label of the counterpart that will hold the payment difference')
 
     ##############################
     # desde modelo account.payment
@@ -205,6 +224,26 @@ class AccountPayment(models.Model):
                 super(AccountPayment, rec)._compute_destination_account_id()
 
     def _prepare_move_line_default_vals(self, write_off_line_vals=None):
+        # TODO: elimino los write_off_line_vals  porque los regenero tanto aca
+        # como en retenciones. esto puede generar problemas
+        write_off_line_vals = []
+        if self.payment_difference > 0 and self.payment_difference_handling == 'reconcile':
+            if self.payment_type == 'inbound':
+                # Receive money.
+                write_off_amount_currency = self.payment_difference
+            else:
+                # Send money.
+                write_off_amount_currency = -self.payment_difference
+
+            write_off_line_vals.append({
+                'name': self.writeoff_label,
+                'account_id': self.writeoff_account_id.id,
+                'partner_id': self.partner_id.id,
+                'currency_id': self.currency_id.id,
+                'amount_currency': write_off_amount_currency,
+                'balance': self.currency_id._convert(write_off_amount_currency, self.company_id.currency_id,
+                                                     self.company_id, self.date),
+            })
         res = super()._prepare_move_line_default_vals(write_off_line_vals=write_off_line_vals)
         if self.force_amount_company_currency:
             difference = self.force_amount_company_currency - res[0]['credit'] - res[0]['debit']
@@ -230,8 +269,8 @@ class AccountPayment(models.Model):
         # esto esta ligado de alguna manera a un llamado que se hace dos veces por "culpa" del método
         # "_inverse_amount_company_currency". Si bien no es elegante para todas las pruebas que hicimos funcionó bien.
         if self.mapped('open_move_line_ids'):
-            return res + ('force_amount_company_currency',)
-        return res
+            res = res + ('force_amount_company_currency',)
+        return res + ('payment_difference_handling',)
 
     # TODO traer de account_ux y verificar si es necesario
     # @api.depends_context('default_is_internal_transfer')
@@ -348,7 +387,14 @@ class AccountPayment(models.Model):
     @api.depends('to_pay_move_line_ids.amount_residual')
     def _compute_selected_debt(self):
         for rec in self:
+            factor = 1
             rec.selected_debt = sum(rec.to_pay_move_line_ids._origin.mapped('amount_residual')) * (-1.0 if rec.partner_type == 'supplier' else 1.0)
+
+            #TODO error en la creacion de un payment desde el menu?
+            # if rec.payment_type == 'outbound' and rec.partner_type == 'customer' or \
+            #         rec.payment_type == 'inbound' and rec.partner_type == 'supplier':
+            #     factor = -1
+            # rec.selected_debt = sum(rec.to_pay_move_line_ids._origin.mapped('amount_residual')) * factor
 
     @api.depends(
         'selected_debt', 'unreconciled_amount')
