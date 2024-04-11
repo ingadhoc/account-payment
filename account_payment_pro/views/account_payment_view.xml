@@ -70,7 +70,7 @@
                             help="Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched."/>
                     </page>
                     <page string="Paid" invisible="state != 'posted'">
-                        <field name="matched_move_line_ids" context="{'matched_payment_id': id, 'tree_view_ref': 'account_payment_pro.view_move_line_with_matched_tree'}"/>
+                        <field name="matched_move_line_ids" context="{'tree_view_ref': 'account_payment_pro.view_move_line_with_matched_tree'}"/>
                     </page>
                 </notebook>
             </sheet>
