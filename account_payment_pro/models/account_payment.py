@@ -475,3 +475,10 @@ class AccountPayment(models.Model):
                 (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile()
 
         return res
+
+    # --- ORM METHODS--- #
+    def web_read(self, specification):
+        fields_to_read = list(specification) or ['id']
+        if 'matched_move_line_ids' in fields_to_read and 'context' in specification['matched_move_line_ids']:
+            specification['matched_move_line_ids']['context'].update({'matched_payment_ids': self._ids})
+        return super().web_read(specification)
