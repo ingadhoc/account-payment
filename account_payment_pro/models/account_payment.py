@@ -118,6 +118,7 @@ class AccountPayment(models.Model):
         # compute='_compute_payment_difference_handling',
         # store=True,
         # readonly=False,
+        default='open',
     )
     writeoff_account_id = fields.Many2one(
         comodel_name='account.account',
@@ -131,6 +132,19 @@ class AccountPayment(models.Model):
     )
     writeoff_label = fields.Char(string='Journal Item Label', default='Write-Off',
                                  help='Change label of the counterpart that will hold the payment difference')
+    is_confirmed = fields.Boolean(tracking=True, copy=False,)
+    requiere_double_validation = fields.Boolean(compute='_compute_requiere_double_validation')
+
+    def action_confirm(self):
+        self.filtered(lambda x: x.state == 'draft').is_confirmed = True
+
+    @api.depends('company_id.double_validation', 'partner_type')
+    def _compute_requiere_double_validation(self):
+        double_validation = self.env['account.payment']
+        if 'force_simple' not in self._context:
+            double_validation = self.filtered(lambda x: x.company_id.double_validation and not x.is_confirmed and x.partner_type == 'supplier')
+            double_validation.requiere_double_validation = True
+        (self - double_validation).requiere_double_validation = False
 
     ##############################
     # desde modelo account.payment
@@ -452,6 +466,8 @@ class AccountPayment(models.Model):
         # sino que esta implementado en account_payment_ux
         # posted_payments = rec.payment_ids.filtered(lambda x: x.state == 'posted')
         # if not created_automatically and posted_payments:
+        created_automatically = self._context.get('created_automatically')
+
         for rec in self:
             counterpart_aml = rec.mapped('line_ids').filtered(
                 lambda r: not r.reconciled and r.account_id.account_type in self._get_valid_payment_account_types())

@@ -23,6 +23,7 @@
         'wizards/account_payment_invoice_wizard_view.xml',
         'views/account_payment_view.xml',
         'views/account_move.xml',
+        'views/res_company_setting.xml',
     ],
     "demo": [
     ],
