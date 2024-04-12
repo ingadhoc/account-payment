@@ -117,14 +117,6 @@ class AccountCashboxSession(models.Model):
     def action_account_cashbox_session_close(self):
         self.write({'state': 'closed'})
 
-    @api.constrains('user_ids', 'cashbox_id')
-    def _check_session_user_ids(self):
-        if self.cashbox_id.allowed_res_users_ids and not self.cashbox_id.restrict_users:
-            raise ValidationError(_("This cashbox can't restrict user"))
-        elif self.cashbox_id.allowed_res_users_ids and self.cashbox_id.restrict_users:
-            if set(self.user_ids).difference(self.cashbox_id.allowed_res_users_ids.ids):
-                raise ValidationError(_('This cashbox is restrict to users %s ' % ', '.join(self.cashbox_id.allowed_res_users_ids.mapped('display_name'))))
-
     @api.constrains('state')
     def _check_session_balance(self):
         for rec in self.filtered(lambda x: x.state == 'closed'):
