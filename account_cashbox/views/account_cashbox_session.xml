@@ -6,6 +6,7 @@
         <field name="arch" type="xml">
             <form>
                 <field name="require_cash_control" invisible="True"/>
+                <field name="allow_dates_edition" invisible="True"/>
                 <field name="allow_concurrent_sessions" invisible="True"/>
                 <field name="restrict_users" invisible="True"/>
                 <header>
@@ -49,8 +50,8 @@
                             <field name="user_ids" widget="many2many_tags" attrs="{'invisible':[('restrict_users', '=', False)]}" options="{'no_create':True}"/>
                         </group>
                         <group>
-                            <field name="opening_date" attrs="{'invisible' : [('state', '=', 'draft')]}"/>
-                            <field name="closing_date" attrs="{'invisible' : [('state', '!=', 'closed')]}"/>
+                            <field name="opening_date" attrs="{'readonly': [('allow_dates_edition', '=', False)]}"/>
+                            <field name="closing_date" attrs="{'readonly': [('allow_dates_edition', '=', False)]}"/>
                         </group>
                         <newline/>
 
@@ -61,7 +62,7 @@
                                 <field name="require_cash_control" invisible="True"/>
                                 <field name="journal_id" attrs="{'readonly':True}" force_save="True"/>
                                 <field name="currency_id" invisible="1"/>
-                                <field name="balance_start" attrs="{'readonly':[('parent.state', '!=', 'draft')], 'invisible':[('require_cash_control', '=', False)],'column_invisible':['|',('parent.allow_concurrent_sessions', '=', True),('parent.require_cash_control', '=', False)]}"/>
+                                <field name="balance_start" attrs="{'readonly':[('parent.state', '!=', 'draft')], 'invisible':[('require_cash_control', '=', False)],'column_invisible':[('parent.require_cash_control', '=', False)]}"/>
                                 <field name="amount"/>
                                 <button name="action_session_payments" type="object" title="Payments" icon="fa-search"></button>
                                 <field name="balance_end" attrs="{'invisible':[('require_cash_control', '=', False)], 'column_invisible':[('parent.require_cash_control', '=', False)]}"/>
@@ -118,9 +119,9 @@
             <tree>
                 <field name="name"/>
                 <field name="cashbox_id" optional="hide"/>
-                <field name="opening_date"/>
-                <field name="closing_date"/>
-                <field name="user_ids"/>
+                <field name="opening_date" optional="show"/>
+                <field name="closing_date" optional="show"/>
+                <field name="user_ids" optional="hide"/>
                 <field name="state" string="State"/>
             </tree>
         </field>

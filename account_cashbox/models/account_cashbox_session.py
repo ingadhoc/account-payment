@@ -33,6 +33,7 @@ class AccountCashboxSession(models.Model):
         'account.cashbox.session.line', 'cashbox_session_id', compute='_compute_line_ids', store=True, readonly=False)
     payment_ids = fields.One2many('account.payment', 'cashbox_session_id')
     require_cash_control = fields.Boolean('require_cash_control', compute='_compute_require_cash_control')
+    allow_dates_edition = fields.Boolean(related='cashbox_id.allow_dates_edition')
     allow_concurrent_sessions = fields.Boolean(related='cashbox_id.allow_concurrent_sessions')
     company_id = fields.Many2one(related='cashbox_id.company_id', store=True)
 
