@@ -18,6 +18,7 @@ class AccountCashbox(models.Model):
     journal_ids = fields.Many2many(
         'account.journal', 'cashbox_journal_rel', 'cashbox_id', 'journal_id', required=True,
         string='Payment method', domain=[('type', 'in', ['bank', 'cash'])], check_company=True)
+    allow_dates_edition = fields.Boolean()
     restrict_users = fields.Boolean(
         help="If you do not restrict users, any user with access can operate the cash register. The restriction "
         "does not apply to admin users")

@@ -49,6 +49,7 @@
                                 'default_padding': 6,
                                 'default_prefix': 'CODE-',
                                 'default_code': 'account_cashbox_sequence'}"/>
+                            <field name="allow_dates_edition"/>
                             <field name="restrict_users"/>
                             <field name="allowed_res_users_ids" attrs="{'invisible': [('restrict_users', '=', False)], 'required': [('restrict_users', '=', True)]}" widget="many2many_tags"/>
                         </group>
