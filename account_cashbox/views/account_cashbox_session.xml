@@ -100,7 +100,7 @@
                 <field name="opening_date"/>
                 <field name="closing_date"/>
                 <field name="user_ids"/>
-                <field name="name" string="Description"/>
+                <field name="name"/>
                 <field name="state" string="State"/>
                 <filter name="opened" string="Opened" domain="[('state', 'in', ['opened','closing_control'])]"/>
                 <separator/>
@@ -116,15 +116,16 @@
         <field name="model">account.cashbox.session</field>
         <field name="arch" type="xml">
             <tree>
-                <field name="cashbox_id"/>
+                <field name="name"/>
+                <field name="cashbox_id" optional="hide"/>
                 <field name="opening_date"/>
                 <field name="closing_date"/>
                 <field name="user_ids"/>
-                <field name="name" string="Description"/>
                 <field name="state" string="State"/>
             </tree>
         </field>
     </record>
+
     <record id="account_cashbox_session_action" model="ir.actions.act_window">
         <field name="name">Cashbox</field>
         <field name="type">ir.actions.act_window</field>
