@@ -49,11 +49,13 @@
                                 'default_padding': 6,
                                 'default_prefix': 'CODE-',
                                 'default_code': 'account_cashbox_sequence'}"/>
-                            <field name="allowed_res_users_ids" widget="many2many_tags"/>
+                            <field name="allow_dates_edition"/>
+                            <field name="restrict_users"/>
+                            <field name="allowed_res_users_ids" invisible="not restrict_users" required="restrict_users" widget="many2many_tags"/>
                         </group>
                         <group>
                             <field name="journal_ids" context="{'default_type': 'cash'}" widget="many2many_tags"/>
-                            <field name="cash_control_journal_ids" domain="[('id', 'in', journal_ids) , ('type', '=', 'cash')]" widget="many2many_checkboxes" />
+                            <field name="cash_control_journal_ids" domain="[('id', 'in', journal_ids)]" widget="many2many_checkboxes" />
                             <field name="max_diff" invisible="cash_control_journal_ids == []" />
                         </group>
                     </group>

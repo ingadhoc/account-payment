@@ -11,7 +11,7 @@
                 <!-- filtramos por usuario para que a los admin solo les aparezcan en donde estan involucrados. Total siendo admin se pueden agregar en la que quieran -->
                 <field
                     name="cashbox_session_id"
-                    domain="[('user_ids', '=', uid), ('state', '=', 'opened'), ('company_id', '=', company_id)]"
+                    domain="[('state', '=', 'opened'), ('company_id', '=', company_id), '|', ('user_ids', '=', uid), ('user_ids', '=', False)]"
                     required="requiere_account_cashbox_session and state == 'draft'"
                     readonly = "state != 'draft'"/>
             </field>
