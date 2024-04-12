@@ -15,12 +15,16 @@ class AccountCashbox(models.Model):
 
     name = fields.Char(required=True,)
     company_id = fields.Many2one(
-        'res.company', required=True, default=lambda self: self.env.user.company_id)
+        'res.company', required=True, default=lambda self: self.env.company)
     journal_ids = fields.Many2many(
         'account.journal', 'cashbox_journal_rel', 'cashbox_id', 'journal_id', required=True,
         string='Payment method', domain=[('type', 'in', ['bank', 'cash'])], check_company=True)
+    allow_dates_edition = fields.Boolean()
+    restrict_users = fields.Boolean(
+        help="If you do not restrict users, any user with access can operate the cash register. The restriction "
+        "does not apply to admin users")
     allowed_res_users_ids = fields.Many2many(
-        'res.users', relation='account_cashbox_users_rel', column1='cashbox_id', column2='user_id',)
+        'res.users', relation='account_cashbox_users_rel', column1='cashbox_id', column2='user_id', string="Allowed Users")
     cash_control_journal_ids = fields.Many2many('account.journal', string='Journals with Open / Close control')
     session_ids = fields.One2many('account.cashbox.session', 'cashbox_id')
     sequence_id = fields.Many2one('ir.sequence', help="Numbering of cash sessions.", copy=False,check_company=True,)

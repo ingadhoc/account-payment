@@ -19,10 +19,11 @@ class AccountCashboxSession(models.Model):
     _description = 'Cashbox session'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    cashbox_id = fields.Many2one('account.cashbox', required=True, readonly=False)
+    cashbox_id = fields.Many2one('account.cashbox', required=True, readonly=True)
     name = fields.Char(required=True, compute='_compute_name', store=True, readonly=False)
-    user_ids = fields.Many2many('res.users', required=True, readonly=False, tracking=True,
-        default=lambda self: [(4, self.env.uid)])
+    restrict_users = fields.Boolean(related="cashbox_id.restrict_users")
+    user_ids = fields.Many2many(
+        'res.users', required=True, readonly=False, tracking=True, compute='_compute_user_ids', store=True)
     opening_date = fields.Datetime(readonly=True, copy=False)
     closing_date = fields.Datetime(readonly=True, copy=False)
     state = fields.Selection(
@@ -32,10 +33,16 @@ class AccountCashboxSession(models.Model):
         'account.cashbox.session.line', 'cashbox_session_id', compute='_compute_line_ids', store=True, readonly=False)
     payment_ids = fields.One2many('account.payment', 'cashbox_session_id')
     require_cash_control = fields.Boolean('require_cash_control', compute='_compute_require_cash_control')
+    allow_dates_edition = fields.Boolean(related='cashbox_id.allow_dates_edition')
     allow_concurrent_sessions = fields.Boolean(related='cashbox_id.allow_concurrent_sessions')
     company_id = fields.Many2one(related='cashbox_id.company_id', store=True)
 
     _sql_constraints = [('uniq_name', 'unique(name)', "El nombre de esta sesión de caja debe ser único !")]
+
+    @api.depends('cashbox_id')
+    def _compute_user_ids(self):
+        for rec in self:
+            rec.user_ids = [(4, self.env.uid)] if rec.cashbox_id.restrict_users else False
 
     @api.depends('cashbox_id')
     def _compute_name(self):
@@ -54,7 +61,6 @@ class AccountCashboxSession(models.Model):
                     last_session = rec.env['account.cashbox.session'].sudo().search([('cashbox_id', '=', rec.cashbox_id.id), ('state', '=', 'closed')], order="closing_date desc", limit=1)
                     if last_session:
                         leaf.append(('cashbox_session_id', '=', last_session.id))
-                        
                     balance_start[journal.id] = rec.env['account.cashbox.session.line'].sudo().search(leaf, limit=1).balance_end_real
             rec.line_ids = [Command.clear()] + [
                 Command.create({
@@ -113,7 +119,7 @@ class AccountCashboxSession(models.Model):
         self.write({'state': 'closed'})
 
     @api.constrains('state')
-    def _check_pop_session_balance(self):
+    def _check_session_balance(self):
         for rec in self.filtered(lambda x: x.state == 'closed'):
             for line in rec.line_ids.filtered(lambda c: c.journal_id.id in rec.cashbox_id.cash_control_journal_ids.ids):
                 # if amounts are the same do not check
