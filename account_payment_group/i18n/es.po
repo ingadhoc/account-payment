@@ -80,6 +80,22 @@ msgid ""
 "    </p>\n"
 "</div>\n"
 msgstr ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"        Estimado <t t-out=\"object.partner_id.name or ''\">Azure Interior</t><br><br>\n"
+"        Gracias por su pago.\n"
+"        Aquí se encuentra su <t t-out=\"object.partner_type == 'supplier' and 'Orden de pago' or 'Recibo'\"></t> <strong t-out=\"(object.name or '').replace('/','-') or ''\">BNK1-2021-05-0002</strong>\n"
+"        por <strong t-out=\"format_amount(object.payments_amount, object.currency_id) or ''\">$ 10.00</strong> de <t t-out=\"object.company_id.name or ''\">YourCompany</t>.\n"
+"        <br><br>\n"
+"        No dude en contactarnos si tiene alguna pregunta.\n"
+"        <br><br>\n"
+"        Saludos,\n"
+"        <t t-if=\"user.signature\">\n"
+"            <br>\n"
+"            <t t-out=\"user.signature or ''\">--<br>Mitchell Admin</t>\n"
+"        </t>\n"
+"    </p>\n"
+"</div>\n"
 
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.res_config_settings_view_form
@@ -394,7 +410,7 @@ msgstr "Recibos de Cliente"
 #. module: account_payment_group
 #: model:mail.template,name:account_payment_group.email_template_edi_payment_group
 msgid "Customer/Supplier Payment - Send by Email"
-msgstr ""
+msgstr "Pago de cliente/proveedor - Enviar por correo"
 
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
