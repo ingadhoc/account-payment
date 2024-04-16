@@ -8,7 +8,6 @@
             <search string="Receipt Books">
                 <field name="name"/>
                 <field name="report_partner_id"/>
-                <field name="sequence_type"/>
                 <field name="partner_type"/>
                 <field name="document_type_id"/>
                 <field name="company_id" widget="selection" groups="base.group_multi_company"/>
@@ -24,7 +23,6 @@
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="report_partner_id"/>
-                <field name="sequence_type"/>
                 <field name="partner_type"/>
                 <field name="document_type_id"/>
                 <field name="company_id" widget="selection" groups="base.group_multi_company"/>
@@ -43,15 +41,13 @@
                             <field name="name"/>
                             <field name="partner_type"/>
                             <field name="report_partner_id"/>
-                            <field name="sequence_type"/>
                             <field name="mail_template_id"  context="{'default_model': 'account.payment'}"/>
                         </group>
                         <group>
                             <field name="document_type_id"/>
-                            <field name="padding" invisible="sequence_type != 'manual'" required="sequence_type == 'manual'"/>
                             <field name="prefix"/>
-                            <field name="sequence_id" invisible="sequence_type != 'automatic'"/>
-                            <field name="next_number" invisible="sequence_type != 'automatic'"/>
+                            <field name="sequence_id"/>
+                            <field name="next_number"/>
                             <field name="company_id" widget="selection" groups="base.group_multi_company"/>
                             <field name="active"/>
                         </group>
