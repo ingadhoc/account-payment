@@ -7,7 +7,6 @@
             <form>
                 <field name="document_sequence_id" invisible="1"/>
                 <field name="document_type_id" invisible="1"/>
-                <field name="next_number" invisible="1"/>
                 <field name="document_number" invisible="1"/>
                 <field name="highest_name" invisible="1"/>
                 <field name="sequence_type" invisible="1"/>
@@ -17,7 +16,7 @@
                 <field name="receiptbook_id" invisible="is_internal_transfer" readonly="state != 'draft'"/>
                 <field name="document_number"
                     readonly="state != 'draft'" invisible="sequence_type != 'manual'"/>
-            </field> 
+            </field>
         </field>
     </record>
 </odoo>

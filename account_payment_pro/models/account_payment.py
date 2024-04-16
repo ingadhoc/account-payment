@@ -236,6 +236,7 @@ class AccountPayment(models.Model):
                 rec.destination_account_id = to_pay_account[0]
             else:
                 super(AccountPayment, rec)._compute_destination_account_id()
+
     def _prepare_move_line_default_vals(self, write_off_line_vals=None, force_balance=None):
         # TODO: elimino los write_off_line_vals  porque los regenero tanto aca
         # como en retenciones. esto puede generar problemas
@@ -400,10 +401,9 @@ class AccountPayment(models.Model):
     @api.depends('to_pay_move_line_ids.amount_residual')
     def _compute_selected_debt(self):
         for rec in self:
-            factor = 1
+            # factor = 1
             rec.selected_debt = sum(rec.to_pay_move_line_ids._origin.mapped('amount_residual')) * (-1.0 if rec.partner_type == 'supplier' else 1.0)
-
-            #TODO error en la creacion de un payment desde el menu?
+            # TODO error en la creacion de un payment desde el menu?
             # if rec.payment_type == 'outbound' and rec.partner_type == 'customer' or \
             #         rec.payment_type == 'inbound' and rec.partner_type == 'supplier':
             #     factor = -1
@@ -465,7 +465,7 @@ class AccountPayment(models.Model):
         # sino que esta implementado en account_payment_ux
         # posted_payments = rec.payment_ids.filtered(lambda x: x.state == 'posted')
         # if not created_automatically and posted_payments:
-        created_automatically = self._context.get('created_automatically')
+        # created_automatically = self._context.get('created_automatically')
 
         for rec in self:
             counterpart_aml = rec.mapped('line_ids').filtered(
