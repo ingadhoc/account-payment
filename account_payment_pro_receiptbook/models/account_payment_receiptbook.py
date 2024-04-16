@@ -44,7 +44,6 @@ class AccountPaymentReceiptbook(models.Model):
         related='sequence_id.number_next_actual',
         readonly=False,
     )
-
     # payment_type = fields.Selection(
     #     [('inbound', 'Inbound'), ('outbound', 'Outbound')],
     #     # [('receipt', 'Receipt'), ('payment', 'Payment')],
@@ -53,12 +52,6 @@ class AccountPaymentReceiptbook(models.Model):
     # )
     # lo dejamos solo como ayuda para generar o no la secuencia pero lo que
     # termina definiendo si es manual o por secuencia es si tiene secuencia
-    sequence_type = fields.Selection(
-        [('automatic', 'Automatic'), ('manual', 'Manual')],
-        string='Sequence Type',
-        readonly=False,
-        default='automatic',
-    )
     sequence_id = fields.Many2one(
         'ir.sequence',
         'Entry Sequence',
@@ -76,11 +69,6 @@ class AccountPaymentReceiptbook(models.Model):
         'Prefix',
         # required=True,
         # TODO rename field to prefix
-    )
-    padding = fields.Integer(
-        'Number Padding',
-        help="automatically adds some '0' on the left of the 'Number' to get "
-        "the required padding size."
     )
     active = fields.Boolean(
         'Active',
@@ -108,7 +96,7 @@ class AccountPaymentReceiptbook(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         recs = super().create(vals_list)
-        for rec in recs.filtered(lambda x: not x.sequence_id and x.sequence_type == 'automatic'):
+        for rec in recs.filtered(lambda x: not x.sequence_id):
             rec.sequence_id = self.env['ir.sequence'].sudo().create({
                 'name': rec.name,
                 'implementation': 'no_gap',
