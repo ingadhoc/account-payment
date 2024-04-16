@@ -17,11 +17,6 @@ class AccountPayment(models.Model):
     document_sequence_id = fields.Many2one(related='receiptbook_id.sequence_id',)
     sequence_type = fields.Selection(related='receiptbook_id.sequence_type',)
     document_type_id = fields.Many2one(related='receiptbook_id.document_type_id',)
-    next_number = fields.Integer(
-        # related='receiptbook_id.sequence_id.number_next_actual',
-        compute='_compute_next_number',
-        string='Next Number',
-    )
     document_number = fields.Char(
         compute='_compute_document_number', inverse='_inverse_document_number',
         string='Document Number', readonly=True, copy=False)
@@ -73,31 +68,6 @@ class AccountPayment(models.Model):
                 if rec.document_number != document_number:
                     rec.document_number = document_number
                 rec.name = "%s %s" % (rec.document_type_id.doc_code_prefix, document_number)
-
-    @api.depends(
-        'receiptbook_id.sequence_id.number_next_actual',
-    )
-    def _compute_next_number(self):
-        """
-        show next number only for payments without number and on draft state
-        """
-        for payment in self:
-            if payment.state != 'draft' or not payment.receiptbook_id or payment.document_number:
-                payment.next_number = False
-                continue
-            sequence = payment.receiptbook_id.sequence_id
-            # we must check if sequence use date ranges
-            if not sequence.use_date_range:
-                payment.next_number = sequence.number_next_actual
-            else:
-                dt = self.date or fields.Date.today()
-                seq_date = self.env['ir.sequence.date_range'].search([
-                    ('sequence_id', '=', sequence.id),
-                    ('date_from', '<=', dt),
-                    ('date_to', '>=', dt)], limit=1)
-                if not seq_date:
-                    seq_date = sequence._create_date_range_seq(dt)
-                payment.next_number = seq_date.number_next_actual
 
     @api.depends('company_id', 'partner_type', 'is_internal_transfer')
     def _compute_receiptbook(self):

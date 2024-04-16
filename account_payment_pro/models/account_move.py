@@ -2,7 +2,6 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from odoo import models, api, Command, fields, _
-from odoo.exceptions import ValidationError
 
 
 class AccountMove(models.Model):
