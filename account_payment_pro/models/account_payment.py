@@ -236,8 +236,7 @@ class AccountPayment(models.Model):
                 rec.destination_account_id = to_pay_account[0]
             else:
                 super(AccountPayment, rec)._compute_destination_account_id()
-
-    def _prepare_move_line_default_vals(self, write_off_line_vals=None):
+    def _prepare_move_line_default_vals(self, write_off_line_vals=None, force_balance=None):
         # TODO: elimino los write_off_line_vals  porque los regenero tanto aca
         # como en retenciones. esto puede generar problemas
         write_off_line_vals = []
@@ -258,7 +257,7 @@ class AccountPayment(models.Model):
                 'balance': self.currency_id._convert(write_off_amount_currency, self.company_id.currency_id,
                                                      self.company_id, self.date),
             })
-        res = super()._prepare_move_line_default_vals(write_off_line_vals=write_off_line_vals)
+        res = super()._prepare_move_line_default_vals(write_off_line_vals=write_off_line_vals, force_balance=force_balance)
         if self.force_amount_company_currency:
             difference = self.force_amount_company_currency - res[0]['credit'] - res[0]['debit']
             if res[0]['credit']:
