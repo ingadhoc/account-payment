@@ -40,6 +40,6 @@ class AccountChartTemplate(models.AbstractModel):
                 'partner_type': partner_type,
                 'company_id': company.id,
                 'document_type_id': document_type.id,
-                'prefix': '0001',
+                'prefix': '0001-',
             }
             receipbook.create(vals)
