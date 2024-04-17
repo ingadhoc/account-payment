@@ -1,11 +1,8 @@
 from odoo import models, api, fields, _
-from odoo.exceptions import ValidationError, UserError
-from odoo.tools.sql import index_exists, drop_index
 
 
 class AccountMove(models.Model):
     _inherit = "account.move"
-
 
     receiptbook_id = fields.Many2one(
         related='payment_id.receiptbook_id',
@@ -36,3 +33,8 @@ class AccountMove(models.Model):
         if self._context.get('without_receiptbook_id'):
             domain += [('receiptbook_id', '=', False)]
         return super()._search(domain, offset=offset, limit=limit, order=order, access_rights_uid=access_rights_uid)
+
+    def _compute_made_sequence_hole(self):
+        receiptbook_recs = self.filtered(lambda x: x.receiptbook_id and x.journal_id.type in ('bank', 'cash'))
+        receiptbook_recs.made_sequence_hole = False
+        super(AccountMove, self - receiptbook_recs)._compute_made_sequence_hole()

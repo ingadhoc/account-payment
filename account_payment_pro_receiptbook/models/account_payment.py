@@ -17,20 +17,21 @@ class AccountPayment(models.Model):
     )
 
     def action_post(self):
-        for rec in self.filtered(lambda x: not x.is_internal_transfer):
-            if not rec.name or rec.name == '/':
-                if rec.receiptbook_id and not rec.receiptbook_id.sequence_id:
-                    raise ValidationError(_(
-                        'Error!. Please define sequence on the receiptbook related documents to this payment.'))
+        # si no tengo nombre y tengo talonario de recibo, numeramos con el talonario
+        for rec in self.filtered(lambda x: not x.name or x.name == '/' and x.receiptbook_id):
+            if not rec.receiptbook_id.sequence_id:
+                raise ValidationError(_(
+                    'Error!. Please define sequence on the receiptbook related documents to this payment.'))
 
-                rec.l10n_latam_document_type_id = rec.document_type_id.id
-                name = rec.receiptbook_id.with_context(ir_sequence_date=rec.date).sequence_id.next_by_id()
-                rec.name = "%s %s" % (rec.document_type_id.doc_code_prefix, name)
+            rec.l10n_latam_document_type_id = rec.receiptbook_id.document_type_id.id
+            name = rec.receiptbook_id.with_context(ir_sequence_date=rec.date).sequence_id.next_by_id()
+            rec.name = "%s %s" % (rec.l10n_latam_document_type_id.doc_code_prefix, name)
 
-        if rec.receiptbook_id.mail_template_id:
+        res = super().action_post()
+
+        for rec in self.filtered('receiptbook_id.mail_template_id'):
             rec.message_post_with_source(rec.receiptbook_id.mail_template_id)
-
-        return super().action_post()
+        return res
 
     @api.depends('company_id', 'partner_type', 'is_internal_transfer')
     def _compute_receiptbook(self):

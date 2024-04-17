@@ -20,7 +20,7 @@ class AccountPaymentReceiptbook(models.Model):
     mail_template_id = fields.Many2one(
         'mail.template',
         'Email Template',
-        domain=[('model', '=', 'account.payment.group')],
+        domain=[('model', '=', 'account.payment')],
         help="If set an email will be sent to the customer when the related"
         " account.payment.group has been posted.",
     )
