@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
     <t t-name="CreditCardInstallmentButton" owl="1">
-        <div class="header-button" t-on-click="onClick">
-            <span><i class="fa fa-sign-out" role="img"/> <t t-if="!env.isMobile">Enviar a la terminal</t></span>
+        <div class="header-button"
+            t-on-click="() => this.trigger('send-payment')"
+            aria-label="Enviar" title="Enviar">
+            <span><i class="fa fa-sign-out" role="img"/> <t t-if="!env.isMobile">Enviar</t></span>
         </div>
     </t>
 </templates>

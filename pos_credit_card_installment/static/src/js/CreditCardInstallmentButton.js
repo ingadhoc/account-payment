@@ -16,8 +16,9 @@ odoo.define('pos_credit_card_installment.CreditCardInstallmentButton', function 
                 ticket_number: '',
             });
             useListener('click', this.onClick);
+            useListener('send-payment', this.sendPayment);
         }
-        async onClick() {
+        async sendPayment() {
             console.log()
         }
 
