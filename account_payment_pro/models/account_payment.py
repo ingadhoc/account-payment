@@ -391,12 +391,13 @@ class AccountPayment(models.Model):
             else:
                 payment.amount_company_currency_signed_pro = payment.amount_company_currency
 
+    def _get_payment_difference(self):
+        return self.to_pay_amount - self.amount_company_currency_signed_pro
+    
     @api.depends('to_pay_amount', 'amount_company_currency_signed_pro')
     def _compute_payment_difference(self):
         for rec in self:
-            # if rec.payment_subtype != 'double_validation':
-            #     continue
-            rec.payment_difference = rec.to_pay_amount - rec.amount_company_currency_signed_pro
+            rec.payment_difference = rec._get_payment_difference()
 
     @api.depends('to_pay_move_line_ids.amount_residual')
     def _compute_selected_debt(self):
