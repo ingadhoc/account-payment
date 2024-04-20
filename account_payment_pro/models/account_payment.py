@@ -96,7 +96,7 @@ class AccountPayment(models.Model):
         help='This lines are the ones the user has selected to be paid.',
         copy=False,
         readonly=False,
-        check_company=True
+        check_company=True,
     )
     matched_move_line_ids = fields.Many2many(
         'account.move.line',
@@ -393,13 +393,13 @@ class AccountPayment(models.Model):
 
     def _get_payment_difference(self):
         return self.to_pay_amount - self.amount_company_currency_signed_pro
-    
-    @api.depends('to_pay_amount', 'amount_company_currency_signed_pro')
+
+    @api.depends('payment_total', 'to_pay_amount', 'amount_company_currency_signed_pro')
     def _compute_payment_difference(self):
         for rec in self:
             rec.payment_difference = rec._get_payment_difference()
 
-    @api.depends('to_pay_move_line_ids.amount_residual')
+    @api.depends('to_pay_move_line_ids', 'to_pay_move_line_ids.amount_residual')
     def _compute_selected_debt(self):
         for rec in self:
             # factor = 1
@@ -423,13 +423,17 @@ class AccountPayment(models.Model):
 
     @api.depends('partner_id', 'partner_type', 'company_id')
     def _compute_to_pay_move_lines(self):
-        # TODO deberiamos ver que se recomputen solo si la deuda que esta seleccionada NO es de este
-        # partner, compania o partner_type
+        # TODO ?
         # # if payment group is being created from a payment we dont want to compute to_pay_move_lines
         # if self._context.get('created_automatically'):
         #     return
+
+        # Se recomputan las lienas solo si la deuda que esta seleccionada solo si
+        # cambio el partner, compania o partner_type
         for rec in self:
-            rec.add_all()
+            if rec.partner_id != rec._origin.partner_id or rec.partner_type != rec._origin.partner_type or \
+                    rec.company_id != rec._origin.company_id:
+                rec.add_all()
 
     def _get_to_pay_move_lines_domain(self):
         self.ensure_one()
