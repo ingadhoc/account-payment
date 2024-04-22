@@ -135,7 +135,17 @@ class AccountPayment(models.Model):
     is_confirmed = fields.Boolean(tracking=True, copy=False,)
     requiere_double_validation = fields.Boolean(compute='_compute_requiere_double_validation')
 
+    def _check_to_pay_lines_account(self):
+        """ TODO ver si esto tmb lo llevamos a la UI y lo mostramos como un warning.
+        tmb podemos dar mas info al usuario en el error """
+        for rec in self:
+            accounts = rec.to_pay_move_line_ids.mapped('account_id')
+            if len(accounts) > 1:
+                raise ValidationError(_('To Pay Lines must be of the same account!'))
+
     def action_confirm(self):
+        # chequeamos lineas a pagar antes de confirmar pago para evitar idas y vueltas de validacion
+        self._check_to_pay_lines_account()
         self.filtered(lambda x: x.state == 'draft').is_confirmed = True
 
     @api.depends('company_id.double_validation', 'partner_type')
@@ -230,9 +240,12 @@ class AccountPayment(models.Model):
         """
         for rec in self:
             to_pay_account = rec.to_pay_move_line_ids.mapped('account_id')
-            if len(to_pay_account) > 1:
-                raise ValidationError(_('To Pay Lines must be of the same account!'))
-            elif len(to_pay_account) == 1:
+            if to_pay_account:
+                # tomamos la primer si hay mas de una, luego en el post si la deuda se intenta conciliar odoo
+                # devuelve error. No lo protegemos acá por estas razones:
+                # 1. el boton add all no se podria usar porque ya hace un write y el usuario deberia elegir a mano los apuntes
+                # 2. le vamos a dar error al usuario en algunos casos sin que sea necesario ya que luego, si el importe es menor
+                # no llega a intentar conciliarse con est epago
                 rec.destination_account_id = to_pay_account[0]
             else:
                 super(AccountPayment, rec)._compute_destination_account_id()
@@ -356,7 +369,7 @@ class AccountPayment(models.Model):
             # a si es pago entrante o saliente
             sign = rec.partner_type == 'supplier' and -1.0 or 1.0
             rec.matched_amount = sign * sum(
-                rec.matched_move_line_ids.with_context(matched_payment_id=rec.id).mapped('payment_matched_amount'))
+                rec.matched_move_line_ids.with_context(matched_payment_ids=rec.ids).mapped('payment_matched_amount'))
             rec.unmatched_amount = rec.payment_total - rec.matched_amount
 
     @api.depends('to_pay_move_line_ids')
