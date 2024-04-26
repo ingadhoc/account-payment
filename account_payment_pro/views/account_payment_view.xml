@@ -33,7 +33,7 @@
                     <field name="matched_amount" invisible="state != 'posted'"/>
                     <field name="amount_residual" invisible="state != 'posted'"/>
                     <field name="unreconciled_amount" invisible="state not in ['draft'] or partner_type != 'supplier'" readonly="state not in ['draft']"/>
-                    <field name="to_pay_amount" invisible="state not in ['draft'] or partner_type != 'supplier'"/>
+                    <field name="to_pay_amount" invisible="state not in ['draft'] or partner_type != 'supplier'" readonly="state not in ['draft']"/>
                 </group>
                 <group name="group4" invisible="is_internal_transfer">
                     <field name="payment_total"/>
