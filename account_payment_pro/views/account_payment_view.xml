@@ -16,6 +16,8 @@
             </button>
             <button name="action_post"  position="before">
                 <button name="action_confirm" class="oe_highlight" string="Approve" groups="account_payment_pro.account_confirm_payment" invisible="state != 'draft' or not requiere_double_validation" type="object"/>
+                <button name="action_unconfirm" string="Back to Edit" invisible="state == 'draft' and not is_confirmed" type="object"/>
+
             </button>
             <!-- seccion para mejora pagos en otra moneda -->
             <div name="amount_div" position="after">

@@ -1,5 +1,5 @@
 from odoo import models, fields, api, Command, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, UserError
 
 
 class AccountPayment(models.Model):
@@ -147,6 +147,26 @@ class AccountPayment(models.Model):
         # chequeamos lineas a pagar antes de confirmar pago para evitar idas y vueltas de validacion
         self._check_to_pay_lines_account()
         self.filtered(lambda x: x.state == 'draft').is_confirmed = True
+
+    def action_unconfirm(self):
+        # chequeamos lineas a pagar antes de confirmar pago para evitar idas y vueltas de validacion
+        self._check_to_pay_lines_account()
+        self.filtered(lambda x: x.state == 'draft').is_confirmed = False
+
+    def action_draft(self):
+        self.is_confirmed = False
+        super().action_draft()
+
+    @api.model
+    def _get_confimed_blocked_field(self):
+        return ['partner_id', 'partner_type', 'to_pay_move_line_ids', 'unreconciled_amount',
+                'withholdable_advanced_amount', 'company_id', 'to_pay_amount', 'amount']
+
+    def write(self, vals):
+        if not self.user_has_groups('account_payment_pro.account_confirm_payment') and self.filtered('is_confirmed'):
+            if set(vals) & set(self._get_confimed_blocked_field()):
+                raise UserError(_('You cannot modify an approved payment. You must back to edit it.'))
+        return super().write(vals)
 
     @api.depends('company_id.double_validation', 'partner_type')
     def _compute_requiere_double_validation(self):
