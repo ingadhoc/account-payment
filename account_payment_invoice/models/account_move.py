@@ -50,4 +50,5 @@ class AccountMove(models.Model):
                 except Exception as exp:
                     rec.message_post(
                         body=_('We tried to validate this payment but got this error') + ': \n\n' + plaintext2html(str(exp), 'em'),
-                        partner_ids=rec.get_internal_partners().ids)
+                        partner_ids=rec.get_internal_partners().ids,
+                        body_is_html=True)
