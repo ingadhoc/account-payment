@@ -221,3 +221,9 @@ class AccountMove(models.Model):
         pay_group_recs = self.filtered(lambda x: x.journal_id.type not in ('bank', 'cash') and x.payment_group_id)
         pay_group_recs.made_sequence_hole = False
         super(AccountMove, self - pay_group_recs)._compute_made_sequence_hole()
+
+    def _search_default_journal(self):
+        if self.env.context.get('default_company_id') != self.env.company.id:
+            company_id = self.env.context.get('default_company_id')
+            self.company_id = company_id
+        super(AccountMove, self)._search_default_journal()
