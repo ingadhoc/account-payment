@@ -132,7 +132,7 @@ class AccountPayment(models.Model):
     )
     writeoff_label = fields.Char(string='Journal Item Label', default='Write-Off',
                                  help='Change label of the counterpart that will hold the payment difference')
-    is_confirmed = fields.Boolean(tracking=True, copy=False,)
+    is_approved = fields.Boolean(string="Approved", tracking=True, copy=False,)
     requiere_double_validation = fields.Boolean(compute='_compute_requiere_double_validation')
 
     def _check_to_pay_lines_account(self):
@@ -146,33 +146,33 @@ class AccountPayment(models.Model):
     def action_confirm(self):
         # chequeamos lineas a pagar antes de confirmar pago para evitar idas y vueltas de validacion
         self._check_to_pay_lines_account()
-        self.filtered(lambda x: x.state == 'draft').is_confirmed = True
+        self.filtered(lambda x: x.state == 'draft').is_approved = True
 
     def action_unconfirm(self):
         # chequeamos lineas a pagar antes de confirmar pago para evitar idas y vueltas de validacion
         self._check_to_pay_lines_account()
-        self.filtered(lambda x: x.state == 'draft').is_confirmed = False
+        self.filtered(lambda x: x.state == 'draft').is_approved = False
 
     def action_draft(self):
-        self.is_confirmed = False
+        self.is_approved = False
         super().action_draft()
 
     @api.model
     def _get_confimed_blocked_field(self):
         return ['partner_id', 'partner_type', 'to_pay_move_line_ids', 'unreconciled_amount',
-                'withholdable_advanced_amount', 'company_id', 'to_pay_amount', 'amount']
+                'withholdable_advanced_amount', 'company_id', 'to_pay_amount']
 
     def write(self, vals):
-        if not self.user_has_groups('account_payment_pro.account_confirm_payment') and self.filtered('is_confirmed'):
+        if self.filtered('is_approved'):
             if set(vals) & set(self._get_confimed_blocked_field()):
-                raise UserError(_('You cannot modify an approved payment. You must back to edit it.'))
+                raise UserError(_('Your are trying to modify a protected field on an approved payment. Set it back to edit if you want to make this modification.'))
         return super().write(vals)
 
     @api.depends('company_id.double_validation', 'partner_type')
     def _compute_requiere_double_validation(self):
         double_validation = self.env['account.payment']
         if 'force_simple' not in self._context:
-            double_validation = self.filtered(lambda x: x.company_id.double_validation and not x.is_confirmed and x.partner_type == 'supplier')
+            double_validation = self.filtered(lambda x: x.company_id.double_validation and not x.is_approved and x.partner_type == 'supplier')
             double_validation.requiere_double_validation = True
         (self - double_validation).requiere_double_validation = False
 

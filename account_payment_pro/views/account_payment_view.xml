@@ -1,5 +1,27 @@
 <odoo>
 
+    <record id="view_account_supplier_payment_tree" model="ir.ui.view">
+        <field name="name">account.payment.tree</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_supplier_payment_tree"/>
+        <field name="arch" type="xml">
+            <field name="state" position="after">
+                <field name="is_approved" optional="hide"/>
+            </field>
+        </field>
+    </record>
+    <record id="view_account_payment_search" model="ir.ui.view">
+        <field name="name">account.payment.search</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_search"/>
+        <field name="arch" type="xml">
+            <filter name="date" position='after'>
+                <separator/>
+                <filter string="Approved" name="is_approved" domain="[('is_approved', '=', True), ('state', '=', 'draft')]"/>
+                <filter string="Not approved" name="not_is_approved" domain="[('is_approved', '=', False), ('state', '=', 'draft')]"/>
+            </filter>
+        </field>
+    </record>
     <record id="view_account_payment_form" model="ir.ui.view">
         <field name="name">account.payment.form</field>
         <field name="model">account.payment</field>
@@ -9,14 +31,24 @@
                 <field name="commercial_partner_id" invisible="True"/>
                 <field name="is_internal_transfer" invisible="True"/>
                 <field name="requiere_double_validation" invisible="True"/>
-                <field name="is_confirmed" invisible="True"/>
+                <field name="is_approved" invisible="True"/>
             </form>
+            <xpath expr="//div[@name='button_box']" position="after">
+                <span class="badge rounded-pill text-bg-warning float-end fs-6" invisible="not requiere_double_validation">
+                    <i class="fa fa-fw fa-remove" aria-label="Requiere double validation" title="double_validation" role="img"/>
+                    <span class="d-none d-md-inline">Requiere double validation</span>
+                </span>
+                <span class="badge rounded-pill text-bg-success float-end fs-6" invisible="not is_approved">
+                    <i class="fa fa-fw fa-check" aria-label="Approved" title="Approved" role="img"/>
+                    <span class="d-none d-md-inline">Approved</span>
+                </span>
+            </xpath>
             <button name="action_post" position="attributes">
                 <attribute name="invisible" add="requiere_double_validation" separator=" or "></attribute>
             </button>
-            <button name="action_post"  position="before">
+            <button name="action_post" position="before">
                 <button name="action_confirm" class="oe_highlight" string="Approve" groups="account_payment_pro.account_confirm_payment" invisible="state != 'draft' or not requiere_double_validation" type="object"/>
-                <button name="action_unconfirm" string="Back to Edit" invisible="state == 'draft' and not is_confirmed" type="object"/>
+                <button name="action_unconfirm" string="Back to Edit" invisible="state == 'draft' and not is_approved" type="object"/>
 
             </button>
             <!-- seccion para mejora pagos en otra moneda -->
@@ -26,98 +58,91 @@
                 <field name="force_amount_company_currency" invisible="True"/>
                 <label for="amount_company_currency" string="(on company currency)" invisible="not other_currency"/>
                 <div name="amount_company_currency" class="o_row" invisible="not other_currency">
-                    x <field name="exchange_rate"/> = <field name="amount_company_currency" readonly="state != 'draft'"/>
-                </div>
+                    x <field name="exchange_rate"/>
+ =                <field name="amount_company_currency" readonly="state != 'draft'"/>
             </div>
-            <group name="group2" position="after">
-                <group name="group3" invisible="is_internal_transfer">
-                    <field name="selected_debt" invisible="state not in ('draft')"/>
-                    <field name="matched_amount" invisible="state != 'posted'"/>
-                    <field name="amount_residual" invisible="state != 'posted'"/>
-                    <field name="unreconciled_amount" invisible="state not in ['draft'] or partner_type != 'supplier'" readonly="state not in ['draft']"/>
-                    <field name="to_pay_amount" invisible="state not in ['draft'] or partner_type != 'supplier'" readonly="state not in ['draft']"/>
-                </group>
-                <group name="group4" invisible="is_internal_transfer">
-                    <field name="payment_total"/>
-                    <field name="payment_difference" invisible="state not in ('draft')"/>
-                    <div invisible="payment_difference &lt;= 0.0" colspan="2">
-                        <field name="payment_difference_handling" widget="radio" nolabel="1"/>
-                        <div invisible="payment_difference_handling == 'open'">
-                            <label for="writeoff_account_id" string="Post Difference In" class="oe_edit_only"/>
-                            <field name="writeoff_account_id"
-                                    string="Post Difference In"
-                                    options="{'no_create': True}"
-                                    required="payment_difference_handling == 'reconcile'"/>
-                            <label for="writeoff_label" class="oe_edit_only" string="Label"/>
-                            <field name="writeoff_label" required="payment_difference_handling == 'reconcile'"/>
-                        </div>
-                    </div>
-                </group>
+        </div>
+        <group name="group2" position="after">
+            <group name="group3" invisible="is_internal_transfer">
+                <field name="selected_debt" invisible="state not in ('draft')"/>
+                <field name="matched_amount" invisible="state != 'posted'"/>
+                <field name="amount_residual" invisible="state != 'posted'"/>
+                <field name="unreconciled_amount" invisible="state not in ['draft'] or partner_type != 'supplier'" readonly="state not in ['draft']"/>
+                <field name="to_pay_amount" invisible="state not in ['draft'] or partner_type != 'supplier'" readonly="state not in ['draft']"/>
             </group>
-            <sheet>
-                <notebook invisible="is_internal_transfer">
-                    <page string="Debts" invisible="state != 'draft'">
-                        <p>
+            <group name="group4" invisible="is_internal_transfer">
+                <field name="payment_total"/>
+                <field name="payment_difference" invisible="state not in ('draft')"/>
+                <div invisible="payment_difference &lt;= 0.0" colspan="2">
+                    <field name="payment_difference_handling" widget="radio" nolabel="1"/>
+                    <div invisible="payment_difference_handling == 'open'">
+                        <label for="writeoff_account_id" string="Post Difference In" class="oe_edit_only"/>
+                        <field name="writeoff_account_id" string="Post Difference In" options="{'no_create': True}" required="payment_difference_handling == 'reconcile'"/>
+                        <label for="writeoff_label" class="oe_edit_only" string="Label"/>
+                        <field name="writeoff_label" required="payment_difference_handling == 'reconcile'"/>
+                    </div>
+                </div>
+            </group>
+        </group>
+        <sheet>
+            <notebook invisible="is_internal_transfer">
+                <page string="Debts" invisible="state != 'draft'">
+                    <p>
                             Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched.
-                        </p>
-                        <button name="add_all" string="Add All / Refresh" invisible="state != 'draft'" type="object"/>
-                        <button name="remove_all" string="Remove All" invisible="state != 'draft'" type="object"/>
-                        <button name="%(action_account_payment_invoice_wizard)d" string="+ Debit Note" invisible="state != 'draft'" type="action" context="{'internal_type': 'debit_note'}"/>
-                        <button name="%(action_account_payment_invoice_wizard)d" string="+ Credit Note" invisible="state != 'draft'" context="{'refund': True}" type="action"/>
-                        <field
-                            name="to_pay_move_line_ids"
-                            readonly="state != 'draft'"
-                            context="{'tree_view_ref': 'account_payment_pro.view_move_line_tree'}"
-                            domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.reconcile', '=', True),('reconciled', '=', False), ('full_reconcile_id', '=', False), ('company_id', '=', company_id), ('move_id.state', '=', 'posted'), ('account_id.account_type', '=', 'asset_receivable' if partner_type == 'customer' else 'liability_payable')]" 
-                            help="Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched."/>
-                    </page>
-                    <page string="Paid" invisible="state != 'posted'">
-                        <field name="matched_move_line_ids" context="{'tree_view_ref': 'account_payment_pro.view_move_line_with_matched_tree'}"/>
-                    </page>
-                </notebook>
-            </sheet>
+                    </p>
+                    <button name="add_all" string="Add All / Refresh" invisible="state != 'draft'" type="object"/>
+                    <button name="remove_all" string="Remove All" invisible="state != 'draft'" type="object"/>
+                    <button name="%(action_account_payment_invoice_wizard)d" string="+ Debit Note" invisible="state != 'draft'" type="action" context="{'internal_type': 'debit_note'}"/>
+                    <button name="%(action_account_payment_invoice_wizard)d" string="+ Credit Note" invisible="state != 'draft'" context="{'refund': True}" type="action"/>
+                    <field name="to_pay_move_line_ids" readonly="state != 'draft'" context="{'tree_view_ref': 'account_payment_pro.view_move_line_tree'}" domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.reconcile', '=', True),('reconciled', '=', False), ('full_reconcile_id', '=', False), ('company_id', '=', company_id), ('move_id.state', '=', 'posted'), ('account_id.account_type', '=', 'asset_receivable' if partner_type == 'customer' else 'liability_payable')]" help="Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched."/>
+                </page>
+                <page string="Paid" invisible="state != 'posted'">
+                    <field name="matched_move_line_ids" context="{'tree_view_ref': 'account_payment_pro.view_move_line_with_matched_tree'}"/>
+                </page>
+            </notebook>
+        </sheet>
 
-        </field>
-    </record>
-    <record id="view_move_line_tree" model="ir.ui.view">
-        <field name="name">account.move.line.tree</field>
-        <field name="model">account.move.line</field>
-        <field eval="99" name="priority"/>
-        <field name="arch" type="xml">
-            <tree string="Journal Items" edit="1">
-                <field name="date" readonly="True"/>
-                <field name="date_maturity" optional="hide" readonly="True"/>
-                <field name="move_id" required="0" readonly="True"/>
-                <field name="journal_id" options='{"no_open":True}' readonly="True"/>
-                <field name="name" readonly="True"/>
-                <field name="ref" optional="hide"  readonly="True"/>
-                <field name="statement_id" column_invisible="True" readonly="True"/>
-                <field name="account_id" options='{"no_open":True}' domain="[('company_id', '=', company_id)]" readonly="True"/>
-                <field name="balance"  optional="hide" string="Amount" readonly="True"/>
-                <field name="amount_residual" sum="Total" readonly="True"/>
-                <field name="amount_currency" groups="base.group_multi_currency" readonly="True"/>
-                <field name="amount_residual_currency"  optional="hide" groups="base.group_multi_currency" readonly="True"/>
-                <field name="currency_id" column_invisible="True" readonly="True"/>
-                <field name="company_currency_id" column_invisible="True" readonly="True"/>
-                <field name="company_id" column_invisible="True" readonly="True"/>
-                <!--button type="object" icon="fa-external-link" help="Open Related Document" name="action_open_related_document"/-->
-            </tree>
-        </field>
-    </record>
+    </field>
+</record>
+<record id="view_move_line_tree" model="ir.ui.view">
+    <field name="name">account.move.line.tree</field>
+    <field name="model">account.move.line</field>
+    <field eval="99" name="priority"/>
+    <field name="arch" type="xml">
+        <tree string="Journal Items" edit="1">
+            <field name="date" readonly="True"/>
+            <field name="date_maturity" optional="hide" readonly="True"/>
+            <field name="move_id" required="0" readonly="True"/>
+            <field name="journal_id" options='{"no_open":True}' readonly="True"/>
+            <field name="name" readonly="True"/>
+            <field name="ref" optional="hide" readonly="True"/>
+            <field name="statement_id" column_invisible="True" readonly="True"/>
+            <field name="account_id" options='{"no_open":True}' domain="[('company_id', '=', company_id)]" readonly="True"/>
+            <field name="balance" optional="hide" string="Amount" readonly="True"/>
+            <field name="amount_residual" sum="Total" readonly="True"/>
+            <field name="amount_currency" groups="base.group_multi_currency" readonly="True"/>
+            <field name="amount_residual_currency" optional="hide" groups="base.group_multi_currency" readonly="True"/>
+            <field name="currency_id" column_invisible="True" readonly="True"/>
+            <field name="company_currency_id" column_invisible="True" readonly="True"/>
+            <field name="company_id" column_invisible="True" readonly="True"/>
+            <!--button type="object" icon="fa-external-link" help="Open Related Document" name="action_open_related_document"/-->
+        </tree>
+    </field>
+</record>
 
-    <record id="view_move_line_with_matched_tree" model="ir.ui.view">
-        <field name="name">account.move.line.tree</field>
-        <field name="model">account.move.line</field>
-        <field eval="99" name="priority"/>
-        <field name="mode">primary</field>
-        <field name="inherit_id" ref="account_payment_pro.view_move_line_tree"/>
-        <field name="arch" type="xml">
-            <field name="amount_residual" position="replace">
-                <field name="payment_matched_amount" string="Paid Amount" sum="Total"/>
-            </field>
+<record id="view_move_line_with_matched_tree" model="ir.ui.view">
+    <field name="name">account.move.line.tree</field>
+    <field name="model">account.move.line</field>
+    <field eval="99" name="priority"/>
+    <field name="mode">primary</field>
+    <field name="inherit_id" ref="account_payment_pro.view_move_line_tree"/>
+    <field name="arch" type="xml">
+        <field name="amount_residual" position="replace">
+            <field name="payment_matched_amount" string="Paid Amount" sum="Total"/>
         </field>
-    </record>
-    <!-- <record id="view_account_payment_form2" model="ir.ui.view">
+    </field>
+</record>
+<!-- <record id="view_account_payment_form2" model="ir.ui.view">
         <field name="name">account.payment.form</field>
         <field name="model">account.payment</field>
         <field name="inherit_id" ref="account.view_account_payment_form"/>
