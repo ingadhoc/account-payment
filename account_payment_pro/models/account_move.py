@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from odoo import models, api, Command, fields, _
-
+from odoo.exceptions import UserError
 
 class AccountMove(models.Model):
     _inherit = "account.move"
@@ -76,6 +76,9 @@ class AccountMove(models.Model):
         return super().button_draft()
 
     def _post(self, soft=False):
+        requiere_double_validation = self.filtered('payment_id.requiere_double_validation')
+        if requiere_double_validation:
+            raise UserError(_('The payments %s require approve before post.') % ' '.join(requiere_double_validation.mapped('display_name')))
         res = super()._post(soft=soft)
         self.pay_now()
         return res
