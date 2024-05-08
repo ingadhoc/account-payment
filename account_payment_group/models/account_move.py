@@ -216,8 +216,19 @@ class AccountMove(models.Model):
         """ No queremos que el campo l10n_latam_document_type_id se setee en False si el payment group tiene asignado tipo de documento """
         payments = self.filtered(lambda x: x.journal_id.type in ['bank', 'cash'] or x.move_type == 'entry')
         return super(AccountMove, self - payments)._compute_l10n_latam_document_type()
-    
+
     def _compute_made_sequence_hole(self):
         pay_group_recs = self.filtered(lambda x: x.journal_id.type not in ('bank', 'cash') and x.payment_group_id)
         pay_group_recs.made_sequence_hole = False
         super(AccountMove, self - pay_group_recs)._compute_made_sequence_hole()
+
+    def _search_default_journal(self):
+        # en los pay groups permitimos cambiar la compañia y luego la mandamos a los payment lines con un default_company_id
+        # el tema es que odoo ni bien se abre la form computa el journal llamando a este metodo pero no interpeta en ningun lugar el
+        # default_company_id y termina dando un raise si para la env.company (que puede ser distinta a la del payment group) no hay un diario
+        # mediant este hack, solo para los casos donde venimos de un pay group (default_company_id viene definido) y solo
+        # en casos necesarios, cambiamos la compañía
+        is_payment = self.payment_id or self._context.get('is_payment')
+        if is_payment and not self.company_id and self.env.context.get('default_company_id') != self.env.company.id:
+            self = self.with_company(self.env.context.get('default_company_id'))
+        return super(AccountMove, self)._search_default_journal()
