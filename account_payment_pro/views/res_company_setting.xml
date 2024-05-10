@@ -8,7 +8,7 @@
             <field name="inherit_id" ref="account.res_config_settings_view_form"/>
             <field name="arch" type="xml">
                 <setting id="sepa_payments" position="after">
-                    <setting id="double_validation" groups="account.group_account_user" string="Payment double validation" company_dependent="1" help="Users need aprapproveobe payment before post">
+                    <setting id="double_validation" groups="account.group_account_user" string="Payment double validation" company_dependent="1" help="Users must approve payment before post">
                         <field name="double_validation"/>
                     </setting>
                 </setting>

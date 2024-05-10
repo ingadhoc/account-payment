@@ -503,9 +503,11 @@ class AccountPayment(models.Model):
         # sino que esta implementado en account_payment_ux
         # posted_payments = rec.payment_ids.filtered(lambda x: x.state == 'posted')
         # if not created_automatically and posted_payments:
-        # created_automatically = self._context.get('created_automatically')
+        created_automatically = self._context.get('created_automatically')
 
         for rec in self:
+            if (rec.is_approved and rec.payment_difference and not created_automatically):
+                raise ValidationError(_('To Pay Amount and Payment Amount must be equal!'))
             counterpart_aml = rec.mapped('line_ids').filtered(
                 lambda r: not r.reconciled and r.account_id.account_type in self._get_valid_payment_account_types())
             if counterpart_aml and rec.to_pay_move_line_ids:
