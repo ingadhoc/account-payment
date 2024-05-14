@@ -73,15 +73,9 @@
             <group name="group4" invisible="is_internal_transfer">
                 <field name="payment_total"/>
                 <field name="payment_difference" invisible="state not in ('draft')"/>
-                <div invisible="payment_difference &lt;= 0.0" colspan="2">
-                    <field name="payment_difference_handling" widget="radio" nolabel="1"/>
-                    <div invisible="payment_difference_handling == 'open'">
-                        <label for="writeoff_account_id" string="Post Difference In" class="oe_edit_only"/>
-                        <field name="writeoff_account_id" string="Post Difference In" options="{'no_create': True}" required="payment_difference_handling == 'reconcile'"/>
-                        <label for="writeoff_label" class="oe_edit_only" string="Label"/>
-                        <field name="writeoff_label" required="payment_difference_handling == 'reconcile'"/>
-                    </div>
-                </div>
+                <field name="payment_difference_handling" string="Difference Handling" widget="radio" invisible="payment_difference == 0.0"/>
+                <field name="writeoff_account_id" string="Post Difference In" options="{'no_create': True}" required="payment_difference_handling == 'reconcile'" invisible="payment_difference_handling == 'open' or payment_difference == 0.0"/>
+                <field name="writeoff_label" required="payment_difference_handling == 'reconcile'" invisible="payment_difference_handling == 'open' or payment_difference == 0.0"/>
             </group>
         </group>
         <sheet>

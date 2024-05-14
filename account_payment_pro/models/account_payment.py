@@ -124,7 +124,7 @@ class AccountPayment(models.Model):
         comodel_name='account.account',
         string="Difference Account",
         copy=False,
-        domain="[('deprecated', '=', False)]",
+        domain="[('deprecated', '=', False), ('account_type', 'in', ['expense', 'income', 'income_other'])]",
         check_company=True,
         # compute='_compute_writeoff_account_id',
         # store=True,
