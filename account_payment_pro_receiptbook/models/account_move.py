@@ -17,7 +17,7 @@ class AccountMove(models.Model):
         TODO: tal vez lo mejor sea cambiar para no guardar mas numero de recibo en el asiento, pero eso es un cambio
         gigante
         """
-        if self.journal_id.type in ('cash', 'bank') and  not self.receiptbook_id:
+        if self.journal_id.type in ('cash', 'bank') and not self.receiptbook_id:
             # mandamos en contexto que estamos en esta condicion para poder meternos en el search que ejecuta super
             # y que el pago de referencia que se usa para adivinar el tipo de secuencia sea un pago sin tipo de
             # documento
