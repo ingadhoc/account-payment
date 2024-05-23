@@ -143,12 +143,12 @@ class AccountPayment(models.Model):
             if len(accounts) > 1:
                 raise ValidationError(_('To Pay Lines must be of the same account!'))
 
-    def action_confirm(self):
+    def action_approve(self):
         # chequeamos lineas a pagar antes de confirmar pago para evitar idas y vueltas de validacion
         self._check_to_pay_lines_account()
         self.filtered(lambda x: x.state == 'draft').is_approved = True
 
-    def action_unconfirm(self):
+    def action_unapprove(self):
         # chequeamos lineas a pagar antes de confirmar pago para evitar idas y vueltas de validacion
         self._check_to_pay_lines_account()
         self.filtered(lambda x: x.state == 'draft').is_approved = False
