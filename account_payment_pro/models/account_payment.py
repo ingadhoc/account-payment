@@ -521,3 +521,11 @@ class AccountPayment(models.Model):
         if 'matched_move_line_ids' in fields_to_read and 'context' in specification['matched_move_line_ids']:
             specification['matched_move_line_ids']['context'].update({'matched_payment_ids': self._ids})
         return super().web_read(specification)
+
+    @api.depends('journal_id')
+    def _compute_currency_id(self):
+        for rec in self:
+            currency = rec.currency_id
+            super()._compute_currency_id()
+            if currency and currency != rec.journal_id.company_id.currency_id:
+                rec.currency_id = currency
