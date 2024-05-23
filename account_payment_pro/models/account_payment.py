@@ -172,7 +172,9 @@ class AccountPayment(models.Model):
     def _compute_requiere_double_validation(self):
         double_validation = self.env['account.payment']
         if 'force_simple' not in self._context:
-            double_validation = self.filtered(lambda x: x.company_id.double_validation and not x.is_approved and x.partner_type == 'supplier')
+            double_validation = self.filtered(
+                lambda x: not x.is_internal_transfer and x.company_id.double_validation and
+                not x.is_approved and x.partner_type == 'supplier')
             double_validation.requiere_double_validation = True
         (self - double_validation).requiere_double_validation = False
 
