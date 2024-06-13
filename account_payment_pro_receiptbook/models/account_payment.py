@@ -31,7 +31,11 @@ class AccountPayment(models.Model):
         res = super().action_post()
 
         for rec in self.filtered('receiptbook_id.mail_template_id'):
-            rec.message_post_with_source(rec.receiptbook_id.mail_template_id)
+            rec.message_post_with_source(
+                rec.receiptbook_id.mail_template_id,
+                message_type='comment',
+                subtype_xmlid='mail.mt_comment'
+            )
         return res
 
     @api.depends('company_id', 'partner_type', 'is_internal_transfer')
