@@ -84,4 +84,6 @@ class AccountPayment(models.Model):
         """ Esto es para refrescar el primer journal seleccionado por si no esta en la lista de los permitidos.
         Me suena que en algun otro lugar lo hicimos de otra manera"""
         for rec in self:
-            rec.journal_id = rec.available_journal_ids._origin[:1]
+            available_allow_journal = rec.available_journal_ids._origin[:1]
+            if rec.journal_id != available_allow_journal:
+                rec.journal_id = available_allow_journal
