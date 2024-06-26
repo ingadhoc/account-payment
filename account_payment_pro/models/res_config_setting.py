@@ -8,3 +8,7 @@ class ResConfigSettings(models.TransientModel):
         related='company_id.double_validation',
         readonly=False,
     )
+    use_payment_pro = fields.Boolean(
+        related='company_id.use_payment_pro',
+        readonly=False,
+    )

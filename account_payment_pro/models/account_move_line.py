@@ -28,8 +28,7 @@ class AccountMoveLine(models.Model):
             rec.payment_matched_amount = debit_move_amount - credit_move_amount
 
     def action_register_payment(self):
-
-        if self._use_default_payment_register():
+        if not self.company_id.use_payment_pro:
             return super().action_register_payment()
 
         to_pay_move_lines = self.filtered(
@@ -40,6 +39,7 @@ class AccountMoveLine(models.Model):
         if len(to_pay_partners) > 1:
             raise UserError(_('Selected recrods must be of the same partner'))
         partner_type = 'customer' if to_pay_move_lines[0].account_id.account_type == 'asset_receivable' else 'supplier'
+
         return {
             'name': _('Register Payment'),
             'res_model': 'account.payment',
@@ -55,12 +55,10 @@ class AccountMoveLine(models.Model):
                 # We set this because if became from other view and in the context has 'create=False'
                 # you can't crate payment lines (for ej: subscription)
                 'create': True,
+                'default_amount': abs(sum(to_pay_move_lines.mapped('amount_residual'))),
                 'default_company_id': self.company_id.id,
                 'pop_up': True,
             },
             'target': 'current',
             'type': 'ir.actions.act_window',
         }
-
-    def _use_default_payment_register(self):
-        return False

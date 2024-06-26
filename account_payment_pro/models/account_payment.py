@@ -134,6 +134,8 @@ class AccountPayment(models.Model):
                                  help='Change label of the counterpart that will hold the payment difference')
     is_approved = fields.Boolean(string="Approved", tracking=True, copy=False,)
     requiere_double_validation = fields.Boolean(compute='_compute_requiere_double_validation')
+    use_payment_pro = fields.Boolean(related='company_id.use_payment_pro')
+
 
     def _check_to_pay_lines_account(self):
         """ TODO ver si esto tmb lo llevamos a la UI y lo mostramos como un warning.
@@ -154,6 +156,11 @@ class AccountPayment(models.Model):
         self.filtered(lambda x: x.state == 'draft').is_approved = False
 
     def action_draft(self):
+        # Seteamos posted_before en true para que nos permita pasar a borrador el pago y poder realizar cambio sobre el mismo
+        # Nos salteamos la siguente validacion
+        # https://github.com/odoo/odoo/blob/b6b90636938ae961c339807ea893cabdede9f549/addons/account/models/account_move.py#L2474
+        if self.company_id.use_payment_pro:
+            self.posted_before = False
         self.is_approved = False
         super().action_draft()
 
@@ -166,6 +173,17 @@ class AccountPayment(models.Model):
         if self.filtered('is_approved'):
             if set(vals) & set(self._get_confimed_blocked_field()):
                 raise UserError(_('Your are trying to modify a protected field on an approved payment. Set it back to edit if you want to make this modification.'))
+        if self.company_id.use_payment_pro:    
+            # Lo siguiente lo evaluamos para evitar la validacion de odoo de 
+            # https://github.com/odoo/odoo/blob/b6b90636938ae961c339807ea893cabdede9f549/addons/account/models/account_move.py#L2476
+            # y permitirnos realizar la modificacion del journal.
+            if 'journal_id' in vals and self.journal_id.id != vals['journal_id']:
+                self.move_id.sequence_number = 0
+
+            # Lo siguiente lo agregamos para primero obligarnos a cambiar el journal_id y no la company_id. Una vez cambiado el journal_id
+            # la company_id se cambia correctamente.
+            if 'company_id' in vals and 'journal_id' in vals:
+                self.move_id.journal_id = vals['journal_id']      
         return super().write(vals)
 
     @api.depends('company_id.double_validation', 'partner_type')
@@ -201,6 +219,11 @@ class AccountPayment(models.Model):
     #         filtered_domain = [('inbound_payment_method_line_ids', '!=', False)] if \
     #             pay.payment_type == 'inbound' else [('outbound_payment_method_line_ids', '!=', False)]
     #         pay.available_journal_ids = journals.filtered_domain(filtered_domain)
+
+    def _compute_available_journal_ids(self):
+        # Cambiamos el metodo para que traiga los journal de la compañia sobre la cual se esta imputando el pago
+        self.env.company = self.company_id
+        super()._compute_available_journal_ids()
 
     @api.depends('currency_id')
     def _compute_other_currency(self):
@@ -465,19 +488,22 @@ class AccountPayment(models.Model):
 
         # Se recomputan las lienas solo si la deuda que esta seleccionada solo si
         # cambio el partner, compania o partner_type
-        for rec in self:
+        for rec in self.filtered(lambda x: x.company_id.use_payment_pro==True):
             if rec.partner_id != rec._origin.partner_id or rec.partner_type != rec._origin.partner_type or \
                     rec.company_id != rec._origin.company_id:
                 rec.add_all()
 
     def _get_to_pay_move_lines_domain(self):
         self.ensure_one()
-        return [
-            ('partner_id.commercial_partner_id', '=', self.partner_id.commercial_partner_id.id),
+        domain = [
+            ('partner_id', '=', self.partner_id.commercial_partner_id.id),
             ('company_id', '=', self.company_id.id), ('move_id.state', '=', 'posted'),
             ('account_id.reconcile', '=', True), ('reconciled', '=', False), ('full_reconcile_id', '=', False),
             ('account_id.account_type', '=', 'asset_receivable' if self.partner_type == 'customer' else 'liability_payable'),
         ]
+        if self.env.context.get('active_ids'):
+            domain.append(('move_id.line_ids','in',self.env.context.get('active_ids')))
+        return domain
 
     def add_all(self):
         for rec in self:
@@ -500,15 +526,8 @@ class AccountPayment(models.Model):
 
     def action_post(self):
         res = super().action_post()
-        # Filtro porque los pagos electronicos solo pueden estar en pending si la transaccion esta en pending
-        # y no los puedo conciliar esto no es un comportamiento del core
-        # sino que esta implementado en account_payment_ux
-        # posted_payments = rec.payment_ids.filtered(lambda x: x.state == 'posted')
-        # if not created_automatically and posted_payments:
-        created_automatically = self._context.get('created_automatically')
-
         for rec in self:
-            if (rec.is_approved and rec.payment_difference and not created_automatically):
+            if (rec.is_approved and rec.payment_difference):
                 raise ValidationError(_('To Pay Amount and Payment Amount must be equal!'))
             counterpart_aml = rec.mapped('line_ids').filtered(
                 lambda r: not r.reconciled and r.account_id.account_type in self._get_valid_payment_account_types())
@@ -523,3 +542,4 @@ class AccountPayment(models.Model):
         if 'matched_move_line_ids' in fields_to_read and 'context' in specification['matched_move_line_ids']:
             specification['matched_move_line_ids']['context'].update({'matched_payment_ids': self._ids})
         return super().web_read(specification)
+    
