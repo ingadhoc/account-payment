@@ -82,3 +82,8 @@ class AccountMove(models.Model):
         res = super()._post(soft=soft)
         self.pay_now()
         return res
+    
+    def _search_default_journal(self):
+        if self.env.context.get('default_company_id'):
+            self.env.company =  self.env['res.company'].browse(self.env.context.get('default_company_id'))
+        return super()._search_default_journal()
