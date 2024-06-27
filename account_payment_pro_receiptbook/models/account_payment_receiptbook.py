@@ -99,7 +99,6 @@ class AccountPaymentReceiptbook(models.Model):
         for rec in recs.filtered(lambda x: not x.sequence_id):
             rec.sequence_id = self.env['ir.sequence'].sudo().create({
                 'name': rec.name,
-                'implementation': 'no_gap',
                 'prefix': rec.prefix,
                 'padding': 8,
                 'number_increment': 1,
