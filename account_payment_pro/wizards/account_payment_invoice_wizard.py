@@ -142,8 +142,7 @@ class AccountPaymentInvoiceWizard(models.TransientModel):
         """
         self.ensure_one()
         tax_percent = 0.0
-        for tax in self.tax_ids.filtered(
-                lambda x: not x.price_include):
+        for tax in self.tax_ids.filtered(lambda x: not x.price_include and x.amount_type not in ['fixed'] or x.amount):
             if tax.amount_type == 'percent':
                 tax_percent += tax.amount
             elif tax.amount_type == 'partner_tax':
