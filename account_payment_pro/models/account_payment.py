@@ -473,7 +473,7 @@ class AccountPayment(models.Model):
     def _get_to_pay_move_lines_domain(self):
         self.ensure_one()
         return [
-            ('partner_id.commercial_partner_id', '=', self.partner_id.commercial_partner_id.id),
+            ('partner_id', '=', self.partner_id.commercial_partner_id.id),
             ('company_id', '=', self.company_id.id), ('move_id.state', '=', 'posted'),
             ('account_id.reconcile', '=', True), ('reconciled', '=', False), ('full_reconcile_id', '=', False),
             ('account_id.account_type', '=', 'asset_receivable' if self.partner_type == 'customer' else 'liability_payable'),
