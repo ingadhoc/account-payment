@@ -35,10 +35,18 @@ class AccountPayment(models.Model):
             # impuesto anterior) o estar cambiando entre rep line "invoice y refund". De hecho deberiamos ser hasta
             # mas permisivos (tal vez assets account con reconcile = False? solo para este caso de withholding payment?)
             # igual asi por ahora estamos y en 17 esto se depreciaria
-            rep_lines = self.env['account.tax.repartition.line'].search(
+
+            # Eliminamos 'move_type' y 'journal_id' del contexto para evitar los argumentos adicionales que Odoo agrega en el método search.
+            # Ver: https://github.com/odoo/odoo/blob/f32a14025308a190dca705abe872b3c5d98bebb6/addons/account/models/account_tax.py#L316
+            copy_context = dict(self.env.context)
+            copy_context.pop('move_type', None)
+            copy_context.pop('journal_id', None)
+
+            rep_lines = self.env['account.tax.repartition.line'].with_context(copy_context).search(
                 [('company_id', '=', self.company_id.id), '|',
                     ('invoice_tax_id.type_tax_use', 'in', ['supplier', 'customer']),
                     ('refund_tax_id.type_tax_use', 'in', ['supplier', 'customer'])])
+            
             res |= rep_lines.mapped('account_id')
 
         return res
