@@ -55,7 +55,7 @@ class AccountMoveLine(models.Model):
                 # We set this because if became from other view and in the context has 'create=False'
                 # you can't crate payment lines (for ej: subscription)
                 'create': True,
-                'default_amount': abs(sum(to_pay_move_lines.mapped('amount_residual'))),
+                'default_amount':abs(sum(line.amount_residual for line in to_pay_move_lines)),
                 'default_company_id': self.company_id.id,
                 'pop_up': True,
             },
