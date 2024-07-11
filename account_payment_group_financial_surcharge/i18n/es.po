@@ -1,0 +1,100 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_payment_group_financial_surcharge
+# 
+# Translators:
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2022
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-09-14 13:17+0000\n"
+"PO-Revision-Date: 2022-05-17 18:53+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2022\n"
+"Language-Team: Spanish (https://www.transifex.com/adhoc/teams/133229/es/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Language: es\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
+
+#. module: account_payment_group_financial_surcharge
+#: model_terms:ir.ui.view,arch_db:account_payment_group_financial_surcharge.res_config_settings_view_form
+msgid ""
+"<span class=\"fa fa-lg fa-building-o\" title=\"Values set here are company-"
+"specific.\"/>"
+msgstr ""
+
+#. module: account_payment_group_financial_surcharge
+#: model:ir.model.fields,field_description:account_payment_group_financial_surcharge.field_account_payment__card_id
+msgid "Card"
+msgstr ""
+
+#. module: account_payment_group_financial_surcharge
+#: model:ir.model.fields,field_description:account_payment_group_financial_surcharge.field_account_payment__available_card_ids
+#: model:ir.model.fields,field_description:account_payment_group_financial_surcharge.field_account_payment_method_line__available_card_ids
+msgid "Cards"
+msgstr ""
+
+#. module: account_payment_group_financial_surcharge
+#: model:ir.model,name:account_payment_group_financial_surcharge.model_res_config_settings
+msgid "Config Settings"
+msgstr "Opciones de configuración"
+
+#. module: account_payment_group_financial_surcharge
+#: model:ir.model.fields,field_description:account_payment_group_financial_surcharge.field_account_payment_group__financing_surcharge
+msgid "Financing Surcharge"
+msgstr ""
+
+#. module: account_payment_group_financial_surcharge
+#: model:ir.model.fields,field_description:account_payment_group_financial_surcharge.field_account_payment__installment_id
+msgid "Installment plan"
+msgstr ""
+
+#. module: account_payment_group_financial_surcharge
+#: model:ir.model.fields,field_description:account_payment_group_financial_surcharge.field_account_payment__lot_number
+msgid "Lot number"
+msgstr ""
+
+#. module: account_payment_group_financial_surcharge
+#: model:ir.model.fields,field_description:account_payment_group_financial_surcharge.field_account_payment__net_amount
+msgid "Net Amount"
+msgstr ""
+
+#. module: account_payment_group_financial_surcharge
+#: model:ir.model,name:account_payment_group_financial_surcharge.model_account_payment_group
+msgid "Payment Group"
+msgstr "Grupo de Pago"
+
+#. module: account_payment_group_financial_surcharge
+#: model:ir.model,name:account_payment_group_financial_surcharge.model_account_payment_method_line
+msgid "Payment Methods"
+msgstr "Métodos de pago"
+
+#. module: account_payment_group_financial_surcharge
+#: model:ir.model,name:account_payment_group_financial_surcharge.model_account_payment
+msgid "Payments"
+msgstr "Pagos"
+
+#. module: account_payment_group_financial_surcharge
+#: model:ir.model.fields,field_description:account_payment_group_financial_surcharge.field_res_config_settings__product_surcharge_id
+msgid "Product for use in financial surcharge"
+msgstr ""
+
+#. module: account_payment_group_financial_surcharge
+#: model_terms:ir.ui.view,arch_db:account_payment_group_financial_surcharge.res_config_settings_view_form
+msgid "Product to use in financing plans"
+msgstr ""
+
+#. module: account_payment_group_financial_surcharge
+#: model_terms:ir.ui.view,arch_db:account_payment_group_financial_surcharge.res_config_settings_view_form
+msgid ""
+"Select a product that will be used when applying a financing plan in "
+"payments."
+msgstr ""
+
+#. module: account_payment_group_financial_surcharge
+#: model:ir.model.fields,field_description:account_payment_group_financial_surcharge.field_account_payment__tiket_number
+msgid "Tiket number"
+msgstr ""

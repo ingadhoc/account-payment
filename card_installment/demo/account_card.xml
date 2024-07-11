@@ -1,0 +1,50 @@
+<odoo>
+    <data>
+        <record id="card_visa_credit" model="account.card">
+            <field name="installment_ids" eval="[
+            (0, 0, {'name':1,'divisor':1,'installment':1,'surcharge_coefficient':1}),
+            (0, 0, {'name':3,'divisor':3,'installment':3,'surcharge_coefficient':1.2}),
+            (0, 0, {'name':'Ahora 12','divisor':12,'installment':7,'surcharge_coefficient':1.4}),
+            (0, 0, {'name':'Ahora 24','divisor':24,'installment':18,'surcharge_coefficient':1.8}),
+        ]"/>
+        </record>
+        <record id="card_visa_debit" model="account.card">
+            <field name="installment_ids" eval="[
+            (0, 0, {'name':1,'divisor':1,'installment':1,'surcharge_coefficient':1}),
+        ]"/>
+        </record>
+        <record id="card_amex" model="account.card">
+            <field name="installment_ids" eval="[
+            (0, 0, {'name':1,'divisor':1,'installment':1,'surcharge_coefficient':1}),
+            (0, 0, {'name':3,'divisor':3,'installment':3,'surcharge_coefficient':1.205}),
+            (0, 0, {'name':'Ahora 12','divisor':12,'installment':7,'surcharge_coefficient':1.382}),
+            (0, 0, {'name':'Ahora 24','divisor':24,'installment':18,'surcharge_coefficient':1.452}),
+        ]"/>
+        </record>
+        <record id="card_master_credit" model="account.card">
+            <field name="installment_ids" eval="[
+            (0, 0, {'name':1,'divisor':1,'installment':1,'surcharge_coefficient':1}),
+            (0, 0, {'name':3,'divisor':3,'installment':3,'surcharge_coefficient':1.180}),
+            (0, 0, {'name':'Ahora 12','divisor':12,'installment':7,'surcharge_coefficient':1.401}),
+            (0, 0, {'name':'Ahora 24','divisor':24,'installment':18,'surcharge_coefficient':1.422}),
+        ]"/>
+        </record>
+        <record id="card_master_debit" model="account.card">
+            <field name="installment_ids" eval="[
+            (0, 0, {'name':1,'divisor':1,'installment':1,'surcharge_coefficient':1}),
+        ]"/>
+        </record>
+        <record id="card_naranja" model="account.card">
+            <field name="installment_ids" eval="[
+            (0, 0, {'name':1,'divisor':1,'installment':1,'surcharge_coefficient':1}),
+            (0, 0, {'name':3,'divisor':3,'installment':3,'surcharge_coefficient':1.180}),
+            (0, 0, {'name':'Plan Z','divisor':24,'installment':11,'surcharge_coefficient':1.422}),
+        ]"/>
+        </record>
+        <record id="card_maestro" model="account.card">
+            <field name="installment_ids" eval="[
+            (0, 0, {'name':1,'divisor':1,'installment':1,'surcharge_coefficient':1}),
+        ]"/>
+        </record>
+    </data>
+</odoo>

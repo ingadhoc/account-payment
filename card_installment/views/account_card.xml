@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<record id="account_card_tree" model="ir.ui.view">
+		<field name="name">account_card.tree</field>
+		<field name="model">account.card</field>
+		<field name="arch" type="xml">
+			<tree string="Cards">
+				<field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+			</tree>
+		</field>
+	</record>
+	<record id="account_card_search" model="ir.ui.view">
+		<field name="name">account_card.search</field>
+		<field name="model">account.card</field>
+		<field name="arch" type="xml">
+			<search string="Cards">
+				<field name="name"/>
+			</search>
+		</field>
+	</record>
+	<record id="account_card_form" model="ir.ui.view">
+		<field name="name">account_card.form</field>
+		<field name="model">account.card</field>
+		<field name="arch" type="xml">
+			<form string="Cards">
+				<header>
+					<field invisible="1" name="active"/>
+				</header>
+				<sheet>
+					<h1>
+						<field name="name"/>
+					</h1>
+					<group col="4">
+						<field name="company_id" groups="base.group_multi_company"/>
+					</group>
+					<group string="Installment plan">
+						<span>
+							<field name="installment_ids">
+								<tree editable="bottom">
+									<field name="name"/>
+									<field name="installment"/>
+									<field name="divisor" optional="show"/>
+									<field name="surcharge_coefficient"/>
+									<field name="bank_discount" optional="hide"/>
+								</tree>
+							</field>
+						</span>
+					</group>
+				</sheet>
+			</form>
+		</field>
+	</record>
+	<record id="action_account_card" model="ir.actions.act_window">
+		<field name="name">Cards</field>
+		<field name="res_model">account.card</field>
+		<field name="view_mode">tree,form</field>
+	</record>
+	<record id="card_installment_tree" model="ir.ui.view">
+		<field name="name">card_installment.tree</field>
+		<field name="model">account.card.installment</field>
+		<field name="arch" type="xml">
+			<tree editable="bottom">
+				<field name="card_id"/>
+				<field name="name"/>
+				<field name="installment"/>
+				<field name="divisor" optional="hide"/>
+				<field name="surcharge_coefficient"/>
+				<field name="bank_discount"/>
+                <field name="active" widget="boolean_toggle" optional="hide"/>
+			</tree>
+		</field>
+	</record>
+	<record id="card_installment_search" model="ir.ui.view">
+		<field name="name">card_installment.search</field>
+		<field name="model">account.card.installment</field>
+		<field name="arch" type="xml">
+			<search string="Card installment">
+				<field name="card_id"/>
+				<field name="name"/>
+				<field name="installment"/>
+				<field name="divisor"/>
+				<filter context="{'group_by' : 'card_id'}" domain="[]" name="by_card" string="By card"/>
+			</search>
+		</field>
+	</record>
+	<record id="action_card_installment" model="ir.actions.act_window">
+		<field name="name">Installments</field>
+		<field name="res_model">account.card.installment</field>
+		<field name="view_mode">tree</field>
+	</record>
+</odoo>

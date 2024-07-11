@@ -5,10 +5,9 @@
         <field name="model">account.journal</field>
         <field name="inherit_id" ref="account.view_account_journal_form"/>
         <field name="arch" type="xml">
-            <field name="company_id" position="after">
-                <field name="financing_plan_ids" widget="many2many_tags" attrs="{'invisible': [('type', 'not in', ['cash', 'bank'])]}"/>
-            </field>
+            <xpath expr="//field[@name='inbound_payment_method_line_ids']/tree/field[@name='payment_account_id']" position="after">
+                <field name="available_card_ids" widget="many2many_tags"/>
+            </xpath>
         </field>
     </record>
-
 </odoo>

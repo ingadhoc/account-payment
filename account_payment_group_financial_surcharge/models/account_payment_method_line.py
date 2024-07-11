@@ -5,13 +5,14 @@
 from odoo import models, fields
 
 
-class AccountJournal(models.Model):
+class accountPaymentMethodLine(models.Model):
 
-    _inherit = "account.journal"
+    _inherit = "account.payment.method.line"
 
-    financing_plan_ids = fields.Many2many(
-        'account.financing.plan',
-        'account_journal_plans_rel',
-        'journal_id',
-        'financing_plan_id',
+    available_card_ids = fields.Many2many(
+        'account.card',
+        'account_method_line_card_rel',
+        'method_id',
+        'card_id',
+        string='Cards',
     )

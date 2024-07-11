@@ -79,44 +79,40 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
         'Document Type',
         ondelete='cascade',
     )
-    document_sequence_id = fields.Many2one('ir.sequence', compute='_compute_l10n_latam_sequence')
+    l10n_latam_manual_document_number = fields.Boolean(
+        compute='_compute_l10n_latam_manual_document_number', string='Manual Number')
     document_number = fields.Char(
         string='Document Number',
     )
 
     @api.depends('journal_document_type_id')
-    def _compute_l10n_latam_sequence(self):
+    def _compute_l10n_latam_manual_document_number(self):
         for rec in self:
             refund = rec.env['account.move'].new({
-                'type': self.get_invoice_vals().get('type'),
+                'move_type': self.get_invoice_vals().get('move_type'),
                 'journal_id': rec.journal_id.id,
                 'partner_id': rec.payment_group_id.partner_id.id,
                 'company_id': rec.payment_group_id.company_id.id,
                 'l10n_latam_document_type_id': rec.journal_document_type_id.id,
             })
-            rec.document_sequence_id = refund._get_document_type_sequence()
+            rec.l10n_latam_manual_document_number = refund._is_manual_document_number()
 
     @api.onchange('journal_id')
     def _onchange_journal_id(self):
         if self.journal_id.l10n_latam_use_documents:
             refund = self.env['account.move'].new({
-                'type': self.get_invoice_vals().get('type'),
+                'move_type': self.get_invoice_vals().get('move_type'),
                 'journal_id': self.journal_id.id,
                 'partner_id': self.payment_group_id.partner_id.id,
                 'company_id': self.payment_group_id.company_id.id,
             })
-            self.journal_document_type_id = refund.l10n_latam_document_type_id
+            if self._context.get('internal_type') == 'debit_note':
+                document_types = refund.l10n_latam_available_document_type_ids.filtered(lambda x: x.internal_type == 'debit_note')
+                self.journal_document_type_id = document_types and document_types[0]._origin or refund.l10n_latam_document_type_id
+            else:
+                self.journal_document_type_id = refund.l10n_latam_document_type_id
             return {'domain': {
                 'journal_document_type_id': [('id', 'in', refund.l10n_latam_available_document_type_ids.ids)]}}
-
-    def get_invoice_vals(self):
-        invoice_vals = super(
-            AccountPaymentGroupInvoiceWizard, self).get_invoice_vals()
-        invoice_vals.update({
-            'l10n_latam_document_type_id': self.journal_document_type_id.id,
-            'l10n_latam_document_number': self.document_number,
-        })
-        return invoice_vals
 
     @api.onchange('product_id')
     def change_product(self):
@@ -127,9 +123,8 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
             taxes = self.product_id.taxes_id
         company = self.company_id or self.env.company
         taxes = taxes.filtered(lambda r: r.company_id == company)
-        self.tax_ids = self.payment_group_id.partner_id.with_context(
-            force_company=company.id).property_account_position_id.map_tax(
-                taxes)
+        self.tax_ids = self.payment_group_id.partner_id.with_company(
+            company).property_account_position_id.map_tax(taxes)
 
     @api.onchange('amount_untaxed', 'tax_ids')
     def _inverse_amount_untaxed(self):
@@ -205,22 +200,24 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
             invoice_type += 'invoice'
 
         return {
-            'invoice_payment_ref': self.description,
+            'ref': self.description,
             'date': self.date,
             'invoice_date': self.invoice_date,
             'invoice_origin': _('Payment id %s') % payment_group.id,
             'journal_id': self.journal_id.id,
             'invoice_user_id': payment_group.partner_id.user_id.id,
             'partner_id': payment_group.partner_id.id,
-            'type': invoice_type,
+            'move_type': invoice_type,
+            'l10n_latam_document_type_id': self.journal_document_type_id.id,
+            'l10n_latam_document_number': self.document_number,
         }
 
     def confirm(self):
         self.ensure_one()
 
-        self = self.with_context(company_id=self.company_id.id, force_company=self.company_id.id)
+        self = self.with_company(self.company_id).with_context(company_id=self.company_id.id)
         invoice_vals = self.get_invoice_vals()
-        line_vals =  {
+        line_vals = {
             'product_id': self.product_id.id,
             'price_unit': self.amount_untaxed,
             'tax_ids': [(6, 0, self.tax_ids.ids)],
@@ -232,3 +229,11 @@ class AccountPaymentGroupInvoiceWizard(models.TransientModel):
         invoice.action_post()
 
         self.payment_group_id.to_pay_move_line_ids += (invoice.open_move_line_ids)
+
+    @api.onchange('document_number', 'journal_document_type_id')
+    def _onchange_document_number(self):
+        if self.journal_document_type_id:
+            document_number = self.journal_document_type_id._format_document_number(
+                self.document_number)
+            if self.document_number != document_number:
+                self.document_number = document_number

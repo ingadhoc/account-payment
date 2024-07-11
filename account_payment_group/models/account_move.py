@@ -32,6 +32,11 @@ class AccountMove(models.Model):
         compute_sudo=True,
     )
 
+    payment_group_id = fields.Many2one(
+        related='payment_id.payment_group_id',
+        store=True,
+    )
+
     @api.constrains('name', 'journal_id', 'state')
     def _check_unique_sequence_number(self):
         payment_group_moves = self.filtered(
@@ -59,7 +64,7 @@ class AccountMove(models.Model):
             raise UserError(_('Nothing to be paid on selected entries'))
         to_pay_partners = self.mapped('commercial_partner_id')
         if len(to_pay_partners) > 1:
-            raise UserError(_('Selected recrods must be of the same partner'))
+            raise UserError(_('Selected records must be of the same partner'))
 
         return {
             'name': _('Register Payment'),
@@ -77,6 +82,11 @@ class AccountMove(models.Model):
                 'default_company_id': self.company_id.id,
             },
         }
+
+    def action_register_payment(self):
+        ''' This method is extended to work like action_register_payment_group() and not like the native odoo method,
+        the register payment button will act like the "Registrar Pago" server action '''
+        return self.action_register_payment_group()
 
     def action_post(self):
         res = super(AccountMove, self).action_post()
@@ -99,7 +109,7 @@ class AccountMove(models.Model):
                     partner_type = 'customer'
 
                 pay_context = {
-                    'to_pay_move_line_ids': (rec.open_move_line_ids.ids),
+                    'default_to_pay_move_line_ids': (rec.open_move_line_ids.ids),
                     'default_company_id': rec.company_id.id,
                     'default_partner_type': partner_type,
                 }
@@ -107,7 +117,8 @@ class AccountMove(models.Model):
                 payment_group = rec.env[
                     'account.payment.group'].with_context(
                         pay_context).create({
-                            'payment_date': rec.invoice_date
+                            'payment_date': rec.invoice_date,
+                            'partner_id': rec.commercial_partner_id.id,
                         })
                 # el difference es positivo para facturas (de cliente o
                 # proveedor) pero negativo para NC.
@@ -141,7 +152,7 @@ class AccountMove(models.Model):
                     'amount': abs(payment_group.payment_difference),
                     'journal_id': pay_journal.id,
                     'payment_method_id': payment_method.id,
-                    'payment_date': rec.invoice_date,
+                    'date': rec.invoice_date,
                 })
                 # if validate_payment:
                 payment_group.post()
@@ -152,7 +163,7 @@ class AccountMove(models.Model):
         else:
             action = self.env.ref('account_payment_group.action_account_payments_group')
 
-        result = action.read()[0]
+        result = action.sudo().read()[0]
 
         if len(self.payment_group_ids) != 1:
             result['domain'] = [('id', 'in', self.payment_group_ids.ids)]
@@ -172,3 +183,47 @@ class AccountMove(models.Model):
     def button_draft(self):
         self.filtered(lambda x: x.state == 'posted' and x.pay_now_journal_id).write({'pay_now_journal_id': False})
         return super().button_draft()
+
+    def _get_last_sequence_domain(self, relaxed=False):
+        """ para transferencias no queremos que se enumere con el ultimo numero de asiento porque podria ser un
+        pago generado por un grupo de pagos y en ese caso el numero viene dado por el talonario de recibo/pago.
+        Para esto creamos campo related stored a payment_group_id de manera de que un asiento sepa si fue creado
+        o no desde unpaymetn group
+        TODO: tal vez lo mejor sea cambiar para no guardar mas numero de recibo en el asiento, pero eso es un cambio
+        gigante
+        """
+        if self.journal_id.type in ('cash', 'bank') and not self.payment_group_id:
+            # mandamos en contexto que estamos en esta condicion para poder meternos en el search que ejecuta super
+            # y que el pago de referencia que se usa para adivinar el tipo de secuencia sea un pago sin tipo de
+            # documento
+            where_string, param = super(
+                AccountMove, self.with_context(without_payment_group=True))._get_last_sequence_domain(relaxed)
+            where_string += " AND payment_group_id is Null"
+        else:
+            where_string, param = super(AccountMove, self)._get_last_sequence_domain(relaxed)
+        return where_string, param
+
+    @api.model
+    def _search(self, args, offset=0, limit=None, order=None, count=False, access_rights_uid=None):
+        if self._context.get('without_payment_group'):
+            args += [('payment_group_id', '=', False)]
+        return super()._search(args, offset=offset, limit=limit, order=order, count=count, access_rights_uid=access_rights_uid)
+
+    @api.model
+    def _deduce_sequence_number_reset(self, name):
+        """ Cuando tenemos un move asociado al payment group queremos que el move tenga el mismo nombre que el del payment
+        group. Esto para que en cualquier reporte aparezca este nombre de referencia.
+
+        En verion 15 hay una constraint nueva _constrains_date_sequence que trae un problema. cuando vamos a validar un
+        account.move revisa el nombre/secuencia que le fue asignado con un regex para encontrar algo parecido a un
+        año y lo compara con el año de la fecha del move y si son diferentes años no permite continuar. Ejemplo:
+        Tenemos un pago de proveedor que se llama OP - 2022 - 00012345 y lo validamos y generamos los account.move en el
+        año 2023. El resultado es que nos salta la excpeción indicando que la secuencia que queremos asignar al move no
+        es valida y debe corresponder al año.
+
+        Para fines del account.move no queremos que esto aplique. No importa que nombre utilice el payment.group queremos
+        que al validarse se traslade el nombre a los move generados. La modificacion de este metodo logra evitar esa
+        comparacion de fechas"""
+        if self.payment_group_id:
+            return 'never'
+        return super()._deduce_sequence_number_reset(name)

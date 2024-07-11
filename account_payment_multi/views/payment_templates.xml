@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="payment_checkout_inherit" inherit_id="payment.checkout">
+        <xpath expr="//form[@name='o_payment_checkout']" position="attributes">
+            <attribute name="t-att-data-invoice-ids">invoice_ids</attribute>
+        </xpath>
+    </template>
+
+    <template id="payment_manage_inherit" inherit_id="payment.manage">
+        <xpath expr="//form[@name='o_payment_manage']" position="attributes">
+            <attribute name="t-att-data-invoice-ids">invoice_ids</attribute>
+        </xpath>
+    </template>
+</odoo>

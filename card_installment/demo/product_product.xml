@@ -1,0 +1,9 @@
+<odoo>
+    <data>
+        <record id="product_product_financial" model="product.product">
+            <field name="name">Financial surchage</field>
+            <field name="categ_id" ref="product.product_category_3"/>
+            <field name="detailed_type">service</field>
+        </record>
+    </data>
+</odoo>

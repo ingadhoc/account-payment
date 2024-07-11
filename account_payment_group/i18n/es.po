@@ -4,38 +4,39 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2022
+# Nicolas Mac Rouillon <nmr@ingadhoc.com>, 2022
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 15.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-25 13:22+0000\n"
+"POT-Creation-Date: 2022-09-14 13:16+0000\n"
 "PO-Revision-Date: 2022-04-19 13:51+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2022\n"
+"Last-Translator: Nicolas Mac Rouillon <nmr@ingadhoc.com>, 2022\n"
 "Language-Team: Spanish (https://www.transifex.com/adhoc/teams/133229/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Language: es\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
 
 #. module: account_payment_group
 #: code:addons/account_payment_group/models/account_chart_template.py:0
 #, python-format
 msgid "%s Customer Receipts"
-msgstr ""
+msgstr "%s Recibos de Cliente"
 
 #. module: account_payment_group
 #: code:addons/account_payment_group/models/account_chart_template.py:0
 #, python-format
 msgid "%s Supplier Payments"
-msgstr ""
+msgstr "%s Pagos de Proveedor"
 
 #. module: account_payment_group
 #: model:ir.actions.report,print_report_name:account_payment_group.action_report_payment_group
 msgid ""
 "(object.partner_type == 'supplier' and 'Orden de pago' or 'Recibo') + ' ' + "
-"object.document_number"
+"(object.document_number or 'Borrador')"
 msgstr ""
 
 #. module: account_payment_group
@@ -227,9 +228,14 @@ msgid "Automatic"
 msgstr "Automático"
 
 #. module: account_payment_group
+#: model:ir.model.fields,field_description:account_payment_group.field_account_payment__available_journal_ids
+msgid "Available Journal"
+msgstr ""
+
+#. module: account_payment_group
 #: model:ir.ui.menu,name:account_payment_group.menu_finance_bank_and_cash
 msgid "Bank and Cash"
-msgstr ""
+msgstr "Caja y Banco"
 
 #. module: account_payment_group
 #: model_terms:ir.ui.view,arch_db:account_payment_group.view_account_payment_group_form
@@ -1153,7 +1159,7 @@ msgstr "Importe sin impuestos"
 #. module: account_payment_group
 #: model:ir.model.fields,field_description:account_payment_group.field_account_payment_group_invoice_wizard__use_documents
 msgid "Use Documents?"
-msgstr ""
+msgstr "¿Usar Documentos?"
 
 #. module: account_payment_group
 #: model:ir.model.fields,help:account_payment_group.field_res_company__double_validation

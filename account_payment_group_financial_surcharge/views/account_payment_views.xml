@@ -6,12 +6,24 @@
         <field name="model">account.payment</field>
         <field name="inherit_id" ref="account.view_account_payment_form"/>
         <field name="arch" type="xml">
-            <field name="journal_id" position="after">
-                <field name="available_financing_plan_ids" invisible="1"/>
-                <field name="financing_plan_id" domain="[('id', 'in', available_financing_plan_ids)]" attrs="{'invisible':['|', ('available_financing_plan_ids', '=', []), ('payment_type', '!=', 'inbound')], 'required': [('available_financing_plan_ids', '!=', []), ('payment_type', '=', 'inbound')]}"/>
+            <field name="payment_method_line_id" position="after">
+                <field name="available_card_ids" invisible="1"/>
+                <field
+                    name="card_id"
+                    domain="[('id', 'in', available_card_ids)]"
+                    attrs="{'invisible':['|', ('available_card_ids', '=', []),
+                                              ('payment_type', '!=', 'inbound')],
+                            'required': [('available_card_ids', '!=', []), ('payment_type', '=', 'inbound')]}"
+                />
+                <field
+                    name="installment_id"
+                    domain="[('card_id', '=', card_id)]"
+                    attrs="{'invisible':['|', ('card_id', '=', False),
+                                              ('payment_type', '!=', 'inbound')],
+                            'required': [('card_id', '!=', False), ('payment_type', '=', 'inbound')]}"/>
             </field>
             <label for="amount" position="before">
-                <field name="net_amount" attrs="{'invisible':['|', ('available_financing_plan_ids', '=', []), ('payment_type', '!=', 'inbound')]}"/>
+                <field name="net_amount" attrs="{'invisible':['|', ('available_card_ids', '=', []), ('payment_type', '!=', 'inbound')]}"/>
             </label>
         </field>
     </record>
