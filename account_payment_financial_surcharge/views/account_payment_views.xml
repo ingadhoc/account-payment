@@ -11,20 +11,21 @@
                 <field
                     name="card_id"
                     domain="[('id', 'in', available_card_ids)]"
-                    attrs="{'invisible':['|', ('available_card_ids', '=', []),
-                                              ('payment_type', '!=', 'inbound')],
-                            'required': [('available_card_ids', '!=', []), ('payment_type', '=', 'inbound')]}"
+                    invisible="not available_card_ids or payment_type != 'inbound'"
+                    required="available_card_ids != [] and payment_type == 'inbound'"
                 />
                 <field
                     name="installment_id"
                     domain="[('card_id', '=', card_id)]"
-                    attrs="{'invisible':['|', ('card_id', '=', False),
-                                              ('payment_type', '!=', 'inbound')],
-                            'required': [('card_id', '!=', False), ('payment_type', '=', 'inbound')]}"/>
+                    invisible="not card_id or payment_type !='inbound'"
+                    required="card_id and payment_type =='inbound'"/>
+
+                <field name="net_amount" 
+                    invisible="not installment_id or payment_type != 'inbound'"/>
+
+                <field name="financing_surcharge" invisible="not financing_surcharge"/>
+
             </field>
-            <label for="amount" position="before">
-                <field name="net_amount" attrs="{'invisible':['|', ('available_card_ids', '=', []), ('payment_type', '!=', 'inbound')]}"/>
-            </label>
         </field>
     </record>
 
