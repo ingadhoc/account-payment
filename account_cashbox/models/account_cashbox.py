@@ -24,7 +24,9 @@ class AccountCashbox(models.Model):
         help="If you do not restrict users, any user with access can operate the cash register. The restriction "
         "does not apply to admin users")
     allowed_res_users_ids = fields.Many2many(
-        'res.users', relation='account_cashbox_users_rel', column1='cashbox_id', column2='user_id', string="Allowed Users")
+        'res.users', relation='account_cashbox_users_rel', column1='cashbox_id', column2='user_id', string="Allowed Users",
+        compute='_compute_allowed_res_users_ids', store=True, readonly=False
+    )
     cash_control_journal_ids = fields.Many2many('account.journal', string='Journals with Open / Close control')
     session_ids = fields.One2many('account.cashbox.session', 'cashbox_id')
     sequence_id = fields.Many2one('ir.sequence', help="Numbering of cash sessions.", copy=False,check_company=True,)
@@ -40,6 +42,12 @@ class AccountCashbox(models.Model):
             # sessions ordered by id desc
             cashbox.current_session_id = session and session[0].id or False
             cashbox.current_concurrent_session_ids = session and session.ids or False
+   
+    @api.depends('restrict_users')
+    def _compute_allowed_res_users_ids(self):
+        for record in self:
+            if not record.restrict_users:
+                record.allowed_res_users_ids = False      
 
     def action_open_cashbox(self):
         self.ensure_one()
