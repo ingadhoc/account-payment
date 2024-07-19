@@ -39,7 +39,7 @@
                 <field name="use_payment_pro" invisible="True"/>
             </form>
             <field name="journal_id" position="before">
-                <field name="company_id" options="{'no_create': True}" domain="[('id', 'in', allowed_company_ids)]" groups="base.group_multi_company" readonly="state != 'draft'"/>
+                <field name="company_id" options="{'no_create': True}" domain="[('id', 'in', allowed_company_ids)]" groups="base.group_multi_company" readonly="state != 'draft' or context.get('default_company_id')"/>
             </field>
             <xpath expr="//div[@name='button_box']" position="after">
                 <span class="badge rounded-pill text-bg-warning float-end fs-6" invisible="not requiere_double_validation">

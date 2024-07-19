@@ -170,20 +170,20 @@ class AccountPayment(models.Model):
                 'withholdable_advanced_amount', 'company_id', 'to_pay_amount']
 
     def write(self, vals):
-        if self.filtered('is_approved'):
-            if set(vals) & set(self._get_confimed_blocked_field()):
-                raise UserError(_('Your are trying to modify a protected field on an approved payment. Set it back to edit if you want to make this modification.'))
-        if self.company_id.use_payment_pro:    
-            # Lo siguiente lo evaluamos para evitar la validacion de odoo de 
-            # https://github.com/odoo/odoo/blob/b6b90636938ae961c339807ea893cabdede9f549/addons/account/models/account_move.py#L2476
-            # y permitirnos realizar la modificacion del journal.
-            if 'journal_id' in vals and self.journal_id.id != vals['journal_id']:
-                self.move_id.sequence_number = 0
+        if self.filtered('is_approved') and set(self) & set(self._get_confimed_blocked_field()):
+            raise UserError(_('Your are trying to modify a protected field on an approved payment. Set it back to edit if you want to make this modification.'))
+        for rec in self:            
+            if rec.company_id.use_payment_pro or ('company_id' in vals and rec.env['res.company'].browse(vals['company_id']).use_payment_pro):
+                # Lo siguiente lo evaluamos para evitar la validacion de odoo de 
+                # https://github.com/odoo/odoo/blob/b6b90636938ae961c339807ea893cabdede9f549/addons/account/models/account_move.py#L2476
+                # y permitirnos realizar la modificacion del journal.
+                if 'journal_id' in vals and rec.journal_id.id != vals['journal_id']:
+                    rec.move_id.sequence_number = 0
 
-            # Lo siguiente lo agregamos para primero obligarnos a cambiar el journal_id y no la company_id. Una vez cambiado el journal_id
-            # la company_id se cambia correctamente.
-            if 'company_id' in vals and 'journal_id' in vals:
-                self.move_id.journal_id = vals['journal_id']      
+                # Lo siguiente lo agregamos para primero obligarnos a cambiar el journal_id y no la company_id. Una vez cambiado el journal_id
+                # la company_id se cambia correctamente.
+                if 'company_id' in vals and 'journal_id' in vals:
+                    rec.move_id.journal_id = vals['journal_id']     
         return super().write(vals)
 
     @api.depends('company_id.double_validation', 'partner_type')
@@ -220,8 +220,11 @@ class AccountPayment(models.Model):
     #             pay.payment_type == 'inbound' else [('outbound_payment_method_line_ids', '!=', False)]
     #         pay.available_journal_ids = journals.filtered_domain(filtered_domain)
 
+    @api.onchange('company_id')
     def _compute_available_journal_ids(self):
-        # Cambiamos el metodo para que traiga los journal de la compañia sobre la cual se esta imputando el pago
+        # Cambiamos el metodo para que traiga los journals de la compañia sobre la cual se esta imputando el pago. 
+        # Le agregamos el onchange de company para asegurarnos de que los available journals se computen siempre 
+        # que se produce un cambio de compañia
         self.env.company = self.company_id
         super()._compute_available_journal_ids()
 
@@ -488,7 +491,10 @@ class AccountPayment(models.Model):
 
         # Se recomputan las lienas solo si la deuda que esta seleccionada solo si
         # cambio el partner, compania o partner_type
-        for rec in self.filtered(lambda x: x.company_id.use_payment_pro==True):
+
+        with_payment_pro = self.filtered(lambda x: x.company_id.use_payment_pro)
+        (self - with_payment_pro).to_pay_move_line_ids = [Command.clear()]
+        for rec in with_payment_pro:
             if rec.partner_id != rec._origin.partner_id or rec.partner_type != rec._origin.partner_type or \
                     rec.company_id != rec._origin.company_id:
                 rec.add_all()
@@ -507,7 +513,7 @@ class AccountPayment(models.Model):
 
     def add_all(self):
         for rec in self:
-            rec.to_pay_move_line_ids = [Command.clear(), Command.set(self.env['account.move.line'].search(rec._get_to_pay_move_lines_domain()).ids)]
+            rec.to_pay_move_line_ids = [Command.clear(), Command.set(self.env['account.move.line'].search(rec.with_context(active_ids=False)._get_to_pay_move_lines_domain()).ids)]
 
     def remove_all(self):
         self.to_pay_move_line_ids = False
@@ -543,3 +549,7 @@ class AccountPayment(models.Model):
             specification['matched_move_line_ids']['context'].update({'matched_payment_ids': self._ids})
         return super().web_read(specification)
     
+    @api.onchange('selected_debt')
+    def onchange_selected_debt(self):
+        for rec in self:
+            rec.amount = rec.selected_debt
