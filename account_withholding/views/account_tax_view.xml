@@ -48,4 +48,19 @@
 
     <menuitem action="action_withholding_tax_form" id="menu_withholding_tax_form" parent="account.root_payment_menu" sequence="1"/>
 
+    <record id="view_tax_repartition_line_tree_inherit" model="ir.ui.view">
+        <field name="name">account.tax.repartition.line.tree.inherit</field>
+        <field name="model">account.tax.repartition.line</field>
+        <field name="inherit_id" ref="account.tax_repartition_line_tree"/>
+        <field name="arch" type="xml">
+            <field name="account_id" position="attributes">
+                <attribute name="domain">
+                    [('deprecated', '=', False), 
+                    ('company_id', '=', company_id), 
+                    ('account_type', 'in', ['asset_current', 'liability_current']),
+                    ('reconcile', '=', False)]
+                </attribute>
+            </field>
+        </field>
+    </record>
 </odoo>
