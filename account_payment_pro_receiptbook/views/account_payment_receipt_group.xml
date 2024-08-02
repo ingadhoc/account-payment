@@ -35,6 +35,7 @@
         <field name="model">account.payment.receiptbook</field>
         <field name="arch" type="xml">
             <form string="Receipt Books">
+                <field name="company_id" invisible="True"/>
                 <sheet string="Receipt Books">
                     <group>
                         <group>

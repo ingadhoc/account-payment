@@ -13,6 +13,8 @@ class AccountPaymentReceiptbook(models.Model):
     _description = 'Account payment Receiptbook'
     # analogo a account.journal.document.type pero para pagos
     _order = 'sequence asc'
+    _check_company_auto = True
+    _check_company_domain = models.check_company_domain_parent_of
 
     report_partner_id = fields.Many2one(
         'res.partner',
@@ -27,7 +29,7 @@ class AccountPaymentReceiptbook(models.Model):
     sequence = fields.Integer(
         'Sequence',
         help="Used to order the receiptbooks",
-        default=10,
+        default=10
     )
     name = fields.Char(
         'Name',
