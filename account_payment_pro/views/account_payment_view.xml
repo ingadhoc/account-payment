@@ -41,6 +41,9 @@
             <field name="journal_id" position="before">
                 <field name="company_id" options="{'no_create': True}" domain="[('id', 'in', allowed_company_ids)]" groups="base.group_multi_company" readonly="state != 'draft' or context.get('default_company_id')"/>
             </field>
+            <field name="journal_id" position="after">
+                <div class="mb-3"></div><div class="mb-3"></div>
+            </field>
             <xpath expr="//div[@name='button_box']" position="after">
                 <span class="badge rounded-pill text-bg-warning float-end fs-6" invisible="not requiere_double_validation">
                     <i class="fa fa-fw fa-remove" aria-label="Requiere double validation" title="double_validation" role="img"/>
@@ -68,20 +71,23 @@
                 <div name="amount_company_currency" class="o_row" invisible="not other_currency">
                     x <field name="exchange_rate"/>
  =                <field name="amount_company_currency" readonly="state != 'draft'"/>
+                
             </div>
+                <field name="payment_total"/>
+                <field name="payment_difference" invisible="state not in ('draft') or payment_difference == 0.0"/>
+                <field name="payment_difference_handling" string="Difference Handling" widget="radio" invisible="payment_difference == 0.0"/>
+                <div class="mb-3"></div><div class="mb-3"></div>
         </div>
         <group name="group2" position="after">
             <group name="group3" invisible="is_internal_transfer or not use_payment_pro">
-                <field name="selected_debt" invisible="state not in ('draft')"/>
+                
                 <field name="matched_amount" invisible="state != 'posted'"/>
                 <field name="amount_residual" invisible="state != 'posted'"/>
                 <field name="unreconciled_amount" invisible="state not in ['draft'] or partner_type != 'supplier'" readonly="state not in ['draft']"/>
                 <field name="to_pay_amount" invisible="state not in ['draft'] or partner_type != 'supplier'" readonly="state not in ['draft']"/>
             </group>
             <group name="group4" invisible="is_internal_transfer or not use_payment_pro">
-                <field name="payment_total"/>
-                <field name="payment_difference" invisible="state not in ('draft')"/>
-                <field name="payment_difference_handling" string="Difference Handling" widget="radio" invisible="payment_difference == 0.0"/>
+
                 <field name="writeoff_account_id" string="Post Difference In" options="{'no_create': True}" required="payment_difference_handling == 'reconcile'" invisible="payment_difference_handling == 'open' or payment_difference == 0.0"/>
                 <field name="writeoff_label" required="payment_difference_handling == 'reconcile'" invisible="payment_difference_handling == 'open' or payment_difference == 0.0"/>
             </group>
@@ -89,7 +95,10 @@
         <sheet>
             <notebook invisible="is_internal_transfer or not use_payment_pro">
                 <page string="Debts" invisible="state != 'draft'">
-                    <p>
+                    <label for="selected_debt" string="Selected Debt" invisible="state not in ('draft')"/>
+                    <field name="selected_debt" invisible="state not in ('draft')"/>
+        
+                    <p class="mt-3">
                             Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched.
                     </p>
                     <button name="add_all" string="Add All / Refresh" invisible="state != 'draft'" type="object"/>
