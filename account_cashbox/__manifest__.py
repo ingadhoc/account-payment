@@ -4,17 +4,15 @@
 {
     "name": "Cashbox management",
     "summary": "Introduces concept cashbox and accounting journal sessions",
-    "version": "17.0.1.0.0",
+    "version": "17.0.1.1.0",
     "category": "Accounting",
     "website": "www.adhoc.com.ar",
     "author": "juanpgarza, ADHOC SA",
     "license": "AGPL-3",
     "depends": [
         "account_ux",
-        # la dependencia con payment group es solo para forzar utilizar el metodo parcheado
-        # _compute_available_journal_ids. En v17 depreciariamos payment group y ya no seria necesario
-        # ademas, al depender de payment group, por ahora no implementamos los wizard de payment register
-        # ya que los mismos no se usan con payment group
+        # la dependencia con payment pro es solo para forzar utilizar el metodo parcheado
+        # _compute_available_journal_ids
         ],
     "demo": [
         'demo/cashbox_demo.xml',
@@ -28,6 +26,7 @@
         'views/account_payment.xml',
         'views/menuitem.xml',
         'wizards/account_cashbox_payment_import.xml',
+        'wizards/account_payment_register.xml',
         ],
     'installable': True,
     "application": False,
