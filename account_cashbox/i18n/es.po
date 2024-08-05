@@ -3,15 +3,15 @@
 # 	* account_cashbox
 # 
 # Translators:
-# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2023
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-29 12:46+0000\n"
+"POT-Creation-Date: 2024-07-29 12:01+0000\n"
 "PO-Revision-Date: 2023-12-28 20:16+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2023\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2024\n"
 "Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -82,13 +82,19 @@ msgid "Allow Concurrent Sessions"
 msgstr "Permitir sesiones recurrentes"
 
 #. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__allow_dates_edition
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__allow_dates_edition
+msgid "Allow Dates Edition"
+msgstr ""
+
+#. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_res_users__allowed_cashbox_ids
 msgid "Allowed Cashbox"
 msgstr "Cajas permitidas"
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__allowed_res_users_ids
-msgid "Allowed Res Users"
+msgid "Allowed Users"
 msgstr "Usuarios permitidos"
 
 #. module: account_cashbox
@@ -240,12 +246,6 @@ msgid "Current Sessions"
 msgstr "Sesiones actuales"
 
 #. module: account_cashbox
-#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_search
-#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_tree
-msgid "Description"
-msgstr "Descripción"
-
-#. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__display_name
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_payment_import__display_name
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__display_name
@@ -264,8 +264,8 @@ msgid "Edit config"
 msgstr "Editar configuración"
 
 #. module: account_cashbox
-#: model:ir.model.constraint,message:account_cashbox.constraint_account_cashbox_session_uniq_name
-msgid "El nombre de esta sesión de caja debe ser único !"
+#: model:ir.model.constraint,message:account_cashbox.constraint_account_cashbox_session_uniq_name_cashbox
+msgid "El nombre de esta sesión de caja debe ser único!"
 msgstr ""
 
 #. module: account_cashbox
@@ -330,6 +330,14 @@ msgstr "Si está marcado, hay nuevos mensajes que requieren su atención."
 #: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__message_has_sms_error
 msgid "If checked, some messages have a delivery error."
 msgstr "Si se encuentra marcado, algunos mensajes tienen error de envío."
+
+#. module: account_cashbox
+#: model:ir.model.fields,help:account_cashbox.field_account_cashbox__restrict_users
+#: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__restrict_users
+msgid ""
+"If you do not restrict users, any user with access can operate the cash "
+"register. The restriction does not apply to admin users"
+msgstr ""
 
 #. module: account_cashbox
 #: model:ir.actions.act_window,name:account_cashbox.cashbox_payent_import_action
@@ -536,6 +544,12 @@ msgstr "Requiere Sesión de Caja"
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__activity_user_id
 msgid "Responsible User"
 msgstr "Usuario responsable"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__restrict_users
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__restrict_users
+msgid "Restrict Users"
+msgstr ""
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__message_has_sms_error
