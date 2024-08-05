@@ -218,7 +218,7 @@ class AccountMove(models.Model):
         return super(AccountMove, self - payments)._compute_l10n_latam_document_type()
 
     def _compute_made_sequence_hole(self):
-        pay_group_recs = self.filtered(lambda x: x.journal_id.type not in ('bank', 'cash') and x.payment_group_id)
+        pay_group_recs = self.filtered(lambda x: x.journal_id.type in ('bank', 'cash') and x.payment_group_id)
         pay_group_recs.made_sequence_hole = False
         super(AccountMove, self - pay_group_recs)._compute_made_sequence_hole()
 
