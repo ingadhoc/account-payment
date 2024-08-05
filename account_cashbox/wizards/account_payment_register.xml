@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_payment_register_form" model="ir.ui.view">
+        <field name="name">account.payment.register.form</field>
+        <field name="model">account.payment.register</field>
+        <field name="inherit_id" ref="account.view_account_payment_register_form"/>
+        <field name="arch" type="xml">
+            <field name="journal_id" position="before">
+                <field name="requiere_account_cashbox_session" invisible="1"/>
+                <!-- filtramos por usuario para que a los admin solo les aparezcan en donde estan involucrados. Total siendo admin se pueden agregar en la que quieran -->
+                <field
+                    name="cashbox_session_id"
+                    domain="[('state', '=', 'opened'), ('company_id', '=', company_id), '|', ('user_ids', '=', uid), ('user_ids', '=', False)]"
+                    required="requiere_account_cashbox_session"
+                />
+            </field>
+
+        </field>
+    </record>
+</odoo>
