@@ -35,6 +35,6 @@ class AccountMove(models.Model):
         return super()._search(domain, offset=offset, limit=limit, order=order, access_rights_uid=access_rights_uid)
 
     def _compute_made_sequence_hole(self):
-        receiptbook_recs = self.filtered(lambda x: x.receiptbook_id and x.journal_id.type in ('bank', 'cash'))
+        receiptbook_recs = self.filtered(lambda x: x.receiptbook_id)
         receiptbook_recs.made_sequence_hole = False
         super(AccountMove, self - receiptbook_recs)._compute_made_sequence_hole()
