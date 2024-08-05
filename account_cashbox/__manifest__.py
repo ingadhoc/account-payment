@@ -4,7 +4,7 @@
 {
     "name": "Cashbox management",
     "summary": "Introduces concept cashbox and accounting journal sessions",
-    "version": "16.0.1.3.1",
+    "version": "16.0.1.4.0",
     "category": "Accounting",
     "website": "www.adhoc.com.ar",
     "author": "juanpgarza, ADHOC SA",
@@ -28,6 +28,7 @@
         'views/account_payment.xml',
         'views/menuitem.xml',
         'wizards/account_cashbox_payment_import.xml',
+        'wizards/account_payment_register.xml',
         ],
     "installable": True,
     "application": False,
