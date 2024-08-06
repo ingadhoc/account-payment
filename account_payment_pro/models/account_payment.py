@@ -497,7 +497,7 @@ class AccountPayment(models.Model):
         for rec in with_payment_pro:
             if rec.partner_id != rec._origin.partner_id or rec.partner_type != rec._origin.partner_type or \
                     rec.company_id != rec._origin.company_id:
-                rec.add_all()
+                rec._add_all()
 
     def _get_to_pay_move_lines_domain(self):
         self.ensure_one()
@@ -511,9 +511,12 @@ class AccountPayment(models.Model):
             domain.append(('move_id.line_ids','in',self.env.context.get('active_ids')))
         return domain
 
-    def add_all(self):
+    def _add_all(self):
         for rec in self:
-            rec.to_pay_move_line_ids = [Command.clear(), Command.set(self.env['account.move.line'].search(rec.with_context(active_ids=False)._get_to_pay_move_lines_domain()).ids)]
+            rec.to_pay_move_line_ids = [Command.clear(), Command.set(self.env['account.move.line'].search(rec._get_to_pay_move_lines_domain()).ids)]
+
+    def action_add_all(self):
+        self.with_context(active_ids=False)._add_all()
 
     def remove_all(self):
         self.to_pay_move_line_ids = False
