@@ -92,7 +92,7 @@
                     <p>
                             Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched.
                     </p>
-                    <button name="add_all" string="Add All / Refresh" invisible="state != 'draft'" type="object"/>
+                    <button name="action_add_all" string="Add All / Refresh" invisible="state != 'draft'" type="object"/>
                     <button name="remove_all" string="Remove All" invisible="state != 'draft'" type="object"/>
                     <button name="%(action_account_payment_invoice_wizard)d" string="+ Debit Note" invisible="state != 'draft'" type="action" context="{'internal_type': 'debit_note'}"/>
                     <button name="%(action_account_payment_invoice_wizard)d" string="+ Credit Note" invisible="state != 'draft'" context="{'refund': True}" type="action"/>
