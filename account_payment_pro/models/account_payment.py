@@ -23,7 +23,6 @@ class AccountPayment(models.Model):
         copy=False,
     )
     exchange_rate = fields.Float(
-        string='Exchange Rate',
         compute='_compute_exchange_rate',
         # readonly=False,
         # inverse='_inverse_exchange_rate',
@@ -39,7 +38,6 @@ class AccountPayment(models.Model):
         currency_field='company_currency_id', compute='_compute_amount_company_currency_signed_pro',)
     payment_total = fields.Monetary(
         compute='_compute_payment_total',
-        string='Payment Total',
         tracking=True,
         currency_field='company_currency_id'
     )
@@ -64,8 +62,6 @@ class AccountPayment(models.Model):
         currency_field='currency_id',
     )
     selected_debt = fields.Monetary(
-        # string='To Pay lines Amount',
-        string='Selected Debt',
         compute='_compute_selected_debt',
         currency_field='company_currency_id',
     )
@@ -77,8 +73,6 @@ class AccountPayment(models.Model):
     to_pay_amount = fields.Monetary(
         compute='_compute_to_pay_amount',
         inverse='_inverse_to_pay_amount',
-        string='To Pay Amount',
-        # string='Total To Pay Amount',
         readonly=True,
         tracking=True,
         currency_field='company_currency_id',
@@ -101,16 +95,14 @@ class AccountPayment(models.Model):
     matched_move_line_ids = fields.Many2many(
         'account.move.line',
         compute='_compute_matched_move_line_ids',
-        help='Lines that has been matched to payments, only available after '
-        'payment validation',
+        help='Lines that has been matched to payments, only available after payment validation',
     )
     payment_difference = fields.Monetary(
         compute='_compute_payment_difference',
         readonly=True,
         string="Payments Difference",
         currency_field='company_currency_id',
-        help="Difference between selected debt (or to pay amount) and "
-        "payments amount"
+        help="Difference between 'To Pay Amount' and 'Payment Total'"
     )
     payment_difference_handling = fields.Selection(
         string="Payment Difference Handling",
@@ -135,7 +127,6 @@ class AccountPayment(models.Model):
     is_approved = fields.Boolean(string="Approved", tracking=True, copy=False,)
     requiere_double_validation = fields.Boolean(compute='_compute_requiere_double_validation')
     use_payment_pro = fields.Boolean(related='company_id.use_payment_pro')
-
 
     def _check_to_pay_lines_account(self):
         """ TODO ver si esto tmb lo llevamos a la UI y lo mostramos como un warning.
