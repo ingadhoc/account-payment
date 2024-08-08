@@ -1,5 +1,16 @@
 <odoo>
 
+    <record id="view_account_payment_tree" model="ir.ui.view">
+        <field name="name">account.payment.tree</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_tree"/>
+        <field name="arch" type="xml">
+            <field name="amount_company_currency_signed" position="after">
+                <field name="payment_total" sum="Total" optional="show"/>
+            </field>
+        </field>
+    </record>
+
     <record id="view_account_supplier_payment_tree" model="ir.ui.view">
         <field name="name">account.payment.tree</field>
         <field name="model">account.payment</field>
@@ -38,11 +49,16 @@
 
         <form>
             <field name="commercial_partner_id" invisible="True"/>
+            <field name="write_off_available" invisible="True"/>
             <field name="is_internal_transfer" invisible="True"/>
             <field name="requiere_double_validation" invisible="True"/>
             <field name="is_approved" invisible="True"/>
             <field name="use_payment_pro" invisible="True"/>
         </form>
+
+        <button name="action_post" position="after">
+            <button name="action_post_and_new" string="Confirm and New" type="object" invisible="is_internal_transfer or state != 'draft' or not payment_difference"/>
+        </button>
 
         <field name="partner_id" position="before">
             <field name="company_id" options="{'no_create': True}" domain="[('id', 'in', allowed_company_ids)]" groups="base.group_multi_company" readonly="state != 'draft' or context.get('default_company_id')"/>
@@ -58,7 +74,6 @@
                 <span class="d-none d-md-inline">Approved</span>
             </span>
         </xpath>
-
 
         <button name="action_post" position="attributes">
             <attribute name="invisible" add="requiere_double_validation" separator=" or "></attribute>
@@ -80,31 +95,35 @@
             <field name="company_currency_id" invisible="True"/>
             <field name="other_currency" invisible="True"/>
             <field name="force_amount_company_currency" invisible="True"/>
-            <label for="amount_company_currency" string="(on company currency)" invisible="not other_currency"/>
-            <div name="amount_company_currency" class="o_row" invisible="not other_currency">
+            <div name="amount_company_currency" class="o_row" invisible="not other_currency" colspan="2">
+                <label for="amount_company_currency" string="(on company currency)" invisible="not other_currency"/>
                 x <field name="exchange_rate"/>
 =                <field name="amount_company_currency" readonly="state != 'draft'"/>
             </div>
-            <!-- <field name="payment_total" class="oe_inline"/> <span class="oe_inline">(retenciones 123) </span> -->
+            <label for="write_off_amount" string="Write Off"  invisible="not write_off_available or is_internal_transfer or not use_payment_pro"/>
+            <div name="write_off_amount" class="o_row" invisible="not write_off_available or is_internal_transfer or not use_payment_pro">
+                <field name="write_off_amount"/>
+                <field name="write_off_type_id" invisible="not write_off_amount" required="write_off_amount" options="{'no_create': True, 'no_open': True}"/>
+            </div>
+            <label for="payment_total" readonly="state != 'draft'" invisible="is_internal_transfer or not use_payment_pro"/>
+            <div name="payment_total" invisible="is_internal_transfer or not use_payment_pro">
+                <field name="payment_total" class="oe_inline"/>
+                <span invisible="state != 'draft'" class="text-muted"> (difference <field name="payment_difference" class="oe_inline"/>)</span>
+            </div>
         </div>
-        <!-- TODO AJUSTAR -->
-            <!-- <div name="amount_div" position="after">
-            </div> -->
+
         <sheet>
             <notebook invisible="is_internal_transfer or not use_payment_pro">
                 <page string="Debts" invisible="state != 'draft'">
-                    <group name="group2" position="after">
-                        <group name="group3" invisible="is_internal_transfer or not use_payment_pro">
-                            <field name="to_pay_amount" invisible="state not in ['draft'] or partner_type != 'supplier'" readonly="state not in ['draft']"/>
+                    <group >
+                        <group>
                             <field name="selected_debt" invisible="state not in ('draft')"/>
-                            <field name="unreconciled_amount" invisible="1"/>
-                            <!-- <field name="unreconciled_amount" invisible="state not in ['draft'] or partner_type != 'supplier'" readonly="state not in ['draft']"/> -->
                         </group>
-                        <group name="group4" invisible="is_internal_transfer or not use_payment_pro">
-                            <field name="payment_difference" invisible="state not in ('draft')"/>
-                            <field name="payment_difference_handling" string="Difference Handling" widget="radio" invisible="payment_difference == 0.0"/>
-                            <field name="writeoff_account_id" string="Post Difference In" options="{'no_create': True}" required="payment_difference_handling == 'reconcile'" invisible="payment_difference_handling == 'open' or payment_difference == 0.0"/>
-                            <field name="writeoff_label" required="payment_difference_handling == 'reconcile'" invisible="payment_difference_handling == 'open' or payment_difference == 0.0"/>
+                        <group name="name">
+                            <label for="to_pay_amount" invisible="state not in ['draft'] or partner_type != 'supplier'"/>
+                            <div name="to_pay_amount" invisible="state not in ['draft'] or partner_type != 'supplier'">
+                                <field name="to_pay_amount" readonly="state not in ['draft']" class="oe_inline"/>
+                            </div>
                         </group>
                     </group>
                     <p>
@@ -116,14 +135,13 @@
                     <button name="%(action_account_payment_invoice_wizard)d" string="+ Credit Note" invisible="state != 'draft'" context="{'refund': True}" type="action"/>
                     <field name="to_pay_move_line_ids" readonly="state != 'draft'" context="{'tree_view_ref': 'account_payment_pro.view_move_line_tree'}" domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.reconcile', '=', True),('reconciled', '=', False), ('full_reconcile_id', '=', False), ('company_id', '=', company_id), ('move_id.state', '=', 'posted'), ('account_id.account_type', '=', 'asset_receivable' if partner_type == 'customer' else 'liability_payable')]" help="Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched."/>
                 </page>
-                <page string="Paid" invisible="state != 'posted'">
+                <page string="Paid" name="paid" invisible="state != 'posted'">
                     <group>
                         <group>
                             <field name="matched_amount" invisible="not matched_amount"/>
-                            <field name="unmatched_amount" invisible="not unmatched_amount"/>
                         </group>
                         <group>
-                            <field name="payment_difference" string="Write Off" invisible="payment_difference_handling != 'reconcile' or not payment_difference"/>
+                            <field name="unmatched_amount" invisible="not unmatched_amount"/>
                         </group>
                     </group>
                     <field name="matched_move_line_ids" context="{'tree_view_ref': 'account_payment_pro.view_move_line_with_matched_tree'}"/>
