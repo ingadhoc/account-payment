@@ -8,22 +8,28 @@
         <field name="arch" type="xml">
             <field name="payment_method_line_id" position="after">
                 <field name="available_card_ids" invisible="1"/>
-                <field
-                    name="card_id"
-                    domain="[('id', 'in', available_card_ids)]"
-                    invisible="not available_card_ids or payment_type != 'inbound'"
-                    required="available_card_ids != [] and payment_type == 'inbound'"
-                />
-                <field
-                    name="installment_id"
-                    domain="[('card_id', '=', card_id)]"
-                    invisible="not card_id or payment_type !='inbound'"
-                    required="card_id and payment_type =='inbound'"/>
+                <label for="card_id" invisible="not available_card_ids or payment_type != 'inbound'"/>
+                <div class="o_row" invisible="not available_card_ids or payment_type != 'inbound'">
+                    <field
+                        name="card_id"
+                        options="{'no_create': True, 'no_open': True}"
+                        domain="[('id', 'in', available_card_ids)]"
+                        invisible="not available_card_ids or payment_type != 'inbound'"
+                        required="available_card_ids != [] and payment_type == 'inbound'"
+                    />
+                    <field
+                        name="installment_id"
+                        options="{'no_create': True, 'no_open': True}"
+                        domain="[('card_id', '=', card_id)]"
+                        invisible="not card_id or payment_type !='inbound'"
+                        required="card_id and payment_type =='inbound'"/>
+                </div>
 
-                <field name="net_amount" 
-                    invisible="not installment_id or payment_type != 'inbound'"/>
-
-                <field name="financing_surcharge" invisible="not financing_surcharge"/>
+                <label for="net_amount" invisible="not financing_surcharge"/>
+                <div invisible="not financing_surcharge">
+                    <field name="net_amount" class="oe_inline"/>
+                    <span invisible="state != 'draft'" class="text-muted"> (<label for="financing_surcharge"/> <field name="financing_surcharge" class="oe_inline"/>)</span>
+                </div>
 
             </field>
         </field>
