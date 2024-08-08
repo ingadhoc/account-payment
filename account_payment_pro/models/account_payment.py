@@ -499,7 +499,7 @@ class AccountPayment(models.Model):
             ('account_id.account_type', '=', 'asset_receivable' if self.partner_type == 'customer' else 'liability_payable'),
         ]
         if self.env.context.get('active_ids'):
-            domain.append(('move_id.line_ids','in',self.env.context.get('active_ids')))
+            domain.append(('move_id.line_ids', 'in', self.env.context.get('active_ids')))
         return domain
 
     def _add_all(self):
@@ -542,8 +542,11 @@ class AccountPayment(models.Model):
         if 'matched_move_line_ids' in fields_to_read and 'context' in specification['matched_move_line_ids']:
             specification['matched_move_line_ids']['context'].update({'matched_payment_ids': self._ids})
         return super().web_read(specification)
-    
-    @api.onchange('selected_debt')
-    def onchange_selected_debt(self):
-        for rec in self:
-            rec.amount = rec.selected_debt
+
+    # por ahora solo lo computamos en el inicial cuando venimos desde factura
+    # luego veremos si lo extendemos a distintos casos
+    # (contemplando re-calculo de retenciones, cheques pre-seleccionados)
+    # @api.onchange('selected_debt')
+    # def onchange_selected_debt(self):
+    #     for rec in self:
+    #         rec.amount = rec.selected_debt
