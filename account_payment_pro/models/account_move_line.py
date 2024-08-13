@@ -28,18 +28,22 @@ class AccountMoveLine(models.Model):
             rec.payment_matched_amount = debit_move_amount - credit_move_amount
 
     def action_register_payment(self):
-        if len(self.company_id.ids) > 1 or not self.company_id.use_payment_pro:
+        if not self._context.get('force_payment_pro') and (len(self.company_id.ids) > 1 or not self.company_id.use_payment_pro):
             return super().action_register_payment()
 
         to_pay_move_lines = self.filtered(
                 lambda r: not r.reconciled and r.account_id.account_type in ['asset_receivable', 'liability_payable'])
         if not to_pay_move_lines:
-            raise UserError(_('Nothing to be paid on selected entries'))
-        to_pay_partners = self.mapped('move_id.commercial_partner_id')
-        if len(to_pay_partners) > 1:
-            raise UserError(_('Selected recrods must be of the same partner'))
-        partner_type = 'customer' if to_pay_move_lines[0].account_id.account_type == 'asset_receivable' else 'supplier'
-
+            partner_type = self._context.get('default_partner_type')
+            to_pay_partner_id = self._context.get('default_partner_id')
+            if not partner_type or not to_pay_partner_id:
+                raise UserError(_('Nothing to be paid on selected entries'))
+        else:
+            to_pay_partners = self.mapped('move_id.commercial_partner_id')
+            if len(to_pay_partners) > 1:
+                raise UserError(_('Selected recrods must be of the same partner'))
+            to_pay_partner_id = to_pay_partners.id
+            partner_type = 'customer' if to_pay_move_lines[0].account_id.account_type == 'asset_receivable' else 'supplier'
         return {
             'name': _('Register Payment'),
             'res_model': 'account.payment',
@@ -50,7 +54,7 @@ class AccountMoveLine(models.Model):
                 'active_ids': self.ids,
                 'default_payment_type': 'inbound' if partner_type == 'customer' else 'outbound',
                 'default_partner_type': partner_type,
-                'default_partner_id': to_pay_partners.id,
+                'default_partner_id': to_pay_partner_id,
                 'default_to_pay_move_line_ids': to_pay_move_lines.ids,
                 # We set this because if became from other view and in the context has 'create=False'
                 # you can't crate payment lines (for ej: subscription)
