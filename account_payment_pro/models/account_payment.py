@@ -445,7 +445,11 @@ class AccountPayment(models.Model):
     def action_post_and_new(self):
         self.ensure_one()
         self.action_post()
-        return self.to_pay_move_line_ids.action_register_payment()
+        return self.to_pay_move_line_ids.with_context(
+            force_payment_pro=True,
+            default_to_pay_amount=self.payment_difference,
+            default_partner_type=self.partner_type,
+            default_partner_id=self.partner_id.id).action_register_payment()
 
     @api.depends('to_pay_move_line_ids', 'to_pay_move_line_ids.amount_residual')
     def _compute_selected_debt(self):
