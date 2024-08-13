@@ -85,11 +85,12 @@
         </button>
 
         <!-- movemos amount a la columna 2 para que quede todo lo relativo al metodo de pago junto -->
-        <group name="group2">
-            <label for="amount" position="move"/>
+        <group name="group2">       
+            <label for="amount" position="move" />
             <div name="amount_div" position="move"/>
         </group>
 
+        <div name="amount_div" position="inside"><div></div></div>
         <!-- seccion para mejora pagos en otra moneda -->
         <div name="amount_div" position="after">
             <field name="company_currency_id" invisible="True"/>
@@ -98,18 +99,21 @@
             <div name="amount_company_currency" class="o_row" invisible="not other_currency" colspan="2">
                 <label for="amount_company_currency" string="(on company currency)" invisible="not other_currency"/>
                 x <field name="exchange_rate"/>
-=                <field name="amount_company_currency" readonly="state != 'draft'"/>
+                =  <field name="amount_company_currency" readonly="state != 'draft'"/>  <div></div> 
             </div>
             <label for="write_off_amount" string="Write Off"  invisible="not write_off_available or is_internal_transfer or not use_payment_pro"/>
             <div name="write_off_amount" class="o_row" invisible="not write_off_available or is_internal_transfer or not use_payment_pro">
                 <field name="write_off_amount"/>
                 <field name="write_off_type_id" invisible="not write_off_amount" required="write_off_amount" options="{'no_create': True, 'no_open': True}"/>
             </div>
+                        
             <label for="payment_total" readonly="state != 'draft'" invisible="is_internal_transfer or not use_payment_pro"/>
             <div name="payment_total" invisible="is_internal_transfer or not use_payment_pro">
                 <field name="payment_total" class="oe_inline"/>
-                <span invisible="state != 'draft'" class="text-muted"> (difference <field name="payment_difference" class="oe_inline"/>)</span>
+
+                <span invisible="state != 'draft'" class="text-muted" style="margin-left: 3.7rem;"> (difference <field name="payment_difference" class="oe_inline"/>)</span>
             </div>
+
         </div>
 
         <sheet>

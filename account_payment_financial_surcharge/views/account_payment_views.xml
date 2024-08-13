@@ -23,12 +23,14 @@
                         domain="[('card_id', '=', card_id)]"
                         invisible="not card_id or payment_type !='inbound'"
                         required="card_id and payment_type =='inbound'"/>
-                </div>
+                 <div style="visibility: hidden;"></div>
 
+                </div>
+                
                 <label for="net_amount" invisible="not financing_surcharge"/>
                 <div invisible="not financing_surcharge">
                     <field name="net_amount" class="oe_inline"/>
-                    <span invisible="state != 'draft'" class="text-muted"> (<label for="financing_surcharge"/> <field name="financing_surcharge" class="oe_inline"/>)</span>
+                    <span invisible="state != 'draft'" class="text-muted" style="margin-left: 1.2rem"> (<label for="financing_surcharge"/> <field name="financing_surcharge" class="oe_inline"/>)</span>
                 </div>
 
             </field>
