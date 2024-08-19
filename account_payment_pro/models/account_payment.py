@@ -447,8 +447,10 @@ class AccountPayment(models.Model):
         self.action_post()
         return self.to_pay_move_line_ids.with_context(
             force_payment_pro=True,
+            default_move_journal_types=('bank', 'cash'),
             default_to_pay_amount=self.payment_difference,
             default_partner_type=self.partner_type,
+            default_company_id=self.company_id.id,
             default_partner_id=self.partner_id.id).action_register_payment()
 
     @api.depends('to_pay_move_line_ids', 'to_pay_move_line_ids.amount_residual')

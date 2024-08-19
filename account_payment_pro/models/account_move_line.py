@@ -36,6 +36,7 @@ class AccountMoveLine(models.Model):
         if not to_pay_move_lines:
             partner_type = self._context.get('default_partner_type')
             to_pay_partner_id = self._context.get('default_partner_id')
+            company_id = self._context.get('default_company_id')
             if not partner_type or not to_pay_partner_id:
                 raise UserError(_('Nothing to be paid on selected entries'))
         else:
@@ -44,6 +45,7 @@ class AccountMoveLine(models.Model):
                 raise UserError(_('Selected recrods must be of the same partner'))
             to_pay_partner_id = to_pay_partners.id
             partner_type = 'customer' if to_pay_move_lines[0].account_id.account_type == 'asset_receivable' else 'supplier'
+            company_id = self.company_id.id
         return {
             'name': _('Register Payment'),
             'res_model': 'account.payment',
@@ -59,9 +61,8 @@ class AccountMoveLine(models.Model):
                 # We set this because if became from other view and in the context has 'create=False'
                 # you can't crate payment lines (for ej: subscription)
                 'create': True,
-                'default_amount': abs(sum(line.amount_residual for line in to_pay_move_lines)),
-                'default_company_id': self.company_id.id,
-                'pop_up': True,
+                'default_to_pay_amount': abs(sum(line.amount_residual for line in to_pay_move_lines)),
+                'default_company_id': company_id,
             },
             'target': 'current',
             'type': 'ir.actions.act_window',
