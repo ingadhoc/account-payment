@@ -59,6 +59,14 @@
             <button name="action_post_and_new" string="Confirm and New" type="object" invisible="is_internal_transfer or state != 'draft' or payment_difference &lt;= 0.0 or (not is_approved and requiere_double_validation)"/>
         </button>
 
+        <xpath expr="//field[@name='partner_id'][1]" position="attributes">
+            <attribute name="readonly">state != 'draft' or context.get('default_company_id')</attribute>
+        </xpath>
+        <xpath expr="//field[@name='partner_id'][2]" position="attributes">
+            <attribute name="readonly">state != 'draft' or context.get('default_company_id')</attribute>
+        </xpath>
+
+
         <field name="partner_id" position="before">
             <field name="company_id" options="{'no_create': True}" domain="[('id', 'in', allowed_company_ids)]" groups="base.group_multi_company" readonly="state != 'draft' or context.get('default_company_id')"/>
         </field>
