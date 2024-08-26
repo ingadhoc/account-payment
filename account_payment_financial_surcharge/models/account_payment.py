@@ -20,11 +20,14 @@ class AccountPayment(models.Model):
     )
     card_id = fields.Many2one(
         'account.card',
-        string='Card'
+        string='Card',
+        compute='_compute_financing_plan', store=True, readonly=False
     )
     installment_id = fields.Many2one(
         'account.card.installment',
-        string='Installment plan'
+        string='Installment plan',
+        compute='_compute_installment',
+        store=True, readonly=False,
     )
     net_amount = fields.Monetary(
         compute='_computed_net_amount',
@@ -32,16 +35,14 @@ class AccountPayment(models.Model):
     )
 
     @api.depends('available_card_ids', 'payment_type')
-    @api.onchange('payment_method_line_id')
     def _compute_financing_plan(self):
-        with_plan = self.filtered(lambda x: x.payment_type == 'inbound' and x.available_card_ids)
-        (self - with_plan).card_id = False
-        (self - with_plan).installment_id = False
-        for rec in with_plan:
-            rec.card_id = rec.available_card_ids[0]
+        for rec in self:
+            if rec.card_id not in rec.available_card_ids:
+                # reset card in case avaiable cards change (payment method change)
+                self.card_id = False
 
-    @api.onchange('card_id')
-    def _onchange_card_id(self):
+    @api.depends('card_id.installment_ids')
+    def _compute_installment(self):
         if len(self.card_id.installment_ids.ids) > 0:
             self.installment_id = self.card_id.installment_ids.ids[0]
         else:

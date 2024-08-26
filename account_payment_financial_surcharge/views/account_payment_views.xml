@@ -14,15 +14,16 @@
                         name="card_id"
                         options="{'no_create': True, 'no_open': True}"
                         domain="[('id', 'in', available_card_ids)]"
-                        invisible="not available_card_ids or payment_type != 'inbound'"
                         required="available_card_ids != [] and payment_type == 'inbound'"
+                        readonly= "state != 'draft'"
                     />
                     <field
                         name="installment_id"
                         options="{'no_create': True, 'no_open': True}"
                         domain="[('card_id', '=', card_id)]"
-                        invisible="not card_id or payment_type !='inbound'"
-                        required="card_id and payment_type =='inbound'"/>
+                        required="card_id and payment_type =='inbound'"
+                        readonly= "state != 'draft'"
+                    />
                 </div>
 
                 <label for="net_amount" invisible="not financing_surcharge"/>
