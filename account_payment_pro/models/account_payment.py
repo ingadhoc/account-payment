@@ -204,7 +204,7 @@ class AccountPayment(models.Model):
     #             pay.payment_type == 'inbound' else [('outbound_payment_method_line_ids', '!=', False)]
     #         pay.available_journal_ids = journals.filtered_domain(filtered_domain)
 
-    @api.onchange('company_id')
+    @api.depends('company_id')
     def _compute_available_journal_ids(self):
         # Cambiamos el metodo para que traiga los journals de la compañia sobre la cual se esta imputando el pago. 
         # Le agregamos el onchange de company para asegurarnos de que los available journals se computen siempre 
