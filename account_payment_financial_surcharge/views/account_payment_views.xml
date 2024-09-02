@@ -14,7 +14,7 @@
                         name="card_id"
                         options="{'no_create': True, 'no_open': True}"
                         domain="[('id', 'in', available_card_ids)]"
-                        required="available_card_ids != [] and payment_type == 'inbound'"
+                        required="available_card_ids and payment_type == 'inbound'"
                         readonly= "state != 'draft'"
                     />
                     <field
