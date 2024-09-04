@@ -15,9 +15,6 @@
                         y sugerencias de diferencia de cambio">
                         <field name="use_payment_pro"/>
                     </setting>
-                    <setting id="double_validation" string="Payment double validation" company_dependent="1" invisible="not use_payment_pro" help="Users must approve payment before post">
-                        <field name="double_validation"/>
-                    </setting>
                 </setting>
             </field>
         </record>

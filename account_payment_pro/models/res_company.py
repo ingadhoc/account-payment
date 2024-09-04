@@ -4,10 +4,6 @@ from odoo import api, models, fields
 class ResCompany(models.Model):
     _inherit = "res.company"
 
-    double_validation = fields.Boolean(
-        'Double Validation on Payments?',
-        help='Use two steps validation on payments to suppliers'
-    )
     use_payment_pro = fields.Boolean(compute='_compute_use_payment_pro', store=True, readonly=False)
 
     @api.depends('partner_id.country_id.code')
