@@ -112,7 +112,6 @@ class AccountPayment(models.Model):
     )
     write_off_available = fields.Boolean(compute='_compute_write_off_available')
     is_approved = fields.Boolean(string="Approved", tracking=True, copy=False,)
-    requiere_double_validation = fields.Boolean(compute='_compute_requiere_double_validation')
     use_payment_pro = fields.Boolean(related='company_id.use_payment_pro')
 
     @api.depends('company_id')
@@ -170,15 +169,6 @@ class AccountPayment(models.Model):
                     rec.move_id.journal_id = vals['journal_id']     
         return super().write(vals)
 
-    @api.depends('company_id.double_validation', 'partner_type')
-    def _compute_requiere_double_validation(self):
-        double_validation = self.env['account.payment']
-        if 'force_simple' not in self._context:
-            double_validation = self.filtered(
-                lambda x: not x.is_internal_transfer and x.company_id.double_validation and
-                not x.is_approved and x.partner_type == 'supplier')
-            double_validation.requiere_double_validation = True
-        (self - double_validation).requiere_double_validation = False
 
     ##############################
     # desde modelo account.payment

@@ -50,13 +50,12 @@
         <form>
             <field name="commercial_partner_id" invisible="True"/>
             <field name="write_off_available" invisible="True"/>
-            <field name="requiere_double_validation" invisible="True"/>
             <field name="is_approved" invisible="True"/>
             <field name="use_payment_pro" invisible="True"/>
         </form>
 
         <button name="action_post" position="after">
-            <button name="action_post_and_new" string="Confirm and New" type="object" invisible="is_internal_transfer or state != 'draft' or payment_difference &lt;= 0.0 or (not is_approved and requiere_double_validation)"/>
+            <button name="action_post_and_new" string="Confirm and New" type="object" invisible="is_internal_transfer or state != 'draft' or payment_difference &lt;= 0.0 or not is_approved"/>
         </button>
 
         <xpath expr="//field[@name='partner_id'][1]" position="attributes">
@@ -72,22 +71,14 @@
         </field>
 
         <xpath expr="//div[@name='button_box']" position="after">
-            <span class="badge rounded-pill text-bg-warning float-end fs-6" invisible="not requiere_double_validation">
-                <i class="fa fa-fw fa-remove" aria-label="Requiere double validation" title="double_validation" role="img"/>
-                <span class="d-none d-md-inline">Requiere double validation</span>
-            </span>
             <span class="badge rounded-pill text-bg-success float-end fs-6" invisible="not is_approved">
                 <i class="fa fa-fw fa-check" aria-label="Approved" title="Approved" role="img"/>
                 <span class="d-none d-md-inline">Approved</span>
             </span>
         </xpath>
 
-        <button name="action_post" position="attributes">
-            <attribute name="invisible" add="requiere_double_validation" separator=" or "></attribute>
-        </button>
-
         <button name="action_post" position="before">
-            <button name="action_approve" class="oe_highlight" string="Approve" groups="account_payment_pro.account_confirm_payment" invisible="state != 'draft' or not requiere_double_validation" type="object"/>
+            <button name="action_approve" class="oe_highlight" string="Approve" groups="account_payment_pro.account_confirm_payment" invisible="state != 'draft'" type="object"/>
             <button name="action_unapprove" string="Back to Edit" invisible="state != 'draft' or not is_approved" type="object"/>
         </button>
 
