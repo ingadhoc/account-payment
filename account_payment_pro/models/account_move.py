@@ -44,7 +44,7 @@ class AccountMove(models.Model):
             payment_method = pay_journal._get_manual_payment_method_id(payment_type)
 
             payment = rec.env[
-                'account.payment'].create({
+                'account.payment'].with_context(pay_now=True).create({
                         'date': rec.invoice_date,
                         'partner_id': rec.commercial_partner_id.id,
                         'partner_type': partner_type,

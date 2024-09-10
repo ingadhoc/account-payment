@@ -488,7 +488,8 @@ class AccountPayment(models.Model):
         # cambio el partner, compania o partner_type
 
         with_payment_pro = self.filtered(lambda x: x.company_id.use_payment_pro)
-        (self - with_payment_pro).to_pay_move_line_ids = [Command.clear()]
+        if not self._context.get('pay_now'):
+            (self - with_payment_pro).to_pay_move_line_ids = [Command.clear()]
         for rec in with_payment_pro:
             if rec.partner_id != rec._origin.partner_id or rec.partner_type != rec._origin.partner_type or \
                     rec.company_id != rec._origin.company_id:
