@@ -285,6 +285,8 @@ class AccountPayment(models.Model):
     def _prepare_move_line_default_vals(self, write_off_line_vals=None, force_balance=None):
         # TODO: elimino los write_off_line_vals  porque los regenero tanto aca
         # como en retenciones. esto puede generar problemas
+        if not self.company_id.use_payment_pro:
+            return super()._prepare_move_line_default_vals(write_off_line_vals=write_off_line_vals, force_balance=force_balance)
         write_off_line_vals = []
         if self.write_off_amount:
             if self.payment_type == 'inbound':
@@ -301,7 +303,7 @@ class AccountPayment(models.Model):
                 'currency_id': self.currency_id.id,
                 'amount_currency': write_off_amount_currency,
                 'balance': self.currency_id._convert(write_off_amount_currency, self.company_id.currency_id,
-                                                     self.company_id, self.date),
+                                                    self.company_id, self.date),
             })
         res = super()._prepare_move_line_default_vals(write_off_line_vals=write_off_line_vals, force_balance=force_balance)
         if self.force_amount_company_currency:
