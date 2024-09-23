@@ -42,10 +42,12 @@ class AccountPayment(models.Model):
 
     @api.constrains('journal_id', 'currency_id', 'cashbox_session_id')
     def check_journal_currency(self):
+        if self.env.context.get('bypass_journal_currency_cashbox'):
+            return
         for payment in self.filtered('cashbox_session_id'):
             if payment.journal_id.currency_id and payment.currency_id != payment.journal_id.currency_id:
                 raise ValidationError(
-                    _('The currency of the journal must be the of the payment.'))
+                    _('The currency of the journal must be the same of the payment.'))
 
     def _create_paired_internal_transfer_payment(self):
         super(AccountPayment, self.with_context(paired_transfer=True))._create_paired_internal_transfer_payment()
