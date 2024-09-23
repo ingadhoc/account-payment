@@ -42,6 +42,8 @@ class AccountPayment(models.Model):
 
     @api.constrains('journal_id', 'currency_id', 'cashbox_session_id')
     def check_journal_currency(self):
+        if self.env.context.get('cashbox_ignore_currency'):
+            return 
         for payment in self.filtered('cashbox_session_id'):
             if payment.journal_id.currency_id and payment.currency_id != payment.journal_id.currency_id:
                 raise ValidationError(
