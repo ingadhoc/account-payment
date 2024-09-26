@@ -3,15 +3,17 @@
 # 	* account_cashbox
 # 
 # Translators:
+# Gonzalo, 2024
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2024
+# Camila Vives, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-29 12:01+0000\n"
+"POT-Creation-Date: 2024-09-16 12:43+0000\n"
 "PO-Revision-Date: 2023-12-28 20:16+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2024\n"
+"Last-Translator: Camila Vives, 2024\n"
 "Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -22,7 +24,7 @@ msgstr ""
 #. module: account_cashbox
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_kanban
 msgid "<i class=\"fa fa-ellipsis-v\" role=\"img\" aria-label=\"Manage\" title=\"Manage\"/>"
-msgstr ""
+msgstr "<i class=\"fa fa-ellipsis-v\" role=\"img\" aria-label=\"Manage\" title=\"Manage\"/>"
 
 #. module: account_cashbox
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_form
@@ -32,7 +34,7 @@ msgstr "Importar"
 #. module: account_cashbox
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_kanban
 msgid "<span>Manage</span>"
-msgstr ""
+msgstr "<span>Gestionar</span>"
 
 #. module: account_cashbox
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_form
@@ -63,7 +65,7 @@ msgstr "Actividades"
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__activity_exception_decoration
 msgid "Activity Exception Decoration"
-msgstr ""
+msgstr "Decoración de Excepción de Actividad"
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__activity_state
@@ -73,7 +75,7 @@ msgstr "Estado de la actividad"
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__activity_type_icon
 msgid "Activity Type Icon"
-msgstr ""
+msgstr "Ícono de Tipo de Actividad"
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__allow_concurrent_sessions
@@ -85,7 +87,7 @@ msgstr "Permitir sesiones recurrentes"
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__allow_dates_edition
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__allow_dates_edition
 msgid "Allow Dates Edition"
-msgstr ""
+msgstr "Permitir Edición de Fechas"
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_res_users__allowed_cashbox_ids
@@ -212,7 +214,7 @@ msgstr "La linea de control debe ser única"
 #: model_terms:ir.actions.act_window,help:account_cashbox.account_cashbox_action
 #: model_terms:ir.actions.act_window,help:account_cashbox.account_cashbox_settings_action
 msgid "Create cashbox"
-msgstr ""
+msgstr "Crear Caja"
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__create_uid
@@ -295,12 +297,12 @@ msgstr "Seguidores (Canales)"
 #. module: account_cashbox
 #: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__activity_type_icon
 msgid "Font awesome icon e.g. fa-tasks"
-msgstr ""
+msgstr "Icono de Font Awesome, por ejemplo, fa-tasks."
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__has_message
 msgid "Has Message"
-msgstr ""
+msgstr "Tiene Mensaje"
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__id
@@ -313,12 +315,12 @@ msgstr "ID (identificación)"
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__activity_exception_icon
 msgid "Icon"
-msgstr ""
+msgstr "Ícono"
 
 #. module: account_cashbox
 #: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__activity_exception_icon
 msgid "Icon to indicate an exception activity."
-msgstr ""
+msgstr "Ícono para indicar una actividad de excepción"
 
 #. module: account_cashbox
 #: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__message_needaction
@@ -338,6 +340,8 @@ msgid ""
 "If you do not restrict users, any user with access can operate the cash "
 "register. The restriction does not apply to admin users"
 msgstr ""
+"Si no restringe, cualquier usuario con acceso contable podrá operar y "
+"registrar. La restricción no aplica para los usuarios administradores."
 
 #. module: account_cashbox
 #: model:ir.actions.act_window,name:account_cashbox.cashbox_payent_import_action
@@ -423,7 +427,7 @@ msgstr "Mensajes"
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__my_activity_date_deadline
 msgid "My Activity Deadline"
-msgstr ""
+msgstr "Fecha límite de mi actividad"
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__name
@@ -499,6 +503,7 @@ msgstr "Fecha de apertura"
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_payment__cashbox_session_id
+#: model:ir.model.fields,field_description:account_cashbox.field_account_payment_register__cashbox_session_id
 msgid "POP Session"
 msgstr "Sesión"
 
@@ -535,7 +540,13 @@ msgid "Real Ending Balance"
 msgstr "Saldo Final Real"
 
 #. module: account_cashbox
+#: model:ir.model,name:account_cashbox.model_account_payment_register
+msgid "Register Payment"
+msgstr "Registrar pago"
+
+#. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_payment__requiere_account_cashbox_session
+#: model:ir.model.fields,field_description:account_cashbox.field_account_payment_register__requiere_account_cashbox_session
 #: model:ir.model.fields,field_description:account_cashbox.field_res_users__requiere_account_cashbox_session
 msgid "Requiere Account Cashbox Session"
 msgstr "Requiere Sesión de Caja"
@@ -549,7 +560,7 @@ msgstr "Usuario responsable"
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__restrict_users
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__restrict_users
 msgid "Restrict Users"
-msgstr ""
+msgstr "Restringir Usuarios"
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__message_has_sms_error
@@ -607,12 +618,12 @@ msgstr ""
 #: code:addons/account_cashbox/models/account_payment.py:0
 #, python-format
 msgid "The currency of the journal must be the of the payment."
-msgstr ""
+msgstr "La moneda del diario debe coincidir con la moneda del pago."
 
 #. module: account_cashbox
 #: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__activity_exception_decoration
 msgid "Type of the exception activity on record."
-msgstr ""
+msgstr "Tipo de excepción de actividad en el registro."
 
 #. module: account_cashbox
 #: model:ir.model,name:account_cashbox.model_res_users
@@ -664,7 +675,7 @@ msgstr "Solo puede tener una Sesion Abierta para %s"
 #: code:addons/account_cashbox/models/account_cashbox.py:0
 #, python-format
 msgid "You cannot delete Point of Payments with sessions."
-msgstr ""
+msgstr "No es posible eliminar puntos de pagos con sesiones. "
 
 #. module: account_cashbox
 #. odoo-python
@@ -682,4 +693,4 @@ msgstr "Requiere control de efectivo"
 #. module: account_cashbox
 #: model:ir.model,name:account_cashbox.model_account_cashbox_session_line
 msgid "session journal"
-msgstr ""
+msgstr "Diario de la sesión"

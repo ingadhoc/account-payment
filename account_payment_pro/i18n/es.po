@@ -3,16 +3,17 @@
 # 	* account_payment_pro
 # 
 # Translators:
-# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2024
 # Rocio Vega, 2024
+# Gonzalo, 2024
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2024
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-31 15:41+0000\n"
+"POT-Creation-Date: 2024-09-26 14:04+0000\n"
 "PO-Revision-Date: 2024-01-19 13:12+0000\n"
-"Last-Translator: Rocio Vega, 2024\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2024\n"
 "Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -22,8 +23,8 @@ msgstr ""
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
-msgid "(on company currency)"
-msgstr "(en moneda de la compañía)"
+msgid "(difference"
+msgstr "(diferencia"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
@@ -39,27 +40,37 @@ msgstr "+ Nota de Débito"
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid ""
 "<span class=\"badge rounded-pill text-bg-warning float-end fs-6\" invisible=\"not requiere_double_validation\">\n"
-"                    <i class=\"fa fa-fw fa-remove\" aria-label=\"Requiere double validation\" title=\"double_validation\" role=\"img\"/>\n"
-"                    <span class=\"d-none d-md-inline\">Requiere double validation</span>\n"
-"                </span>\n"
-"                <span class=\"badge rounded-pill text-bg-success float-end fs-6\" invisible=\"not is_approved\">\n"
-"                    <i class=\"fa fa-fw fa-check\" aria-label=\"Approved\" title=\"Approved\" role=\"img\"/>\n"
-"                    <span class=\"d-none d-md-inline\">Approved</span>\n"
-"                </span>"
+"                <i class=\"fa fa-fw fa-remove\" aria-label=\"Requiere double validation\" title=\"double_validation\" role=\"img\"/>\n"
+"                <span class=\"d-none d-md-inline\">Requiere double validation</span>\n"
+"            </span>\n"
+"            <span class=\"badge rounded-pill text-bg-success float-end fs-6\" invisible=\"not is_approved\">\n"
+"                <i class=\"fa fa-fw fa-check\" aria-label=\"Approved\" title=\"Approved\" role=\"img\"/>\n"
+"                <span class=\"d-none d-md-inline\">Approved</span>\n"
+"            </span>"
 msgstr ""
 "<span class=\"badge rounded-pill text-bg-warning float-end fs-6\" invisible=\"not requiere_double_validation\">\n"
-"                    <i class=\"fa fa-fw fa-remove\" aria-label=\"Requiere double validation\" title=\"double_validation\" role=\"img\"/>\n"
-"                    <span class=\"d-none d-md-inline\">Requiere doble validación</span>\n"
-"                </span>\n"
-"                <span class=\"badge rounded-pill text-bg-success float-end fs-6\" invisible=\"not is_approved\">\n"
-"                    <i class=\"fa fa-fw fa-check\" aria-label=\"Approved\" title=\"Approved\" role=\"img\"/>\n"
-"                    <span class=\"d-none d-md-inline\">Aprobado</span>\n"
-"                </span>"
+"                <i class=\"fa fa-fw fa-remove\" aria-label=\"Requiere double validation\" title=\"double_validation\" role=\"img\"/>\n"
+"                <span class=\"d-none d-md-inline\">Requiere doble validación</span>\n"
+"            </span>\n"
+"            <span class=\"badge rounded-pill text-bg-success float-end fs-6\" invisible=\"not is_approved\">\n"
+"                <i class=\"fa fa-fw fa-check\" aria-label=\"Approved\" title=\"Approved\" role=\"img\"/>\n"
+"                <span class=\"d-none d-md-inline\">Aprobado</span>\n"
+"            </span>"
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__account_id
+msgid "Account"
+msgstr "Cuenta"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__date
 msgid "Accounting Date"
 msgstr "Fecha Contable"
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__active
+msgid "Active"
+msgstr "Activo"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
@@ -146,18 +157,13 @@ msgid "Cancel"
 msgstr "Cancelar"
 
 #. module: account_payment_pro
-#: model:ir.model.fields,help:account_payment_pro.field_account_payment__writeoff_label
-msgid "Change label of the counterpart that will hold the payment difference"
-msgstr ""
-"Cambiar etiqueta de la contrapartida que contendrá la diferencia de pago."
-
-#. module: account_payment_pro
 #: model:ir.model,name:account_payment_pro.model_res_company
 msgid "Companies"
 msgstr "Compañías"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__company_id
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__company_id
 msgid "Company"
 msgstr "Compañía"
 
@@ -172,17 +178,24 @@ msgid "Confirm"
 msgstr "Confirmar"
 
 #. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Confirm and New"
+msgstr "Confirmar y Nuevo"
+
+#. module: account_payment_pro
 #: model:res.groups,name:account_payment_pro.account_confirm_payment
 msgid "Confirm payments (only if double validation is enabled)"
 msgstr "Confirmar pagos (solo si está habilitada la doble validación)"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__create_uid
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__create_uid
 msgid "Created by"
 msgstr "Creado por"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__create_date
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__create_date
 msgid "Created on"
 msgstr "Creado en"
 
@@ -207,24 +220,14 @@ msgid "Debts"
 msgstr "Deudas"
 
 #. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__writeoff_account_id
-msgid "Difference Account"
-msgstr "Cuenta de Ajuste"
-
-#. module: account_payment_pro
-#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
-msgid "Difference Handling"
-msgstr "Manejo de Diferencia"
-
-#. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__payment_difference
-msgid ""
-"Difference between selected debt (or to pay amount) and payments amount"
+msgid "Difference between 'To Pay Amount' and 'Payment Total'"
 msgstr ""
 "Diferencia entre Deuda Seleccionada (o Importe a Pagar) e Importe de Pago"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__display_name
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__display_name
 msgid "Display Name"
 msgstr "Nombre"
 
@@ -262,6 +265,7 @@ msgstr "Contiene cuenta de cobro/pago Pendiente"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__id
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__id
 msgid "ID"
 msgstr "ID"
 
@@ -308,11 +312,6 @@ msgid "Journal Item"
 msgstr "Apunte contable"
 
 #. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__writeoff_label
-msgid "Journal Item Label"
-msgstr "Etiqueta de Apunte Contable"
-
-#. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
 msgid "Journal Items"
 msgstr "Apuntes Contables"
@@ -325,9 +324,9 @@ msgid "Journal must have manual method!"
 msgstr "Diario debe contener un método de pago \"Manual\""
 
 #. module: account_payment_pro
-#: model:ir.model.fields.selection,name:account_payment_pro.selection__account_payment__payment_difference_handling__open
-msgid "Keep open"
-msgstr "Mantener Abierto"
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__label
+msgid "Label"
+msgstr "Etiqueta"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__label_destination_journal_id
@@ -340,12 +339,23 @@ msgid "Label Journal"
 msgstr "Etiqueta Diario"
 
 #. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_write_off_type__label
+msgid ""
+"Label to be used on journal items labels, if not configured name will be "
+"used"
+msgstr ""
+"Etiqueta que se utilizará en el detalle de los apuntes contables, si no se "
+"configura se utilizará el nombre por defecto."
+
+#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__write_uid
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__write_uid
 msgid "Last Updated by"
 msgstr "Última vez actualizado por"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__write_date
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__write_date
 msgid "Last Updated on"
 msgstr "Última vez actualizado en"
 
@@ -364,11 +374,6 @@ msgid "Manual Number"
 msgstr "Número Manual"
 
 #. module: account_payment_pro
-#: model:ir.model.fields.selection,name:account_payment_pro.selection__account_payment__payment_difference_handling__reconcile
-msgid "Mark as fully paid"
-msgstr "Marcar Totalmente Pagado"
-
-#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__matched_amount
 msgid "Matched Amount"
 msgstr "Importe Conciliado"
@@ -377,6 +382,11 @@ msgstr "Importe Conciliado"
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__matched_move_line_ids
 msgid "Matched Move Line"
 msgstr "Líneas conciliadas"
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__name
+msgid "Name"
+msgstr "Nombre"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_search
@@ -425,11 +435,6 @@ msgid "Payment"
 msgstr "Pago"
 
 #. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__payment_difference_handling
-msgid "Payment Difference Handling"
-msgstr "Manejo de diferencias de pago"
-
-#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_move_line__payment_matched_amount
 msgid "Payment Matched Amount"
 msgstr "Importe Conciliado del Pago"
@@ -467,6 +472,8 @@ msgstr "ID del Pago %s"
 #, python-format
 msgid "Payment is for partner %s but payment lines are of partner %s"
 msgstr ""
+"El pago es para el contacto %s pero las líneas de pago corresponden al "
+"contacto %s"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
@@ -489,14 +496,14 @@ msgid "Payments Difference"
 msgstr "Diferencia de Pago"
 
 #. module: account_payment_pro
-#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
-msgid "Post Difference In"
-msgstr "Registrar diferencia en"
-
-#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__product_id
 msgid "Product"
 msgstr "Producto"
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Rate ="
+msgstr "Cotización ="
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__description
@@ -584,8 +591,7 @@ msgid "To Pay Lines must be of the same account!"
 msgstr "Líneas a Pagar deben contener la misma cuenta"
 
 #. module: account_payment_pro
-#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
-#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_with_matched_tree
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_tree
 msgid "Total"
 msgstr "Total"
 
@@ -633,6 +639,37 @@ msgid "Users must approve payment before post"
 msgstr "Los usuarios deben aprobar el pago antes de la publicación"
 
 #. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Write Off"
+msgstr "Ajuste"
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__write_off_amount
+msgid "Write Off Amount"
+msgstr "Importe Ajuste"
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__write_off_available
+msgid "Write Off Available"
+msgstr "Ajuste Disponible"
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__write_off_type_id
+msgid "Write Off Type"
+msgstr "Tipo de Ajuste"
+
+#. module: account_payment_pro
+#: model:ir.actions.act_window,name:account_payment_pro.action_account_write_off_type
+#: model:ir.ui.menu,name:account_payment_pro.menu_write_off_type
+msgid "Write Off Types"
+msgstr "Tipos de Ajuste"
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Write-off type"
+msgstr "Tipo de Ajuste"
+
+#. module: account_payment_pro
 #. odoo-python
 #: code:addons/account_payment_pro/wizards/account_payment_invoice_wizard.py:0
 #, python-format
@@ -667,3 +704,8 @@ msgid "account.payment.invoice.wizard"
 msgstr ""
 "account.payment.invoice.wizard\n"
 " "
+
+#. module: account_payment_pro
+#: model:ir.model,name:account_payment_pro.model_account_write_off_type
+msgid "account.write_off.type"
+msgstr ""
