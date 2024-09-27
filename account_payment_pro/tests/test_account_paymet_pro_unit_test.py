@@ -13,7 +13,9 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
         self.company_journal = self.env['account.journal'].search([('company_id', '=', self.company.id), ('type', '=', 'sale')], limit=1)
         self.company.use_payment_pro = True
         
-        self.eur_currency = self.env['res.currency'].search([('active','=',False),('name', '=', 'EUR')])
+        self.eur_currency = self.env['res.currency'].with_context(active_test=False).search([
+            ('name', '=', 'EUR')
+        ])
         self.eur_currency.active = True
         self.rates = self.env['res.currency.rate'].create([{
                 'name': '2024-01-01',
