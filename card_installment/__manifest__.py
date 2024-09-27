@@ -11,7 +11,7 @@
     'license': 'LGPL-3',
     'images': [
     ],
-    'installable': True,
+    'installable': False,
     'data': [
         'security/ir.model.access.csv',
         'security/ir_rule.xml',

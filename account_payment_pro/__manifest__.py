@@ -7,7 +7,7 @@
     "website": "www.adhoc.com.ar",
     "author": "ADHOC SA",
     "license": "AGPL-3",
-    'installable': True,
+    'installable': False,
     "external_dependencies": {
         "python": [],
         "bin": [],

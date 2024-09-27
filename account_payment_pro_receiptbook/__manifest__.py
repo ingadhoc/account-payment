@@ -7,7 +7,7 @@
     "website": "www.adhoc.com.ar",
     "author": "ADHOC SA",
     "license": "AGPL-3",
-    'installable': True,
+    'installable': False,
     "external_dependencies": {
         "python": [],
         "bin": [],
@@ -23,7 +23,7 @@
         'views/account_payment.xml',
         'data/l10n_latam.document.type.csv',
     ],
-    'installable': True,
+    'installable': False,
     'auto_install': False,
     'application': False,
     'post_init_hook': '_generate_receiptbooks',

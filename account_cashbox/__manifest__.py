@@ -28,6 +28,6 @@
         'wizards/account_cashbox_payment_import.xml',
         'wizards/account_payment_register.xml',
         ],
-    'installable': True,
+    'installable': False,
     "application": False,
 }

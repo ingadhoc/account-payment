@@ -16,7 +16,7 @@
         'views/account_payment_view.xml',
         'wizards/l10n_latam_payment_mass_transfer_views.xml',
         ],
-    "installable": True,
+    'installable': False,
     "application": False,
     "auto_install": True,
 }
