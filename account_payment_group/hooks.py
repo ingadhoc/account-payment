@@ -1,8 +1,19 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 import logging
 from odoo import api, SUPERUSER_ID
+from odoo.exceptions import ValidationError
 _logger = logging.getLogger(__name__)
 
+
+def pre_init_hook(cr):
+    env = api.Environment(cr, SUPERUSER_ID, {})
+    l10n_ar_installed = env['ir.module.module'].search([
+        ('name', '=', 'l10n_ar'),
+        ('state', '=', 'installed')
+    ])
+
+    if not l10n_ar_installed:
+        raise ValidationError("The 'l10n_ar' module is required for installation.")
 
 def post_init_hook(cr, registry):
     """
@@ -32,3 +43,4 @@ def post_init_hook(cr, registry):
             'payment_ids': [(4, payment.id, False)],
             'state': _state,
         })
+
