@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-26 14:04+0000\n"
+"POT-Creation-Date: 2024-10-03 20:21+0000\n"
 "PO-Revision-Date: 2024-01-19 13:12+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2024\n"
 "Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
@@ -39,23 +39,11 @@ msgstr "+ Nota de Débito"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid ""
-"<span class=\"badge rounded-pill text-bg-warning float-end fs-6\" invisible=\"not requiere_double_validation\">\n"
-"                <i class=\"fa fa-fw fa-remove\" aria-label=\"Requiere double validation\" title=\"double_validation\" role=\"img\"/>\n"
-"                <span class=\"d-none d-md-inline\">Requiere double validation</span>\n"
-"            </span>\n"
-"            <span class=\"badge rounded-pill text-bg-success float-end fs-6\" invisible=\"not is_approved\">\n"
+"<span class=\"badge rounded-pill text-bg-success float-end fs-6\" invisible=\"not is_approved\">\n"
 "                <i class=\"fa fa-fw fa-check\" aria-label=\"Approved\" title=\"Approved\" role=\"img\"/>\n"
 "                <span class=\"d-none d-md-inline\">Approved</span>\n"
 "            </span>"
 msgstr ""
-"<span class=\"badge rounded-pill text-bg-warning float-end fs-6\" invisible=\"not requiere_double_validation\">\n"
-"                <i class=\"fa fa-fw fa-remove\" aria-label=\"Requiere double validation\" title=\"double_validation\" role=\"img\"/>\n"
-"                <span class=\"d-none d-md-inline\">Requiere doble validación</span>\n"
-"            </span>\n"
-"            <span class=\"badge rounded-pill text-bg-success float-end fs-6\" invisible=\"not is_approved\">\n"
-"                <i class=\"fa fa-fw fa-check\" aria-label=\"Approved\" title=\"Approved\" role=\"img\"/>\n"
-"                <span class=\"d-none d-md-inline\">Aprobado</span>\n"
-"            </span>"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__account_id
@@ -241,12 +229,6 @@ msgstr "Número de Documento"
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_invoice_wizard
 msgid "Document Type"
 msgstr "Tipo de Documentos"
-
-#. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_res_company__double_validation
-#: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__double_validation
-msgid "Double Validation on Payments?"
-msgstr "Doble Validación de Pagos"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__exchange_rate
@@ -455,11 +437,6 @@ msgid "Payment Total"
 msgstr "Total Pago"
 
 #. module: account_payment_pro
-#: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
-msgid "Payment double validation"
-msgstr "Doble Validación de Pagos"
-
-#. module: account_payment_pro
 #. odoo-python
 #: code:addons/account_payment_pro/wizards/account_payment_invoice_wizard.py:0
 #, python-format
@@ -528,11 +505,6 @@ msgid "Remove All"
 msgstr "Eliminar Todo"
 
 #. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__requiere_double_validation
-msgid "Requiere Double Validation"
-msgstr "Requiere doble validación"
-
-#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__selected_debt
 msgid "Selected Debt"
 msgstr "Deuda Seleccionada"
@@ -553,13 +525,6 @@ msgstr "Impuestos"
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment_invoice_wizard__currency_id
 msgid "The payment's currency."
 msgstr "La moneda del pago"
-
-#. module: account_payment_pro
-#. odoo-python
-#: code:addons/account_payment_pro/models/account_move.py:0
-#, python-format
-msgid "The payments %s require approve before post."
-msgstr "Los Pagos %s requieren Aprobación antes de ser publicados"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__to_pay_move_line_ids
@@ -626,17 +591,6 @@ msgstr "Uso de Payment Pro"
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
 msgid "Use payment pro module"
 msgstr "Uso del modulo de Payment Pro"
-
-#. module: account_payment_pro
-#: model:ir.model.fields,help:account_payment_pro.field_res_company__double_validation
-#: model:ir.model.fields,help:account_payment_pro.field_res_config_settings__double_validation
-msgid "Use two steps validation on payments to suppliers"
-msgstr "Utilice la validación en dos pasos en pagos a proveedores"
-
-#. module: account_payment_pro
-#: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
-msgid "Users must approve payment before post"
-msgstr "Los usuarios deben aprobar el pago antes de la publicación"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
