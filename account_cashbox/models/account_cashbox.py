@@ -53,7 +53,7 @@ class AccountCashbox(models.Model):
         self.ensure_one()
         action = {
             'name': ('Cashbox'),
-            'view_mode': 'form,tree',
+            'view_mode': 'form,list',
             'res_model': 'account.cashbox',
             'res_id': self.id,
             'type': 'ir.actions.act_window',
@@ -64,7 +64,7 @@ class AccountCashbox(models.Model):
         self.ensure_one()
         action = {
             'name': ('Session'),
-            'view_mode': 'form,tree',
+            'view_mode': 'form,list',
             'res_model': 'account.cashbox.session',
             'res_id': self.current_session_id.id,
             'type': 'ir.actions.act_window',
