@@ -25,29 +25,10 @@ class PopSessionJournalControl(models.Model):
 
     _sql_constraints = [('uniq_line', 'unique(cashbox_session_id, journal_id)', "Control line must be unique")]
 
-    # @api.depends('cashbox_session_id.payment_ids.state', 'balance_start')
-    # def _compute_amounts_old(self):
-    #     # agrupamos por session porque lo mas usual es ver todos los registors de una misma session
-    #     for session in self.mapped('cashbox_session_id'):
-    #         session_recs = self.filtered(lambda x: x.cashbox_session_id == session)
-    #         balance_lines = self.env['account.payment']._read_group([
-    #             ('cashbox_session_id', '=', session.id), ('state', '=', 'posted'),
-    #             ('journal_id', 'in', session_recs.mapped('journal_id').ids)],
-    #             ['amount','payment_type'], ['journal_id','payment_type'], lazy=False)
-    #         session_recs.write({'amount':0})
-    #         for balance_line in balance_lines:
-    #             with_balance = session_recs.filtered(lambda x: x.journal_id.id == balance_line['journal_id'][0])
-    #             with_balance.amount += -balance_line['amount'] if balance_line['payment_type'] == 'outbound' else balance_line['amount']
-    #         for with_balance in session_recs:
-    #             with_balance.balance_end = with_balance.amount + with_balance.balance_start
-    #             self -= with_balance
-    #     self.amount = False
-    #     self.balance_end = False
-
     @api.depends('cashbox_session_id.payment_ids','cashbox_session_id.payment_ids.state', 'balance_start')
     def _compute_amounts(self):
         payments_lines = self.env['account.payment'].search([
-                ('cashbox_session_id', 'in', self.mapped('cashbox_session_id').ids), ('state', '=', 'posted')])
+                ('cashbox_session_id', 'in', self.mapped('cashbox_session_id').ids), ('state', '=', 'paid')])
         for record in self:
             amount = sum(payments_lines.filtered(
                 lambda p: p.cashbox_session_id == record.cashbox_session_id and p.journal_id == record.journal_id

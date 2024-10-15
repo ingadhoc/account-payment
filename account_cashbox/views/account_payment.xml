@@ -13,9 +13,11 @@
                     name="cashbox_session_id"
                     domain="[('state', '=', 'opened'), ('company_id', '=', company_id), '|', ('user_ids', '=', uid), ('user_ids', '=', False)]"
                     required="requiere_account_cashbox_session and state == 'draft'"
-                    readonly = "state != 'draft'"/>
+                    readonly = "state != 'draft'"
+                    options="{'no_create': True}"/>
             </field>
         </field>
     </record>
+
 
 </odoo>

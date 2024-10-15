@@ -4,13 +4,14 @@
 {
     "name": "Cashbox management",
     "summary": "Introduces concept cashbox and accounting journal sessions",
-    "version": "17.0.1.2.0",
+    "version": "18.0.1.0.0",
     "category": "Accounting",
     "website": "www.adhoc.com.ar",
     "author": "juanpgarza, ADHOC SA",
     "license": "AGPL-3",
     "depends": [
         "account_ux",
+        "account_internal_transfer"
         # la dependencia con payment pro es solo para forzar utilizar el metodo parcheado
         # _compute_available_journal_ids
         ],
@@ -28,6 +29,6 @@
         'wizards/account_cashbox_payment_import.xml',
         'wizards/account_payment_register.xml',
         ],
-    'installable': False,
+    'installable': True,
     "application": False,
 }

@@ -41,7 +41,7 @@
                             invisible="state != 'opened'" type="object" class="oe_stat_button" icon="fa-plus">
                             <span>Import</span>
                         </button>
-                        <button name="action_session_payments" type="object" class="oe_stat_button" icon="fa-money">
+                        <button name="action_session_payments" type="object" class="oe_stat_button" icon="fa-money" context="{'create':False}">
                             <span>Payments</span>
                         </button>
                     </div>
@@ -63,21 +63,21 @@
                     </group>
                     <group>
                         <field nolabel="1" colspan="2" name="line_ids">
-                            <tree editable="top" create="false" delete="false">
+                            <list editable="top" create="false" delete="false">
                                 <field name="require_cash_control" invisible="True" column_invisible="True"/>
                                 <field name="journal_id" readonly="True" force_save="True"/>
                                 <field name="currency_id" invisible="1"/>
                                 <field name="balance_start" readonly = "parent.state != 'draft'" invisible ="require_cash_control == False"
                                     column_invisible = "parent.require_cash_control == False "/>
                                 <field name="amount"/>
-                                <button name="action_session_payments" type="object" title="Payments" icon="fa-search"></button>
+                                <button name="action_session_payments" type="object" title="Payments" icon="fa-search" context="{'create': False}"></button>
                                 <field name="balance_end" invisible = "require_cash_control == False"
                                     column_invisible="parent.require_cash_control == False"/>
                                 <field name="balance_end_real" 
                                     readonly=" parent.state !='closing_control'"
                                     invisible = "require_cash_control == False" 
                                     column_invisible="parent.require_cash_control == False"/>
-                            </tree>
+                            </list>
                             <form>
                                 <sheet>
                                     <group >
@@ -93,11 +93,7 @@
                         </field>
                     </group>
                 </sheet>
-                <div class="oe_chatter">
-                    <field name="message_follower_ids" widget="mail_followers" />
-                    <field name="activity_ids" widget="mail_activity"/>
-                    <field name="message_ids" widget="mail_thread" />
-                </div>
+                <chatter/>
             </form>
         </field>
     </record>
@@ -119,17 +115,17 @@
     </record>
 
     <record id="view_account_cashbox_session_tree" model="ir.ui.view">
-        <field name="name">account.cashbox.session.tree.view</field>
+        <field name="name">account.cashbox.session.list.view</field>
         <field name="model">account.cashbox.session</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="name"/>
                 <field name="cashbox_id" optional="hide"/>
                 <field name="opening_date" optional="show"/>
                 <field name="closing_date" optional="show"/>
                 <field name="user_ids" optional="hide" readonly="state != 'draft'"/>
                 <field name="state" string="State"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -138,7 +134,7 @@
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">account.cashbox.session</field>
         <field name="context">{}</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="view_id" eval="False"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">

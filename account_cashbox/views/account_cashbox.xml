@@ -2,6 +2,7 @@
 
     <record id="account_cashbox_action" model="ir.actions.act_window">
         <field name="name">Cashbox</field>
+        <field name="path">cashbox</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">account.cashbox</field>
         <field name="view_mode">kanban</field>
@@ -17,7 +18,7 @@
         <field name="name">Cashbox</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">account.cashbox</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Create cashbox
@@ -65,12 +66,12 @@
     </record>
 
     <record id="view_account_cashbox_view_tree" model="ir.ui.view">
-        <field name="name">view_account_cashbox.view.tree</field>
+        <field name="name">view_account_cashbox.view.list</field>
         <field name="model">account.cashbox</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="name"/>
-            </tree>
+            </list>
         </field>
     </record>
     <record id="view_account_cashbox_kanban" model="ir.ui.view">
@@ -83,52 +84,52 @@
                 <field name="current_session_id"/>
                 <field name="allow_concurrent_sessions"/>
                 <templates>
-                    <t t-name="kanban-box">
-                        <a class="o_kanban_manage_toggle_button o_dropdown_kanban" href="#" >
-                            <i class="fa fa-ellipsis-v" role="img" aria-label="Manage" title="Manage"/>
-                        </a>
-                        <div class="oe_kanban_content oe_kanban_card">
-                            <div class="container o_kanban_card_manage_pane dropdown-menu" role="menu" >
-                                <div class="row">
-                                    <div class="col-6 o_kanban_card_manage_section o_kanban_manage_view">
-                                        <div role="menuitem" class="o_kanban_card_manage_title">
-                                            <span>Manage</span>
-                                        </div>
-                                        <div role="menuitem">
-                                            <a name="action_open_cashbox" type="object">Edit config</a>
-                                            <a name="%(account_cashbox_session_action)d" context="{'search_default_cashbox_id': id}" type="action">List Sessions</a>
-
-                                        </div>
-                                    </div>
-                                    </div>
+                <t t-name="menu">
+                    <div class="container">
+                        <div name="card_menu_view">
+                            <h5 role="menuitem" class="o_kanban_card_manage_title">
+                                <span>Manage</span>
+                            </h5>
+                            <div role="menuitem">
+                                <a name="action_open_cashbox" type="object">Edit config</a>
                             </div>
-                                <div class="o_kanban_card_header">
-                                <div class="o_kanban_card_header_title mb16">
-                                    <div class="o_primary">
-                                        <t t-esc="record.name.value"/>
-                                    </div>
-                                </div>
+                            <div role="menuitem">
+                                <a name="%(account_cashbox_session_action)d" context="{'search_default_cashbox_id': id}" type="action">List Sessions</a>
                             </div>
-                            <div class="container o_kanban_card_content">
-                                <div class="row">
-                                    <div class="col-6 o_kanban_primary_left">
-                                        <div class="oe_kanban_bottom_right float-end">
-                                            <field name="allowed_res_users_ids" widget="many2many_avatar_user"/>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 o_kanban_primary_right" t-if="!record.allow_concurrent_sessions.raw_value">
-                                        <button class="btn btn-primary" t-if="record.current_session_id.raw_value" name="action_open_session" type="object">Open Session</button>
-                                        <button class="btn btn-primary" t-if="!record.current_session_id.raw_value" name="action_open_session" type="object">New Session</button>
-                                    </div>
-                                    <div class="col-6 o_kanban_primary_right" t-if="record.allow_concurrent_sessions.raw_value">
-                                        <button class="btn btn-primary" name="%(account_cashbox_session_action)d" context="{'search_default_cashbox_id': id,'search_default_opened': 'opened', 'default_cashbox_id': id}" type="action">View Sessions</button>
-                                    </div>
-                                </div>
-                            </div>
-
                         </div>
+                    </div>
+                  </t>
+                  <t t-name="card">
+                    <div class="o_project_kanban_main d-flex align-items-baseline gap-1 ms-1">
+                        <div class="min-w-0 pb-4 me-2">
+                            <span class="text-truncate d-block fs-4 fw-bold" t-att-title="record.display_name.value"><field name="display_name"/></span>
+                        </div>
+                    </div>
+                    <footer class="mt-auto pt-0 ms-1">
+                        <div class="d-flex align-items-center justify-content-between w-100">
+                            <!-- Left section for user avatars -->
+                            <div class="d-flex align-items-baseline">
+                                <field name="allowed_res_users_ids" widget="many2many_avatar_user"/>
+                            </div>
 
-                    </t>
+                            <!-- Right section for buttons -->
+                            <div class="d-flex align-items-center">
+                                <!-- Conditional rendering for "New/Open Session" buttons -->
+                                <div t-if="!record.allow_concurrent_sessions.raw_value" class="d-flex">
+                                    <button class="btn btn-primary" t-if="record.current_session_id.raw_value" name="action_open_session" type="object">Open Session</button>
+                                    <button class="btn btn-primary" t-if="!record.current_session_id.raw_value" name="action_open_session" type="object">New Session</button>
+                                </div>
+
+                                <!-- Conditional rendering for "View Sessions" button when concurrent sessions are allowed -->
+                                <div t-if="record.allow_concurrent_sessions.raw_value" class="d-flex">
+                                    <button class="btn btn-primary" name="%(account_cashbox_session_action)d" context="{'search_default_cashbox_id': id,'search_default_opened': 'opened', 'default_cashbox_id': id}" type="action">View Sessions</button>
+                                </div>
+                            </div>
+                        </div>
+                    </footer>
+
+
+                  </t>
                 </templates>
             </kanban>
         </field>
@@ -147,10 +148,10 @@
     <menuitem id="menu_pop_dashboard"
         name="Cashbox"
         action="account_cashbox_action"
-        parent="account_ux.menu_finance_bank_and_cash"
+        parent="account_internal_transfer.menu_finance_bank_and_cash"
         sequence="1"/>
     <menuitem id="menu_account_cashbox"
-        name="Cashbox manangment"
+        name="Cashbox management"
         parent="account.root_payment_menu"
         action="account_cashbox_settings_action"
         sequence="100"/>
