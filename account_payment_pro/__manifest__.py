@@ -2,12 +2,12 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 {
     "name": "Account Payment Super Power",
-    "version": "17.0.2.0.0",
+    "version": "18.0.1.0.0",
     "category": "Payment",
     "website": "www.adhoc.com.ar",
     "author": "ADHOC SA",
     "license": "AGPL-3",
-    'installable': False,
+    'installable': True,
     "external_dependencies": {
         "python": [],
         "bin": [],
@@ -16,6 +16,8 @@
         "account",
         # TODO mover esto a modulo puente
         "l10n_latam_invoice_document",
+        "account_internal_transfer",
+        "l10n_latam_check",
     ],
     "data": [
         'security/payment_security.xml',

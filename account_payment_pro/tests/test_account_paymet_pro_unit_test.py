@@ -1,4 +1,4 @@
-import odoo.tests.common as common
+from odoo.tests import common
 from odoo import Command, fields
 from datetime import timedelta
 
@@ -12,7 +12,7 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
         self.company_bank_journal = self.env['account.journal'].search([('company_id', '=', self.company.id), ('type', '=', 'bank')], limit=1) 
         self.company_journal = self.env['account.journal'].search([('company_id', '=', self.company.id), ('type', '=', 'sale')], limit=1)
         self.company.use_payment_pro = True
-        
+
         self.eur_currency = self.env['res.currency'].with_context(active_test=False).search([
             ('name', '=', 'EUR')
         ])
@@ -31,7 +31,7 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
             },
         ])
 
-        self.partner_ri = self.env['res.partner'].search([('name', '=', 'Deco Addict')])
+        self.partner_ri = self.env['res.partner'].search([('name', '=', 'Deco Addict')], limit=1)
 
     def test_create_payment_with_a_date_rate_then_change_rate(self):
         invoice = self.env['account.move'].create({

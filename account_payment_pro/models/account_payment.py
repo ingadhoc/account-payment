@@ -28,6 +28,7 @@ class AccountPayment(models.Model):
         # inverse='_inverse_exchange_rate',
         # digits=(16, 4),
     )
+    commercial_partner_id = fields.Many2one(related="partner_id.commercial_partner_id")
     # TODO deberiamos ver de borrar esto. el tema es que los campos nativos de odoo no refelajn importe en moenda de cia
     # hasta en tanto se guarde el payment (en parte porque vienen heredados desde el move)
     # no solo eso si no que tmb viene pisado en los payments y computa solo si hay liquidity lines pero no cuentas de
@@ -111,13 +112,21 @@ class AccountPayment(models.Model):
         help="Difference between 'To Pay Amount' and 'Payment Total'"
     )
     write_off_available = fields.Boolean(compute='_compute_write_off_available')
-    use_payment_pro = fields.Boolean(related='company_id.use_payment_pro')
+    use_payment_pro = fields.Boolean(compute="_compute_use_payment_pro")
+
+    open_move_line_ids = fields.One2many(related="move_id.open_move_line_ids")
+
+    @api.depends('company_id', 'outstanding_account_id')
+    def _compute_use_payment_pro(self):
+        payment_with_pro = self.filtered(lambda x: x.company_id.use_payment_pro and x.outstanding_account_id)
+        payment_with_pro.use_payment_pro = True
+        (self - payment_with_pro).use_payment_pro = False
 
     @api.depends('company_id')
     def _compute_write_off_available(self):
         for rec in self:
             rec.write_off_available = bool(
-                rec.env['account.write_off.type'].search([('company_id', '=', rec.company_id.id)], limit=1))
+                rec.env['account.write_off.type'].search([('company_ids', '=', rec.company_id.id)], limit=1))
 
     def _check_to_pay_lines_account(self):
         """ TODO ver si esto tmb lo llevamos a la UI y lo mostramos como un warning.
@@ -132,7 +141,7 @@ class AccountPayment(models.Model):
         # Nos salteamos la siguente validacion
         # https://github.com/odoo/odoo/blob/b6b90636938ae961c339807ea893cabdede9f549/addons/account/models/account_move.py#L2474
         if self.company_id.use_payment_pro:
-            self.posted_before = False
+            self.move_id.posted_before = False
         super().action_draft()
 
     def write(self, vals):
@@ -147,7 +156,7 @@ class AccountPayment(models.Model):
                 # Lo siguiente lo agregamos para primero obligarnos a cambiar el journal_id y no la company_id. Una vez cambiado el journal_id
                 # la company_id se cambia correctamente.
                 if 'company_id' in vals and 'journal_id' in vals:
-                    rec.move_id.journal_id = vals['journal_id']     
+                    rec.move_id.journal_id = vals['journal_id']
         return super().write(vals)
 
 
@@ -303,17 +312,6 @@ class AccountPayment(models.Model):
             res = res + ('force_amount_company_currency',)
         return res + ('write_off_amount', 'write_off_type_id',)
 
-    # TODO traer de account_ux y verificar si es necesario
-    # @api.depends_context('default_is_internal_transfer')
-    # def _compute_is_internal_transfer(self):
-    #     """ Este campo se recomputa cada vez que cambia un diario y queda en False porque el segundo diario no va a
-    #     estar completado. Como nosotros tenemos un menú especifico para poder registrar las transferencias internas,
-    #     entonces si estamos en este menu siempre es transferencia interna"""
-    #     if self._context.get('default_is_internal_transfer'):
-    #         self.is_internal_transfer = True
-    #     else:
-    #         return super()._compute_is_internal_transfer()
-
     def _create_paired_internal_transfer_payment(self):
         for rec in self:
             super(AccountPayment, rec.with_context(
@@ -334,22 +332,27 @@ class AccountPayment(models.Model):
     # desde modelo account.payment.group
     ####################################
 
-    @api.depends('line_ids')
+    @api.depends('move_id.line_ids')
     def _compute_matched_move_line_ids(self):
         """
-        Lar partial reconcile vinculan dos apuntes con credit_move_id y
+        Las partial reconcile vinculan dos apuntes con credit_move_id y
         debit_move_id.
         Buscamos primeros todas las que tienen en credit_move_id algun apunte
         de los que se genero con un pago, etnonces la contrapartida
         (debit_move_id), son cosas que se pagaron con este pago. Repetimos
         al revz (debit_move_id vs credit_move_id)
+        El depends en account de odoo para casos similares usa
+        @api.depends('move_id.line_ids.matched_debit_ids', 'move_id.line_ids.matched_credit_ids')
+        Aca preferimos mantener  move_id.line_ids por cuestiones de performace.
+        Si _compute_matched_move_line_ids fuera stored cambiariamos el depend
         TODO v18, ver si podemos reutilizar reconciled_invoice_ids y/o reconciled_bill_ids
         al menos podremos re-usar codigo sql para optimizar performance
         Por ahora no lo estamos usando porque el actual código de odoo solo muestra facturas o algo así (por ej. si hay
         conciliacion de deuda de un asiento normal no lo muestra)
         """
-        for rec in self:
-            payment_lines = rec.line_ids.filtered(lambda x: x.account_type in self._get_valid_payment_account_types())
+        stored_payments = self.filtered('id')
+        for rec in stored_payments:
+            payment_lines = rec.move_id.line_ids.filtered(lambda x: x.account_type in self._get_valid_payment_account_types())
             debit_moves = payment_lines.mapped('matched_debit_ids.debit_move_id')
             credit_moves = payment_lines.mapped('matched_credit_ids.credit_move_id')
             debit_lines_sorted = debit_moves.filtered(lambda x: x.date_maturity != False).sorted(key=lambda x: (x.date_maturity, x.move_id.name))
@@ -357,6 +360,8 @@ class AccountPayment(models.Model):
             debit_lines_without_date_maturity = debit_moves - debit_lines_sorted
             credit_lines_without_date_maturity = credit_moves - credit_lines_sorted
             rec.matched_move_line_ids = ((debit_lines_sorted + debit_lines_without_date_maturity) | (credit_lines_sorted + credit_lines_without_date_maturity)) - payment_lines
+
+        (self - stored_payments).matched_move_line_ids = False
 
     @api.depends(
         'state',
@@ -366,7 +371,7 @@ class AccountPayment(models.Model):
         for rec in self:
             rec.matched_amount = 0.0
             rec.unmatched_amount = 0.0
-            if rec.state != 'posted':
+            if rec.state == 'draft':
                 continue
             # damos vuelta signo porque el payments_amount tmb lo da vuelta,
             # en realidad porque siempre es positivo y se define en funcion
@@ -502,7 +507,7 @@ class AccountPayment(models.Model):
     def action_post(self):
         res = super().action_post()
         for rec in self:
-            counterpart_aml = rec.mapped('line_ids').filtered(
+            counterpart_aml = rec.mapped('move_id.line_ids').filtered(
                 lambda r: not r.reconciled and r.account_id.account_type in self._get_valid_payment_account_types())
             if counterpart_aml and rec.to_pay_move_line_ids:
                 (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile()
