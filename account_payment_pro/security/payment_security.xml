@@ -9,12 +9,6 @@
             <field name="category_id" ref="base.module_category_hidden"/>
             <field name="name">Allow pay now on vendor invoices</field>
         </record>
-        <record id="account_confirm_payment" model="res.groups">
-            <field name="name">Confirm payments (only if double validation is enabled)</field>
-            <field name="implied_ids" eval="[(4, ref('account.group_account_invoice'))]"/>
-            <field name="users" eval="[(4, ref('base.user_root'))]"/>
-            <field name="category_id" ref="base.module_category_usability"/>
-        </record>
         <record id="account_write_off_type_company_rule" model="ir.rule">
             <field name="name">Write Off Type multi-company</field>
             <field name="model_id" ref="model_account_write_off_type"/>
