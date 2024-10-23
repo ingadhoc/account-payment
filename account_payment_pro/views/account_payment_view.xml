@@ -11,33 +11,6 @@
         </field>
     </record>
 
-    <record id="view_account_supplier_payment_tree" model="ir.ui.view">
-        <field name="name">account.payment.tree</field>
-        <field name="model">account.payment</field>
-        <field name="inherit_id" ref="account.view_account_supplier_payment_tree"/>
-        <field name="arch" type="xml">
-            <header>
-                <button name="action_approve" string="Approve" groups="account_payment_pro.account_confirm_payment" type="object"/>
-            </header>
-            <field name="state" position="after">
-                <field name="is_approved" optional="hide"/>
-            </field>
-        </field>
-    </record>
-
-    <record id="view_account_payment_search" model="ir.ui.view">
-        <field name="name">account.payment.search</field>
-        <field name="model">account.payment</field>
-        <field name="inherit_id" ref="account.view_account_payment_search"/>
-        <field name="arch" type="xml">
-            <filter name="date" position='after'>
-                <separator/>
-                <filter string="Approved" name="is_approved" domain="[('is_approved', '=', True), ('state', '=', 'draft')]"/>
-                <filter string="Not approved" name="not_is_approved" domain="[('is_approved', '=', False), ('state', '=', 'draft')]"/>
-            </filter>
-        </field>
-    </record>
-
 <record id="view_account_payment_form" model="ir.ui.view">
     <field name="name">account.payment.form</field>
     <field name="model">account.payment</field>
@@ -50,12 +23,11 @@
         <form>
             <field name="commercial_partner_id" invisible="True"/>
             <field name="write_off_available" invisible="True"/>
-            <field name="is_approved" invisible="True"/>
             <field name="use_payment_pro" invisible="True"/>
         </form>
 
         <button name="action_post" position="after">
-            <button name="action_post_and_new" string="Confirm and New" type="object" invisible="is_internal_transfer or state != 'draft' or payment_difference &lt;= 0.0 or not is_approved"/>
+            <button name="action_post_and_new" string="Confirm and New" type="object" invisible="is_internal_transfer or state != 'draft' or payment_difference &lt;= 0.0"/>
         </button>
 
         <xpath expr="//field[@name='partner_id'][1]" position="attributes">
@@ -69,18 +41,6 @@
         <field name="partner_id" position="before">
             <field name="company_id" options="{'no_create': True}" domain="[('id', 'in', allowed_company_ids)]" groups="base.group_multi_company" readonly="state != 'draft' or context.get('default_company_id')"/>
         </field>
-
-        <xpath expr="//div[@name='button_box']" position="after">
-            <span class="badge rounded-pill text-bg-success float-end fs-6" invisible="not is_approved">
-                <i class="fa fa-fw fa-check" aria-label="Approved" title="Approved" role="img"/>
-                <span class="d-none d-md-inline">Approved</span>
-            </span>
-        </xpath>
-
-        <button name="action_post" position="before">
-            <button name="action_approve" class="oe_highlight" string="Approve" groups="account_payment_pro.account_confirm_payment" invisible="state != 'draft'" type="object"/>
-            <button name="action_unapprove" string="Back to Edit" invisible="state != 'draft' or not is_approved" type="object"/>
-        </button>
 
         <!-- movemos amount a la columna 2 para que quede todo lo relativo al metodo de pago junto -->
         <group name="group2">
