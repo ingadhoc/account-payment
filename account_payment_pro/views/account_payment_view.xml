@@ -1,40 +1,13 @@
 <odoo>
 
     <record id="view_account_payment_tree" model="ir.ui.view">
-        <field name="name">account.payment.tree</field>
+        <field name="name">account.payment.list</field>
         <field name="model">account.payment</field>
         <field name="inherit_id" ref="account.view_account_payment_tree"/>
         <field name="arch" type="xml">
             <field name="amount_company_currency_signed" position="after">
                 <field name="payment_total" sum="Total" optional="show"/>
             </field>
-        </field>
-    </record>
-
-    <record id="view_account_supplier_payment_tree" model="ir.ui.view">
-        <field name="name">account.payment.tree</field>
-        <field name="model">account.payment</field>
-        <field name="inherit_id" ref="account.view_account_supplier_payment_tree"/>
-        <field name="arch" type="xml">
-            <header>
-                <button name="action_approve" string="Approve" groups="account_payment_pro.account_confirm_payment" type="object"/>
-            </header>
-            <field name="state" position="after">
-                <field name="is_approved" optional="hide"/>
-            </field>
-        </field>
-    </record>
-
-    <record id="view_account_payment_search" model="ir.ui.view">
-        <field name="name">account.payment.search</field>
-        <field name="model">account.payment</field>
-        <field name="inherit_id" ref="account.view_account_payment_search"/>
-        <field name="arch" type="xml">
-            <filter name="date" position='after'>
-                <separator/>
-                <filter string="Approved" name="is_approved" domain="[('is_approved', '=', True), ('state', '=', 'draft')]"/>
-                <filter string="Not approved" name="not_is_approved" domain="[('is_approved', '=', False), ('state', '=', 'draft')]"/>
-            </filter>
         </field>
     </record>
 
@@ -50,12 +23,11 @@
         <form>
             <field name="commercial_partner_id" invisible="True"/>
             <field name="write_off_available" invisible="True"/>
-            <field name="is_approved" invisible="True"/>
             <field name="use_payment_pro" invisible="True"/>
         </form>
 
         <button name="action_post" position="after">
-            <button name="action_post_and_new" string="Confirm and New" type="object" invisible="is_internal_transfer or state != 'draft' or payment_difference &lt;= 0.0 or not is_approved"/>
+            <button name="action_post_and_new" string="Confirm and New" type="object" invisible="state != 'draft' or payment_difference &lt;= 0.0"/>
         </button>
 
         <xpath expr="//field[@name='partner_id'][1]" position="attributes">
@@ -69,18 +41,6 @@
         <field name="partner_id" position="before">
             <field name="company_id" options="{'no_create': True}" domain="[('id', 'in', allowed_company_ids)]" groups="base.group_multi_company" readonly="state != 'draft' or context.get('default_company_id')"/>
         </field>
-
-        <xpath expr="//div[@name='button_box']" position="after">
-            <span class="badge rounded-pill text-bg-success float-end fs-6" invisible="not is_approved">
-                <i class="fa fa-fw fa-check" aria-label="Approved" title="Approved" role="img"/>
-                <span class="d-none d-md-inline">Approved</span>
-            </span>
-        </xpath>
-
-        <button name="action_post" position="before">
-            <button name="action_approve" class="oe_highlight" string="Approve" groups="account_payment_pro.account_confirm_payment" invisible="state != 'draft'" type="object"/>
-            <button name="action_unapprove" string="Back to Edit" invisible="state != 'draft' or not is_approved" type="object"/>
-        </button>
 
         <!-- movemos amount a la columna 2 para que quede todo lo relativo al metodo de pago junto -->
         <group name="group2">
@@ -98,21 +58,20 @@
                 <field name="amount_company_currency" readonly="state != 'draft'"/>
                 <label for="amount_company_currency" string=" " invisible="not other_currency"/>
             </div>
-            
-            <label for="write_off_amount" string="Write Off"  invisible="not write_off_available or is_internal_transfer or not use_payment_pro"/>
-            <div name="write_off_amount" class="o_row" invisible="not write_off_available or is_internal_transfer or not use_payment_pro">
-                <field name="write_off_amount"/>
-                <field name="write_off_type_id" placeholder="Write-off type" invisible="not write_off_amount" required="write_off_amount" options="{'no_create': True, 'no_open': True}"/>
+            <label for="write_off_amount" string="Write Off"  invisible="not write_off_available or not use_payment_pro"/>
+            <div name="write_off_amount" class="o_row" invisible="not write_off_available or not use_payment_pro">
+                <field name="write_off_amount" readonly="state != 'draft'"/>
+                <field name="write_off_type_id" placeholder="Write-off type" invisible="not write_off_amount" readonly="state != 'draft'" required="write_off_amount" options="{'no_create': True, 'no_open': True}"/>
             </div>
-            <label for="payment_total" readonly="state != 'draft'" invisible="is_internal_transfer or not use_payment_pro"/>
-            <div name="payment_total" invisible="is_internal_transfer or not use_payment_pro">
+            <label for="payment_total" readonly="state != 'draft'" invisible="not use_payment_pro"/>
+            <div name="payment_total" invisible="not use_payment_pro">
                 <field name="payment_total" class="oe_inline"/>
                 <span invisible="state != 'draft'" class="text-muted"> (difference <field name="payment_difference" class="oe_inline"/>)</span>
             </div>
         </div>
 
         <sheet>
-            <notebook invisible="is_internal_transfer or not use_payment_pro">
+            <notebook invisible="not use_payment_pro">
                 <page string="Debts" invisible="state != 'draft'">
                     <group >
                         <group>
@@ -132,9 +91,9 @@
                     <button name="remove_all" string="Remove All" invisible="state != 'draft'" type="object"/>
                     <button name="%(action_account_payment_invoice_wizard)d" string="+ Debit Note" invisible="state != 'draft'" type="action" context="{'internal_type': 'debit_note'}"/>
                     <button name="%(action_account_payment_invoice_wizard)d" string="+ Credit Note" invisible="state != 'draft'" context="{'refund': True}" type="action"/>
-                    <field name="to_pay_move_line_ids" readonly="state != 'draft'" context="{'tree_view_ref': 'account_payment_pro.view_move_line_tree'}" domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.reconcile', '=', True),('reconciled', '=', False), ('full_reconcile_id', '=', False), ('company_id', '=', company_id), ('move_id.state', '=', 'posted'), ('account_id.account_type', '=', 'asset_receivable' if partner_type == 'customer' else 'liability_payable')]" help="Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched."/>
+                    <field name="to_pay_move_line_ids" readonly="state != 'draft'" context="{'list_view_ref': 'account_payment_pro.view_move_line_tree'}" domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.reconcile', '=', True),('reconciled', '=', False), ('full_reconcile_id', '=', False), ('company_id', '=', company_id), ('move_id.state', '=', 'posted'), ('account_id.account_type', '=', 'asset_receivable' if partner_type == 'customer' else 'liability_payable')]" help="Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched."/>
                 </page>
-                <page string="Paid" name="paid" invisible="state != 'posted'">
+                <page string="Paid" name="paid" invisible="state == 'draft'">
                     <group>
                         <group>
                             <field name="matched_amount" invisible="not matched_amount"/>
@@ -143,7 +102,7 @@
                             <field name="unmatched_amount" invisible="not unmatched_amount"/>
                         </group>
                     </group>
-                    <field name="matched_move_line_ids" context="{'tree_view_ref': 'account_payment_pro.view_move_line_with_matched_tree'}"/>
+                    <field name="matched_move_line_ids" context="{'list_view_ref': 'account_payment_pro.view_move_line_with_matched_tree'}"/>
                 </page>
             </notebook>
         </sheet>
@@ -152,11 +111,11 @@
 </record>
 
 <record id="view_move_line_tree" model="ir.ui.view">
-    <field name="name">account.move.line.tree</field>
+    <field name="name">account.move.line.list</field>
     <field name="model">account.move.line</field>
     <field eval="99" name="priority"/>
     <field name="arch" type="xml">
-        <tree string="Journal Items" edit="1">
+        <list string="Journal Items" edit="1">
             <field name="date" readonly="True"/>
             <field name="date_maturity" optional="hide" readonly="True"/>
             <field name="move_id" required="0" readonly="True"/>
@@ -164,7 +123,7 @@
             <field name="name" readonly="True" optional="hide"/>
             <field name="ref" optional="show" readonly="True"/>
             <field name="statement_id" column_invisible="True" readonly="True"/>
-            <field name="account_id" options='{"no_open":True}' domain="[('company_id', '=', company_id)]" readonly="True" optional="hide"/>
+            <field name="account_id" options='{"no_open":True}' domain="[('company_ids', '=', company_id)]" readonly="True" optional="hide"/>
             <field name="balance" optional="hide" string="Amount" readonly="True"/>
             <field name="amount_residual" readonly="True"/>
             <field name="amount_currency" groups="base.group_multi_currency" readonly="True"/>
@@ -173,12 +132,12 @@
             <field name="company_currency_id" column_invisible="True" readonly="True"/>
             <field name="company_id" column_invisible="True" readonly="True"/>
             <!--button type="object" icon="fa-external-link" help="Open Related Document" name="action_open_related_document"/-->
-        </tree>
+        </list>
     </field>
 </record>
 
 <record id="view_move_line_with_matched_tree" model="ir.ui.view">
-    <field name="name">account.move.line.tree</field>
+    <field name="name">account.move.line.list</field>
     <field name="model">account.move.line</field>
     <field eval="99" name="priority"/>
     <field name="mode">primary</field>
@@ -189,26 +148,4 @@
         </field>
     </field>
 </record>
-<!-- <record id="view_account_payment_form2" model="ir.ui.view">
-        <field name="name">account.payment.form</field>
-        <field name="model">account.payment</field>
-        <field name="inherit_id" ref="account.view_account_payment_form"/>
-        <field name="mode">primary</field>
-        <field name="arch" type="xml">
-            <field name="journal_id" position="attributes">
-                <attribute name="nolabel">1</attribute>
-            </field>
-            <field name="destination_journal_id" position="attributes">
-                <attribute name="nolabel">1</attribute>
-            </field>
-            <xpath expr="//field[@name='journal_id']" position="before">
-                <field name="label_journal_id" nolabel="1"/>
-            </xpath>
-
-            <xpath expr="//field[@name='destination_journal_id']" position="before">
-                <field name="label_destination_journal_id" nolabel="1"/>
-            </xpath>
-        </field>
-    </record> -->
-
 </odoo>
