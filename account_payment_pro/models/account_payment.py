@@ -444,7 +444,8 @@ class AccountPayment(models.Model):
             default_company_id=self.company_id.id,
             default_partner_id=self.partner_id.id).action_register_payment()
 
-    @api.depends('to_pay_move_line_ids', 'to_pay_move_line_ids.amount_residual')
+    # deberiamos ver de evitar "to_pay_move_line_ids.amount_residual"
+    @api.depends('to_pay_move_line_ids')
     def _compute_selected_debt(self):
         for rec in self:
             # factor = 1
