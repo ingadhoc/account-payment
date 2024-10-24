@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-03 20:21+0000\n"
+"POT-Creation-Date: 2024-10-23 20:03+0000\n"
 "PO-Revision-Date: 2024-01-19 13:12+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2024\n"
 "Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
@@ -69,6 +69,18 @@ msgstr "Añadir todo / Refrescar"
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__unreconciled_amount
 msgid "Adjustment / Advance"
 msgstr "Ajuste / Adelanto"
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_journal__algolia_search
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_move__algolia_search
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_move_line__algolia_search
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__algolia_search
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__algolia_search
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__algolia_search
+#: model:ir.model.fields,field_description:account_payment_pro.field_res_company__algolia_search
+#: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__algolia_search
+msgid "Algolia Search"
+msgstr "Busqueda Avanzada"
 
 #. module: account_payment_pro
 #. odoo-python
