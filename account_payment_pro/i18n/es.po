@@ -136,12 +136,6 @@ msgid "Approve"
 msgstr "Aprobar"
 
 #. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__is_approved
-#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_search
-msgid "Approved"
-msgstr "Aprobado"
-
-#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__available_journal_ids
 msgid "Available Journal"
 msgstr "Diario disponible"
@@ -181,11 +175,6 @@ msgstr "Confirmar"
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "Confirm and New"
 msgstr "Confirmar y Nuevo"
-
-#. module: account_payment_pro
-#: model:res.groups,name:account_payment_pro.account_confirm_payment
-msgid "Confirm payments (only if double validation is enabled)"
-msgstr "Confirmar pagos (solo si está habilitada la doble validación)"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__create_uid
