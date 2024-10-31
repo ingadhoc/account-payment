@@ -16,17 +16,17 @@
     </record>
 
     <record id="view_receipt_receiptbook_tree" model="ir.ui.view">
-        <field name="name">account.payment.receiptbook.tree</field>
+        <field name="name">account.payment.receiptbook.list</field>
         <field name="model">account.payment.receiptbook</field>
         <field name="arch" type="xml">
-            <tree string="Receipt Books">
+            <list string="Receipt Books">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="report_partner_id"/>
                 <field name="partner_type"/>
                 <field name="document_type_id"/>
                 <field name="company_id" widget="selection" groups="base.group_multi_company"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -61,7 +61,7 @@
     <record id="action_receiptbook_form" model="ir.actions.act_window">
         <field name="name">Receiptbooks</field>
         <field name="res_model">account.payment.receiptbook</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_receipt_receiptbook_search"/>
     </record>
 

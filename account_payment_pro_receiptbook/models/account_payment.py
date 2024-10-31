@@ -23,10 +23,8 @@ class AccountPayment(models.Model):
             if not rec.receiptbook_id.sequence_id:
                 raise ValidationError(_(
                     'Error!. Please define sequence on the receiptbook related documents to this payment.'))
-
-            rec.l10n_latam_document_type_id = rec.receiptbook_id.document_type_id.id
             name = rec.receiptbook_id.with_context(ir_sequence_date=rec.date).sequence_id.next_by_id()
-            rec.name = "%s %s" % (rec.l10n_latam_document_type_id.doc_code_prefix, name)
+            rec.name = "%s %s" % (rec.receiptbook_id.document_type_id.doc_code_prefix, name)
 
         res = super().action_post()
 

@@ -5,7 +5,7 @@ class AccountMove(models.Model):
     _inherit = "account.move"
 
     receiptbook_id = fields.Many2one(
-        related='payment_id.receiptbook_id',
+        related='origin_payment_id.receiptbook_id',
         store=True,
     )
 
@@ -29,10 +29,10 @@ class AccountMove(models.Model):
         return where_string, param
 
     @api.model
-    def _search(self, domain, offset=0, limit=None, order=None, access_rights_uid=None):
+    def _search(self, domain, *args, **kwargs):
         if self._context.get('without_receiptbook_id'):
             domain += [('receiptbook_id', '=', False)]
-        return super()._search(domain, offset=offset, limit=limit, order=order, access_rights_uid=access_rights_uid)
+        return super()._search(domain, *args, **kwargs)
 
     def _compute_made_sequence_hole(self):
         receiptbook_recs = self.filtered(lambda x: x.receiptbook_id and x.journal_id.type in ('bank', 'cash'))
