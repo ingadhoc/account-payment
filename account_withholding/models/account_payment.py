@@ -51,6 +51,9 @@ class AccountPayment(models.Model):
         for payment in (without_number - without_sequence):
             payment.withholding_number = \
                 payment.tax_withholding_id.withholding_sequence_id.next_by_id()
+        # Necesitamos que el nro de retencíon vaya al apunte contable
+        for payment in self.filtered('withholding_number'):
+            payment.line_ids.filtered(lambda x: x.tax_line_id == payment.tax_withholding_id and (not x.name or x.name == '/')).name = payment.withholding_number
 
         return super(AccountPayment, self).action_post()
 
