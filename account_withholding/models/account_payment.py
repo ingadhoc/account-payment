@@ -68,6 +68,9 @@ class AccountPayment(models.Model):
         for payment in (without_number - without_sequence):
             payment.withholding_number = \
                 payment.tax_withholding_id.withholding_sequence_id.next_by_id()
+        # Necesitamos que el nro de retencíon vaya al apunte contable
+        for payment in self.filtered('withholding_number'):
+            payment.line_ids.filtered(lambda x: x.tax_line_id == payment.tax_withholding_id and (not x.name or x.name == '/')).name = payment.withholding_number
 
         # en los apuntes de retenciones necesitamos que quede tax_line_id vinculado para poder hacer liquidaciones
         # de impuestos. Anteriormente pasabamos el tax_repartition_line_id en _prepare_move_line_default_vals
