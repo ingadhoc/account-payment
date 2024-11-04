@@ -47,6 +47,10 @@ class AccountPaymentGroup(models.Model):
                 wiz.amount_total = financing_surcharge_to_invoice
                 wiz.confirm()
 
+                # We added this commit in case the connection is lost or there is an error before payment 
+                # validation and prevents the debit note from being created multiple times
+                self.env.cr.commit()
+
                 # If we are registering a payment of a draft invoice then we need to remove the invoice from the debts of the payment group
                 # in order to be able to post/reconcile the payment group (this is needed because in odoo 16 we are not able to renconcile
                 # draft account.move. only can reconcile posted ones)
