@@ -65,6 +65,7 @@ class AccountMove(models.Model):
                 payment.payment_method_id = pay_journal._get_manual_payment_method_id(payment_type).id
             payment.amount = abs(payment.payment_difference)
             payment.action_post()
+            rec.write({'matched_payment_ids': [(4, payment.id)]})
 
     @api.onchange('journal_id')
     def _onchange_journal_reset_pay_now(self):
