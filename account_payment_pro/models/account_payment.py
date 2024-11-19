@@ -512,6 +512,9 @@ class AccountPayment(models.Model):
                 lambda r: not r.reconciled and r.account_id.account_type in self._get_valid_payment_account_types())
             if counterpart_aml and rec.to_pay_move_line_ids:
                 (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile()
+            if rec.company_id.use_payment_pro: 
+                for invoices in (rec.reconciled_invoice_ids + rec.reconciled_bill_ids):
+                    invoices.matched_payment_ids += rec
 
         return res
 
