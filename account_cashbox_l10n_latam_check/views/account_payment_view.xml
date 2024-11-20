@@ -3,7 +3,7 @@
 <!-- Third party check Views and menus -->
 
     <record model="ir.ui.view" id="view_account_third_party_check_tree">
-        <field name="name">account.check.tree</field>
+        <field name="name">account.check.list</field>
         <field name="model">account.payment</field>
         <field name="inherit_id" ref="l10n_latam_check.view_account_third_party_check_tree"/>
         <field name="arch" type="xml">
