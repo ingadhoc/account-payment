@@ -6,7 +6,7 @@
     'author': 'ADHOC SA',
     'website': "https://www.adhoc.com.ar",
     'category': 'Technical',
-    'version': "18.0.1.0.0",
+    'version': "18.0.1.1.0",
     'depends': ['product', 'account'],
     'license': 'LGPL-3',
     'images': [

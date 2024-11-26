@@ -30,7 +30,7 @@ class AccountCardInstallment(models.Model):
     surcharge_coefficient = fields.Float(
         default=1.0,
         digits='Installment coefficient',
-        help='Factor a aplicar sobre el monto total para calcular el cargo financiero'
+        help='Factor a aplicar sobre el monto total para calcular el cargo financiero. Por ejemplo el formato para el recargo de un 6% se aplica con el valor 1.06.'
     )
     bank_discount = fields.Float(
         help='Porcentaje de reintegro (el reintegro se efectúa sobre el total incluído el recargo financiero) que acuerda el vendedor con el banco o marca de tarjeta para devolución en compra'
