@@ -1,3 +1,5 @@
-id,sequence,code,name,report_name,internal_type,doc_code_prefix
-dc_recibo_x,780,,RECIBOS X,RECIBO,customer_payment,RE-X
-dc_orden_pago_x,800,,ORDEN DE PAGO X,ORDEN DE PAGO,supplier_payment,OP-X
+id,sequence,code,name,report_name,internal_type,doc_code_prefix,country_id:id,code
+dc_recibo_x,780,,RECIBOS X,RECIBO,customer_payment,RE-X,base.ar,9999
+dc_orden_pago_x,800,,ORDEN DE PAGO X,ORDEN DE PAGO,supplier_payment,OP-X,base.ar,9999
+dc_recibo_x_uy,780,,RECIBOS X,RECIBO,customer_payment,RE-X,base.uy,
+dc_orden_pago_x_uy,800,,ORDEN DE PAGO X,ORDEN DE PAGO,supplier_payment,OP-X,base.uy,

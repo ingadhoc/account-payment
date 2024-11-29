@@ -57,8 +57,8 @@ class AccountPaymentReceiptbook(models.Model):
     sequence_id = fields.Many2one(
         'ir.sequence',
         'Entry Sequence',
-        help="This field contains the information related to the numbering "
-        "of the receipt entries of this receiptbook.",
+        help="This field contains the information related to the numbering of the receipt entries of this receiptbook."
+        " If you leave it empty you'll need to give the numbers manually.",
         copy=False,
     )
     company_id = fields.Many2one(
@@ -67,6 +67,8 @@ class AccountPaymentReceiptbook(models.Model):
         required=True,
         default=lambda self: self.env.company
     )
+    # TODO tal vez deberiamos usar account_fiscal_country_id pero vimos casos donde se computa mal
+    company_country_id = fields.Many2one(related='company_id.country_id')
     prefix = fields.Char(
         'Prefix',
         # required=True,

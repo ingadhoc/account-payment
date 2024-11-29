@@ -36,6 +36,7 @@
         <field name="arch" type="xml">
             <form string="Receipt Books">
                 <field name="company_id" invisible="True"/>
+                <field name="company_country_id" invisible="True"/>
                 <sheet string="Receipt Books">
                     <group>
                         <group>
@@ -45,7 +46,7 @@
                             <field name="mail_template_id"  context="{'default_model': 'account.payment'}"/>
                         </group>
                         <group>
-                            <field name="document_type_id"/>
+                            <field name="document_type_id" domain="[('country_id', '=', company_country_id)]"/>
                             <field name="prefix"/>
                             <field name="sequence_id"/>
                             <field name="next_number"/>

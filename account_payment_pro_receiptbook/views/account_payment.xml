@@ -6,6 +6,11 @@
         <field name="arch" type="xml">
             <field name="ref" position="after">
                 <field name="receiptbook_id" invisible="is_internal_transfer or not use_payment_pro" readonly="state != 'draft'" required="state == 'draft'" options='{"no_open": True, "no_create": True}'/>
+                <field name="l10n_latam_manual_document_number" invisible="1"/>
+                <field name="l10n_latam_document_number"
+                    invisible="not l10n_latam_manual_document_number"
+                    readonly="posted_before and state != 'draft'"
+                    required="l10n_latam_manual_document_number"/>
             </field>
         </field>
     </record>

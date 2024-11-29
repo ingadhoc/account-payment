@@ -31,7 +31,8 @@ class AccountChartTemplate(models.AbstractModel):
                 continue
 
             document_type = self.env['l10n_latam.document.type'].search([
-                ('internal_type', '=', '%s_payment' % partner_type)
+                ('internal_type', '=', '%s_payment' % partner_type),
+                ('country_id', '=', company.country_id.id),
             ], limit=1)
             if not document_type:
                 continue
