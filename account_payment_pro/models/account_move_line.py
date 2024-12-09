@@ -28,7 +28,8 @@ class AccountMoveLine(models.Model):
             rec.payment_matched_amount = debit_move_amount - credit_move_amount
 
     def action_register_payment(self):
-        if not self._context.get('force_payment_pro') and (len(self.company_id.ids) > 1 or not self.company_id.use_payment_pro):
+        to_pay_partners = self.mapped('move_id.commercial_partner_id')
+        if not self._context.get('force_payment_pro') and (len(self.company_id.ids) > 1 or not self.company_id.use_payment_pro) or len(to_pay_partners) > 1:
             return super().action_register_payment()
 
         to_pay_move_lines = self.filtered(
@@ -40,9 +41,6 @@ class AccountMoveLine(models.Model):
             if not partner_type or not to_pay_partner_id:
                 raise UserError(_('Nothing to be paid on selected entries'))
         else:
-            to_pay_partners = self.mapped('move_id.commercial_partner_id')
-            if len(to_pay_partners) > 1:
-                raise UserError(_('Selected recrods must be of the same partner'))
             to_pay_partner_id = to_pay_partners.id
             partner_type = 'customer' if to_pay_move_lines[0].account_id.account_type == 'asset_receivable' else 'supplier'
             company_id = self.company_id.id
