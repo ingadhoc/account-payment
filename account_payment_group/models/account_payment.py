@@ -280,3 +280,19 @@ class AccountPayment(models.Model):
             else:
                 rec.label_journal_id = "Diario de destino"
                 rec.label_destination_journal_id = "Diario de origen"
+
+    def action_draft(self):
+        # Seteamos posted_before en true para que nos permita pasar a borrador el pago y poder realizar cambio sobre el mismo
+        # Nos salteamos la siguente validacion
+        # https://github.com/odoo/odoo/blob/b6b90636938ae961c339807ea893cabdede9f549/addons/account/models/account_move.py#L2474
+        self.posted_before = False
+        super().action_draft()
+
+    def write(self, vals):
+        for rec in self:
+            # Lo siguiente lo evaluamos para evitar la validacion de odoo de 
+            # https://github.com/odoo/odoo/blob/b6b90636938ae961c339807ea893cabdede9f549/addons/account/models/account_move.py#L2476
+            # y permitirnos realizar la modificacion del journal.
+            if 'journal_id' in vals and rec.journal_id.id != vals['journal_id']:
+                rec.move_id.sequence_number = 0
+        return super().write(vals)
