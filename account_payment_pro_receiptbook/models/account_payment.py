@@ -47,7 +47,7 @@ class AccountPayment(models.Model):
                 rec.move_id.name = '/'
             else:
                 # Para que este tipo de documento ayude a formatear números en talonarios manuales es necesario
-                # que el document_type_id tenga país y por defecto los estamos creando sin
+                # que el document_type_id tenga país y por defecto los estamos creando sin. Ver mas info en commit message
                 l10n_latam_document_number = rec.receiptbook_id.document_type_id._format_document_number(rec.l10n_latam_document_number)
                 if rec.l10n_latam_document_number != l10n_latam_document_number:
                     rec.l10n_latam_document_number = l10n_latam_document_number

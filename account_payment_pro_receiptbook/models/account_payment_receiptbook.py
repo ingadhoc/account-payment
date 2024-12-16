@@ -67,8 +67,6 @@ class AccountPaymentReceiptbook(models.Model):
         required=True,
         default=lambda self: self.env.company
     )
-    # TODO tal vez deberiamos usar account_fiscal_country_id pero vimos casos donde se computa mal
-    company_country_id = fields.Many2one(related='company_id.country_id')
     prefix = fields.Char(
         'Prefix',
         # required=True,
