@@ -16,6 +16,35 @@
                         <field name="use_payment_pro"/>
                     </setting>
                 </setting>
+                  <!-- supplier payments section -->
+                <xpath expr="//block[@id='print_vendor_checks_setting_container']" position="inside">
+                    <div class="col-xs-12 col-md-6 o_setting_box" title="Allow users to choose a payment journal on invoices so that invoice is automatically paid after invoice validation. A payment will be created using choosen journal">
+                        <div class="o_setting_left_pane">
+                            <field name="group_pay_now_vendor_invoices"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="group_pay_now_vendor_invoices"/>
+                            <div class="text-muted">
+                                Allow to pay vendor invoices automatically on invoice validation.
+                            </div>
+                        </div>
+                    </div>
+                </xpath>
+
+                <!-- customer payments section-->
+                <xpath expr="//block[@id='pay_invoice_online_setting_container']" position="inside">
+                    <div class="col-xs-12 col-md-6 o_setting_box" title="Allow users to choose a payment journal on invoices so that invoice is automatically paid after invoice validation. A payment will be created using choosen journal">
+                        <div class="o_setting_left_pane">
+                            <field name="group_pay_now_customer_invoices"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="group_pay_now_customer_invoices"/>
+                            <div class="text-muted">
+                                Allow to pay customer invoices automatically on invoice validation.
+                            </div>
+                        </div>
+                    </div>
+                 </xpath>
             </field>
         </record>
     </data>
