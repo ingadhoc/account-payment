@@ -120,7 +120,7 @@
     <field name="model">account.move.line</field>
     <field eval="99" name="priority"/>
     <field name="arch" type="xml">
-        <list string="Journal Items" edit="1">
+        <list string="Journal Items" edit="0" create="0" editable="bottom">
             <field name="date" readonly="True"/>
             <field name="date_maturity" optional="hide" readonly="True"/>
             <field name="move_id" required="0" readonly="True"/>

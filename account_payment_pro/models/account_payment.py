@@ -442,8 +442,7 @@ class AccountPayment(models.Model):
             #     factor = -1
             # rec.selected_debt = sum(rec.to_pay_move_line_ids._origin.mapped('amount_residual')) * factor
 
-    @api.depends(
-        'selected_debt', 'unreconciled_amount')
+    @api.depends('selected_debt', 'unreconciled_amount')
     def _compute_to_pay_amount(self):
         for rec in self:
             rec.to_pay_amount = rec.selected_debt + rec.unreconciled_amount
