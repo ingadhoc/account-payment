@@ -134,6 +134,7 @@ class AccountPayment(models.Model):
         res = super()._get_trigger_fields_to_synchronize()
         return res + ('withholding_number', 'tax_withholding_id')
 
+    @api.depends('tax_withholding_id')
     def _compute_outstanding_account_id(self):
         withholding_payments = self.filtered(lambda x: x.payment_method_code == 'withholding')
         for withholding_payment in withholding_payments:
@@ -143,3 +144,4 @@ class AccountPayment(models.Model):
                 account = rep_line.account_id.id
             withholding_payment.outstanding_account_id = account
         return super(AccountPayment, self - withholding_payments)._compute_outstanding_account_id()
+
