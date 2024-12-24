@@ -11,6 +11,9 @@
                 <field name="partner_type"/>
                 <field name="document_type_id"/>
                 <field name="company_id" widget="selection" groups="base.group_multi_company"/>
+                <separator/>
+                    <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <separator/>
             </search>
         </field>
     </record>
@@ -37,6 +40,8 @@
             <form string="Receipt Books">
                 <field name="company_id" invisible="True"/>
                 <sheet string="Receipt Books">
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
                     <group>
                         <group>
                             <field name="name"/>
@@ -50,7 +55,6 @@
                             <field name="sequence_id"/>
                             <field name="next_number"/>
                             <field name="company_id" widget="selection" groups="base.group_multi_company"/>
-                            <field name="active"/>
                         </group>
                     </group>
                 </sheet>

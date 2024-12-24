@@ -25,6 +25,10 @@ class AccountPayment(models.Model):
                 (x.move_id and not x.move_id._get_last_sequence())
             )
         ):
+            if not rec.receiptbook_id.active:
+                raise ValidationError(_(
+                    'Error! The receiptbook "%s" is archived. Please use a differente receipbook.'
+                ) % rec.receiptbook_id.name)
             if not rec.receiptbook_id.sequence_id:
                 raise ValidationError(_(
                     'Error!. Please define sequence on the receiptbook related documents to this payment.'))
