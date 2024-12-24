@@ -5,7 +5,7 @@
         <field name="inherit_id" ref="account.view_account_payment_form"/>
         <field name="arch" type="xml">
             <field name="ref" position="after">
-                <field name="receiptbook_id" invisible="is_internal_transfer or not use_payment_pro" readonly="state != 'draft'" required="state == 'draft'" options='{"no_open": True, "no_create": True}'/>
+                <field name="receiptbook_id" invisible="is_internal_transfer or not use_payment_pro" readonly="state != 'draft'" required="state == 'draft'" options='{"no_create": True}'/>
             </field>
         </field>
     </record>

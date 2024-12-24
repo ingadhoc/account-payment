@@ -20,9 +20,13 @@ class AccountPayment(models.Model):
         # si no tengo nombre y tengo talonario de recibo, numeramos con el talonario
         for rec in self.filtered(
                 lambda x: x.receiptbook_id and (not x.name or x.name == '/' or not x.move_id._get_last_sequence())):
+            if not rec.receiptbook_id.active:
+                raise ValidationError(_(
+                    'Error! The receiptbook "%s" is archived. Please use a differente receipbook.'
+                ) % rec.receiptbook_id.name)
             if not rec.receiptbook_id.sequence_id:
                 raise ValidationError(_(
-                    'Error!. Please define sequence on the receiptbook related documents to this payment.'))
+                    'Error! Please define sequence on the receiptbook related documents to this payment.'))
 
             rec.l10n_latam_document_type_id = rec.receiptbook_id.document_type_id.id
             name = rec.receiptbook_id.with_context(ir_sequence_date=rec.date).sequence_id.next_by_id()
