@@ -28,7 +28,7 @@ class AccountMoveLine(models.Model):
             rec.payment_matched_amount = debit_move_amount - credit_move_amount
 
     def action_register_payment(self):
-        to_pay_partners = self.mapped('move_id.commercial_partner_id')
+        to_pay_partners = self.mapped('move_id.commercial_partner_id') or self.mapped('partner_id')
         company_pay_pro = len(self.mapped('company_id').ids) == 1 and self.mapped('company_id').use_payment_pro
         payment_pro = self._context.get('force_payment_pro')
         # si force_payment_pro se pasa como False estamos forzando no usar payment pro, vamos a metodo original
