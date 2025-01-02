@@ -299,7 +299,7 @@ class AccountPayment(models.Model):
         # triggereando un write y luego llamando a este metodo y dando error, por ahora no encontramos una mejor forma
         # esto esta ligado de alguna manera a un llamado que se hace dos veces por "culpa" del método
         # "_inverse_amount_company_currency". Si bien no es elegante para todas las pruebas que hicimos funcionó bien.
-        if self.mapped('open_move_line_ids'):
+        if self.mapped('move_id.line_ids'):
             res = res + ('force_amount_company_currency',)
         return res + ('write_off_amount', 'write_off_type_id',)
 
