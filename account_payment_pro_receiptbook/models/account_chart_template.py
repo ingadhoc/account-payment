@@ -42,4 +42,8 @@ class AccountChartTemplate(models.AbstractModel):
                 'document_type_id': document_type.id,
                 'prefix': '0001-',
             }
-            receipbook.create(vals)
+            # sudo() is used to bypass access restrictions during the initial creation
+            # of receiptbooks when creating an argentine company, 
+            # as the user might not yet have access to the newly created
+            # company due to multi-company rules.
+            receipbook.sudo().create(vals)
