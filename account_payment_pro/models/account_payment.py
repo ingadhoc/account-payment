@@ -520,7 +520,7 @@ class AccountPayment(models.Model):
     # por ahora solo lo computamos en el inicial cuando venimos desde factura
     # luego veremos si lo extendemos a distintos casos
     # (contemplando re-calculo de retenciones, cheques pre-seleccionados)
-    # @api.onchange('selected_debt')
-    # def onchange_selected_debt(self):
-    #     for rec in self:
-    #         rec.amount = rec.selected_debt
+    @api.onchange('selected_debt')
+    def onchange_selected_debt(self):
+        for rec in self:
+            rec.amount = rec.selected_debt
