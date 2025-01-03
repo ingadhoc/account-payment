@@ -27,7 +27,7 @@ class AccountMoveLine(models.Model):
             credit_move_amount = sum(payment_lines.mapped('matched_credit_ids').filtered(lambda x: x.credit_move_id == rec).mapped('amount'))
             rec.payment_matched_amount = debit_move_amount - credit_move_amount
 
-    def action_register_payment(self):
+    def action_register_payment(self, ctx=None):
         to_pay_partners = self.mapped('move_id.commercial_partner_id')
         company_pay_pro = len(self.mapped('company_id').ids) == 1 and self.mapped('company_id').use_payment_pro
         payment_pro = self._context.get('force_payment_pro')
@@ -70,4 +70,4 @@ class AccountMoveLine(models.Model):
                 'type': 'ir.actions.act_window',
             }
         else:
-            return super().action_register_payment()
+            return super().action_register_payment(ctx=ctx)
