@@ -14,9 +14,19 @@ class AccountPayment(models.Model):
         inverse='_inverse_amount_company_currency',
         currency_field='company_currency_id',
     )
+    counterpart_currency_amount = fields.Monetary(currency_field='counterpart_currency_id')
+    counterpart_currency_id = fields.Many2one('res.currency')
+    counterpart_exchange_rate = fields.Float(
+        compute='_compute_counterpart_exchange_rate',
+        inverse='inverse_counterpart_exchange_rate',
+        # readonly=False,
+        # inverse='_inverse_exchange_rate',
+        # digits=(16, 4),
+    )
     other_currency = fields.Boolean(
         compute='_compute_other_currency',
     )
+    journal_currency_id = fields.Many2one(related='journal_id.currency_id', string='Journal Currency')
     force_amount_company_currency = fields.Monetary(
         string='Forced Amount on Company Currency',
         currency_field='company_currency_id',
@@ -202,6 +212,22 @@ class AccountPayment(models.Model):
             else:
                 rec.exchange_rate = False
 
+    @api.depends('counterpart_currency_amount', 'counterpart_currency_id', 'payment_total')
+    def _compute_counterpart_exchange_rate(self):
+        for rec in self:
+            if rec.counterpart_currency_id and rec.counterpart_currency_amount:
+                rec.counterpart_exchange_rate = rec.payment_total / rec.counterpart_currency_amount
+            else:
+                rec.counterpart_exchange_rate = False
+
+    @api.onchange('counterpart_exchange_rate')
+    def inverse_counterpart_exchange_rate(self):
+        for rec in self:
+            if rec.counterpart_currency_id and rec.counterpart_exchange_rate:
+                rec.counterpart_currency_amount = rec.payment_total / rec.counterpart_exchange_rate
+            # else:
+            #     rec.counterpart_exchange_rate = False
+
     # this onchange is necesary because odoo, sometimes, re-compute
     # and overwrites amount_company_currency. That happends due to an issue
     # with rounding of amount field (amount field is not change but due to
@@ -294,6 +320,30 @@ class AccountPayment(models.Model):
             })
         return res
 
+    def _synchronize_to_moves(self, changed_fields):
+        """ Si tenemos counterpart currency modificamos el apunte de contrapartida (AP/AR).
+        Lo hacemos acá y no en _prepare_move_line_default_vals porque este último método es heredado por otros
+        (como retenciones) y si no necesitaríamos modulo puente para garantizar que se llame arriba.
+        """
+        super()._synchronize_to_moves(changed_fields)
+        if not any(field_name in changed_fields for field_name in self._get_trigger_fields_to_synchronize()):
+            return
+
+        for pay in self.filtered(lambda x: x.counterpart_currency_id and x.currency_id == x.company_id.currency_id and x.counterpart_currency_id != x.currency_id):
+            liquidity_lines, counterpart_lines, writeoff_lines = pay._seek_for_lines()
+            if pay.payment_type == 'inbound':
+                # Receive money.
+                liquidity_amount_currency = pay.counterpart_currency_amount
+            elif pay.payment_type == 'outbound':
+                # Send money.
+                liquidity_amount_currency = -pay.counterpart_currency_amount
+            counterpart_lines.with_context(skip_invoice_sync=True).write({
+                'currency_id': pay.counterpart_currency_id.id,
+                'amount_currency': -liquidity_amount_currency,
+                'debit': counterpart_lines.debit,
+                'credit': counterpart_lines.credit,
+            })
+
     @api.model
     def _get_trigger_fields_to_synchronize(self):
         res = super()._get_trigger_fields_to_synchronize()
@@ -302,7 +352,7 @@ class AccountPayment(models.Model):
         # esto esta ligado de alguna manera a un llamado que se hace dos veces por "culpa" del método
         # "_inverse_amount_company_currency". Si bien no es elegante para todas las pruebas que hicimos funcionó bien.
         if self.mapped('move_id'):
-            res = res + ('force_amount_company_currency',)
+            res = res + ('force_amount_company_currency', 'counterpart_currency_amount', 'counterpart_currency_id')
         return res + ('write_off_amount', 'write_off_type_id',)
 
     def _create_paired_internal_transfer_payment(self):

@@ -48,7 +48,12 @@
             <div name="amount_div" position="move"/>
         </group>
 
-        <!-- seccion para mejora pagos en otra moneda -->
+        <!-- queremos que la moneda sea la que define el diario y que para el resto se use counterpart currency (mas info en el porque de counterpart currency).
+        Ahora bien, hacemos este inivisble de esta manera por compatibilidad hacia atras, pagos que ya estaban con otra moneda van a tener el campo visible y editable -->
+        <xpath expr="//div[@name='amount_div']//field[@name='currency_id']" position="attributes">
+            <attribute name="invisible">currency_id in [journal_currency_id, company_currency_id]</attribute>
+        </xpath>
+
         <div name="amount_div" position="after">
             <field name="company_currency_id" invisible="True"/>
             <field name="other_currency" invisible="True"/>
@@ -68,6 +73,12 @@
                 <field name="payment_total" class="oe_inline"/>
                 <span invisible="state != 'draft'" class="text-muted"> (difference <field name="payment_difference" class="oe_inline"/>)</span>
             </div>
+            <label for="counterpart_currency_amount" string="Secondary Currency" invisible="other_currency" groups="base.group_multi_currency"/>
+            <div name="counterpart_currency_amount" class="o_row" invisible="other_currency" groups="base.group_multi_currency">
+                <field name="counterpart_currency_id" domain="[('id', '!=', currency_id)]" options="{'no_create': True, 'no_open': True}" readonly="state != 'draft'"/>
+                Rate = <field name="counterpart_exchange_rate" readonly="state != 'draft'"/>
+            </div>
+            <field name="counterpart_currency_amount" readonly="state != 'draft'" string="Payment Total (SC)" invisible="not counterpart_currency_id" required="counterpart_currency_id and not other_currency"/>
         </div>
     </field>
 </record>
