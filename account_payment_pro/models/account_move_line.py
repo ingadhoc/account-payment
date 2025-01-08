@@ -48,6 +48,13 @@ class AccountMoveLine(models.Model):
                 to_pay_partner_id = to_pay_partners.id
                 partner_type = 'customer' if to_pay_move_lines[0].account_id.account_type == 'asset_receivable' else 'supplier'
                 company_id = self.company_id.id
+            to_pay_amount = sum(line.amount_residual for line in to_pay_move_lines)
+            if to_pay_amount > 0:
+                payment_type = 'inbound'
+            elif to_pay_amount < 0:
+                payment_type = 'outbound'
+            else:
+                payment_type = 'inbound' if partner_type == 'customer' else 'outbound'
             return {
                 'name': _('Register Payment'),
                 'res_model': 'account.payment',
@@ -56,14 +63,13 @@ class AccountMoveLine(models.Model):
                 'context': {
                     'active_model': 'account.move.line',
                     'active_ids': self.ids,
-                    'default_payment_type': 'inbound' if partner_type == 'customer' else 'outbound',
+                    'default_payment_type': payment_type,
                     'default_partner_type': partner_type,
                     'default_partner_id': to_pay_partner_id,
                     'default_to_pay_move_line_ids': to_pay_move_lines.ids,
                     # We set this because if became from other view and in the context has 'create=False'
                     # you can't crate payment lines (for ej: subscription)
                     'create': True,
-                    'default_to_pay_amount': abs(sum(line.amount_residual for line in to_pay_move_lines)),
                     'default_company_id': company_id,
                 },
                 'target': 'current',
