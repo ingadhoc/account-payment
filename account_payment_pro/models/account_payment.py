@@ -46,13 +46,6 @@ class AccountPayment(models.Model):
         comodel_name='account.journal',
         compute='_compute_available_journal_ids'
     )
-    label_journal_id = fields.Char(
-        compute='_compute_label'
-    )
-    label_destination_journal_id = fields.Char(
-        compute='_compute_label'
-    )
-
     # desde account_payment_group, modelo account.payment.group
     matched_amount = fields.Monetary(
         compute='_compute_matched_amounts',
@@ -317,16 +310,6 @@ class AccountPayment(models.Model):
             super(AccountPayment, rec.with_context(
                 default_force_amount_company_currency=rec.force_amount_company_currency
             ))._create_paired_internal_transfer_payment()
-
-    @api.onchange("payment_type")
-    def _compute_label(self):
-        for rec in self:
-            if rec.payment_type == "outbound":
-                rec.label_journal_id = "Diario de origen"
-                rec.label_destination_journal_id = "Diario de destino"
-            else:
-                rec.label_journal_id = "Diario de destino"
-                rec.label_destination_journal_id = "Diario de origen"
 
     ####################################
     # desde modelo account.payment.group
