@@ -112,7 +112,7 @@ class AccountPayment(models.Model):
         help="Difference between 'To Pay Amount' and 'Payment Total'"
     )
     write_off_available = fields.Boolean(compute='_compute_write_off_available')
-    use_payment_pro = fields.Boolean(related='company_id.use_payment_pro')
+    use_payment_pro = fields.Boolean(compute='_compute_use_payment_pro')
 
     open_move_line_ids = fields.One2many(related="move_id.open_move_line_ids")
 
