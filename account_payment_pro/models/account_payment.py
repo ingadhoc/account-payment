@@ -511,9 +511,12 @@ class AccountPayment(models.Model):
                 lambda r: not r.reconciled and r.account_id.account_type in self._get_valid_payment_account_types())
             if counterpart_aml and rec.to_pay_move_line_ids:
                 (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile()
-            if rec.company_id.use_payment_pro: 
-                for invoices in (rec.reconciled_invoice_ids + rec.reconciled_bill_ids):
-                    invoices.matched_payment_ids += rec
+            #Lo sacamos ya que no es correcto de odoo cuando se deslinkea el pago
+            #o se linkea por otro lado el pago no lo suma. Decidimos dejarlo por si surge la necesidad
+            #Si surge la necesidad habria que tratar de que lo de odoo nativo funcione
+            # if rec.company_id.use_payment_pro: 
+            #     for invoices in (rec.reconciled_invoice_ids + rec.reconciled_bill_ids):
+            #         invoices.matched_payment_ids += rec
 
         return res
 
