@@ -485,7 +485,11 @@ class AccountPayment(models.Model):
     @api.onchange('to_pay_amount')
     def _inverse_to_pay_amount(self):
         for rec in self:
-            rec.unreconciled_amount = rec.to_pay_amount - rec.selected_debt
+            # agregamos este chequeo porque cuando estamos creando un pago nuevo se llama este inverse siempre
+            # y si el monto no cambio no queremos que trigeree re computo de retenciones
+            # (por el depends de _compute_base_amount)
+            if not rec.currency_id.is_zero(rec.unreconciled_amount - (rec.to_pay_amount - rec.selected_debt)):
+                rec.unreconciled_amount = rec.to_pay_amount - rec.selected_debt
 
     @api.depends('partner_id', 'partner_type', 'company_id')
     def _compute_to_pay_move_lines(self):
