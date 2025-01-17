@@ -318,31 +318,24 @@ class AccountPayment(models.Model):
             res[1].update({
                 counterpart_field: res[1][counterpart_field] + difference,
             })
+
+        if self._use_counterpart_currency():
+            if self.payment_type == 'inbound':
+                # Receive money.
+                liquidity_amount_currency = self.counterpart_currency_amount
+            elif self.payment_type == 'outbound':
+                # Send money.
+                liquidity_amount_currency = -self.counterpart_currency_amount
+            res[1].update({
+                'currency_id': self.counterpart_currency_id.id,
+                'amount_currency': -liquidity_amount_currency,
+            })
         return res
 
-    def _synchronize_to_moves(self, changed_fields):
-        """ Si tenemos counterpart currency modificamos el apunte de contrapartida (AP/AR).
-        Lo hacemos acá y no en _prepare_move_line_default_vals porque este último método es heredado por otros
-        (como retenciones) y si no necesitaríamos modulo puente para garantizar que se llame arriba.
-        """
-        super()._synchronize_to_moves(changed_fields)
-        if not any(field_name in changed_fields for field_name in self._get_trigger_fields_to_synchronize()):
-            return
-
-        for pay in self.filtered(lambda x: x.counterpart_currency_id and x.currency_id == x.company_id.currency_id and x.counterpart_currency_id != x.currency_id):
-            liquidity_lines, counterpart_lines, writeoff_lines = pay._seek_for_lines()
-            if pay.payment_type == 'inbound':
-                # Receive money.
-                liquidity_amount_currency = pay.counterpart_currency_amount
-            elif pay.payment_type == 'outbound':
-                # Send money.
-                liquidity_amount_currency = -pay.counterpart_currency_amount
-            counterpart_lines.with_context(skip_invoice_sync=True).write({
-                'currency_id': pay.counterpart_currency_id.id,
-                'amount_currency': -liquidity_amount_currency,
-                'debit': counterpart_lines.debit,
-                'credit': counterpart_lines.credit,
-            })
+    def _use_counterpart_currency(self):
+        self.ensure_one()
+        return self.counterpart_currency_id and self.currency_id == self.company_id.currency_id and \
+                self.counterpart_currency_id != self.currency_id
 
     @api.model
     def _get_trigger_fields_to_synchronize(self):
