@@ -78,7 +78,7 @@
                 <field name="counterpart_currency_id" domain="[('id', '!=', currency_id)]" options="{'no_create': True, 'no_open': True}" readonly="state != 'draft'"/>
                 Rate = <field name="counterpart_exchange_rate" readonly="state != 'draft'"/>
             </div>
-            <field name="counterpart_currency_amount" readonly="state != 'draft'" string="Payment Total (SC)" invisible="not counterpart_currency_id" required="counterpart_currency_id and not other_currency"/>
+            <field name="counterpart_currency_amount" string="Payment Total (SC)" invisible="not counterpart_currency_id" required="counterpart_currency_id and not other_currency"/>
         </div>
     </field>
 </record>

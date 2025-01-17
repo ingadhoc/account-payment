@@ -14,14 +14,16 @@ class AccountPayment(models.Model):
         inverse='_inverse_amount_company_currency',
         currency_field='company_currency_id',
     )
-    counterpart_currency_amount = fields.Monetary(currency_field='counterpart_currency_id')
+    counterpart_currency_amount = fields.Monetary(
+        currency_field='counterpart_currency_id',
+        compute='_compute_counterpart_currency_amount',
+    )
     counterpart_currency_id = fields.Many2one('res.currency')
     counterpart_exchange_rate = fields.Float(
-        compute='_compute_counterpart_exchange_rate',
-        inverse='inverse_counterpart_exchange_rate',
-        # readonly=False,
-        # inverse='_inverse_exchange_rate',
-        # digits=(16, 4),
+        readonly=False,
+        compute='_compute_counterpart_exchange_rate', store=True, precompute=True,
+        copy=False,
+        digits=0,
     )
     other_currency = fields.Boolean(
         compute='_compute_other_currency',
@@ -131,6 +133,7 @@ class AccountPayment(models.Model):
             rec.write_off_available = bool(
                 rec.env['account.write_off.type'].search([('company_ids', '=', rec.company_id.id)], limit=1))
 
+    @api.constrains('to_pay_move_line_ids')
     def _check_to_pay_lines_account(self):
         """ TODO ver si esto tmb lo llevamos a la UI y lo mostramos como un warning.
         tmb podemos dar mas info al usuario en el error """
@@ -212,21 +215,27 @@ class AccountPayment(models.Model):
             else:
                 rec.exchange_rate = False
 
-    @api.depends('counterpart_currency_amount', 'counterpart_currency_id', 'payment_total')
-    def _compute_counterpart_exchange_rate(self):
-        for rec in self:
-            if rec.counterpart_currency_id and rec.counterpart_currency_amount:
-                rec.counterpart_exchange_rate = rec.payment_total / rec.counterpart_currency_amount
-            else:
-                rec.counterpart_exchange_rate = False
-
-    @api.onchange('counterpart_exchange_rate')
-    def inverse_counterpart_exchange_rate(self):
+    @api.depends('payment_total', 'counterpart_exchange_rate')
+    def _compute_counterpart_currency_amount(self):
         for rec in self:
             if rec.counterpart_currency_id and rec.counterpart_exchange_rate:
                 rec.counterpart_currency_amount = rec.payment_total / rec.counterpart_exchange_rate
-            # else:
-            #     rec.counterpart_exchange_rate = False
+            else:
+                rec.counterpart_currency_amount = False
+
+    @api.depends('counterpart_currency_id', 'company_id', 'date')
+    def _compute_counterpart_exchange_rate(self):
+        for rec in self:
+            if rec.counterpart_currency_id:
+                rate = self.env['res.currency']._get_conversion_rate(
+                    from_currency=rec.company_currency_id,
+                    to_currency=rec.counterpart_currency_id,
+                    company=rec.company_id,
+                    date=rec.date,
+                )
+                rec.counterpart_exchange_rate = 1 / rate if rate else False
+            else:
+                rec.counterpart_exchange_rate = False
 
     # this onchange is necesary because odoo, sometimes, re-compute
     # and overwrites amount_company_currency. That happends due to an issue
@@ -345,7 +354,7 @@ class AccountPayment(models.Model):
         # esto esta ligado de alguna manera a un llamado que se hace dos veces por "culpa" del método
         # "_inverse_amount_company_currency". Si bien no es elegante para todas las pruebas que hicimos funcionó bien.
         if self.mapped('move_id'):
-            res = res + ('force_amount_company_currency', 'counterpart_currency_amount', 'counterpart_currency_id')
+            res = res + ('force_amount_company_currency', 'counterpart_exchange_rate', 'counterpart_currency_id')
         return res + ('write_off_amount', 'write_off_type_id',)
 
     def _create_paired_internal_transfer_payment(self):
@@ -552,11 +561,3 @@ class AccountPayment(models.Model):
         if 'matched_move_line_ids' in fields_to_read and 'context' in specification['matched_move_line_ids']:
             specification['matched_move_line_ids']['context'].update({'matched_payment_ids': self._ids})
         return super().web_read(specification)
-
-    # por ahora solo lo computamos en el inicial cuando venimos desde factura
-    # luego veremos si lo extendemos a distintos casos
-    # (contemplando re-calculo de retenciones, cheques pre-seleccionados)
-    # @api.onchange('selected_debt')
-    # def onchange_selected_debt(self):
-    #     for rec in self:
-    #         rec.amount = rec.selected_debt
