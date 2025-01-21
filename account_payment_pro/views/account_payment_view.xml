@@ -109,8 +109,6 @@
                 <button name="%(action_account_payment_invoice_wizard)d" string="+ Credit Note" invisible="state != 'draft'" context="{'refund': True}" type="action"/>
                 <field name="to_pay_move_line_ids" readonly="state != 'draft'" context="{'list_view_ref': 'account_payment_pro.view_move_line_tree'}" domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.reconcile', '=', True),('reconciled', '=', False), ('full_reconcile_id', '=', False), ('company_id', '=', company_id), ('move_id.state', '=', 'posted'), ('account_id.account_type', '=', 'asset_receivable' if partner_type == 'customer' else 'liability_payable')]" help="Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched."/>
             </page>
-        </page>
-        <notebook>
             <page string="Paid" name="paid" invisible="state == 'draft' or is_internal_transfer or not use_payment_pro">
                 <group>
                     <group>
@@ -122,7 +120,7 @@
                 </group>
                 <field name="matched_move_line_ids" context="{'list_view_ref': 'account_payment_pro.view_move_line_with_matched_tree'}"/>
             </page>
-        </notebook>
+        </page>
     </field>
 </record>
 
