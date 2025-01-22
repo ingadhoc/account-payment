@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
         <record model="res.groups" id="group_pay_now_customer_invoices">
             <field name="category_id" ref="base.module_category_hidden"/>
             <field name="name">Allow pay now on customer invoices</field>
@@ -14,5 +13,4 @@
             <field name="model_id" ref="model_account_write_off_type"/>
             <field name="domain_force">[('company_ids', 'in', company_ids)]</field>
         </record>
-    </data>
 </odoo>
