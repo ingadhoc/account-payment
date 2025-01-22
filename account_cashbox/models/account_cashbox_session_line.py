@@ -19,7 +19,7 @@ class PopSessionJournalControl(models.Model):
     balance_start = fields.Monetary(currency_field='currency_id')
     balance_end_real = fields.Monetary('Real Ending Balance', currency_field='currency_id')
     balance_end = fields.Monetary('Ending Balance', currency_field='currency_id', compute='_compute_amounts')
-    amount = fields.Monetary('Amount',  currency_field='currency_id', compute='_compute_amounts')
+    amount = fields.Monetary(currency_field='currency_id', compute='_compute_amounts')
     currency_id = fields.Many2one('res.currency', compute="_compute_curency")
     require_cash_control = fields.Boolean('require_cash_control', compute='_compute_require_cash_control')
 

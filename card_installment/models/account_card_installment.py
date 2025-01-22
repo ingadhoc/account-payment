@@ -20,7 +20,6 @@ class AccountCardInstallment(models.Model):
         help = 'Nombre informativo del plan a mostrar'
     )
     divisor = fields.Integer(
-        string='Divisor',
         help = 'Número por el cual se dividirá el total de cuotas que pagará el usuario final'
     )
     installment = fields.Integer(
@@ -36,7 +35,6 @@ class AccountCardInstallment(models.Model):
         help='Porcentaje de reintegro (el reintegro se efectúa sobre el total incluído el recargo financiero) que acuerda el vendedor con el banco o marca de tarjeta para devolución en compra'
     )
     active = fields.Boolean(
-        'Active',
         default=True
     )
 

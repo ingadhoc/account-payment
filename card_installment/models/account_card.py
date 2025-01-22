@@ -24,7 +24,6 @@ class AccountCard(models.Model):
         default=lambda self: self.env.company.id
     )
     active = fields.Boolean(
-        string='Active',
         default=True
     )
 

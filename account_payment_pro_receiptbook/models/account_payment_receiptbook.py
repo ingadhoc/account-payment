@@ -27,12 +27,10 @@ class AccountPaymentReceiptbook(models.Model):
         " account.payment.group has been posted.",
     )
     sequence = fields.Integer(
-        'Sequence',
         help="Used to order the receiptbooks",
         default=10
     )
     name = fields.Char(
-        'Name',
         size=64,
         required=True,
         index=True,
@@ -63,17 +61,14 @@ class AccountPaymentReceiptbook(models.Model):
     )
     company_id = fields.Many2one(
         'res.company',
-        'Company',
         required=True,
         default=lambda self: self.env.company
     )
     prefix = fields.Char(
-        'Prefix',
         # required=True,
         # TODO rename field to prefix
     )
     active = fields.Boolean(
-        'Active',
         default=True,
     )
     document_type_id = fields.Many2one(

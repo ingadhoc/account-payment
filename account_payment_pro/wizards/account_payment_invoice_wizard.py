@@ -77,7 +77,6 @@ class AccountPaymentInvoiceWizard(models.TransientModel):
     l10n_latam_manual_document_number = fields.Boolean(
         compute='_compute_l10n_latam_manual_document_number', string='Manual Number')
     document_number = fields.Char(
-        string='Document Number',
     )
 
     @api.depends('journal_document_type_id')
