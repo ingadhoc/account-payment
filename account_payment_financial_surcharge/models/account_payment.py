@@ -11,7 +11,7 @@ class AccountPayment(models.Model):
     _inherit = "account.payment"
 
     financing_surcharge = fields.Monetary(
-        compute='_computed_financing_surcharge'
+        compute='_compute_financing_surcharge'
     )
     available_card_ids = fields.Many2many(
         'account.card',
@@ -30,7 +30,7 @@ class AccountPayment(models.Model):
         store=True, readonly=False,
     )
     net_amount = fields.Monetary(
-        compute='_computed_net_amount',
+        compute='_compute_net_amount',
         inverse='_inverse_net_amount'
     )
 
@@ -49,7 +49,7 @@ class AccountPayment(models.Model):
             self.installment_id = False
 
     @api.depends('amount')
-    def _computed_net_amount(self):
+    def _compute_net_amount(self):
         for rec in self:
             rec.net_amount = rec.amount / (rec.installment_id.surcharge_coefficient or 1)
 
@@ -72,7 +72,7 @@ class AccountPayment(models.Model):
         return super().default_get(default_fields)
 
     @api.depends('net_amount')
-    def _computed_financing_surcharge(self):
+    def _compute_financing_surcharge(self):
         for rec in self:
             rec.financing_surcharge = rec.amount - rec.net_amount
 
