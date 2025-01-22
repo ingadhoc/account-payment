@@ -132,12 +132,16 @@ class AccountCashboxSession(models.Model):
 
                 diff = abs(line.balance_end - line.balance_end_real)
                 if diff > max_diff_in_currency:
-                    raise ValidationError(_(
-                        'En el diario "%s" el Balance Final Real (%s) excede la máxima diferencia permitida (%s).' % (
+                    raise ValidationError(
+                        _(
+                            'En el diario "%s" el Balance Final Real (%s) excede la máxima diferencia permitida (%s).',
+
                             line.journal_id.name,
                             line.balance_end_real,
                             max_diff_in_currency,
-                        )))
+
+                        )
+                    )
 
     def action_session_payments(self):
         view = self.env.ref('account.view_account_payment_tree')
@@ -162,4 +166,4 @@ class AccountCashboxSession(models.Model):
         for rec in self.filtered(lambda x: x.state != 'closed' and not x.cashbox_id.allow_concurrent_sessions ):
             other_opened_sessions = self.search([('state', '!=', 'closed'), ('id', '!=', rec.id), ('cashbox_id', '=', rec.cashbox_id.id)])
             if other_opened_sessions:
-                raise UserError(_('You can only have one open Session for %s' % rec.cashbox_id.display_name))
+                raise UserError(_('You can only have one open Session for %s', rec.cashbox_id.display_name))
