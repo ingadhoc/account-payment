@@ -1,8 +1,5 @@
 {
     'name': "Card installment",
-    'description': """
-        Base module for compute installment and fee on creditcard sales method
-    """,
     'author': 'ADHOC SA',
     'website': "https://www.adhoc.com.ar",
     'category': 'Technical',
