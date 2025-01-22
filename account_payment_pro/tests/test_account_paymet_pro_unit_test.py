@@ -58,7 +58,7 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
             'date': self.today - timedelta(days=1),
         }
         action_context = invoice.action_register_payment()['context']
-        payment = self.env['account.payment'].with_context(action_context).create(vals)
+        payment = self.env['account.payment'].with_context(**action_context).create(vals)
         payment.action_post()
         eur_actual_rate_1 = 1 / invoice.currency_id._get_rates(self.company, self.today).get(self.eur_currency.id)
 

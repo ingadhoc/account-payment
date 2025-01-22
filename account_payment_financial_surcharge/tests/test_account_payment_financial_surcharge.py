@@ -61,7 +61,7 @@ class TestAccountPaymentFinancialSurcharge(common.TransactionCase):
         }
 
         action_context = invoice.action_register_payment()['context']
-        payment = self.env['account.payment'].with_context(action_context).create(vals)
+        payment = self.env['account.payment'].with_context(**action_context).create(vals)
 
         payment.write({
             'payment_method_line_id': self.card_payment_method.id,
@@ -99,7 +99,7 @@ class TestAccountPaymentFinancialSurcharge(common.TransactionCase):
         }
 
         action_context = invoice.action_register_payment()['context']
-        payment = self.env['account.payment'].with_context(action_context).create(vals)
+        payment = self.env['account.payment'].with_context(**action_context).create(vals)
 
         payment.write({
             'payment_method_line_id': self.card_payment_method.id,
