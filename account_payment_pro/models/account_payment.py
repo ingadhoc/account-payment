@@ -548,8 +548,12 @@ class AccountPayment(models.Model):
         for rec in self:
             counterpart_aml = rec.mapped('move_id.line_ids').filtered(
                 lambda r: not r.reconciled and r.account_id.account_type in self._get_valid_payment_account_types())
-            if counterpart_aml and rec.to_pay_move_line_ids:
-                (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile()
+
+            # Filtramos las líneas que provienen de una invoice en borrador porque no pueden conciliarse
+            to_pay_move_line_ids = rec.to_pay_move_line_ids.filtered(lambda x: x.move_id.state != 'draft')
+
+            if counterpart_aml and to_pay_move_line_ids:
+                (counterpart_aml + (to_pay_move_line_ids)).reconcile()
             #Lo sacamos ya que no es correcto de odoo cuando se deslinkea el pago
             #o se linkea por otro lado el pago no lo suma. Decidimos dejarlo por si surge la necesidad
             #Si surge la necesidad habria que tratar de que lo de odoo nativo funcione
