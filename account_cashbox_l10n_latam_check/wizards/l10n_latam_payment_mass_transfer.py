@@ -17,6 +17,9 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
         compute='_compute_requiere_account_cashbox_session',
         compute_sudo=False,
     )
+    cashbox_session_ids_domain = fields.Binary(
+        compute='_compute_cashbox_session_ids_domain'
+    )
 
     @api.depends_context('uid')
     # dummy depends para que se compute(no estamos seguros porque solo con el depends_context no computa)
@@ -47,3 +50,15 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
         payments = super(L10nLatamPaymentMassTransfer, self.with_context(paired_transfer=True))._create_payments()
         payments.cashbox_session_id = self.cashbox_session_id.id
         return payments
+
+    @api.onchange('destination_journal_id')
+    def _compute_cashbox_session_ids_domain(self):
+        self.cashbox_session_id = False
+        cashbox_ids = self.env['account.cashbox'].search([('journal_ids', 'in', self.destination_journal_id.ids)])
+        session_ids = cashbox_ids.mapped('current_concurrent_session_ids').ids
+        self.cashbox_session_ids_domain = [
+            ('state', '=', 'opened'),
+            ('company_id', '=', self.company_id.id),
+            ('id', 'in', session_ids),
+            '|', ('user_ids', '=', self.env.uid),
+            ('user_ids', '=', False)]
