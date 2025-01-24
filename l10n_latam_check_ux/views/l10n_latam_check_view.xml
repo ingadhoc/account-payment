@@ -1,0 +1,14 @@
+<odoo>
+        <!-- Heredamos la vista de l10n_latam_check l10n_latam_check_view_form para agregar el botón para debitar cheques propios. -->
+        <record id="l10n_latam_check_view_form" model="ir.ui.view">
+            <field name="name">l10n_latam.check.form.inherited</field>
+            <field name="model">l10n_latam.check</field>
+            <field name="inherit_id" ref="l10n_latam_check.l10n_latam_check_view_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='action_void']" position="after">
+                    <field name='check_add_debit_button' invisible="1"/>
+                    <button name="%(action_debit_check_wizard)d" string="Debit check" invisible="payment_method_code != 'own_checks' or issue_state != 'handed' or not check_add_debit_button" type="action"/>
+                </xpath>
+            </field>
+        </record>
+</odoo>

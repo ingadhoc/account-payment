@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Se agregan los campos necesarios en la vista form de diario para determinar si el diario está configurado para debitar o no cheques propios. -->
+    <record id="view_account_journal_form_inherited" model="ir.ui.view">
+        <field name="name">account.journal.form</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.view_account_journal_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@id='outbound_payment_settings']//group[@name='outgoing_payment']" position="inside">
+            <group string="Latam Checks">
+                <field name="check_add_debit_button"/>
+            </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

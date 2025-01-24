@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data>
+    <template id="report_payment_receipt_document" inherit_id="account.report_payment_receipt_document">
+        <xpath expr="//div[@name='payment_method']//span[@t-field='o.payment_method_id.name']"  position="after">
+            <div t-if="o.l10n_latam_new_check_ids">
+                <span t-out='"Cheque nro %s - %s" % (o.l10n_latam_new_check_ids.name, o.l10n_latam_new_check_ids.bank_id.name or o.journal_id.name)'/>
+            </div>
+            <div t-if="o.l10n_latam_new_check_ids">
+                <span t-if="o.l10n_latam_new_check_ids.payment_date">
+                Venc. <span t-field="o.l10n_latam_new_check_ids.payment_date"/>
+                </span>
+            </div>
+        </xpath>
+    </template>
+</data>

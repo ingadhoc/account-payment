@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Este wizard solo sirve para determinar en que fecha se va a debitar el cheque propio correspondiente desde la vista form del payment. -->
+    <record model="ir.ui.view" id="account_check_action_wizard_form_view">
+        <field name="name">account.check.action.wizard.form</field>
+        <field name="model">account.check.action.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Check Action">
+                <group >
+                    <field name="date"/>
+                </group>
+                <footer>
+                    <button string="Confirm" name="action_confirm" type="object" class="oe_highlight"/>
+                    or
+                    <button string="Cancel" class="oe_link" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_debit_check_wizard" model="ir.actions.act_window">
+        <field name="name">Check Action</field>
+        <field name="res_model">account.check.action.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

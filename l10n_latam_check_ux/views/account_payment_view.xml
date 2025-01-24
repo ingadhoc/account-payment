@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.ui.menu" id="l10n_latam_check.menu_own_check">
+        <field name="parent_id" ref="account_internal_transfer.menu_finance_bank_and_cash"/>
+    </record>
+    <record model="ir.ui.menu" id="l10n_latam_check.menu_third_party_check">
+        <field name="parent_id" ref="account_internal_transfer.menu_finance_bank_and_cash"/>
+    </record>
+</odoo>
