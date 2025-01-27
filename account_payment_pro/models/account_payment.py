@@ -374,9 +374,7 @@ class AccountPayment(models.Model):
             sign = rec.partner_type == 'supplier' and -1.0 or 1.0
             rec.matched_amount = sign * sum(
                 rec.matched_move_line_ids.with_context(matched_payment_ids=rec.ids).mapped('payment_matched_amount'))
-            if rec.other_currency:
-                rec.payment_total = sign * rec.payment_total
-            rec.unmatched_amount = rec.payment_total - rec.matched_amount
+            rec.unmatched_amount = abs(rec.payment_total) - rec.matched_amount
 
     @api.depends('to_pay_move_line_ids')
     def _compute_has_outstanding(self):
