@@ -73,12 +73,12 @@
                 <field name="payment_total" class="oe_inline"/>
                 <span invisible="state != 'draft'" class="text-muted"> (difference <field name="payment_difference" class="oe_inline"/>)</span>
             </div>
-            <label for="counterpart_currency_amount" string="Secondary Currency" invisible="other_currency" groups="base.group_multi_currency"/>
-            <div name="counterpart_currency_amount" class="o_row" invisible="other_currency" groups="base.group_multi_currency">
+            <label for="counterpart_currency_amount" string="Secondary Currency" invisible="other_currency or is_internal_transfer or not use_payment_pro" groups="base.group_multi_currency"/>
+            <div name="counterpart_currency_amount" class="o_row" invisible="other_currency or is_internal_transfer or not use_payment_pro" groups="base.group_multi_currency">
                 <field name="counterpart_currency_id" domain="[('id', '!=', currency_id)]" options="{'no_create': True, 'no_open': True}" readonly="state != 'draft'"/>
                 Rate = <field name="counterpart_exchange_rate" readonly="state != 'draft'"/>
             </div>
-            <field name="counterpart_currency_amount" string="Payment Total (SC)" invisible="not counterpart_currency_id" required="counterpart_currency_id and not other_currency"/>
+            <field name="counterpart_currency_amount" string="Payment Total (SC)" invisible="not counterpart_currency_id or is_internal_transfer or not use_payment_pro" required="counterpart_currency_id and not other_currency"/>
         </div>
     </field>
 </record>
