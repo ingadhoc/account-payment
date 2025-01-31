@@ -64,23 +64,26 @@ class AccountMoveLine(models.Model):
                 payment_type = "outbound"
             else:
                 payment_type = "inbound" if partner_type == "customer" else "outbound"
+            context = {
+                "active_model": "account.move.line",
+                "active_ids": self.ids,
+                "default_payment_type": payment_type,
+                "default_partner_type": partner_type,
+                "default_partner_id": to_pay_partner_id,
+                "default_to_pay_move_line_ids": to_pay_move_lines.ids,
+                # We set this because if became from other view and in the context has 'create=False'
+                # you can't crate payment lines (for ej: subscription)
+                "create": True,
+                "default_company_id": company_id,
+            }
+            if self._context.get("default_l10n_ar_fiscal_position_id") is not None:
+                context["default_l10n_ar_fiscal_position_id"] = self._context.get("default_l10n_ar_fiscal_position_id")
             return {
                 "name": _("Register Payment"),
                 "res_model": "account.payment",
                 "view_mode": "form",
                 "views": [[False, "form"]],
-                "context": {
-                    "active_model": "account.move.line",
-                    "active_ids": self.ids,
-                    "default_payment_type": payment_type,
-                    "default_partner_type": partner_type,
-                    "default_partner_id": to_pay_partner_id,
-                    "default_to_pay_move_line_ids": to_pay_move_lines.ids,
-                    # We set this because if became from other view and in the context has 'create=False'
-                    # you can't crate payment lines (for ej: subscription)
-                    "create": True,
-                    "default_company_id": company_id,
-                },
+                "context": context,
                 "target": "current",
                 "type": "ir.actions.act_window",
             }

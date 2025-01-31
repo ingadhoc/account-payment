@@ -494,6 +494,7 @@ class AccountPayment(models.Model):
             force_payment_pro=True,
             default_move_journal_types=("bank", "cash"),
             default_to_pay_amount=self.payment_difference,
+            default_l10n_ar_fiscal_position_id=False,
             default_partner_type=self.partner_type,
             default_company_id=self.company_id.id,
             default_partner_id=self.partner_id.id,
