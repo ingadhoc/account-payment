@@ -1,6 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-installment_user,account.card.installment,model_account_card_installment,base.group_user,1,0,0,0
-card_user,account.card,model_account_card,base.group_user,1,0,0,0
-card_installment.access_card,account.card,card_installment.model_account_card,account.group_account_invoice,1,1,1,1
-card_installment.access_installment,account.card.installment,card_installment.model_account_card_installment,account.group_account_invoice,1,1,1,1
-
