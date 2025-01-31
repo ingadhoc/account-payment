@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="res_config_settings_view_form" model="ir.ui.view">
+            <field name="name">res.config.settings.view.form.inherit.account</field>
+            <field name="model">res.config.settings</field>
+            <field name="priority" eval="40"/>
+            <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <setting id="sepa_payments" position="after">
+                    <setting id="use_payment_pro" string="Use payment pro module" company_dependent="1" 
+                        help="Payment Pro incorpora funcionalidades que permiten llevar un flujo de cobros 
+                        y pagos con retenciones, especificamente utilizado en Argentina. Al activarlo a 
+                        ​su ​vez, se pierden algunas funcionalidades nativas como descuento por pronto pago 
+                        y sugerencias de diferencia de cambio">
+                        <field name="use_payment_pro"/>
+                    </setting>
+                </setting>
+                  <!-- supplier payments section -->
+                <xpath expr="//block[@id='print_vendor_checks_setting_container']" position="inside">
+                    <div class="col-xs-12 col-md-6 o_setting_box" title="Allow users to choose a payment journal on invoices so that invoice is automatically paid after invoice validation. A payment will be created using choosen journal">
+                        <div class="o_setting_left_pane">
+                            <field name="group_pay_now_vendor_invoices"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="group_pay_now_vendor_invoices"/>
+                            <div class="text-muted">
+                                Allow to pay vendor invoices automatically on invoice validation.
+                            </div>
+                        </div>
+                    </div>
+                </xpath>
+
+                <!-- customer payments section-->
+                <xpath expr="//block[@id='pay_invoice_online_setting_container']" position="inside">
+                    <div class="col-xs-12 col-md-6 o_setting_box" title="Allow users to choose a payment journal on invoices so that invoice is automatically paid after invoice validation. A payment will be created using choosen journal">
+                        <div class="o_setting_left_pane">
+                            <field name="group_pay_now_customer_invoices"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="group_pay_now_customer_invoices"/>
+                            <div class="text-muted">
+                                Allow to pay customer invoices automatically on invoice validation.
+                            </div>
+                        </div>
+                    </div>
+                 </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

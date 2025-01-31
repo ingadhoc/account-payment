@@ -1,0 +1,174 @@
+<odoo>
+
+    <record id="view_account_payment_tree" model="ir.ui.view">
+        <field name="name">account.payment.tree</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_tree"/>
+        <field name="arch" type="xml">
+            <field name="amount_company_currency_signed" position="after">
+                <field name="payment_total" sum="Total" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+<record id="view_account_payment_form" model="ir.ui.view">
+    <field name="name">account.payment.form</field>
+    <field name="model">account.payment</field>
+    <!-- dejamos prioridad por defecto ya que no seria necesaria una mayor
+    podemos borrarlo si hacemos script de migra de clientes actuales para que se ajuste a 16 -->
+    <field eval="16" name="priority"/>
+    <field name="inherit_id" ref="account.view_account_payment_form"/>
+    <field name="arch" type="xml">
+
+        <form>
+            <field name="commercial_partner_id" invisible="True"/>
+            <field name="write_off_available" invisible="True"/>
+            <field name="use_payment_pro" invisible="True"/>
+        </form>
+
+        <button name="action_post" position="after">
+            <button name="action_post_and_new" string="Confirm and New" type="object" invisible="is_internal_transfer or state != 'draft' or payment_difference &lt;= 0.0"/>
+        </button>
+
+        <xpath expr="//field[@name='partner_id'][1]" position="attributes">
+            <attribute name="readonly">state != 'draft' or context.get('default_company_id')</attribute>
+        </xpath>
+        <xpath expr="//field[@name='partner_id'][2]" position="attributes">
+            <attribute name="readonly">state != 'draft' or context.get('default_company_id')</attribute>
+        </xpath>
+
+
+        <field name="partner_id" position="before">
+            <field name="company_id" options="{'no_create': True}" domain="[('id', 'in', allowed_company_ids)]" groups="base.group_multi_company" readonly="state != 'draft' or context.get('default_company_id')"/>
+        </field>
+
+        <!-- movemos amount a la columna 2 para que quede todo lo relativo al metodo de pago junto -->
+        <group name="group2">
+            <label for="amount" position="move"/>
+            <div name="amount_div" position="move"/>
+        </group>
+
+        <!-- seccion para mejora pagos en otra moneda -->
+        <div name="amount_div" position="after">
+            <field name="company_currency_id" invisible="True"/>
+            <field name="other_currency" invisible="True"/>
+            <field name="force_amount_company_currency" invisible="True"/>
+            <strong class="o_row" invisible="not other_currency" style="margin-left: 0.05px" colspan="1">Rate = <field name="exchange_rate" nolabel="1"/></strong>
+            <div name="amount_company_currency" class="o_row" invisible="not other_currency" colspan="1">
+                <field name="amount_company_currency" readonly="state != 'draft'"/>
+                <label for="amount_company_currency" string=" " invisible="not other_currency"/>
+            </div>
+            
+            <label for="write_off_amount" string="Write Off"  invisible="not write_off_available or is_internal_transfer or not use_payment_pro"/>
+            <div name="write_off_amount" class="o_row" invisible="not write_off_available or is_internal_transfer or not use_payment_pro">
+                <field name="write_off_amount"/>
+                <field name="write_off_type_id" placeholder="Write-off type" invisible="not write_off_amount" required="write_off_amount" options="{'no_create': True, 'no_open': True}"/>
+            </div>
+            <label for="payment_total" readonly="state != 'draft'" invisible="is_internal_transfer or not use_payment_pro"/>
+            <div name="payment_total" invisible="is_internal_transfer or not use_payment_pro">
+                <field name="payment_total" class="oe_inline"/>
+                <span invisible="state != 'draft'" class="text-muted"> (difference <field name="payment_difference" class="oe_inline"/>)</span>
+            </div>
+        </div>
+
+        <sheet>
+            <notebook invisible="is_internal_transfer or not use_payment_pro">
+                <page string="Debts" invisible="state != 'draft'">
+                    <group >
+                        <group>
+                            <field name="selected_debt" invisible="state not in ('draft')"/>
+                        </group>
+                        <group name="name">
+                            <label for="to_pay_amount" invisible="state not in ['draft'] or partner_type != 'supplier'"/>
+                            <div name="to_pay_amount" invisible="state not in ['draft'] or partner_type != 'supplier'">
+                                <field name="to_pay_amount" readonly="state not in ['draft']" class="oe_inline"/>
+                            </div>
+                        </group>
+                    </group>
+                    <p>
+                        Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched.
+                    </p>
+                    <button name="action_add_all" string="Add All / Refresh" invisible="state != 'draft'" type="object"/>
+                    <button name="remove_all" string="Remove All" invisible="state != 'draft'" type="object"/>
+                    <button name="%(action_account_payment_invoice_wizard)d" string="+ Debit Note" invisible="state != 'draft'" type="action" context="{'internal_type': 'debit_note'}"/>
+                    <button name="%(action_account_payment_invoice_wizard)d" string="+ Credit Note" invisible="state != 'draft'" context="{'refund': True}" type="action"/>
+                    <field name="to_pay_move_line_ids" readonly="state != 'draft'" context="{'tree_view_ref': 'account_payment_pro.view_move_line_tree'}" domain="[('partner_id.commercial_partner_id', '=', commercial_partner_id),('account_id.reconcile', '=', True),('reconciled', '=', False), ('full_reconcile_id', '=', False), ('company_id', '=', company_id), ('move_id.state', '=', 'posted'), ('account_id.account_type', '=', 'asset_receivable' if partner_type == 'customer' else 'liability_payable')]" help="Payment will be automatically matched with the oldest lines of this list (by maturity date). You can remove any line you dont want to be matched."/>
+                </page>
+                <page string="Paid" name="paid" invisible="state != 'posted'">
+                    <group>
+                        <group>
+                            <field name="matched_amount" invisible="not matched_amount"/>
+                        </group>
+                        <group>
+                            <field name="unmatched_amount" invisible="not unmatched_amount"/>
+                        </group>
+                    </group>
+                    <field name="matched_move_line_ids" context="{'tree_view_ref': 'account_payment_pro.view_move_line_with_matched_tree'}"/>
+                </page>
+            </notebook>
+        </sheet>
+
+    </field>
+</record>
+
+<record id="view_move_line_tree" model="ir.ui.view">
+    <field name="name">account.move.line.tree</field>
+    <field name="model">account.move.line</field>
+    <field eval="99" name="priority"/>
+    <field name="arch" type="xml">
+        <tree string="Journal Items" edit="1">
+            <field name="date" readonly="True"/>
+            <field name="date_maturity" optional="hide" readonly="True"/>
+            <field name="move_id" required="0" readonly="True"/>
+            <field name="journal_id" options='{"no_open":True}' readonly="True" optional="hide"/>
+            <field name="name" readonly="True" optional="hide"/>
+            <field name="ref" optional="show" readonly="True"/>
+            <field name="statement_id" column_invisible="True" readonly="True"/>
+            <field name="account_id" options='{"no_open":True}' domain="[('company_id', '=', company_id)]" readonly="True" optional="hide"/>
+            <field name="balance" optional="hide" string="Amount" readonly="True"/>
+            <field name="amount_residual" readonly="True"/>
+            <field name="amount_currency" groups="base.group_multi_currency" readonly="True"/>
+            <field name="amount_residual_currency" optional="hide" groups="base.group_multi_currency" readonly="True"/>
+            <field name="currency_id" column_invisible="True" readonly="True"/>
+            <field name="company_currency_id" column_invisible="True" readonly="True"/>
+            <field name="company_id" column_invisible="True" readonly="True"/>
+            <!--button type="object" icon="fa-external-link" help="Open Related Document" name="action_open_related_document"/-->
+        </tree>
+    </field>
+</record>
+
+<record id="view_move_line_with_matched_tree" model="ir.ui.view">
+    <field name="name">account.move.line.tree</field>
+    <field name="model">account.move.line</field>
+    <field eval="99" name="priority"/>
+    <field name="mode">primary</field>
+    <field name="inherit_id" ref="account_payment_pro.view_move_line_tree"/>
+    <field name="arch" type="xml">
+        <field name="amount_residual" position="replace">
+            <field name="payment_matched_amount" string="Paid Amount"/>
+        </field>
+    </field>
+</record>
+<!-- <record id="view_account_payment_form2" model="ir.ui.view">
+        <field name="name">account.payment.form</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <field name="journal_id" position="attributes">
+                <attribute name="nolabel">1</attribute>
+            </field>
+            <field name="destination_journal_id" position="attributes">
+                <attribute name="nolabel">1</attribute>
+            </field>
+            <xpath expr="//field[@name='journal_id']" position="before">
+                <field name="label_journal_id" nolabel="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name='destination_journal_id']" position="before">
+                <field name="label_destination_journal_id" nolabel="1"/>
+            </xpath>
+        </field>
+    </record> -->
+
+</odoo>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<record id="account_write_off_type_tree" model="ir.ui.view">
+		<field name="name">account_write_off_type.tree</field>
+		<field name="model">account.write_off.type</field>
+		<field name="arch" type="xml">
+			<tree>
+				<field name="name"/>
+				<field name="account_id" groups="base.group_multi_company"/>
+				<field name="company_id" groups="base.group_multi_company"/>
+			</tree>
+		</field>
+	</record>
+	<record id="account_write_off_type_search" model="ir.ui.view">
+		<field name="name">account_write_off_type.search</field>
+		<field name="model">account.write_off.type</field>
+		<field name="arch" type="xml">
+			<search>
+				<field name="name"/>
+				<field name="account_id"/>
+			</search>
+		</field>
+	</record>
+	<record id="account_write_off_type_form" model="ir.ui.view">
+		<field name="name">account_write_off_type.form</field>
+		<field name="model">account.write_off.type</field>
+		<field name="arch" type="xml">
+			<form>
+				<header>
+					<field invisible="1" name="active"/>
+				</header>
+				<sheet>
+					<h1>
+						<field name="name"/>
+					</h1>
+					<group col="4">
+						<field name="label" />
+						<field name="account_id" />
+						<field name="company_id" groups="base.group_multi_company"/>
+					</group>
+				</sheet>
+			</form>
+		</field>
+	</record>
+	<record id="action_account_write_off_type" model="ir.actions.act_window">
+		<field name="name">Write Off Types</field>
+		<field name="res_model">account.write_off.type</field>
+		<field name="view_mode">tree,form</field>
+	</record>
+	<menuitem action="action_account_write_off_type" id="menu_write_off_type" parent="account.root_payment_menu" sequence="21" />
+
+</odoo>
