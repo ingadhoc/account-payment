@@ -23,7 +23,7 @@
         'data/l10n_latam.document.type.csv',
     ],
     'installable': True,
-    'auto_install': ["account_payment_pro","l10n_ar_account_tax_settlement"],
+    'auto_install': ["account_payment_pro"],
     'application': False,
     'post_init_hook': '_generate_receiptbooks',
     "demo": [
