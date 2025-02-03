@@ -19,7 +19,7 @@
 ##############################################################################
 {
     "name": "Latam Check UX",
-    "version": "18.0.1.2.0",
+    "version": "18.0.1.3.0",
     "category": "Accounting",
     "sequence": 14,
     "summary": "",
@@ -38,6 +38,7 @@
         "views/l10n_latam_check_view.xml",
         "views/account_journal_view.xml",
         "views/report_payment_receipt_templates.xml",
+        "reports/report_account_transfer.xml",
         "security/ir.model.access.csv",
     ],
     "demo": [],
