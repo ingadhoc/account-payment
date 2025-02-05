@@ -10,13 +10,13 @@
     "depends": [
         "account_cashbox",
         "l10n_latam_check",
-        ],
+    ],
     "demo": [],
     "data": [
-        'views/account_payment_view.xml',
-        'wizards/l10n_latam_payment_mass_transfer_views.xml',
-        ],
-    'installable': True,
+        "views/account_payment_view.xml",
+        "wizards/l10n_latam_payment_mass_transfer_views.xml",
+    ],
+    "installable": True,
     "application": False,
     "auto_install": True,
 }

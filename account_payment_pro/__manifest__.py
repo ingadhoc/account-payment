@@ -7,7 +7,7 @@
     "website": "www.adhoc.com.ar",
     "author": "ADHOC SA",
     "license": "AGPL-3",
-    'installable': True,
+    "installable": True,
     "external_dependencies": {
         "python": [],
         "bin": [],
@@ -20,14 +20,13 @@
         "l10n_latam_check",
     ],
     "data": [
-        'security/payment_security.xml',
-        'security/ir.model.access.csv',
-        'wizards/account_payment_invoice_wizard_view.xml',
-        'views/account_payment_view.xml',
-        'views/account_move.xml',
-        'views/account_write_off_type_views.xml',
-        'views/res_company_setting.xml',
+        "security/payment_security.xml",
+        "security/ir.model.access.csv",
+        "wizards/account_payment_invoice_wizard_view.xml",
+        "views/account_payment_view.xml",
+        "views/account_move.xml",
+        "views/account_write_off_type_views.xml",
+        "views/res_company_setting.xml",
     ],
-    "demo": [
-    ],
+    "demo": [],
 }

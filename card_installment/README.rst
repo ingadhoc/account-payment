@@ -14,8 +14,8 @@
 Card Installment
 ================
 
-Module that adds a "Cards" menu   
-which allows you to define installment plans for debit/credit cards  
+Module that adds a "Cards" menu
+which allows you to define installment plans for debit/credit cards
 by defining: fantasy name, installment plan, divisor, coefficient, bank discount.
 
 Installation
@@ -32,7 +32,7 @@ Usage
 =====
 To use this module, you need to:
 
-#. Go to Cards menu and define installment plans for debit/credit cards 
+#. Go to Cards menu and define installment plans for debit/credit cards
 
 .. image:: https://odoo-community.org/website/image/ir.attachment/5784_f2813bd/datas
    :alt: Try me on Runbot

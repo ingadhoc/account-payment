@@ -11,24 +11,24 @@
     "license": "AGPL-3",
     "depends": [
         "account_ux",
-        "account_internal_transfer"
+        "account_internal_transfer",
         # la dependencia con payment pro es solo para forzar utilizar el metodo parcheado
         # _compute_available_journal_ids
-        ],
+    ],
     "demo": [
-        'demo/cashbox_demo.xml',
+        "demo/cashbox_demo.xml",
     ],
     "data": [
-        'security/cashbox_security.xml',
-        'security/ir.model.access.csv',
-        'views/account_cashbox_session.xml',
-        'views/account_cashbox.xml',
-        'views/res_users_views.xml',
-        'views/account_payment.xml',
-        'views/menuitem.xml',
-        'wizards/account_cashbox_payment_import.xml',
-        'wizards/account_payment_register.xml',
-        ],
-    'installable': True,
+        "security/cashbox_security.xml",
+        "security/ir.model.access.csv",
+        "views/account_cashbox_session.xml",
+        "views/account_cashbox.xml",
+        "views/res_users_views.xml",
+        "views/account_payment.xml",
+        "views/menuitem.xml",
+        "wizards/account_cashbox_payment_import.xml",
+        "wizards/account_payment_register.xml",
+    ],
+    "installable": True,
     "application": False,
 }

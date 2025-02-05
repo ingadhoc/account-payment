@@ -9,7 +9,7 @@
     "license": "AGPL-3",
     "sequence": 100,
     "application": False,
-    'installable': False,
+    "installable": False,
     "external_dependencies": {
         "python": [],
         "bin": [],
@@ -17,9 +17,6 @@
     "depends": [
         "account_payment",
     ],
-    "data": [
-        'views/account_move.xml'
-    ],
-    "demo": [
-    ],
+    "data": ["views/account_move.xml"],
+    "demo": [],
 }

@@ -2,46 +2,43 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import models, fields, api
 import logging
+
+from odoo import api, fields, models
+
 _logger = logging.getLogger(__name__)
 
 
 class AccountPaymentReceiptbook(models.Model):
-
-    _name = 'account.payment.receiptbook'
-    _description = 'Account payment Receiptbook'
+    _name = "account.payment.receiptbook"
+    _description = "Account payment Receiptbook"
     # analogo a account.journal.document.type pero para pagos
-    _order = 'sequence asc'
+    _order = "sequence asc"
     _check_company_auto = True
     _check_company_domain = models.check_company_domain_parent_of
 
     report_partner_id = fields.Many2one(
-        'res.partner',
+        "res.partner",
     )
     mail_template_id = fields.Many2one(
-        'mail.template',
-        'Email Template',
-        domain=[('model', '=', 'account.payment')],
-        help="If set an email will be sent to the customer when the related"
-        " account.payment.group has been posted.",
+        "mail.template",
+        "Email Template",
+        domain=[("model", "=", "account.payment")],
+        help="If set an email will be sent to the customer when the related" " account.payment.group has been posted.",
     )
-    sequence = fields.Integer(
-        help="Used to order the receiptbooks",
-        default=10
-    )
+    sequence = fields.Integer(help="Used to order the receiptbooks", default=10)
     name = fields.Char(
         size=64,
         required=True,
         index=True,
     )
     partner_type = fields.Selection(
-        [('customer', 'Customer'), ('supplier', 'Vendor')],
+        [("customer", "Customer"), ("supplier", "Vendor")],
         required=True,
         index=True,
     )
     next_number = fields.Integer(
-        related='sequence_id.number_next_actual',
+        related="sequence_id.number_next_actual",
         readonly=False,
     )
     # payment_type = fields.Selection(
@@ -53,17 +50,13 @@ class AccountPaymentReceiptbook(models.Model):
     # lo dejamos solo como ayuda para generar o no la secuencia pero lo que
     # termina definiendo si es manual o por secuencia es si tiene secuencia
     sequence_id = fields.Many2one(
-        'ir.sequence',
-        'Entry Sequence',
+        "ir.sequence",
+        "Entry Sequence",
         help="This field contains the information related to the numbering "
         "of the receipt entries of this receiptbook.",
         copy=False,
     )
-    company_id = fields.Many2one(
-        'res.company',
-        required=True,
-        default=lambda self: self.env.company
-    )
+    company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company)
     prefix = fields.Char(
         # required=True,
         # TODO rename field to prefix
@@ -72,8 +65,8 @@ class AccountPaymentReceiptbook(models.Model):
         default=True,
     )
     document_type_id = fields.Many2one(
-        'l10n_latam.document.type',
-        'Document Type',
+        "l10n_latam.document.type",
+        "Document Type",
         required=True,
     )
 
@@ -84,7 +77,7 @@ class AccountPaymentReceiptbook(models.Model):
         receipbooks with sequences. We should also make padding
         related to sequence
         """
-        prefix = vals.get('prefix')
+        prefix = vals.get("prefix")
         for rec in self:
             if prefix and rec.sequence_id:
                 rec.sequence_id.prefix = prefix
@@ -94,11 +87,17 @@ class AccountPaymentReceiptbook(models.Model):
     def create(self, vals_list):
         recs = super().create(vals_list)
         for rec in recs.filtered(lambda x: not x.sequence_id):
-            rec.sequence_id = self.env['ir.sequence'].sudo().create({
-                'name': rec.name,
-                'prefix': rec.prefix,
-                'padding': 8,
-                'number_increment': 1,
-                'company_id': rec.company_id.id,
-            })
+            rec.sequence_id = (
+                self.env["ir.sequence"]
+                .sudo()
+                .create(
+                    {
+                        "name": rec.name,
+                        "prefix": rec.prefix,
+                        "padding": 8,
+                        "number_increment": 1,
+                        "company_id": rec.company_id.id,
+                    }
+                )
+            )
         return recs

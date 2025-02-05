@@ -1,40 +1,34 @@
-
-from odoo import models, api, fields, _
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
 class L10nLatamPaymentMassTransfer(models.TransientModel):
-    _inherit = 'l10n_latam.payment.mass.transfer'
+    _inherit = "l10n_latam.payment.mass.transfer"
 
     cashbox_session_id = fields.Many2one(
-        'account.cashbox.session',
-        string='POP Session',
+        "account.cashbox.session",
+        string="POP Session",
         compute="_compute_cashbox_session_id",
         readonly=False,
-        store=True
+        store=True,
     )
     requiere_account_cashbox_session = fields.Boolean(
-        compute='_compute_requiere_account_cashbox_session',
+        compute="_compute_requiere_account_cashbox_session",
         compute_sudo=False,
     )
-    cashbox_session_ids_domain = fields.Binary(
-        compute='_compute_cashbox_session_ids_domain'
-    )
+    cashbox_session_ids_domain = fields.Binary(compute="_compute_cashbox_session_ids_domain")
 
-    @api.depends_context('uid')
+    @api.depends_context("uid")
     # dummy depends para que se compute(no estamos seguros porque solo con el depends_context no computa)
-    @api.depends('destination_journal_id')
+    @api.depends("destination_journal_id")
     def _compute_requiere_account_cashbox_session(self):
         self.requiere_account_cashbox_session = self.env.user.requiere_account_cashbox_session
 
     def _compute_cashbox_session_id(self):
         for rec in self:
-            session_ids = self.env['account.cashbox.session'].search([
-                ('state', '=', 'opened'),
-                '|',
-                ('user_ids', '=', self.env.uid),
-                ('user_ids', '=', False)
-            ])
+            session_ids = self.env["account.cashbox.session"].search(
+                [("state", "=", "opened"), "|", ("user_ids", "=", self.env.uid), ("user_ids", "=", False)]
+            )
             if len(session_ids) == 1:
                 rec.cashbox_session_id = session_ids.id
             else:
@@ -43,7 +37,7 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
     def _create_payments(self):
         self.ensure_one()
         if self.env.user.requiere_account_cashbox_session and not self.cashbox_session_id:
-            raise UserError(_('Your user requires to use payment session on each tranfer'))
+            raise UserError(_("Your user requires to use payment session on each tranfer"))
         # Envio el contexto  paired_transfer en True para poder crear la
         # transferencia son cashbox durante la creacion y setearla sobre
         # la primera y no la paires
@@ -51,14 +45,16 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
         payments.cashbox_session_id = self.cashbox_session_id.id
         return payments
 
-    @api.onchange('destination_journal_id')
+    @api.onchange("destination_journal_id")
     def _compute_cashbox_session_ids_domain(self):
         self.cashbox_session_id = False
-        cashbox_ids = self.env['account.cashbox'].search([('journal_ids', 'in', self.destination_journal_id.ids)])
-        session_ids = cashbox_ids.mapped('current_concurrent_session_ids').ids
+        cashbox_ids = self.env["account.cashbox"].search([("journal_ids", "in", self.destination_journal_id.ids)])
+        session_ids = cashbox_ids.mapped("current_concurrent_session_ids").ids
         self.cashbox_session_ids_domain = [
-            ('state', '=', 'opened'),
-            ('company_id', '=', self.company_id.id),
-            ('id', 'in', session_ids),
-            '|', ('user_ids', '=', self.env.uid),
-            ('user_ids', '=', False)]
+            ("state", "=", "opened"),
+            ("company_id", "=", self.company_id.id),
+            ("id", "in", session_ids),
+            "|",
+            ("user_ids", "=", self.env.uid),
+            ("user_ids", "=", False),
+        ]

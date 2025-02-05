@@ -2,46 +2,38 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import models, fields, _
+from odoo import _, fields, models
 
 
 class AccountCardInstallment(models.Model):
-    _name = 'account.card.installment'
-    _description = 'amount to add for collection in installments'
+    _name = "account.card.installment"
+    _description = "amount to add for collection in installments"
 
     card_id = fields.Many2one(
-        'account.card',
-        string='Card',
+        "account.card",
+        string="Card",
         required=True,
     )
-    name = fields.Char(
-        'Fantasy Name',
-        default='/',
-        help = 'Nombre informativo del plan a mostrar'
-    )
-    divisor = fields.Integer(
-        help = 'Número por el cual se dividirá el total de cuotas que pagará el usuario final'
-    )
+    name = fields.Char("Fantasy Name", default="/", help="Nombre informativo del plan a mostrar")
+    divisor = fields.Integer(help="Número por el cual se dividirá el total de cuotas que pagará el usuario final")
     installment = fields.Integer(
-        string='Installment Plan',
-        help='Plan de cuotas a informar, en caso de utilizar método de pago electrónico: el valor del plan a informar al gateway de pago'
+        string="Installment Plan",
+        help="Plan de cuotas a informar, en caso de utilizar método de pago electrónico: el valor del plan a informar al gateway de pago",
     )
     surcharge_coefficient = fields.Float(
         default=1.0,
-        digits='Installment coefficient',
-        help='Factor a aplicar sobre el monto total para calcular el cargo financiero. Por ejemplo el formato para el recargo de un 6% se aplica con el valor 1.06.'
+        digits="Installment coefficient",
+        help="Factor a aplicar sobre el monto total para calcular el cargo financiero. Por ejemplo el formato para el recargo de un 6% se aplica con el valor 1.06.",
     )
     bank_discount = fields.Float(
-        help='Porcentaje de reintegro (el reintegro se efectúa sobre el total incluído el recargo financiero) que acuerda el vendedor con el banco o marca de tarjeta para devolución en compra'
+        help="Porcentaje de reintegro (el reintegro se efectúa sobre el total incluído el recargo financiero) que acuerda el vendedor con el banco o marca de tarjeta para devolución en compra"
     )
-    active = fields.Boolean(
-        default=True
-    )
+    active = fields.Boolean(default=True)
 
     def name_get(self):
         result = []
         for record in self:
-            name = record.card_id.name + ' ' + record.name
+            name = record.card_id.name + " " + record.name
             result.append((record.id, name))
         return result
 
@@ -55,25 +47,25 @@ class AccountCardInstallment(models.Model):
 
     def card_installment_tree(self, amount_total):
         tree = {}
-        for card in self.mapped('card_id'):
+        for card in self.mapped("card_id"):
             tree[card.id] = card.map_card_values()
 
         for installment in self:
-            tree[installment.card_id.id]['installments'].append(installment.map_installment_values(amount_total))
+            tree[installment.card_id.id]["installments"].append(installment.map_installment_values(amount_total))
         return tree
 
     def map_installment_values(self, amount_total):
         self.ensure_one()
         amount = amount_total * self.surcharge_coefficient
         return {
-                    'id': self.id,
-                    'name': self.name,
-                    'installment': self.installment,
-                    'coefficient': self.surcharge_coefficient,
-                    'bank_discount': self.bank_discount,
-                    'divisor': self.divisor,
-                    'base_amount': amount_total,
-                    'amount': amount,
-                    'fee': amount - amount_total,
-                    'description': _('%s installment of %.2f (total %.2f)') % (self.divisor, amount / self.divisor, amount)
-                }
+            "id": self.id,
+            "name": self.name,
+            "installment": self.installment,
+            "coefficient": self.surcharge_coefficient,
+            "bank_discount": self.bank_discount,
+            "divisor": self.divisor,
+            "base_amount": amount_total,
+            "amount": amount,
+            "fee": amount - amount_total,
+            "description": _("%s installment of %.2f (total %.2f)") % (self.divisor, amount / self.divisor, amount),
+        }

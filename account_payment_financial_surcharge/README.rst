@@ -14,9 +14,9 @@
 Payments with Financial Surchange
 =======================================
 
-The module allows the management of financial surcharges when the client opts for installment payments or 
-financing options. This is common in industries such as retail or financial services, where deferred payment 
-options are offered. The main functionality is to automatically add a financial surcharge to the payment 
+The module allows the management of financial surcharges when the client opts for installment payments or
+financing options. This is common in industries such as retail or financial services, where deferred payment
+options are offered. The main functionality is to automatically add a financial surcharge to the payment
 amount based on predefined criteria in "Cards".
 
 Installation

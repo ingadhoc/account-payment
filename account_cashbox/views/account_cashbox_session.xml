@@ -12,7 +12,7 @@
                 <header>
 
                     <button name="action_account_cashbox_session_open" type="object" string="Open session"
-                            invisible = "state != 'draft'" 
+                            invisible = "state != 'draft'"
                             class="oe_highlight"/>
                     <button name="action_account_cashbox_session_close" type="object" string="Close"
                             invisible = "state != 'opened' or require_cash_control"
@@ -24,20 +24,20 @@
                             invisible = "state != 'closing_control'"
                             class="oe_highlight"/>
                     <button name="action_account_cashbox_session_reopen" type="object" string="Re-Open"
-                            invisible = "state != 'closed'" 
+                            invisible = "state != 'closed'"
                             groups="account.group_account_manager"/>
 
-                    <field name="state" widget="statusbar" 
-                        invisible = "require_cash_control == False" 
+                    <field name="state" widget="statusbar"
+                        invisible = "require_cash_control == False"
                         statusbar_visible="draft,opened,closing_control,closed" nolabel="1" />
-                    <field name="state" widget="statusbar" 
-                        invisible="require_cash_control" 
+                    <field name="state" widget="statusbar"
+                        invisible="require_cash_control"
                         statusbar_visible="draft,opened,closed" nolabel="1" />
 
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_import_payments" 
+                        <button name="action_import_payments"
                             invisible="state != 'opened'" type="object" class="oe_stat_button" icon="fa-plus">
                             <span>Import</span>
                         </button>
@@ -46,7 +46,7 @@
                         </button>
                     </div>
                     <h1 class="oe_title">
-                        <field name="name" placeholder='Session name' 
+                        <field name="name" placeholder='Session name'
                         readonly="allow_concurrent_sessions == False" class="oe_inline"/>
                     </h1>
                     <group>
@@ -73,9 +73,9 @@
                                 <button name="action_session_payments" type="object" title="Payments" icon="fa-search" context="{'create': False}"></button>
                                 <field name="balance_end" invisible = "require_cash_control == False"
                                     column_invisible="parent.require_cash_control == False"/>
-                                <field name="balance_end_real" 
+                                <field name="balance_end_real"
                                     readonly=" parent.state !='closing_control'"
-                                    invisible = "require_cash_control == False" 
+                                    invisible = "require_cash_control == False"
                                     column_invisible="parent.require_cash_control == False"/>
                             </list>
                             <form>

@@ -18,32 +18,30 @@
 #
 ##############################################################################
 {
-    'name': 'Latam Check UX',
-    'version': "18.0.1.2.0",
-    'category': 'Accounting',
-    'sequence': 14,
-    'summary': '',
-    'author': 'ADHOC SA',
-    'website': 'www.adhoc.com.ar',
-    'license': 'AGPL-3',
-    'images': [
+    "name": "Latam Check UX",
+    "version": "18.0.1.2.0",
+    "category": "Accounting",
+    "sequence": 14,
+    "summary": "",
+    "author": "ADHOC SA",
+    "website": "www.adhoc.com.ar",
+    "license": "AGPL-3",
+    "images": [],
+    "depends": [
+        "l10n_latam_check",
+        "account_ux",
+        "account_internal_transfer",
     ],
-    'depends': [
-        'l10n_latam_check',
-        'account_ux',
-        'account_internal_transfer',
+    "data": [
+        "wizards/account_check_action_wizard_view.xml",
+        "views/account_payment_view.xml",
+        "views/l10n_latam_check_view.xml",
+        "views/account_journal_view.xml",
+        "views/report_payment_receipt_templates.xml",
+        "security/ir.model.access.csv",
     ],
-    'data': [
-        'wizards/account_check_action_wizard_view.xml',
-        'views/account_payment_view.xml',
-        'views/l10n_latam_check_view.xml',
-        'views/account_journal_view.xml',
-        'views/report_payment_receipt_templates.xml',
-        'security/ir.model.access.csv',
-    ],
-    'demo': [
-    ],
-    'installable': True,
-    'auto_install': True,
-    'application': False,
+    "demo": [],
+    "installable": True,
+    "auto_install": True,
+    "application": False,
 }
