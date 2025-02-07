@@ -11,7 +11,6 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
             L10nLatamPaymentMassTransfer,
             self.with_context(
                 is_internal_transfer_menu=True,
-                default_destination_journal_id=self.destination_journal_id.id,
                 check_deposit_transfer=True,
             ),
         )._create_payments()
@@ -27,6 +26,8 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
         # Set the paired internal transfer payment IDs to establish the link
         # between the outbound and inbound payments.
         outbound_payment.paired_internal_transfer_payment_id = inbound_payment.id
+        outbound_payment.destination_journal_id = self.destination_journal_id
         inbound_payment.paired_internal_transfer_payment_id = outbound_payment.id
+        inbound_payment.destination_journal_id = self.journal_id
 
         return outbound_payment
