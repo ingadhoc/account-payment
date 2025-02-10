@@ -39,3 +39,8 @@ class AccountMove(models.Model):
         receiptbook_recs = self.filtered(lambda x: x.receiptbook_id and x.journal_id.type in ("bank", "cash"))
         receiptbook_recs.made_sequence_hole = False
         super(AccountMove, self - receiptbook_recs)._compute_made_sequence_hole()
+
+    def _compute_name(self):
+        super()._compute_name()
+        for move in self.filtered(lambda x: x.origin_payment_id.receiptbook_id):
+            move.name = move.origin_payment_id.name
