@@ -259,12 +259,13 @@ class AccountPayment(models.Model):
             return super()._prepare_move_line_default_vals(write_off_line_vals=write_off_line_vals, force_balance=force_balance)
         write_off_line_vals = []
         if self.write_off_amount:
+            conversion_rate = self.exchange_rate or 1.0
             if self.payment_type == 'inbound':
                 # Receive money.
-                write_off_amount_currency = self.write_off_amount
+                write_off_amount_currency = self.write_off_amount / conversion_rate
             else:
                 # Send money.
-                write_off_amount_currency = -self.write_off_amount
+                write_off_amount_currency = -self.write_off_amount / conversion_rate
 
             write_off_line_vals.append({
                 'name': self.write_off_type_id.label or self.write_off_type_id.name,
