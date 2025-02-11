@@ -297,12 +297,19 @@ class AccountPayment(models.Model):
             )
         write_off_line_vals = []
         if self.write_off_amount:
+<<<<<<< HEAD
             if self.payment_type == "inbound":
+||||||| parent of 78e6daea (temp)
+            if self.payment_type == 'inbound':
+=======
+            conversion_rate = self.exchange_rate or 1.0
+            if self.payment_type == 'inbound':
+>>>>>>> 78e6daea (temp)
                 # Receive money.
-                write_off_amount_currency = self.write_off_amount
+                write_off_amount_currency = self.write_off_amount / conversion_rate
             else:
                 # Send money.
-                write_off_amount_currency = -self.write_off_amount
+                write_off_amount_currency = -self.write_off_amount / conversion_rate
 
             write_off_line_vals.append(
                 {
