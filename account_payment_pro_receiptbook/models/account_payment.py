@@ -43,7 +43,7 @@ class AccountPayment(models.Model):
     @api.depends("company_id", "partner_type", "is_internal_transfer")
     def _compute_receiptbook(self):
         for rec in self:
-            if rec.is_internal_transfer or not rec.company_id.use_payment_pro:
+            if rec.is_internal_transfer or not rec.company_id.use_receiptbook:
                 rec.receiptbook_id = False
             elif not rec.receiptbook_id or rec.receiptbook_id.company_id != rec.company_id:
                 partner_type = rec.partner_type or self._context.get(

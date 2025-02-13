@@ -40,7 +40,8 @@ class AccountMove(models.Model):
         receiptbook_recs.made_sequence_hole = False
         super(AccountMove, self - receiptbook_recs)._compute_made_sequence_hole()
 
+    @api.depends()
     def _compute_name(self):
         super()._compute_name()
-        for move in self.filtered(lambda x: x.origin_payment_id.receiptbook_id):
+        for move in self.filtered(lambda x: x.origin_payment_id.receiptbook_id and x.state == "draft"):
             move.name = move.origin_payment_id.name
