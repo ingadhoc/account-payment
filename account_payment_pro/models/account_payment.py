@@ -492,6 +492,7 @@ class AccountPayment(models.Model):
         self.action_post()
         return self.to_pay_move_line_ids.with_context(
             force_payment_pro=True,
+            create_and_new=True,
             default_move_journal_types=("bank", "cash"),
             default_to_pay_amount=self.payment_difference,
             default_l10n_ar_fiscal_position_id=False,

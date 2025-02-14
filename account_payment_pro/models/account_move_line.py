@@ -64,6 +64,7 @@ class AccountMoveLine(models.Model):
                 payment_type = "outbound"
             else:
                 payment_type = "inbound" if partner_type == "customer" else "outbound"
+            create_and_new = True if self._context.get("create_and_new") else False
             context = {
                 "active_model": "account.move.line",
                 "active_ids": self.ids,
@@ -74,6 +75,7 @@ class AccountMoveLine(models.Model):
                 # We set this because if became from other view and in the context has 'create=False'
                 # you can't crate payment lines (for ej: subscription)
                 "create": True,
+                "create_and_new": create_and_new,
                 "default_company_id": company_id,
             }
             if self._context.get("default_l10n_ar_fiscal_position_id") is not None:
