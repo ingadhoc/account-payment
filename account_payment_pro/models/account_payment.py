@@ -459,7 +459,7 @@ class AccountPayment(models.Model):
         # Se recomputan las lienas solo si la deuda que esta seleccionada solo si
         # cambio el partner, compania o partner_type
 
-        with_payment_pro = self.filtered(lambda x: x.company_id.use_payment_pro)
+        with_payment_pro = self.filtered(lambda x: x.company_id.use_payment_pro and not x.is_internal_transfer)
         if not self._context.get('pay_now'):
             (self - with_payment_pro).to_pay_move_line_ids = [Command.clear()]
         for rec in with_payment_pro:
