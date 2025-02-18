@@ -5,3 +5,4 @@ from . import account_payment_receiptbook
 from . import account_chart_template
 from . import res_company
 from . import res_config_setting
+from . import account_journal
