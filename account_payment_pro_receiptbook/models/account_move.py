@@ -38,3 +38,8 @@ class AccountMove(models.Model):
         receiptbook_recs = self.filtered(lambda x: x.receiptbook_id and x.journal_id.type in ('bank', 'cash'))
         receiptbook_recs.made_sequence_hole = False
         super(AccountMove, self - receiptbook_recs)._compute_made_sequence_hole()
+
+    @api.depends('payment_id.receiptbook_id')
+    def _compute_l10n_latam_document_type(self):
+        receiptbook_payments = self.filtered(lambda x: x.payment_id.receiptbook_id)
+        super(AccountMove, self - receiptbook_payments)._compute_l10n_latam_document_type()
