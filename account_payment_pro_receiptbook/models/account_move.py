@@ -45,3 +45,8 @@ class AccountMove(models.Model):
         super()._compute_name()
         for move in self.filtered(lambda x: x.origin_payment_id.receiptbook_id and x.state == "draft"):
             move.name = move.origin_payment_id.name
+
+    @api.depends("origin_payment_id.receiptbook_id")
+    def _compute_l10n_latam_document_type(self):
+        receiptbook_payments = self.filtered(lambda x: x.origin_payment_id.receiptbook_id)
+        super(AccountMove, self - receiptbook_payments)._compute_l10n_latam_document_type()
