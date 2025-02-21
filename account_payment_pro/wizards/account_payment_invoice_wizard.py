@@ -28,7 +28,19 @@ class AccountPaymentInvoiceWizard(models.TransientModel):
     )
     invoice_date = fields.Date(string="Refund Date", default=fields.Date.context_today, required=True)
     currency_id = fields.Many2one(
+<<<<<<< HEAD
         related="payment_id.currency_id",
+||||||| parent of 1dc5e640 (temp)
+        related='payment_id.currency_id',
+    )
+    date = fields.Date(
+        string='Accounting Date'
+=======
+        related='company_id.currency_id',
+    )
+    date = fields.Date(
+        string='Accounting Date'
+>>>>>>> 1dc5e640 (temp)
     )
     date = fields.Date(string="Accounting Date")
     product_id = fields.Many2one(
