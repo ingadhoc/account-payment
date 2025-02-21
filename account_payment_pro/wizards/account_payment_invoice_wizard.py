@@ -32,7 +32,7 @@ class AccountPaymentInvoiceWizard(models.TransientModel):
         required=True
     )
     currency_id = fields.Many2one(
-        related='payment_id.currency_id',
+        related='company_id.currency_id',
     )
     date = fields.Date(
         string='Accounting Date'
