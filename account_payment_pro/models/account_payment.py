@@ -458,14 +458,14 @@ class AccountPayment(models.Model):
 
         # Se recomputan las lienas solo si la deuda que esta seleccionada solo si
         # cambio el partner, compania o partner_type
-        if self.state == 'draft':
-            with_payment_pro = self.filtered(lambda x: x.company_id.use_payment_pro and not x.is_internal_transfer)
-            if not self._context.get('pay_now'):
-                (self - with_payment_pro).to_pay_move_line_ids = [Command.clear()]
-            for rec in with_payment_pro:
-                if rec.partner_id != rec._origin.partner_id or rec.partner_type != rec._origin.partner_type or \
-                        rec.company_id != rec._origin.company_id:
-                    rec._add_all()
+        self = self.filtered(lambda x: x.state == "draft")
+        with_payment_pro = self.filtered(lambda x: x.company_id.use_payment_pro and not x.is_internal_transfer)
+        if not self._context.get('pay_now'):
+            (self - with_payment_pro).to_pay_move_line_ids = [Command.clear()]
+        for rec in with_payment_pro:
+            if rec.partner_id != rec._origin.partner_id or rec.partner_type != rec._origin.partner_type or \
+                    rec.company_id != rec._origin.company_id:
+                rec._add_all()
 
     def _get_to_pay_move_lines_domain(self):
         self.ensure_one()
