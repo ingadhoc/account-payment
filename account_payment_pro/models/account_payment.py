@@ -449,6 +449,7 @@ class AccountPayment(models.Model):
         for rec in self:
             rec.unreconciled_amount = rec.to_pay_amount - rec.selected_debt
 
+    # We dont set 'is_internal_transfer' as a dependencies as it could leed to recompute to_pay_move_line_ids
     @api.depends('partner_id', 'partner_type', 'company_id')
     def _compute_to_pay_move_lines(self):
         # TODO ?
@@ -460,7 +461,7 @@ class AccountPayment(models.Model):
         # cambio el partner, compania o partner_type
         self = self.filtered(lambda x: x.state == "draft")
         with_payment_pro = self.filtered(lambda x: x.company_id.use_payment_pro and not x.is_internal_transfer)
-        if not self._context.get('pay_now'):
+        if self.is_internal_transfer or not self._context.get('pay_now'):
             (self - with_payment_pro).to_pay_move_line_ids = [Command.clear()]
         for rec in with_payment_pro:
             if rec.partner_id != rec._origin.partner_id or rec.partner_type != rec._origin.partner_type or \
@@ -503,7 +504,7 @@ class AccountPayment(models.Model):
 
     def action_post(self):
         res = super().action_post()
-        for rec in self:
+        for rec in self.filtered(lambda x: x.company_id.use_payment_pro and not x.is_internal_transfer):
             counterpart_aml = rec.mapped('line_ids').filtered(
                 lambda r: not r.reconciled and r.account_id.account_type in self._get_valid_payment_account_types())
             if counterpart_aml and rec.to_pay_move_line_ids:
