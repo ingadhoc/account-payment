@@ -99,3 +99,16 @@ class AccountCashbox(models.Model):
     def _unlink_check_sessions(self):
         if any(x.session_ids for x in self):
             raise UserError(_("You cannot delete Point of Payments with sessions."))
+
+    @api.constrains("journal_ids")
+    def _check_journal_ids(self):
+        for record in self:
+            diff = record.cash_control_journal_ids - record.journal_ids
+            if diff:
+                raise UserError(
+                    _(
+                        "The following journals: %s have Open/Close control enabled. Please disable this setting before "
+                        "removing them from the payment methods.",
+                        diff.mapped("name"),
+                    )
+                )
