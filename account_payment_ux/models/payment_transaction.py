@@ -30,6 +30,8 @@ class PaymentTransaction(models.Model):
         if vals.get("is_post_processed") and vals.get("state", "draft") in ["draft", "pending"]:
             altered_vals = vals.copy()
             del altered_vals["is_post_processed"]
-            ignoned_post_processed_tx = self.filtered(lambda x: x.state in ["draft", "pending"])
+            ignoned_post_processed_tx = self.filtered(
+                lambda x: x.state in ["draft", "pending"] and x.provider_id.code != "custom"
+            )
             ignoned_post_processed_tx.write(altered_vals)
         return super(PaymentTransaction, self - ignoned_post_processed_tx).write(vals)
