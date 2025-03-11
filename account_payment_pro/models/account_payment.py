@@ -431,7 +431,10 @@ class AccountPayment(models.Model):
     def _compute_selected_debt(self):
         for rec in self:
             # factor = 1
-            rec.selected_debt = sum(rec.to_pay_move_line_ids._origin.mapped('amount_residual')) * (-1.0 if rec.partner_type == 'supplier' else 1.0)
+            amount_residual = sum(rec.to_pay_move_line_ids._origin.mapped('amount_residual'))
+            if self.env.context.get('pay_now') and amount_residual != sum(rec.to_pay_move_line_ids._origin.mapped('amount_residual_currency')):
+                amount_residual = sum(rec.to_pay_move_line_ids._origin.mapped('amount_residual_currency'))
+            rec.selected_debt = amount_residual * (-1.0 if rec.partner_type == 'supplier' else 1.0)
             # TODO error en la creacion de un payment desde el menu?
             # if rec.payment_type == 'outbound' and rec.partner_type == 'customer' or \
             #         rec.payment_type == 'inbound' and rec.partner_type == 'supplier':
