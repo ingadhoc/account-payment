@@ -30,11 +30,25 @@ class PopSessionJournalControl(models.Model):
             [("cashbox_session_id", "in", self.mapped("cashbox_session_id").ids), ("state", "!=", "draft")]
         )
         for record in self:
+<<<<<<< HEAD
             amount = sum(
                 payments_lines.filtered(
                     lambda p: p.cashbox_session_id == record.cashbox_session_id and p.journal_id == record.journal_id
                 ).mapped("amount_signed")
             )
+||||||| parent of f2b3172f (temp)
+            amount = sum(payments_lines.filtered(
+                lambda p: p.cashbox_session_id == record.cashbox_session_id and p.journal_id == record.journal_id
+                ).mapped('amount_signed'))
+=======
+            filtered_lines = payments_lines.filtered(
+                lambda p: p.cashbox_session_id == record.cashbox_session_id and p.journal_id == record.journal_id
+            )
+            if record.journal_id.currency_id:
+                amount = sum(filtered_lines.mapped('amount_signed'))
+            else:
+                amount = sum(filtered_lines.mapped('amount_company_currency_signed'))
+>>>>>>> f2b3172f (temp)
             record.amount = amount
             record.balance_end = amount + record.balance_start
             self -= record
