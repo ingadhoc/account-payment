@@ -1,0 +1,669 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_cashbox
+# 
+# Translators:
+# Mariana Torres <mt@adhoc.com.ar>, 2023
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2023
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-04-13 12:16+0000\n"
+"PO-Revision-Date: 2023-04-13 12:16+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2023\n"
+"Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Language: es\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_kanban
+msgid "<i class=\"fa fa-ellipsis-v\" role=\"img\" aria-label=\"Manage\" title=\"Manage\"/>"
+msgstr ""
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_form
+msgid "<span>Import</span>"
+msgstr "Importar"
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_kanban
+msgid "<span>Manage</span>"
+msgstr ""
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_form
+msgid "<span>Payments</span>"
+msgstr ""
+
+#. module: account_cashbox
+#. odoo-python
+#: code:addons/account_cashbox/models/account_payment.py:0
+#, python-format
+msgid ""
+"A payment (id %s) can't be posted on a pos session that is not open (session"
+" %s)'"
+msgstr ""
+"El pago (id 1%s) no puede ser validado en una sesión que no está abierta "
+"(sesión 1%s)"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__message_needaction
+msgid "Action Needed"
+msgstr "Necesita Acción"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__activity_ids
+msgid "Activities"
+msgstr "Actividades"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr ""
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__activity_state
+msgid "Activity State"
+msgstr "Estado de la actividad"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__activity_type_icon
+msgid "Activity Type Icon"
+msgstr ""
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__allow_concurrent_sessions
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__allow_concurrent_sessions
+msgid "Allow Concurrent Sessions"
+msgstr "Permitir sesiones recurrentes"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_res_users__allowed_cashbox_ids
+msgid "Allowed Cashbox"
+msgstr "Cajas permitidas"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__allowed_res_users_ids
+msgid "Allowed Res Users"
+msgstr "Usuarios permitidos"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__message_attachment_count
+msgid "Attachment Count"
+msgstr "Contar Adjunto"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_payment_import__available_journal_ids
+msgid "Available Journal"
+msgstr "Diario disponible"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__balance_end
+msgid "Balance End"
+msgstr "Saldo Final"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__balance_end_real
+msgid "Balance End Real"
+msgstr "Saldo Final Real"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__balance_start
+msgid "Balance Start"
+msgstr "Saldo Inicial"
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_users_form_extend
+msgid "Cajas"
+msgstr "Cajas"
+
+#. module: account_cashbox
+#. odoo-python
+#: code:addons/account_cashbox/models/account_payment.py:0
+#, python-format
+msgid "Can't cancel a payment on a closed payment session. Payment ids: %s"
+msgstr "No puede cancelar un pago de una sesión cerrada. Id del pago: 1%s"
+
+#. module: account_cashbox
+#: model_terms:ir.actions.act_window,help:account_cashbox.account_cashbox_session_action
+msgid "Cash session management"
+msgstr "Gestión de Sesiones de Caja"
+
+#. module: account_cashbox
+#: model:ir.actions.act_window,name:account_cashbox.account_cashbox_action
+#: model:ir.actions.act_window,name:account_cashbox.account_cashbox_session_action
+#: model:ir.actions.act_window,name:account_cashbox.account_cashbox_settings_action
+#: model:ir.model,name:account_cashbox.model_account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__cashbox_id
+#: model:ir.ui.menu,name:account_cashbox.menu_pop_dashboard
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_search
+msgid "Cashbox"
+msgstr "Cajas"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_payment_import__cashbox_session_id
+msgid "Cashbox Session"
+msgstr "Sesión de Caja"
+
+#. module: account_cashbox
+#: model_terms:ir.actions.act_window,help:account_cashbox.account_cashbox_action
+#: model_terms:ir.actions.act_window,help:account_cashbox.account_cashbox_settings_action
+msgid "Cashbox management"
+msgstr "Gestión de Cajas"
+
+#. module: account_cashbox
+#: model:ir.ui.menu,name:account_cashbox.menu_account_cashbox
+msgid "Cashbox manangment"
+msgstr "Gestión de Cajas"
+
+#. module: account_cashbox
+#: model:ir.model,name:account_cashbox.model_account_cashbox_session
+msgid "Cashbox session"
+msgstr "Sesión de Caja"
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_form
+msgid "Close"
+msgstr "Cerrar"
+
+#. module: account_cashbox
+#: model:ir.model.fields.selection,name:account_cashbox.selection__account_cashbox_session__state__closing_control
+msgid "Close control"
+msgstr "Control de Cierre"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__closing_date
+msgid "Closing Date"
+msgstr "Fecha de Cierre"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__company_id
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__company_id
+msgid "Company"
+msgstr "Compañía"
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_form
+msgid "Control"
+msgstr "Control"
+
+#. module: account_cashbox
+#: model:ir.model.constraint,message:account_cashbox.constraint_account_cashbox_session_line_uniq_line
+msgid "Control line must be unique"
+msgstr "La linea de control debe ser única"
+
+#. module: account_cashbox
+#: model_terms:ir.actions.act_window,help:account_cashbox.account_cashbox_action
+#: model_terms:ir.actions.act_window,help:account_cashbox.account_cashbox_settings_action
+msgid "Create cahsbox"
+msgstr "Crear caja"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__create_uid
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_payment_import__create_uid
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__create_uid
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__create_date
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_payment_import__create_date
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__create_date
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__currency_id
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__current_session_id
+msgid "Current Session"
+msgstr "Sesión Actual"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__current_concurrent_session_ids
+msgid "Current Sessions"
+msgstr "Sesiones actuales"
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_search
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_tree
+msgid "Description"
+msgstr "Descripción"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__display_name
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_payment_import__display_name
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__display_name
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__display_name
+msgid "Display Name"
+msgstr "Nombre a Mostrar"
+
+#. module: account_cashbox
+#: model:ir.model.fields.selection,name:account_cashbox.selection__account_cashbox_session__state__draft
+msgid "Draft"
+msgstr "Borrador"
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_kanban
+msgid "Edit config"
+msgstr ""
+
+#. module: account_cashbox
+#: model:ir.model.constraint,message:account_cashbox.constraint_account_cashbox_session_uniq_name
+msgid "El nombre de esta sesión de caja debe ser único !"
+msgstr ""
+
+#. module: account_cashbox
+#. odoo-python
+#: code:addons/account_cashbox/models/account_cashbox_session.py:0
+#, python-format
+msgid ""
+"En el diario \"%s\" el Balance Final Real (%s) excede la máxima diferencia "
+"permitida (%s)."
+msgstr ""
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__message_follower_ids
+msgid "Followers"
+msgstr "Seguidores"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__message_partner_ids
+msgid "Followers (Partners)"
+msgstr "Seguidores (Canales)"
+
+#. module: account_cashbox
+#: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr ""
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__has_message
+msgid "Has Message"
+msgstr ""
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__id
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_payment_import__id
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__id
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__id
+msgid "ID"
+msgstr "ID (identificación)"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__activity_exception_icon
+msgid "Icon"
+msgstr ""
+
+#. module: account_cashbox
+#: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr ""
+
+#. module: account_cashbox
+#: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr "Si está marcado, hay nuevos mensajes que requieren su atención."
+
+#. module: account_cashbox
+#: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__message_has_error
+#: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr "Si se encuentra marcado, algunos mensajes tienen error de envío."
+
+#. module: account_cashbox
+#: model:ir.actions.act_window,name:account_cashbox.cashbox_payent_import_action
+#: model_terms:ir.ui.view,arch_db:account_cashbox.cashbox_payment_import_view_form
+msgid "Import"
+msgstr "Importar"
+
+#. module: account_cashbox
+#: model:ir.model,name:account_cashbox.model_account_cashbox_payment_import
+msgid "Import Payment into session"
+msgstr "Importar pago en la sesión"
+
+#. module: account_cashbox
+#. odoo-python
+#: code:addons/account_cashbox/models/account_cashbox_session.py:0
+#, python-format
+msgid "Import payment"
+msgstr "Importar pago"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__message_is_follower
+msgid "Is Follower"
+msgstr "Es un seguidor"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__journal_id
+msgid "Journal"
+msgstr "Diario"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__cash_control_journal_ids
+msgid "Journals with Open / Close control"
+msgstr "Diarios con control de Apertura/Cierre"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox____last_update
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_payment_import____last_update
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session____last_update
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line____last_update
+msgid "Last Modified on"
+msgstr "Última Modificación el"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__write_uid
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_payment_import__write_uid
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__write_uid
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__write_date
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_payment_import__write_date
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__write_date
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__line_ids
+msgid "Line"
+msgstr "Línea"
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_kanban
+msgid "List Sessions"
+msgstr "Listar Sesiones"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__message_main_attachment_id
+msgid "Main Attachment"
+msgstr "Adjuntos principales"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__max_diff
+msgid "Max Diff"
+msgstr "Maxima diferencia tolerable"
+
+#. module: account_cashbox
+#: model:ir.model.fields,help:account_cashbox.field_account_cashbox__max_diff
+msgid ""
+"Max allowed difference for Cash Control Journals on the currency of the "
+"company"
+msgstr "Diferencia máxima permitida para el control de caja en la compañia."
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__message_has_error
+msgid "Message Delivery error"
+msgstr "Error de Envío de Mensaje"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__message_ids
+msgid "Messages"
+msgstr "Mensajes"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr ""
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__name
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_kanban
+msgid "New Session"
+msgstr "Nueva sesión"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr "Siguiente plazo de actividad"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__activity_summary
+msgid "Next Activity Summary"
+msgstr "Resumen de la siguiente actividad"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__activity_type_id
+msgid "Next Activity Type"
+msgstr "Siguiente tipo de actividad"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__message_needaction_counter
+msgid "Number of Actions"
+msgstr "Número de acciones"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__message_has_error_counter
+msgid "Number of errors"
+msgstr "Número de error"
+
+#. module: account_cashbox
+#: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__message_needaction_counter
+msgid "Number of messages which requires an action"
+msgstr "Número de mensajes que requieren una acción"
+
+#. module: account_cashbox
+#: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr "Número de mensajes con error de envío"
+
+#. module: account_cashbox
+#: model:ir.model.fields,help:account_cashbox.field_account_cashbox__sequence_id
+msgid "Numbering of cash sessions."
+msgstr "Número de sesiones de caja"
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_kanban
+msgid "Open Session"
+msgstr "Abrir Sesión"
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_form
+msgid "Open session"
+msgstr "Sesiones Abiertas"
+
+#. module: account_cashbox
+#: model:ir.model.fields.selection,name:account_cashbox.selection__account_cashbox_session__state__opened
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_search
+msgid "Opened"
+msgstr "Abierto"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__opening_date
+msgid "Opening Date"
+msgstr "Fecha de apertura"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_payment__cashbox_session_id
+msgid "POP Session"
+msgstr "Sesión"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__payment_ids
+msgid "Payment"
+msgstr "Pago"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__journal_ids
+msgid "Payment method"
+msgstr "Método de Pago"
+
+#. module: account_cashbox
+#: model:ir.model,name:account_cashbox.model_account_payment
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_payment_import__payment_ids
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_form
+msgid "Payments"
+msgstr "Pagos"
+
+#. module: account_cashbox
+#: model:ir.model.fields.selection,name:account_cashbox.selection__account_cashbox_session__state__closed
+msgid "Published"
+msgstr "Publicado"
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_form
+msgid "Re-Open"
+msgstr "Re Abrir"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_payment__requiere_account_cashbox_session
+#: model:ir.model.fields,field_description:account_cashbox.field_res_users__requiere_account_cashbox_session
+msgid "Requiere Account Cashbox Session"
+msgstr "Requiere Sesión de Caja"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__activity_user_id
+msgid "Responsible User"
+msgstr "Usuario responsable"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr "Error de entrega de SMS"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__sequence_id
+msgid "Sequence"
+msgstr "Secuencia"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__session_ids
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__cashbox_session_id
+msgid "Session"
+msgstr "Sesión"
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_form
+msgid "Session name"
+msgstr "Nombre de la Sesión"
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.account_cashbox_view_form
+msgid "Sessions"
+msgstr "Sesiones"
+
+#. module: account_cashbox
+#: model_terms:ir.actions.act_window,help:account_cashbox.account_cashbox_session_action
+msgid "Start the first session"
+msgstr "Comenzar la primera sesión"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__state
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_search
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_tree
+msgid "State"
+msgstr "Estado"
+
+#. module: account_cashbox
+#: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+"Estado basado en actividades\n"
+"Vencida: la fecha tope ya ha pasado\n"
+"Hoy: La fecha tope es hoy\n"
+"Planificada: futuras actividades."
+
+#. module: account_cashbox
+#. odoo-python
+#: code:addons/account_cashbox/models/account_payment.py:0
+#, python-format
+msgid "The currency of the journal must be the of the payment."
+msgstr ""
+
+#. module: account_cashbox
+#: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr ""
+
+#. module: account_cashbox
+#: model:ir.model,name:account_cashbox.model_res_users
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__user_ids
+msgid "User"
+msgstr "Usuario"
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_form
+msgid "Validate"
+msgstr "Validar"
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_kanban
+msgid "View Sessions"
+msgstr "Ver Sesiones"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__website_message_ids
+msgid "Website Messages"
+msgstr "Mensajes del sitio web"
+
+#. module: account_cashbox
+#: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__website_message_ids
+msgid "Website communication history"
+msgstr "Historial de comunicación del sitio web"
+
+#. module: account_cashbox
+#. odoo-python
+#: code:addons/account_cashbox/models/account_cashbox_session.py:0
+#, python-format
+msgid "You can only delete sessions in \"OPEN CONTROL\" status."
+msgstr "Solo puede borrar sesiones en estado \"Borrador\""
+
+#. module: account_cashbox
+#. odoo-python
+#: code:addons/account_cashbox/models/account_cashbox_session.py:0
+#, python-format
+msgid "You can only have one open Session for %s"
+msgstr "Solo puede tener una Sesion Abierta para %s"
+
+#. module: account_cashbox
+#. odoo-python
+#: code:addons/account_cashbox/models/account_cashbox.py:0
+#, python-format
+msgid "You cannot delete Point of Payments with sessions."
+msgstr ""
+
+#. module: account_cashbox
+#. odoo-python
+#: code:addons/account_cashbox/models/account_payment.py:0
+#, python-format
+msgid "Your user requires to use payment session on each payment"
+msgstr "Su usuario requiere que use sesiones de caja en cada pago"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__amount
+msgid "amount"
+msgstr "Cantidad"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__require_cash_control
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__require_cash_control
+msgid "require_cash_control"
+msgstr "Requiere control de efectivo"
+
+#. module: account_cashbox
+#: model:ir.model,name:account_cashbox.model_account_cashbox_session_line
+msgid "session journal"
+msgstr ""

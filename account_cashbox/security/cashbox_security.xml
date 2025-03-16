@@ -1,0 +1,46 @@
+<?xml version="1.0" ?>
+<odoo>
+
+    <record id="cashbox_company_rule" model="ir.rule">
+        <field name="name">Cashbox multi-company</field>
+        <field name="model_id" ref="model_account_cashbox"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="cashbox_session_company_rule" model="ir.rule">
+        <field name="name">Cashbox Session multi-company</field>
+        <field name="model_id" ref="model_account_cashbox_session"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="cashbox_user" model="ir.rule">
+        <field name="name">Cashbox Invoicing User</field>
+        <field name="model_id" ref="model_account_cashbox"/>
+        <field name="domain_force">[('allowed_res_users_ids', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('account.group_account_invoice'))]"/>
+    </record>
+
+    <record id="cashbox_admin" model="ir.rule">
+        <field name="name">Cashbox Invoicing Manager</field>
+        <field name="model_id" ref="model_account_cashbox"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('account.group_account_manager'))]"/>
+    </record>
+
+    <!-- invoicing user, only sessions -->
+    <record id="cashbox_session_user" model="ir.rule">
+        <field name="name">Cashbox Session Invoicing User</field>
+        <field name="model_id" ref="model_account_cashbox_session"/>
+        <field name="domain_force">[('user_ids', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('account.group_account_invoice'))]"/>
+    </record>
+
+    <!-- admin user, all sessions -->
+    <record id="cashbox_session_admin" model="ir.rule">
+        <field name="name">Cashbox Session Invoicing Manager</field>
+        <field name="model_id" ref="model_account_cashbox_session"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('account.group_account_manager'))]"/>
+    </record>
+
+</odoo>
