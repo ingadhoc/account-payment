@@ -19,7 +19,6 @@ class AccountPayment(models.Model):
         digits=0,
     )
     journal_currency_id = fields.Many2one(related="journal_id.currency_id", string="Journal Currency")
-    
 
     @api.depends("payment_total", "counterpart_exchange_rate")
     def _compute_counterpart_currency_amount(self):
@@ -28,7 +27,7 @@ class AccountPayment(models.Model):
                 rec.counterpart_currency_amount = rec.payment_total / rec.counterpart_exchange_rate
             else:
                 rec.counterpart_currency_amount = False
-    
+
     @api.depends("counterpart_currency_id", "company_id", "date")
     def _compute_counterpart_exchange_rate(self):
         for rec in self:
@@ -117,15 +116,7 @@ class AccountPayment(models.Model):
     @api.model
     def _get_trigger_fields_to_synchronize(self):
         res = super()._get_trigger_fields_to_synchronize()
-        # (FW 16) si bien es un metodo api.model usamos este hack para chequear si es la creacion de un payment que termina
-        # triggereando un write y luego llamando a este metodo y dando error, por ahora no encontramos una mejor forma
-        # esto esta ligado de alguna manera a un llamado que se hace dos veces por "culpa" del método
-        # "_inverse_amount_company_currency". Si bien no es elegante para todas las pruebas que hicimos funcionó bien.
-        # IMPORTANTE copiamos el if de caso similar con force_amount_company_currency pero no verificamos si aca tmb
-        # era necesario
-        if self.mapped('open_move_line_ids'):
-            return res + ('counterpart_currency_amount', 'counterpart_currency_id')
-        return res
+        return res + ('counterpart_currency_id', 'counterpart_exchange_rate')
 
     def _synchronize_from_moves(self, changed_fields):
         # Pisamos este método para eliminar la validación de la moneda (FW de 16, en 18 no existe más la restricción)

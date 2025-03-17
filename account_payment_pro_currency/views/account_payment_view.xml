@@ -5,7 +5,7 @@
         <field eval="16" name="priority"/>
         <field name="inherit_id" ref="account.view_account_payment_form"/>
         <field name="arch" type="xml">
-            <div name="amount_div" position="after">    
+            <div name="payment_total" position="after">    
                 <label for="counterpart_currency_amount" string="Secondary Currency" invisible="other_currency or is_internal_transfer or not use_payment_pro" groups="base.group_multi_currency"/>
                 <div name="counterpart_currency_amount" class="o_row" invisible="other_currency or is_internal_transfer or not use_payment_pro" groups="base.group_multi_currency">
                     <field name="counterpart_currency_id" domain="[('id', '!=', currency_id)]" options="{'no_create': True, 'no_open': True}" readonly="state != 'draft'"/>
