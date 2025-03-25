@@ -8,3 +8,7 @@ class AccountMove(models.Model):
         pending_transactions = self.transaction_ids.filtered(lambda tx: tx.state in ('pending')
             and tx.provider_code not in ['manual', 'transfer'])
         return not pending_transactions and super()._has_to_be_paid()
+
+    def _get_pending_transactions(self):
+        return self.transaction_ids.filtered(lambda tx: tx.state in ('pending')
+            and tx.provider_code not in ['manual', 'transfer'])
