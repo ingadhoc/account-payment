@@ -1,5 +1,8 @@
+import base64
+
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
+from odoo.tools import safe_eval
 
 
 class AccountPayment(models.Model):
@@ -37,6 +40,8 @@ class AccountPayment(models.Model):
         res = super().action_post()
 
         for rec in self.filtered("receiptbook_id.mail_template_id"):
+            if rec.l10n_ar_withholding_ids:
+                rec.receiptbook_id.mail_template_id.attachment_ids = rec.generate_withholding_reports()
             rec.message_post_with_source(rec.receiptbook_id.mail_template_id, subtype_xmlid="mail.mt_comment")
         return res
 
@@ -57,3 +62,27 @@ class AccountPayment(models.Model):
                     limit=1,
                 )
                 rec.receiptbook_id = receiptbook
+
+    def generate_withholding_reports(self):
+        self.ensure_one()
+        attachments = []
+        for line in self.l10n_ar_withholding_ids:
+            action = self.env.ref("l10n_ar_tax.action_report_withholding_certificate")
+
+            report_name = safe_eval.safe_eval(action.print_report_name, {"object": line.withholding_id})
+            result, _ = self.env["ir.actions.report"]._render(action.report_name, line.withholding_id.id)
+            file = base64.b64encode(result)
+
+            attachment = self.env["ir.attachment"].create(
+                {
+                    "name": f"{report_name} - {line.tax_line_id.name}",
+                    "mimetype": "application/pdf",
+                    "datas": file,
+                    "res_model": "account.payment",
+                    "res_id": self.id,
+                    "type": "binary",
+                }
+            )
+
+            attachments.append(attachment.id)
+        return attachments
