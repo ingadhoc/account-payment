@@ -35,6 +35,12 @@ class AccountPayment(models.Model):
             rec.name = "%s %s" % (rec.receiptbook_id.document_type_id.doc_code_prefix, name)
 
         res = super().action_post()
+        # Reincorporamos el seteo del l10n_latam_document_type_id para el caso de usar talonario de recibo
+        # Ya que debido al fix en
+        # https://github.com/ingadhoc/account-payment/commit/8a6ff0564d3526ec8ead24c90a8e53267d038f6a
+        # se esta evitando el recomputo para impedir que este vuelva a False.
+        for rec in self.filtered(lambda x: x.receiptbook_id):
+            rec.move_id.l10n_latam_document_type_id = rec.receiptbook_id.document_type_id.id
 
         for rec in self.filtered("receiptbook_id.mail_template_id"):
             rec.message_post_with_source(rec.receiptbook_id.mail_template_id, subtype_xmlid="mail.mt_comment")
