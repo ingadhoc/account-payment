@@ -9,6 +9,7 @@
                 <group name="pop_users_conf" string="Cajas">
                     <field name="allowed_cashbox_ids" widget="many2many_tags"/>
                     <field name="requiere_account_cashbox_session"/>
+                    <field name="default_cashbox_id"  options="{'no_create': True}"/>
                 </group>
             </group>
         </field>

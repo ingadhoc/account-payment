@@ -39,6 +39,8 @@ class AccountPayment(models.Model):
             )
             if len(session_ids) == 1:
                 rec.cashbox_session_id = session_ids.id
+            elif len(session_ids) > 1:
+                rec.cashbox_session_id = self.env.user.default_cashbox_id.current_session_id
             else:
                 rec.cashbox_session_id = False
 
@@ -53,7 +55,9 @@ class AccountPayment(models.Model):
 
     def action_post(self):
         for rec in self:
-            if rec.cashbox_session_id and rec.cashbox_session_id.state != "opened":
+            if not rec.cashbox_session_id and self.env.user.requiere_account_cashbox_session:
+                rec._compute_cashbox_session_id()
+            elif rec.cashbox_session_id and rec.cashbox_session_id.state != "opened":
                 raise UserError(
                     _(
                         "A payment (id %s) can't be posted on a pos session that is not open (session %s)",
@@ -67,7 +71,12 @@ class AccountPayment(models.Model):
                 and self.env.user.requiere_account_cashbox_session
                 and not rec.cashbox_session_id
             ):
-                raise UserError(_("Your user requires to use payment session on each payment"))
+                raise UserError(
+                    _(
+                        """Your user is required to use a payment session for each payment,
+                        but no default cashbox is assigned or no session is open for the user."""
+                    )
+                )
 
         super().action_post()
 
