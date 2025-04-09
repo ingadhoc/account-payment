@@ -10,7 +10,7 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
         outbound_payment = super(
             L10nLatamPaymentMassTransfer,
             self.with_context(
-                is_internal_transfer_menu=True,
+                default_is_internal_transfer=True,
                 check_deposit_transfer=True,
             ),
         )._create_payments()
