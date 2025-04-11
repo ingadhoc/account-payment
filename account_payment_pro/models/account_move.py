@@ -55,6 +55,7 @@ class AccountMove(models.Model):
                         "journal_id": pay_journal.id,
                         "payment_method_id": payment_method.id,
                         "to_pay_move_line_ids": [Command.set(rec.open_move_line_ids.ids)],
+                        "memo": rec.payment_reference,
                     }
                 )
             )
