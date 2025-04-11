@@ -143,6 +143,7 @@ class AccountMove(models.Model):
                     'journal_id': pay_journal.id,
                     'payment_method_id': payment_method.id,
                     'date': rec.invoice_date,
+                    'ref': rec.payment_reference,
                 })
                 # if validate_payment:
                 payment_group.post()
