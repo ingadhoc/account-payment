@@ -37,11 +37,12 @@
 					<group string="Installment plan">
 						<field name="installment_ids" colspan="2" nolabel="1">
 							<tree editable="bottom">
-								<field name="name"/>
-								<field name="installment"/>
-								<field name="divisor" optional="show"/>
-								<field name="surcharge_coefficient"/>
-								<field name="bank_discount" optional="hide"/>
+								<field name="name" string="Nombre"/>
+								<field name="installment" string="Cuotas"/>
+								<field name="financial_surcharge"/>
+								<field name="divisor" optional="show" invisible="1"/>
+								<field name="surcharge_coefficient" invisible="1"/>
+								<field name="bank_discount" optional="hide" invisible="1"/>
 							</tree>
 						</field>
 					</group>

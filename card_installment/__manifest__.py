@@ -18,6 +18,7 @@
         'data/account_card.xml',
         'data/decimal_installment_coeficent.xml',
         'views/account_card.xml',
+        'views/product_product_views.xml',
     ],
     'demo': [
         'demo/product_product.xml',

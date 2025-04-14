@@ -40,6 +40,8 @@ class AccountCardInstallment(models.Model):
         default=True
     )
 
+    financial_surcharge = fields.Float(string='Financial charge')
+
     def name_get(self):
         result = []
         for record in self:
