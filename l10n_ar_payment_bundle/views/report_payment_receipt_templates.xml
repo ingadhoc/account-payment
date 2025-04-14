@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_payment_receipt_document" inherit_id="l10n_ar_tax.report_payment_receipt_document">
+        <xpath  expr="//t[@t-foreach='payment_bundle.filtered(lambda x: not x._is_latam_check_payment())']/tr" position="attributes">
+            <attribute name="t-if">doc.payment_method_line_id.payment_method_id.code != 'payment_bundle'</attribute>
+        </xpath>
+        <xpath expr="//table[@name='payments_table']/tfoot" position="attributes">
+            <attribute name="t-if">o.payment_method_line_id.payment_method_id.code != 'payment_bundle'</attribute>
+        </xpath>
+
+        <xpath expr="//table[@name='payments_table']/tfoot" position="after">
+                <tfoot t-if="o.payment_method_line_id.payment_method_id.code == 'payment_bundle'">
+                    <tr>
+                        <td><strong><span>Total Paid</span></strong></td>
+                        <td class="text-right" t-if="secondary_currency">
+                            <strong><span class="text-nowrap" t-out="secondary_currency.round(o.bundle_counterpart_currency_amount)" t-options="{'widget': 'monetary', 'display_currency': secondary_currency}"/></strong>
+                        </td>
+                        <td  class="text-right">
+                            <strong><span class="text-nowrap" t-out="o.payment_total" t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/></strong>
+                        </td>
+                    </tr>
+                </tfoot>
+         </xpath>
+
+        <xpath expr="//table[@name='matching_table']/tfoot" position="attributes">
+            <attribute name="t-if">o.payment_method_line_id.payment_method_id.code != 'payment_bundle'</attribute>
+        </xpath>
+        <xpath expr="//table[@name='matching_table']/tfoot" position="after">
+                <tfoot t-if="o.payment_method_line_id.payment_method_id.code == 'payment_bundle'">
+                    <tr>
+                        <td colspan="3"><strong><span>Total Imputed</span></strong></td>
+                        <td class="text-right">
+                            <strong><span class="text-nowrap" t-out="o.matched_amount" t-options='{"widget": "monetary", "display_currency": o.company_currency_id}'/></strong>
+                            <!-- <strong><span class="text-nowrap" t-out="o.matched_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></strong> -->
+                        </td>
+                    </tr>
+                </tfoot>
+        </xpath>
+
+
+    </template>
+</odoo>

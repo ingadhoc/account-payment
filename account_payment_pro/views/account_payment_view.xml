@@ -88,7 +88,7 @@
     <field name="inherit_id" ref="l10n_latam_check.view_account_payment_form_inherited"/>
     <field name="arch" type="xml">
         <page name="latam_checks_page" position="before">
-            <page string="Debts" invisible="state != 'draft' or is_internal_transfer or not use_payment_pro">
+            <page string="Debts" name="debts" invisible="state != 'draft' or is_internal_transfer or not use_payment_pro">
                 <group >
                     <group>
                         <field name="selected_debt" invisible="state not in ('draft')"/>

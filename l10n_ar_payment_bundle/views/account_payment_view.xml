@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_payment_from_bundle_tree" model="ir.ui.view">
+        <field name="name">account.payment.tree</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_tree"/>
+        <field name="priority">90</field>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='payment_method_line_id']" position="attributes">
+                <attribute name="invisible">0</attribute>
+            </xpath>
+
+            <field name="name" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </field>
+            <field name="partner_id" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </field>
+        </field>
+    </record>
+   <record id="view_account_payment_from_bundle_form" model="ir.ui.view">
+        <field name="name">account.payment.from payment.bundle.form</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="priority">90</field>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <!-- <form>
+                <footer>
+                    <button special="saveAndNew" data-hotkey="s" string="Save" class="btn-primary"/>
+                    <button special="cancel" data-hotkey="x" string="Cancel" class="btn-secondary"/>
+                </footer>
+            </form> -->
+            <field name="payment_type" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <!-- no anda <xpath expr="//field[@name='company_id'][1]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath> -->
+            <field name="partner_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <xpath expr="//field[@name='partner_id'][2]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <field name="withholdings_amount" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+
+            <xpath expr="//label[@for='write_off_amount']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//div[@name='write_off_amount']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <field name="counterpart_currency_id" position="attributes">
+                <attribute name="readonly">1</attribute>
+                <attribute name="force_save">1</attribute>
+            </field>
+
+            <!--Ocultar campos de counterpart en linked cuando main no tiene sc-->
+            <!-- <xpath expr="//label[@for='counterpart_currency_amount']" position="attributes">
+                <attribute name="invisible">not counterpart_currency_id</attribute>
+            </xpath>
+            <xpath expr="//div[@name='counterpart_currency_amount']" position="attributes">
+                <attribute name="invisible">not counterpart_currency_id</attribute>
+            </xpath>
+            <xpath expr="//field[@name='counterpart_currency_amount']" position="attributes">
+                <attribute name="invisible">not counterpart_currency_id</attribute>
+            </xpath> -->
+            <button name="action_post" position="attributes">
+                <attribute name="groups">base.group_no_one</attribute>
+                <attribute name="confirm">IMPORTANT: Linked payment validation must be done from main receipt. Manual validation of a linked payment is only used for corrections and advanced use cases. Are you sure you want to continue?</attribute>
+            </button>
+            <button name="action_validate" position="attributes">
+                <attribute name="groups">base.group_no_one</attribute>
+                <attribute name="confirm">IMPORTANT: Linked payment validation must be done from main receipt. Manual validation of a linked payment is only used for corrections and advanced use cases. Are you sure you want to continue?</attribute>
+            </button>
+            <button name="action_reject" position="attributes">
+                <attribute name="groups">base.group_no_one</attribute>
+                <attribute name="confirm">IMPORTANT: Linked payment validation must be done from main receipt. Manual validation of a linked payment is only used for corrections and advanced use cases. Are you sure you want to continue?</attribute>
+            </button>
+            <button name="button_request_cancel" position="attributes">
+                <attribute name="groups">base.group_no_one</attribute>
+                <attribute name="confirm">IMPORTANT: Linked payment cancel must be done from main receipt. Manual cancel of a linked payment is only used for corrections and advanced use cases. Are you sure you want to continue?</attribute>
+            </button>
+            <button name="action_draft" position="attributes">
+                <attribute name="groups">base.group_no_one</attribute>
+                <attribute name="confirm">IMPORTANT: Linked draft validation must be done from main receipt. Draft validation of a linked payment is only used for corrections and advanced use cases. Are you sure you want to continue?</attribute>
+            </button>
+            <button name="action_cancel" position="attributes">
+                <attribute name="groups">base.group_no_one</attribute>
+                <attribute name="confirm">IMPORTANT: Linked payment cancel must be done from main receipt. Manual cancel of a linked payment is only used for corrections and advanced use cases. Are you sure you want to continue?</attribute>
+            </button>
+            <button name="mark_as_sent" position="attributes">
+                <attribute name="groups">base.group_no_one</attribute>
+                <attribute name="confirm">IMPORTANT: Linked payment sent must be done from main receipt. Manual sent of a linked payment is only used for corrections and advanced use cases. Are you sure you want to continue?</attribute>
+            </button>
+            <button name="unmark_as_sent" position="attributes">
+                <attribute name="groups">base.group_no_one</attribute>
+                <attribute name="confirm">IMPORTANT: Linked unsent cancel must be done from main receipt. Manual unsent of a linked payment is only used for corrections and advanced use cases. Are you sure you want to continue?</attribute>
+            </button>
+            <xpath expr="//page[@name='debts']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//page[@name='paid']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//page[@name='withholdings_page']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//page[@name='withholdings_page_editable']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <field name="receiptbook_id"  position="attributes">
+                <attribute name="required" separator=" and " add=" is_main_payment"/>
+            </field>
+            <!-- <button name="%(account.account_send_payment_receipt_by_email_action)d" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </button> -->
+        </field>
+    </record>
+    <record id="view_account_payment_form" model="ir.ui.view">
+        <field name="name">account.payment.form.inherited</field>
+        <field name="model">account.payment</field>
+        <field name="priority" eval="30"/>
+        <field name="inherit_id" ref="account.view_account_payment_form" />
+        <field name="arch" type="xml">
+            <!-- TODO: Vamos a eliminar todo. por ahora lo escondo cuando esta instalado bundle-->
+            <button name="action_post_and_new" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </button>
+            <button name="button_open_journal_entry" position="attributes">
+                <attribute name="invisible" separator=" and " add="not show_move_button"></attribute>
+            </button>
+            <page name="withholdings_page" position="after">
+                <page name="link_payment_ids" string="Payments" invisible="not is_main_payment">
+                        <!-- pasar en el contexto company_id es necesario para que se elija bien el primer diario sugerido -->
+                        <field name="link_payment_ids"
+                            context="{
+                                'form_view_ref': 'l10n_ar_payment_bundle.view_account_payment_from_bundle_form',
+                                'list_view_ref': 'l10n_ar_payment_bundle.view_account_payment_from_bundle_tree',
+                                'default_move_journal_types': ('bank', 'cash'),
+                                'default_counterpart_currency_id': counterpart_currency_id,
+                                'default_counterpart_exchange_rate': counterpart_exchange_rate,
+                                'default_company_id': company_id,
+                                'default_main_payment_id': id,
+                                'default_partner_id': partner_id,
+                                'default_payment_type': payment_type,
+                                'default_partner_type': partner_type,
+                                'default_to_pay_amount': payment_difference,
+                            }"
+                            readonly="state != 'draft'"/>
+                </page>
+            </page>
+            <label for="amount" position="attributes">
+                <attribute name="invisible">is_main_payment</attribute>
+            </label>
+            <div name="amount_div" position="attributes">
+                <attribute name="invisible">is_main_payment</attribute>
+            </div>
+            <field name="counterpart_currency_amount" position="attributes">
+                <attribute name="invisible" separator=" or " add="is_main_payment"></attribute>
+            </field>
+            <field name="counterpart_currency_amount" position="after">
+                <field name="bundle_counterpart_currency_amount" string="Payment Total (SC)" invisible="not counterpart_currency_id or is_internal_transfer or not use_payment_pro or not is_main_payment"/>
+            </field>
+
+        </field>
+    </record>
+
+    <record id="view_account_payment_search_bundle" model="ir.ui.view">
+        <field name="name">account.payment.search.bundle</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_search" />
+        <field name="arch" type="xml">
+            <filter name="internal_transfer_filter" position="after">
+                <separator/>
+                    <filter string="Main Payments"
+                            name="main_payments_filter"
+                            domain="[('main_payment_id', '=', False)]"/>
+                    <filter string="Linked Payments"
+                            name="linked_payments_filter"
+                            domain="[('main_payment_id', '!=', False)]"/>
+            </filter>
+        </field>
+    </record>
+    <record id="account.action_account_payments" model="ir.actions.act_window">
+        <field name="context">{
+        'default_payment_type': 'inbound',
+        'default_partner_type': 'customer',
+        'search_default_inbound_filter': 1,
+        'default_move_journal_types': ('bank', 'cash'),
+        'display_account_trust': True,
+        'search_default_main_payments_filter': 1,
+        }</field>
+
+    </record>
+    <record id="account.action_account_payments_payable" model="ir.actions.act_window">
+        <field name="context">{
+            'default_payment_type': 'outbound',
+            'default_partner_type': 'supplier',
+            'search_default_outbound_filter': 1,
+            'default_move_journal_types': ('bank', 'cash'),
+            'display_account_trust': True,
+            'search_default_main_payments_filter': 1,
+        }</field>
+    </record>
+
+</odoo>

@@ -608,8 +608,9 @@ class AccountPayment(models.Model):
             counterpart_aml = rec.mapped("move_id.line_ids").filtered(
                 lambda r: not r.reconciled and r.account_id.account_type in self._get_valid_payment_account_types()
             )
-            if counterpart_aml and rec.to_pay_move_line_ids:
-                (counterpart_aml + (rec.to_pay_move_line_ids)).reconcile()
+            debt_aml = rec.to_pay_move_line_ids.filtered(lambda r: not r.reconciled)
+            if counterpart_aml and debt_aml:
+                (counterpart_aml + (debt_aml)).reconcile()
             # Lo sacamos ya que no es correcto de odoo cuando se deslinkea el pago
             # o se linkea por otro lado el pago no lo suma. Decidimos dejarlo por si surge la necesidad
             # Si surge la necesidad habria que tratar de que lo de odoo nativo funcione
@@ -619,9 +620,14 @@ class AccountPayment(models.Model):
 
         return res
 
+    def _get_mached_payment(self):
+        return self.ids
+
     # --- ORM METHODS--- #
     def web_read(self, specification):
         fields_to_read = list(specification) or ["id"]
         if "matched_move_line_ids" in fields_to_read and "context" in specification["matched_move_line_ids"]:
-            specification["matched_move_line_ids"]["context"].update({"matched_payment_ids": self._ids})
+            specification["matched_move_line_ids"]["context"].update(
+                {"matched_payment_ids": self._get_mached_payment()}
+            )
         return super().web_read(specification)
