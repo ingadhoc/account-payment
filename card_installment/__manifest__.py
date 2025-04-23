@@ -6,7 +6,13 @@
     'author': 'ADHOC SA',
     'website': "https://www.adhoc.com.ar",
     'category': 'Technical',
+<<<<<<< HEAD
     'version': "17.0.1.0.0",
+||||||| parent of e351fdbe (temp)
+    'version': "16.0.1.0.0",
+=======
+    'version': "16.0.1.1.0",
+>>>>>>> e351fdbe (temp)
     'depends': ['product', 'account'],
     'license': 'LGPL-3',
     'images': [
@@ -25,4 +31,3 @@
         'demo/account_card.xml',
     ],
 }
-
