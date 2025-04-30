@@ -11,4 +11,16 @@
                 </xpath>
             </field>
         </record>
+        <record model="ir.ui.view" id="view_account_own_check_tree">
+            <field name="name">account.check.list</field>
+            <field name="model">l10n_latam.check</field>
+            <field name="inherit_id" ref="l10n_latam_check.view_account_own_check_tree" />
+            <field name="arch" type="xml">
+                <list position="inside">
+                    <header>
+                        <button name="%(action_debit_check_wizard)d" type="action" string="Debit check"/>
+                    </header>
+                </list>
+            </field>
+        </record>
 </odoo>
