@@ -1,5 +1,5 @@
 from . import models
-
+from . import tests
 
 def _generate_receiptbooks(env):
     """ Create receiptbooks on existing companies with chart installed"""
