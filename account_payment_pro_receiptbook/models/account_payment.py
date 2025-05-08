@@ -19,9 +19,16 @@ class AccountPayment(models.Model):
     def action_post(self):
         # si no tengo nombre y tengo talonario de recibo, numeramos con el talonario
         for rec in self.filtered(
+<<<<<<< HEAD
             lambda x: x.receiptbook_id
             and (not x.name or x.name == "/" or (x.move_id and not x.move_id._get_last_sequence()))
         ):
+||||||| parent of 25da192b (temp)
+                lambda x: x.receiptbook_id and (not x.name or x.name == '/' or not x.move_id._get_last_sequence())):
+=======
+                lambda x: x.receiptbook_id and (not x.name or x.name == '/' or (x.move_id and not x.move_id._get_last_sequence()))
+        ):
+>>>>>>> 25da192b (temp)
             if not rec.receiptbook_id.active:
                 raise ValidationError(
                     _('Error! The receiptbook "%s" is archived. Please use a differente receipbook.')
