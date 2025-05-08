@@ -31,8 +31,10 @@ class AccountPayment(models.Model):
                 raise ValidationError(
                     _("Error!. Please define sequence on the receiptbook related documents to this payment.")
                 )
-            name = rec.receiptbook_id.with_context(ir_sequence_date=rec.date).sequence_id.next_by_id()
-            rec.name = "%s %s" % (rec.receiptbook_id.document_type_id.doc_code_prefix, name)
+
+            if not rec.name or rec.name == "/":
+                name = rec.receiptbook_id.with_context(ir_sequence_date=rec.date).sequence_id.next_by_id()
+                rec.name = "%s %s" % (rec.receiptbook_id.document_type_id.doc_code_prefix, name)
 
         res = super().action_post()
         # Reincorporamos el seteo del l10n_latam_document_type_id para el caso de usar talonario de recibo
