@@ -1,5 +1,8 @@
+import json
+
 import odoo.tests.common as common
 from odoo import Command, fields
+from odoo.exceptions import ValidationError
 
 
 class TestAccountPaymentProReceiptbookUnitTest(common.TransactionCase):
@@ -91,3 +94,63 @@ class TestAccountPaymentProReceiptbookUnitTest(common.TransactionCase):
         self.assertEqual(
             payment.name, original_name, "The payment name should remain the same after updating the amount."
         )
+
+    def test_payment_name_uniqueness(self):
+        """
+        Create 2 payments with bank and cash journals, post them,
+        try to resequence the first one with the name of the second and validate ValidationError.
+        """
+        # Search for cash journal
+        cash_journal = self.env["account.journal"].search(
+            [("company_id", "=", self.company.id), ("type", "=", "cash")], limit=1
+        )
+        self.assertTrue(self.company_bank_journal, "No bank journal found")
+        self.assertTrue(cash_journal, "No cash journal found")
+
+        # Create first payment (bank)
+        payment1 = self.env["account.payment"].create(
+            {
+                "amount": 100,
+                "payment_type": "inbound",
+                "partner_id": self.partner_ri.id,
+                "journal_id": self.company_bank_journal.id,
+                "date": self.today,
+                "company_id": self.company.id,
+                "receiptbook_id": self.receiptbook.id,
+            }
+        )
+        payment1.action_post()
+
+        # Create second payment (cash)
+        payment2 = self.env["account.payment"].create(
+            {
+                "amount": 200,
+                "payment_type": "inbound",
+                "partner_id": self.partner_ri.id,
+                "journal_id": cash_journal.id,
+                "date": self.today,
+                "company_id": self.company.id,
+                "receiptbook_id": self.receiptbook.id,
+            }
+        )
+        payment2.action_post()
+
+        # Try to resequence the first payment with the name of the second
+        resequence_wizard = self.env["account.resequence.wizard"].create(
+            {
+                "move_ids": [(6, 0, [payment1.move_id.id])],
+                "ordering": "keep",
+                "new_values": json.dumps(
+                    {
+                        str(payment1.move_id.id): {
+                            "new_by_name": payment2.name,
+                            "new_by_date": payment2.name,
+                        }
+                    }
+                ),
+                "first_name": payment2.name,
+            }
+        )
+        with self.assertRaises(ValidationError) as cm:
+            resequence_wizard.resequence()
+        self.assertIn("already exist", str(cm.exception))

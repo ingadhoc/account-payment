@@ -1,4 +1,5 @@
 from . import models
+from . import wizard
 
 
 def _generate_receiptbooks(env):
