@@ -1,4 +1,5 @@
-from odoo import models
+from odoo import _, api, models
+from odoo.exceptions import ValidationError
 
 
 class L10nLatamPaymentMassTransfer(models.TransientModel):
@@ -31,3 +32,19 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
         inbound_payment.destination_journal_id = self.journal_id
 
         return outbound_payment
+
+    @api.constrains("check_ids")
+    def _check_company_matches_active_company(self):
+        for wizard in self:
+            if not wizard.check_ids:
+                continue
+            company = wizard.check_ids.mapped("company_id")
+            if len(company) > 1:
+                raise ValidationError(_("All selected checks must belong to the same company."))
+            if company.id != self.env.company.id:
+                raise ValidationError(
+                    _(
+                        "Operation not allowed: To transfer the checks, you must be operating in the same company "
+                        "where the checks are registered. Please switch to the appropriate company and try again."
+                    )
+                )
