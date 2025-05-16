@@ -53,3 +53,32 @@ class AccountMove(models.Model):
     def _compute_l10n_latam_document_type(self):
         receiptbook_payments = self.filtered(lambda x: x.origin_payment_id.receiptbook_id)
         super(AccountMove, self - receiptbook_payments)._compute_l10n_latam_document_type()
+
+    @api.depends()
+    def _compute_made_sequence_gap(self):
+        with_receiptbook = self.filtered(lambda move: move.receiptbook_id)
+        unposted_recceiptbook = with_receiptbook.filtered(
+            lambda move: move.sequence_number != 0 and move.state != "posted"
+        )
+        unposted_recceiptbook.made_sequence_gap = True
+
+        for (receiptbook, prefix), moves in (
+            (with_receiptbook - unposted_recceiptbook).grouped(lambda m: (m.receiptbook_id, m.sequence_prefix)).items()
+        ):
+            previous_numbers = set(
+                self.env["account.move"]
+                .sudo()
+                .search(
+                    [
+                        ("receiptbook_id", "=", receiptbook.id),
+                        ("sequence_prefix", "=", prefix),
+                        ("sequence_number", ">=", min(moves.mapped("sequence_number")) - 1),
+                        ("sequence_number", "<=", max(moves.mapped("sequence_number")) - 1),
+                    ]
+                )
+                .mapped("sequence_number")
+            )
+            for move in moves:
+                move.made_sequence_gap = move.sequence_number > 1 and (move.sequence_number - 1) not in previous_numbers
+
+        super(AccountMove, self - with_receiptbook)._compute_made_sequence_gap()
