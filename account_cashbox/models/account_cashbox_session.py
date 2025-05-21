@@ -117,8 +117,16 @@ class AccountCashboxSession(models.Model):
         for rec in self:
             rec.require_cash_control = bool(len(rec.cashbox_id.cash_control_journal_ids))
 
-    def action_account_cashbox_session_reopen(self):
+    def action_account_cashbox_session_reset_to_draft(self):
+        adjustment_entries = self.env["account.move"].search([("cashbox_session_id", "in", self.ids)])
+        if adjustment_entries:
+            adjustment_entries.write({"state": "draft"})
+            adjustment_entries.unlink()
+
         self.state = "draft"
+
+    def action_account_cashbox_session_reopen(self):
+        self.state = "opened"
 
     def action_account_cashbox_session_open(self):
         for session in self:
@@ -137,11 +145,35 @@ class AccountCashboxSession(models.Model):
             session.write(values)
 
     def action_account_cashbox_session_close(self):
+        if self.state == "closing_control" and self.require_cash_control:
+            lines_w_cash_control = self.line_ids.filtered(lambda x: x.require_cash_control)
+            if any(balance == 0.0001 for balance in lines_w_cash_control.mapped("balance_end_real")):
+                raise UserError(
+                    _(
+                        "You must enter a Real Ending Balance for all journals with cash control"
+                        "before closing the session."
+                    )
+                )
+
+            self._check_session_balance()
+            wizard = self.env["account.cashbox.rounding.adjustment.wizard"].create(
+                {
+                    "cashbox_session_id": self.id,
+                }
+            )
+            return {
+                "name": _("Rounding Adjustment"),
+                "view_mode": "form",
+                "res_model": "account.cashbox.rounding.adjustment.wizard",
+                "type": "ir.actions.act_window",
+                "res_id": wizard.id,
+                "target": "new",
+            }
+
         self.write({"state": "closed"})
 
-    @api.constrains("state")
     def _check_session_balance(self):
-        for rec in self.filtered(lambda x: x.state == "closed"):
+        for rec in self:
             for line in rec.line_ids.filtered(lambda c: c.journal_id.id in rec.cashbox_id.cash_control_journal_ids.ids):
                 # if amounts are the same do not check
                 if rec.company_id.currency_id.compare_amounts(line.balance_end, line.balance_end_real) == 0:
@@ -157,24 +189,36 @@ class AccountCashboxSession(models.Model):
                 if diff > max_diff_in_currency:
                     raise ValidationError(
                         _(
-                            'En el diario "%s" el Balance Final Real (%s) excede la máxima diferencia permitida (%s).',
+                            'En el diario "%s" la diferencia del Balance Final Real (%s) excede la máxima diferencia permitida (%s).',
                             line.journal_id.name,
-                            line.balance_end_real,
+                            abs(line.balance_difference),
                             max_diff_in_currency,
                         )
                     )
 
     def action_session_payments(self):
-        view = self.env.ref("account.view_account_payment_tree")
+        list_view = self.env.ref("account.view_account_payment_tree")
+        form_view = self.env.ref("account.view_account_payment_form")
         return {
             "name": self.name,
-            "view_type": "tree",
             "view_mode": "list",
             "res_model": "account.payment",
             "domain": [("cashbox_session_id", "=", self.id)],
-            "view_id": view.id,
+            "views": [(list_view.id, "list"), (form_view.id, "form")],
             "type": "ir.actions.act_window",
             "context": {"search_default_state_posted": True},
+        }
+
+    def action_session_entries(self):
+        list_view = self.env.ref("account.view_move_tree")
+        form_view = self.env.ref("account.view_move_form")
+        return {
+            "name": self.name,
+            "view_mode": "list,form",
+            "res_model": "account.move",
+            "domain": [("cashbox_session_id", "=", self.id)],
+            "views": [(list_view.id, "list"), (form_view.id, "form")],
+            "type": "ir.actions.act_window",
         }
 
     @api.ondelete(at_uninstall=False)

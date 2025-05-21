@@ -50,7 +50,10 @@ class AccountCashbox(models.Model):
         check_company=True,
     )
     allow_concurrent_sessions = fields.Boolean()
-    max_diff = fields.Float(help="Max allowed difference for Cash Control Journals on the currency of the company")
+    max_diff = fields.Float(
+        string="Max Allowed Difference",
+        help="Maximum allowed difference for Cash Control Journals in the company's currency (per journal).",
+    )
     current_session_id = fields.Many2one(
         "account.cashbox.session", compute="_compute_current_session", string="Current Session"
     )

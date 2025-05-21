@@ -21,11 +21,14 @@
                             invisible = "state != 'opened' or require_cash_control==False"
                             class="oe_highlight"/>
                     <button name="action_account_cashbox_session_close" type="object" string="Validate"
-                            invisible = "state != 'closing_control'"
+                            invisible="state != 'closing_control'"
                             class="oe_highlight"/>
                     <button name="action_account_cashbox_session_reopen" type="object" string="Re-Open"
+                            invisible = "state != 'closing_control'"/>
+                    <button name="action_account_cashbox_session_reset_to_draft" type="object" string="Reset to draft"
                             invisible = "state != 'closed'"
                             groups="account.group_account_manager"/>
+
 
                     <field name="state" widget="statusbar"
                         invisible = "require_cash_control == False"
@@ -43,6 +46,9 @@
                         </button>
                         <button name="action_session_payments" type="object" class="oe_stat_button" icon="fa-money" context="{'create':False}">
                             <span>Payments</span>
+                        </button>
+                        <button name="action_session_entries" type="object" class="oe_stat_button" icon="fa-bars" invisible="require_cash_control == False" context="{'create':False}">
+                            <span>Adjustment Entries</span>
                         </button>
                     </div>
                     <h1 class="oe_title">
@@ -66,17 +72,23 @@
                             <list editable="top" create="false" delete="false">
                                 <field name="require_cash_control" invisible="True" column_invisible="True"/>
                                 <field name="journal_id" readonly="True" force_save="True"/>
-                                <field name="currency_id" invisible="1"/>
-                                <field name="balance_start" readonly = "parent.state != 'draft'" invisible ="require_cash_control == False"
-                                    column_invisible = "parent.require_cash_control == False "/>
+                                <field name="currency_id" optional="hide"/>
                                 <field name="amount"/>
                                 <button name="action_session_payments" type="object" title="Payments" icon="fa-search" context="{'create': False}"></button>
+                                <field name="balance_start" readonly = "parent.state != 'draft'" invisible ="require_cash_control == False"
+                                    column_invisible = "parent.require_cash_control == False "/>
                                 <field name="balance_end" invisible = "require_cash_control == False"
                                     column_invisible="parent.require_cash_control == False"/>
                                 <field name="balance_end_real"
-                                    readonly=" parent.state !='closing_control'"
+                                    required="parent.state == 'closing_control'"
+                                    readonly="parent.state != 'closing_control'"
                                     invisible = "require_cash_control == False"
-                                    column_invisible="parent.require_cash_control == False"/>
+                                    column_invisible="parent.require_cash_control == False or parent.state not in ['closing_control', 'closed']"/>
+                                <field name="balance_difference"
+                                    decoration-danger="balance_difference &lt; 0"
+                                    decoration-success="balance_difference &gt; 0"
+                                    invisible = "require_cash_control == False"
+                                    column_invisible="parent.require_cash_control == False or parent.state not in ['closing_control', 'closed']"/>
                             </list>
                             <form>
                                 <sheet>
