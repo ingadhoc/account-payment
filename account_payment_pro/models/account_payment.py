@@ -160,7 +160,11 @@ class AccountPayment(models.Model):
                 # https://github.com/odoo/odoo/blob/b6b90636938ae961c339807ea893cabdede9f549/addons/account/models/account_move.py#L2476
                 # y permitirnos realizar la modificacion del journal.
                 if "journal_id" in vals and rec.journal_id.id != vals["journal_id"]:
-                    rec.move_id.sequence_number = 0
+                    # Lo agregamos a este cambio por el siguiente campo agregado en
+                    #  https://github.com/odoo/odoo/commit/da49c9268b3876a0482a5593379c02418e806b61
+                    # De esta forma evitamos el error de asignar un sequence_number de forma random que ademas se estaba recomputando nuevamente,
+                    # volviendo a su valor original.
+                    rec.move_id.quick_edit_mode = True
 
                 # Lo siguiente lo agregamos para primero obligarnos a cambiar el journal_id y no la company_id. Una vez cambiado el journal_id
                 # la company_id se cambia correctamente.
