@@ -25,10 +25,11 @@
                             <field name="description"/>
                          </group>
                          <group>
-                            <field name="journal_id"/>
+                            <field name="journal_id" domain="[('id', 'in', available_journal_ids)]"/>
                             <field name="journal_document_type_id" string="Document Type" invisible="not use_documents" required="use_documents"/>
                             <field name="document_number" invisible="not use_documents or not l10n_latam_manual_document_number" required="l10n_latam_manual_document_number and use_documents"/>
                             <field name="company_id" invisible="1"/>
+                            <field name="available_journal_ids" invisible="1"/>
                             <field name="invoice_date"/>
                             <field name="date" groups="base.group_no_one"/>
                          </group>
