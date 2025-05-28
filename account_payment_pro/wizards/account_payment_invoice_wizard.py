@@ -26,6 +26,7 @@ class AccountPaymentInvoiceWizard(models.TransientModel):
         required=True,
         ondelete="cascade",
     )
+    available_journal_ids = fields.Many2many(comodel_name="account.journal", compute="_compute_available_journal_ids")
     invoice_date = fields.Date(string="Refund Date", default=fields.Date.context_today, required=True)
     currency_id = fields.Many2one(
         related="payment_id.currency_id",
@@ -230,3 +231,14 @@ class AccountPaymentInvoiceWizard(models.TransientModel):
             document_number = self.journal_document_type_id._format_document_number(self.document_number)
             if self.document_number != document_number:
                 self.document_number = document_number
+
+    @api.depends("payment_id.partner_type")
+    def _compute_available_journal_ids(self):
+        journal_type = "sale"
+        if self.payment_id.partner_type == "supplier":
+            journal_type = "purchase"
+        journal_domain = [
+            ("type", "=", journal_type),
+            ("company_id", "=", self.payment_id.company_id.id),
+        ]
+        self.available_journal_ids = self.env["account.journal"].search(journal_domain).ids
