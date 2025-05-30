@@ -3,6 +3,8 @@ from odoo.exceptions import AccessError, MissingError, ValidationError
 from odoo.http import request, route
 
 from odoo.addons.payment.controllers import portal as payment_portal
+from odoo.addons.account.controllers.portal import PortalAccount
+from collections import Counter
 
 
 class PaymentPortal(payment_portal.PaymentPortal):
@@ -13,7 +15,7 @@ class PaymentPortal(payment_portal.PaymentPortal):
             ('move_type', 'in', ('out_invoice', 'out_receipt')),
             ('payment_state', 'not in', ('in_payment', 'paid')),
             ('partner_id', '=', partner_id or request.env.user.partner_id.id),
-            ('invoice_date_due', '<=', due_date)
+            ('invoice_date_due', '<=', due_date),
         ]
 
     @http.route(['/my/invoices/selected'], type='http', auth='public', methods=['GET'], website=True, sitemap=False)
@@ -24,8 +26,26 @@ class PaymentPortal(payment_portal.PaymentPortal):
             return request.redirect('/my')
 
         invoice_id = int(kw.get('invoice_id'))
-        due_date = request.env['account.move'].browse(invoice_id).invoice_date_due
+        invoice = request.env['account.move'].browse(invoice_id)
+        due_date = invoice.invoice_date_due
+        invoice_date = invoice.invoice_date
+
+        # Initial selection by due_date
         selected_invoices = request.env['account.move'].search(self._get_selected_invoices_domain(due_date=due_date))
+
+        # If more than one with the due_date, filter by invoice_date <= invoice_date
+        if selected_invoices.mapped('invoice_date_due').count(due_date) > 1:
+            selected_invoices = selected_invoices.filtered(
+                lambda x: not (x.invoice_date_due == due_date and x.invoice_date > invoice_date)
+            )
+
+            # Count how many times the combination of due_date and invoice_date appears
+            combo_counter = Counter((inv.invoice_date_due, inv.invoice_date) for inv in selected_invoices)
+            if combo_counter[(due_date, invoice_date)] > 1:
+                selected_invoices = selected_invoices.filtered(lambda x: not (x.invoice_date_due == due_date and
+                                                               x.invoice_date == invoice_date and
+                                                               x.id > invoice_id))
+
         values = self._selected_invoices_get_page_view_values(selected_invoices, **kw)
         return request.render("account_payment_multi.portal_selected_invoices_page", values) \
             if 'payment' in values else request.redirect('/my/invoices/selected')
@@ -182,3 +202,14 @@ class PaymentPortal(payment_portal.PaymentPortal):
             **kwargs,
         )
         return tx_sudo._get_processing_values()
+
+
+class PortalAccountCustom(PortalAccount):
+    def _get_account_searchbar_sortings(self):
+        res = super()._get_account_searchbar_sortings()
+        res['duedate']['order'] = 'invoice_date_due desc, invoice_date desc, id desc'
+
+        return res
+
+    def _prepare_my_invoices_values(self, page, date_begin, date_end, sortby, filterby, domain=None, url="/my/invoices"):
+        return super()._prepare_my_invoices_values(page=page, date_begin=date_begin, date_end=date_end, sortby="duedate", filterby=filterby, domain=domain, url=url)

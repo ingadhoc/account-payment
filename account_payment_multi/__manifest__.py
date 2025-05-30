@@ -1,6 +1,6 @@
 {
     'name': 'Account Payment Multi',
-    "version": "17.0.1.0.0",
+    "version": "17.0.1.1.0",
     'summary': 'Manage multiple payments in Odoo',
     'description': 'This module allows to pay multiple invoices with a single payment',
     'author': 'Odoo, ADHOC SA',

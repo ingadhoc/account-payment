@@ -14,6 +14,7 @@ publicWidget.registry.portalDetails = publicWidget.Widget.extend({
         var currentInvoice = events.currentTarget
         var startDueDate = currentInvoice.dataset.dueDate; 
         var startId = currentInvoice.dataset.invoiceId;
+        var startInvoiceDate = currentInvoice.dataset.invoiceDate;
 
         var invoices = Array.from(this.el.getElementsByClassName('checkbox_amount_residual'));
         
@@ -27,9 +28,12 @@ publicWidget.registry.portalDetails = publicWidget.Widget.extend({
         // Select the ones below
         invoices.forEach(invoice => {
             var dueDate = invoice.dataset.dueDate;
+            var invoiceDate = invoice.dataset.invoiceDate;
             var invoiceId = parseInt(invoice.dataset.invoiceId, 10);
 
-            if (dueDate < startDueDate || (dueDate === startDueDate && invoiceId < startId)) {
+            if (dueDate < startDueDate || 
+                (dueDate === startDueDate && invoiceDate < startInvoiceDate) ||
+                (dueDate === startDueDate && invoiceDate === startInvoiceDate && invoiceId < startId)) {
                 invoice.checked = true;
             }
         });
@@ -45,11 +49,14 @@ publicWidget.registry.portalDetails = publicWidget.Widget.extend({
         invoices.forEach(invoice => {
             const dueDate = invoice.dataset.dueDate;
             const invoiceId = parseInt(invoice.dataset.invoiceId, 10);
+            const invoiceDate = invoice.dataset.invoiceDate;
 
             if (
                 !maxInvoice ||
                 dueDate > maxInvoice.dataset.dueDate ||
+                (dueDate === maxInvoice.dataset.dueDate && invoiceDate > maxInvoice.dataset.invoiceDate) ||
                 (dueDate === maxInvoice.dataset.dueDate &&
+                invoiceDate === maxInvoice.dataset.invoiceDate &&
                 invoiceId > parseInt(maxInvoice.dataset.invoiceId, 10))
             ) {
                 maxInvoice = invoice;
