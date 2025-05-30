@@ -1,6 +1,6 @@
 {
     "name": "Account Payment Multi",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.1.0",
     "summary": "Manage multiple payments in Odoo",
     "author": "Odoo, ADHOC SA",
     "website": "www.adhoc.com.ar",

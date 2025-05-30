@@ -10,6 +10,7 @@
                 id="pay_amount_residual"
                 t-att-data-invoice-id = "invoice.id"
                 t-att-data-due-date = "invoice.invoice_date_due.strftime('%Y%m%d')"
+                t-att-data-invoice-date = "invoice.invoice_date.strftime('%Y%m%d')"
                 type="checkbox"
                 t-att-class="'checkbox_amount_residual'"
                 t-if="invoice.state == 'posted' and invoice.payment_state in ('not_paid', 'partial') and invoice.amount_total and invoice.move_type == 'out_invoice'"/>
