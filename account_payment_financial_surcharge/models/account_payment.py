@@ -157,7 +157,7 @@ class AccountPayment(models.Model):
             "tax_ids": [(6, 0, taxes.ids)],
         }
         if amount is not None:
-            vals["amount"] = amount
+            vals["amount_total"] = amount
         if price_unit is not None:
             vals["price_unit"] = price_unit
         return vals
