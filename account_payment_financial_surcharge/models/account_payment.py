@@ -90,45 +90,74 @@ class AccountPayment(models.Model):
             financing_surcharge_to_invoice = rec.financing_surcharge - (
                 min(surchage_products_total, sum(related_debit_note.mapped("amount_residual")))
             )
+
             if financing_surcharge_to_invoice > 0:
                 taxes = product.taxes_id.filtered(lambda t: t.company_id.id == rec.company_id.id)
-                journal = self.env["account.journal"].search(
-                    [("type", "=", "sale"), ("company_id", "=", rec.company_id.id)], limit=1
-                )
-                wiz = (
-                    self.env["account.payment.invoice.wizard"]
-                    .with_context(is_automatic_subcharge=True, active_id=rec.id, internal_type="debit_note")
-                    .create(
-                        {
-                            "journal_id": journal.id,
-                            "product_id": product.id,
-                            "tax_ids": [(6, 0, taxes.ids)],
-                            "amount_total": self.financing_surcharge,
-                        }
-                    )
-                )
-                wiz._onchange_journal_id()
-                wiz.change_payment_group()
-                wiz.amount_total = rec.financing_surcharge
-                wiz.confirm()
-
                 # If we are registering a payment of a draft invoice then we need to remove the invoice from the debts of the payment
                 # in order to be able to post/reconcile the payment (this is needed because in odoo 17 we are not able to reconcile
                 # draft account.move. only can reconcile posted ones)
-                if self.env.context.get("open_invoice_payment"):
-                    move_line_ids = self._context.get("to_pay_move_line_ids")
-                    move_lines = (
-                        move_line_ids
-                        and self.env["account.move.line"].browse(move_line_ids)
-                        or self.env["account.move.line"]
-                    )
-                    if not move_lines:
-                        move_lines = rec.to_pay_move_line_ids
-                    draft_invoices = move_lines and move_lines.mapped("move_id").filtered(lambda x: x.state == "draft")
-                    if draft_invoices:
-                        # remove draft invoice from debt
-                        rec.to_pay_move_line_ids -= rec.to_pay_move_line_ids.filtered(
-                            lambda aml: aml.move_id in draft_invoices
-                        )
+                move_line_ids = (
+                    self._context.get("to_pay_move_line_ids") if self.env.context.get("open_invoice_payment") else False
+                )
+                move_lines = (
+                    move_line_ids
+                    and self.env["account.move.line"].browse(move_line_ids)
+                    or self.env["account.move.line"]
+                )
+                if not move_lines:
+                    move_lines = rec.to_pay_move_line_ids
 
+                draft_invoices = move_lines and move_lines.mapped("move_id").filtered(lambda x: x.state == "draft")
+                if draft_invoices:
+                    amount_total = (
+                        taxes.filtered(lambda x: not x.price_include)
+                        .with_context(force_price_include=True)
+                        .compute_all(rec.financing_surcharge, currency=self.currency_id)["total_excluded"]
+                    )
+                    # we add the financing surcharge to the first draft invoice
+                    draft_invoices[0].write(
+                        {
+                            "invoice_line_ids": [
+                                (
+                                    0,
+                                    0,
+                                    rec._prepare_financing_surcharge_vals(product, taxes, price_unit=amount_total),
+                                )
+                            ]
+                        }
+                    )
+                    # remove draft invoice from debt
+                    # for rec in self:
+                    #     rec.to_pay_move_line_ids -= rec.to_pay_move_line_ids.filtered(
+                    #         lambda aml: aml.move_id in draft_invoices
+                    #     )
+                else:
+                    journal = self.env["account.journal"].search(
+                        [("type", "=", "sale"), ("company_id", "=", rec.company_id.id)], limit=1
+                    )
+                    surcharge_vals = rec._prepare_financing_surcharge_vals(
+                        product, taxes, amount=financing_surcharge_to_invoice
+                    )
+                    surcharge_vals["journal_id"] = journal.id
+
+                    wiz = (
+                        self.env["account.payment.invoice.wizard"]
+                        .with_context(is_automatic_subcharge=True, active_id=rec.id, internal_type="debit_note")
+                        .create(surcharge_vals)
+                    )
+                    wiz._onchange_journal_id()
+                    wiz.change_payment_group()
+                    wiz.amount_total = financing_surcharge_to_invoice
+                    wiz.confirm()
         return super().action_post()
+
+    def _prepare_financing_surcharge_vals(self, product, taxes, amount=None, price_unit=None):
+        vals = {
+            "product_id": product.id,
+            "tax_ids": [(6, 0, taxes.ids)],
+        }
+        if amount is not None:
+            vals["amount"] = amount
+        if price_unit is not None:
+            vals["price_unit"] = price_unit
+        return vals

@@ -19,4 +19,6 @@
     "images": [],
     "installable": True,
     "auto_install": False,
+    "post_load": "monkey_patches",
+    "uninstall_hook": "uninstall_hook",
 }
