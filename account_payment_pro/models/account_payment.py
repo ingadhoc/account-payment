@@ -201,7 +201,8 @@ class AccountPayment(models.Model):
         # Cambiamos el metodo para que traiga los journals de la compañia sobre la cual se esta imputando el pago.
         # Le agregamos el onchange de company para asegurarnos de que los available journals se computen siempre
         # que se produce un cambio de compañia
-        self.env.company = self.company_id
+        if self.company_id:
+            self.env.company = self.company_id
         super()._compute_available_journal_ids()
 
     @api.depends("currency_id")
@@ -534,7 +535,9 @@ class AccountPayment(models.Model):
             # agregamos este chequeo porque cuando estamos creando un pago nuevo se llama este inverse siempre
             # y si el monto no cambio no queremos que trigeree re computo de retenciones
             # (por el depends de _compute_base_amount)
-            if not rec.currency_id.is_zero(rec.unreconciled_amount - (rec.to_pay_amount - rec.selected_debt)):
+            if rec.currency_id and not rec.currency_id.is_zero(
+                rec.unreconciled_amount - (rec.to_pay_amount - rec.selected_debt)
+            ):
                 rec.unreconciled_amount = rec.to_pay_amount - rec.selected_debt
 
     # We dont set 'is_internal_transfer' as a dependencies as it could leed to recompute to_pay_move_line_ids
@@ -553,12 +556,7 @@ class AccountPayment(models.Model):
         if internal_transfers or not self._context.get("pay_now"):
             ((internal_transfers or self) - with_payment_pro).to_pay_move_line_ids = [Command.clear()]
         for rec in with_payment_pro:
-            if (
-                rec.partner_id != rec._origin.partner_id
-                or rec.partner_type != rec._origin.partner_type
-                or rec.company_id != rec._origin.company_id
-            ):
-                rec._add_all()
+            rec._add_all()
 
     def _get_to_pay_move_lines_domain(self):
         self.ensure_one()
