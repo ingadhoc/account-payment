@@ -134,7 +134,7 @@ class PaymentPortal(payment_portal.PaymentPortal):
         return values
 
     def _get_extra_payment_form_values(self, invoice_id=None, access_token=None, **kwargs):
-        form_values = super()._get_extra_payment_form_values(invoice_id=None, access_token=None, **kwargs)
+        form_values = super()._get_extra_payment_form_values(invoice_id=invoice_id, access_token=access_token, **kwargs)
         if kwargs.get('multi'):
             form_values.update({
                 'transaction_route': f'/invoice/transaction/selected/{invoice_id}',
