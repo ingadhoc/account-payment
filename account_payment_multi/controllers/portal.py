@@ -185,7 +185,7 @@ class PaymentPortal(payment_portal.PaymentPortal):
         currencies = selected_invoices.mapped('currency_id')
         if not all(currency == currencies[0] for currency in currencies):
             raise ValidationError(_("Impossible to pay all the selected invoices if they don't share the same currency."))
-        self._validate_transaction_kwargs(kwargs, ('invoice_id',))
+        self._validate_transaction_kwargs(kwargs, ('invoice_id', 'access_token'))
         return self._process_transaction(partner.id, currencies[0].id, selected_invoices.ids, payment_reference, **kwargs)
 
     def _process_transaction(self, partner_id, currency_id, invoice_ids, payment_reference, **kwargs):
