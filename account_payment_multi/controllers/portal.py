@@ -119,10 +119,46 @@ class PaymentPortal(payment_portal.PaymentPortal):
         selected_invoices = request.env["account.move"].search(self._get_selected_invoices_domain(due_date))
         currencies = selected_invoices.mapped("currency_id")
         if not all(currency == currencies[0] for currency in currencies):
+<<<<<<< HEAD
             raise ValidationError(
                 _("Impossible to pay all the selected invoices if they don't share the same currency.")
             )
         self._validate_transaction_kwargs(kwargs, ("invoice_id",))
         return self._process_transaction(
             partner.id, currencies[0].id, selected_invoices.ids, payment_reference, **kwargs
+||||||| parent of 6cb4f4b3 (temp)
+            raise ValidationError(_("Impossible to pay all the selected invoices if they don't share the same currency."))
+        self._validate_transaction_kwargs(kwargs, ('invoice_id',))
+        return self._process_transaction(partner.id, currencies[0].id, selected_invoices.ids, payment_reference, **kwargs)
+
+    def _process_transaction(self, partner_id, currency_id, invoice_ids, payment_reference, **kwargs):
+        kwargs.update({
+            'currency_id': currency_id,
+            'partner_id': partner_id,
+        })  # Inject the create values taken from the invoice into the kwargs.
+
+        tx_sudo = self._create_transaction(
+            custom_create_values={
+                'invoice_ids': [Command.set(invoice_ids)],
+                'reference': payment_reference,
+            },
+            **kwargs,
+=======
+            raise ValidationError(_("Impossible to pay all the selected invoices if they don't share the same currency."))
+        self._validate_transaction_kwargs(kwargs, ('invoice_id', 'access_token'))
+        return self._process_transaction(partner.id, currencies[0].id, selected_invoices.ids, payment_reference, **kwargs)
+
+    def _process_transaction(self, partner_id, currency_id, invoice_ids, payment_reference, **kwargs):
+        kwargs.update({
+            'currency_id': currency_id,
+            'partner_id': partner_id,
+        })  # Inject the create values taken from the invoice into the kwargs.
+
+        tx_sudo = self._create_transaction(
+            custom_create_values={
+                'invoice_ids': [Command.set(invoice_ids)],
+                'reference': payment_reference,
+            },
+            **kwargs,
+>>>>>>> 6cb4f4b3 (temp)
         )
