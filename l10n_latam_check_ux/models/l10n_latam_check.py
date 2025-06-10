@@ -13,7 +13,7 @@ class l10nLatamAccountPaymentCheck(models.Model):
     )
     date = fields.Date(related="first_operation.date")
 
-    @api.depends("operation_ids.state")
+    @api.depends("operation_ids.state", "payment_id.state")
     def _compute_first_operation(self):
         for rec in self:
             all_operations = rec.payment_id + rec.operation_ids
