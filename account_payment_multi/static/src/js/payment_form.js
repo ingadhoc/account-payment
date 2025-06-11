@@ -10,6 +10,18 @@ publicWidget.registry.portalDetails = publicWidget.Widget.extend({
         'click .oe_multi_pay_now': '_onPaySelectedBtnClick',
     },
 
+    start: function () {
+        this._updatePaySelectedVisibility();
+        this.$('.checkbox_amount_residual').on('change', this._updatePaySelectedVisibility.bind(this));
+        return this._super.apply(this, arguments);
+    },
+
+    _updatePaySelectedVisibility: function () {
+        var checkedCount = this.$('.checkbox_amount_residual:checked').length;
+        var $btn = this.$('.multi_payment_selector');
+        $btn.toggle(checkedCount >= 2);
+    },
+
     _selectCheckboxInvoice: function(events) {
         var currentInvoice = events.currentTarget
         var startDueDate = currentInvoice.dataset.dueDate; 
@@ -37,6 +49,9 @@ publicWidget.registry.portalDetails = publicWidget.Widget.extend({
                 invoice.checked = true;
             }
         });
+
+        // Ensure visibility is updated after programmatic changes
+        this._updatePaySelectedVisibility();
 
     },
 
