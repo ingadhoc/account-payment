@@ -62,7 +62,7 @@
             </field>
 
             <!--Ocultar campos de counterpart en linked cuando main no tiene sc-->
-            <!-- <xpath expr="//label[@for='counterpart_currency_amount']" position="attributes">
+            <xpath expr="//label[@for='counterpart_currency_amount']" position="attributes">
                 <attribute name="invisible">not counterpart_currency_id</attribute>
             </xpath>
             <xpath expr="//div[@name='counterpart_currency_amount']" position="attributes">
@@ -70,39 +70,12 @@
             </xpath>
             <xpath expr="//field[@name='counterpart_currency_amount']" position="attributes">
                 <attribute name="invisible">not counterpart_currency_id</attribute>
-            </xpath> -->
-            <button name="action_post" position="attributes">
-                <attribute name="groups">base.group_no_one</attribute>
-                <attribute name="confirm">IMPORTANT: Linked payment validation must be done from main receipt. Manual validation of a linked payment is only used for corrections and advanced use cases. Are you sure you want to continue?</attribute>
-            </button>
-            <button name="action_validate" position="attributes">
-                <attribute name="groups">base.group_no_one</attribute>
-                <attribute name="confirm">IMPORTANT: Linked payment validation must be done from main receipt. Manual validation of a linked payment is only used for corrections and advanced use cases. Are you sure you want to continue?</attribute>
-            </button>
-            <button name="action_reject" position="attributes">
-                <attribute name="groups">base.group_no_one</attribute>
-                <attribute name="confirm">IMPORTANT: Linked payment validation must be done from main receipt. Manual validation of a linked payment is only used for corrections and advanced use cases. Are you sure you want to continue?</attribute>
-            </button>
-            <button name="button_request_cancel" position="attributes">
-                <attribute name="groups">base.group_no_one</attribute>
-                <attribute name="confirm">IMPORTANT: Linked payment cancel must be done from main receipt. Manual cancel of a linked payment is only used for corrections and advanced use cases. Are you sure you want to continue?</attribute>
-            </button>
+            </xpath>
             <button name="action_draft" position="attributes">
                 <attribute name="groups">base.group_no_one</attribute>
                 <attribute name="confirm">IMPORTANT: Linked draft validation must be done from main receipt. Draft validation of a linked payment is only used for corrections and advanced use cases. Are you sure you want to continue?</attribute>
             </button>
-            <button name="action_cancel" position="attributes">
-                <attribute name="groups">base.group_no_one</attribute>
-                <attribute name="confirm">IMPORTANT: Linked payment cancel must be done from main receipt. Manual cancel of a linked payment is only used for corrections and advanced use cases. Are you sure you want to continue?</attribute>
-            </button>
-            <button name="mark_as_sent" position="attributes">
-                <attribute name="groups">base.group_no_one</attribute>
-                <attribute name="confirm">IMPORTANT: Linked payment sent must be done from main receipt. Manual sent of a linked payment is only used for corrections and advanced use cases. Are you sure you want to continue?</attribute>
-            </button>
-            <button name="unmark_as_sent" position="attributes">
-                <attribute name="groups">base.group_no_one</attribute>
-                <attribute name="confirm">IMPORTANT: Linked unsent cancel must be done from main receipt. Manual unsent of a linked payment is only used for corrections and advanced use cases. Are you sure you want to continue?</attribute>
-            </button>
+
             <xpath expr="//page[@name='debts']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
@@ -117,6 +90,7 @@
             </xpath>
             <field name="receiptbook_id"  position="attributes">
                 <attribute name="required" separator=" and " add=" is_main_payment"/>
+                <attribute name="readonly" separator=" or " add=" not is_main_payment"/>
             </field>
             <!-- <button name="%(account.account_send_payment_receipt_by_email_action)d" position="attributes">
                 <attribute name="invisible">1</attribute>
@@ -142,7 +116,7 @@
                         <field name="link_payment_ids"
                             context="{
                                 'form_view_ref': 'l10n_ar_payment_bundle.view_account_payment_from_bundle_form',
-                                'list_view_ref': 'l10n_ar_payment_bundle.view_account_payment_from_bundle_tree',
+                                'list_view_ref': 'l10n_ar_payment_bundle.view_account_payment_custom_list',
                                 'default_move_journal_types': ('bank', 'cash'),
                                 'default_counterpart_currency_id': counterpart_currency_id,
                                 'default_counterpart_exchange_rate': counterpart_exchange_rate,
@@ -168,7 +142,49 @@
             <field name="counterpart_currency_amount" position="after">
                 <field name="bundle_counterpart_currency_amount" string="Payment Total (SC)" invisible="not counterpart_currency_id or is_internal_transfer or not use_payment_pro or not is_main_payment"/>
             </field>
+            <field name="receiptbook_id" position="after">
+                <field name="main_payment_id" readonly="True" invisible="is_main_payment or state == 'draft'"/>
+            </field>
 
+            <xpath expr="//button[@name='action_draft']" position="attributes">
+                <attribute name="invisible" separator=" or " add=" main_payment_id"/>
+            </xpath>
+            <xpath expr="//button[@name='action_draft']" position="after">
+                <button name="action_draft" string="Reset To Draft" type="object" class="btn btn-secondary"
+                invisible="state in ('draft') or not main_payment_id"
+                groups="account.group_account_invoice" data-hotkey="w" confirm="IMPORTANT: Linked payment validation must be done from main receipt. Manual validation of a linked payment is only used for corrections and advanced use cases. Are you sure you want to continue?"/>
+            </xpath>
+            <xpath expr="//page[@name='debts']" position="attributes">
+                <attribute name="invisible" separator=" or " add=" main_payment_id"/>
+            </xpath>
+            <xpath expr="//page[@name='paid']" position="attributes">
+                <attribute name="invisible" separator=" or " add=" main_payment_id"/>
+            </xpath>
+            <xpath expr="//page[@name='withholdings_page']" position="attributes">
+                <attribute name="invisible" separator=" or " add=" main_payment_id"/>
+            </xpath>
+            <xpath expr="//page[@name='withholdings_page_editable']" position="attributes">
+                <attribute name="invisible" separator=" or " add=" main_payment_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_account_payment_custom_list" model="ir.ui.view">
+        <field name="name">account.payment.custom.list</field>
+        <field name="model">account.payment</field>
+        <field name="arch" type="xml">
+            <list string="Payments" decoration-info="state == 'draft'" decoration-muted="state == 'canceled'">
+                <field name="company_currency_id" column_invisible="True"/>
+                <field name="counterpart_currency_id" column_invisible="True"/>
+                <field name="date"/>
+                <field name="name"/>
+                <field name="journal_id"/>
+                <field name="payment_method_id"/>
+                <field name="amount_company_currency_signed" widget="monetary" string="Amount" sum="Total"/>
+                <field name="counterpart_exchange_rate" string="Rate" optional="hide"/>
+                <field name="counterpart_currency_amount" string="Amount in SC" optional="hide" sum="Total" widget="monetary"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'in_process'" decoration-success="state == 'paid'"/>
+            </list>
         </field>
     </record>
 

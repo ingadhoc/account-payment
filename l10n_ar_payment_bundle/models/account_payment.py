@@ -14,6 +14,7 @@ class AccountPayment(models.Model):
         currency_field="counterpart_currency_id",
         compute="_compute_bundle_counterpart_currency_amount",
     )
+    partner_id = fields.Many2one(recursive=True)
 
     show_move_button = fields.Boolean(compute="_compute_show_move_button")
 
@@ -141,6 +142,14 @@ class AccountPayment(models.Model):
 
     def action_draft(self):
         res = super(AccountPayment, self + self.link_payment_ids).action_draft()
+        if self.main_payment_id:
+            return {
+                "type": "ir.actions.act_window",
+                "res_model": "account.payment",
+                "view_mode": "form",
+                "res_id": self.id,
+                "context": self.env.context,
+            }
         return res
 
     def action_cancel(self):
@@ -266,3 +275,9 @@ class AccountPayment(models.Model):
 
     def _get_mached_payment(self):
         return super()._get_mached_payment() + self.link_payment_ids.ids
+
+    @api.depends("main_payment_id.partner_id")
+    def _compute_partner_id(self):
+        super()._compute_partner_id()
+        for rec in self.filtered("main_payment_id"):
+            rec.partner_id = rec.main_payment_id.partner_id
