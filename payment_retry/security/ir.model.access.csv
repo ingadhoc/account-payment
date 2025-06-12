@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+payment_retry.payment_retry_line, transaction retry line,payment_retry.model_payment_transaction_retry_lines,account.group_account_invoice,1,1,1,1
+payment_retry.payment_retry,payment transaction retry,payment_retry.model_payment_transaction_retry,account.group_account_invoice,1,1,1,1
