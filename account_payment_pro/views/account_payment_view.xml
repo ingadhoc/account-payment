@@ -58,10 +58,19 @@
             <field name="company_currency_id" invisible="True"/>
             <field name="other_currency" invisible="True"/>
             <field name="force_amount_company_currency" invisible="True"/>
-            <strong class="o_row" invisible="not other_currency" style="margin-left: 0.05px" colspan="1">Rate = <field name="exchange_rate" nolabel="1"/></strong>
+
+            <!-- <strong class="o_row" invisible="not other_currency" style="margin-left: 0.05px" colspan="1">Rate = <field name="exchange_rate" nolabel="1"/></strong>
             <div name="amount_company_currency" class="o_row" invisible="not other_currency" colspan="1">
                 <field name="amount_company_currency" readonly="state != 'draft'"/>
                 <label for="amount_company_currency" string=" " invisible="not other_currency"/>
+            </div> -->
+
+            <!-- <field name="amount_signed_reconciliation_currency"/> -->
+            <label for="amount_reconciliation_currency" invisible="reconciliation_currency_id == company_currency_id or reconciliation_currency_id == currency_id or is_internal_transfer or not use_payment_pro" groups="base.group_multi_currency"/>
+            <div name="amount_reconciliation_currency" class="o_row" invisible="reconciliation_currency_id == company_currency_id or reconciliation_currency_id == currency_id or is_internal_transfer or not use_payment_pro" groups="base.group_multi_currency">
+                <!-- <field name="counterpart_currency_id" domain="[('id', '!=', currency_id)]" options="{'no_create': True, 'no_open': True}" readonly="state != 'draft' or reconciliation_currency_id != company_currency_id"/> -->
+                <field name="amount_reconciliation_currency"/>
+                Rate = <field name="counterpart_exchange_rate" readonly="state != 'draft'"/>
             </div>
             <label for="write_off_amount" string="Write Off"  invisible="not write_off_available or is_internal_transfer or not use_payment_pro"/>
             <div name="write_off_amount" class="o_row" invisible="not write_off_available or is_internal_transfer or not use_payment_pro">
@@ -73,12 +82,12 @@
                 <field name="payment_total" class="oe_inline"/>
                 <span invisible="state != 'draft'" class="text-muted"> (difference <field name="payment_difference" class="oe_inline"/>)</span>
             </div>
-            <label for="counterpart_currency_amount" string="Secondary Currency" invisible="other_currency or is_internal_transfer or not use_payment_pro" groups="base.group_multi_currency"/>
-            <div name="counterpart_currency_amount" class="o_row" invisible="other_currency or is_internal_transfer or not use_payment_pro" groups="base.group_multi_currency">
-                <field name="counterpart_currency_id" domain="[('id', '!=', currency_id)]" options="{'no_create': True, 'no_open': True}" readonly="state != 'draft'"/>
+            <label for="counterpart_currency_amount" string="Secondary Currency" invisible="reconciliation_currency_id != company_currency_id or is_internal_transfer or not use_payment_pro" groups="base.group_multi_currency"/>
+            <div name="counterpart_currency_amount" class="o_row" invisible="reconciliation_currency_id != company_currency_id or is_internal_transfer or not use_payment_pro" groups="base.group_multi_currency">
+                <field name="counterpart_currency_id" domain="[('id', '!=', currency_id)]" options="{'no_create': True, 'no_open': True}" readonly="state != 'draft' or reconciliation_currency_id != company_currency_id"/>
                 Rate = <field name="counterpart_exchange_rate" readonly="state != 'draft'"/>
             </div>
-            <field name="counterpart_currency_amount" string="Payment Total (SC)" invisible="not counterpart_currency_id or is_internal_transfer or not use_payment_pro" required="counterpart_currency_id and not other_currency"/>
+            <field name="counterpart_currency_amount" string="Payment Total (SC)" invisible="reconciliation_currency_id != company_currency_id or not counterpart_currency_id or is_internal_transfer or not use_payment_pro" required="counterpart_currency_id and not other_currency"/>
         </div>
     </field>
 </record>
@@ -87,6 +96,9 @@
     <field name="model">account.payment</field>
     <field name="inherit_id" ref="l10n_latam_check.view_account_payment_form_inherited"/>
     <field name="arch" type="xml">
+        <form>
+            <field name="reconciliation_currency_id" invisible="1"/>
+        </form>
         <page name="latam_checks_page" position="before">
             <page string="Debts" name="debts" invisible="state != 'draft' or is_internal_transfer or not use_payment_pro">
                 <group >

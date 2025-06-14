@@ -18,12 +18,23 @@ class AccountPayment(models.Model):
         currency_field="counterpart_currency_id",
         compute="_compute_counterpart_currency_amount",
     )
-    counterpart_currency_id = fields.Many2one("res.currency")
+    counterpart_currency_id = fields.Many2one("res.currency", compute='_compute_counterpart_currency', readonly=False, store=True)
+    reconciliation_currency_id = fields.Many2one("res.currency", compute='_compute_reconciliation_currency',)
+    @api.depends('reconciliation_currency_id')
+    def _compute_counterpart_currency(self):
+        for rec in self:
+            rec.counterpart_currency_id = rec.reconciliation_currency_id if rec.reconciliation_currency_id != rec.company_currency_id else False
+
+    @api.depends('destination_account_id')
+    def _compute_reconciliation_currency(self):
+        for rec in self:
+            rec.reconciliation_currency_id = rec.destination_account_id.currency_id or rec.company_id.currency_id
+
     counterpart_exchange_rate = fields.Float(
         readonly=False,
         compute="_compute_counterpart_exchange_rate",
         store=True,
-        precompute=True,
+        # precompute=True,
         copy=False,
         digits=0,
     )
@@ -49,30 +60,36 @@ class AccountPayment(models.Model):
     # outstanding
     # TODO de hecho tenemos que analizar si queremos mantener todo lo de matched y demas en moneda de cia o moneda de
     # pago
-    amount_company_currency_signed_pro = fields.Monetary(
-        currency_field="company_currency_id",
-        compute="_compute_amount_company_currency_signed_pro",
+
+    amount_reconciliation_currency = fields.Monetary(
+        currency_field="reconciliation_currency_id",
+        string='Amount in Currency',
+        compute="_compute_amount_reconciliation_currency",
+    )
+    amount_signed_reconciliation_currency = fields.Monetary(
+        currency_field="reconciliation_currency_id",
+        compute="_compute_amount_signed_reconciliation_currency",
     )
     payment_total = fields.Monetary(
-        compute="_compute_payment_total", tracking=True, currency_field="company_currency_id"
+        compute="_compute_payment_total", tracking=True, currency_field="reconciliation_currency_id"
     )
     available_journal_ids = fields.Many2many(comodel_name="account.journal", compute="_compute_available_journal_ids")
     # desde account_payment_group, modelo account.payment.group
     matched_amount = fields.Monetary(
         compute="_compute_matched_amounts",
-        currency_field="company_currency_id",
+        currency_field="reconciliation_currency_id",
     )
     unmatched_amount = fields.Monetary(
         compute="_compute_matched_amounts",
-        currency_field="company_currency_id",
+        currency_field="reconciliation_currency_id",
     )
     selected_debt = fields.Monetary(
         compute="_compute_selected_debt",
-        currency_field="company_currency_id",
+        currency_field="reconciliation_currency_id",
     )
     unreconciled_amount = fields.Monetary(
         string="Adjustment / Advance",
-        currency_field="company_currency_id",
+        currency_field="reconciliation_currency_id",
     )
     # reconciled_amount = fields.Monetary(compute='_compute_amounts')
     to_pay_amount = fields.Monetary(
@@ -80,7 +97,7 @@ class AccountPayment(models.Model):
         inverse="_inverse_to_pay_amount",
         readonly=True,
         tracking=True,
-        currency_field="company_currency_id",
+        currency_field="reconciliation_currency_id",
     )
     has_outstanding = fields.Boolean(
         compute="_compute_has_outstanding",
@@ -108,12 +125,12 @@ class AccountPayment(models.Model):
         check_company=True,
     )
     write_off_amount = fields.Monetary(
-        currency_field="company_currency_id",
+        currency_field="reconciliation_currency_id",
     )
     payment_difference = fields.Monetary(
         compute="_compute_payment_difference",
         string="Payments Difference",
-        currency_field="company_currency_id",
+        currency_field="reconciliation_currency_id",
         help="Difference between 'To Pay Amount' and 'Payment Total'",
     )
     write_off_available = fields.Boolean(compute="_compute_write_off_available")
@@ -304,10 +321,16 @@ class AccountPayment(models.Model):
         if self.write_off_amount:
             if self.payment_type == "inbound":
                 # Receive money.
-                write_off_amount_currency = self.write_off_amount
+                write_off_amount = self.write_off_amount
             else:
                 # Send money.
-                write_off_amount_currency = -self.write_off_amount
+                write_off_amount = -self.write_off_amount
+
+            if self.company_currency_id != self.reconciliation_currency_id:
+                withholdings_amount = self.reconciliation_currency_id.round(write_off_amount * self.counterpart_exchange_rate)
+                # write_off_amount = self.reconciliation_currency_id._convert(
+                #         write_off_amount, self.company_id.currency_id, self.company_id, self.date
+                #     )
 
             write_off_line_vals.append(
                 {
@@ -315,10 +338,8 @@ class AccountPayment(models.Model):
                     "account_id": self.write_off_type_id.account_id.id,
                     "partner_id": self.partner_id.id,
                     "currency_id": self.currency_id.id,
-                    "amount_currency": write_off_amount_currency,
-                    "balance": self.currency_id._convert(
-                        write_off_amount_currency, self.company_id.currency_id, self.company_id, self.date
-                    ),
+                    # "amount_currency": write_off_amount_currency,
+                    "balance": write_off_amount,
                 }
             )
         res = super()._prepare_move_line_default_vals(
@@ -433,7 +454,7 @@ class AccountPayment(models.Model):
 
     @api.depends(
         "state",
-        "amount_company_currency_signed_pro",
+        "amount_signed_reconciliation_currency",
     )
     def _compute_matched_amounts(self):
         for rec in self:
@@ -463,31 +484,45 @@ class AccountPayment(models.Model):
             if len(lines) != 0:
                 rec.has_outstanding = True
 
-    @api.depends("amount_company_currency_signed_pro", "write_off_amount")
+    @api.depends("amount_signed_reconciliation_currency", "write_off_amount")
     def _compute_payment_total(self):
         for rec in self:
-            rec.payment_total = rec.amount_company_currency_signed_pro + rec.write_off_amount
+            rec.payment_total = rec.amount_signed_reconciliation_currency + rec.write_off_amount
 
-    @api.depends("amount_company_currency", "payment_type")
-    def _compute_amount_company_currency_signed_pro(self):
+    @api.depends("amount_company_currency", "reconciliation_currency_id", "company_currency_id", "counterpart_exchange_rate", "amount")
+    def _compute_amount_reconciliation_currency(self):
+        for rec in self:
+            # casos:
+            # pago en EUR cancelando en mondea CIA ARS --> ARS (Ya lo convierte campo de amount_company_currency que vamos a ver de deprecar mas adelante)
+            # pago en EUR cancelando en mondea EUR --> no tenemos que convertir
+            # pago en EUR cancelando en mondea USD --> tenemos que convertir de EUR a USD (no podemos usar counterpart_currency_amount porque este justamente se base en este campo. Convertimos segun rate)
+            if rec.company_currency_id == rec.reconciliation_currency_id:
+                rec.amount_reconciliation_currency = rec.amount_company_currency
+            elif rec.currency_id == rec.reconciliation_currency_id:
+                rec.amount_reconciliation_currency = rec.amount
+            else:
+                rec.amount_reconciliation_currency = rec.reconciliation_currency_id.round(rec.amount / rec.counterpart_exchange_rate)
+
+    @api.depends("amount_reconciliation_currency", "payment_type", "amount")
+    def _compute_amount_signed_reconciliation_currency(self):
         """new field similar to amount_company_currency_signed but:
         1. is positive for payments to suppliers
         2. we use the new field amount_company_currency instead of amount_total_signed, because amount_total_signed is
         computed only after saving
         We use l10n_ar prefix because this is a pseudo backport of future l10n_ar_withholding module"""
-        for payment in self:
+        for rec in self:
             if (
-                payment.payment_type == "outbound"
-                and payment.partner_type == "customer"
-                or payment.payment_type == "inbound"
-                and payment.partner_type == "supplier"
+                rec.payment_type == "outbound"
+                and rec.partner_type == "customer"
+                or rec.payment_type == "inbound"
+                and rec.partner_type == "supplier"
             ):
-                payment.amount_company_currency_signed_pro = -payment.amount_company_currency
+                rec.amount_signed_reconciliation_currency = -rec.amount_reconciliation_currency
             else:
-                payment.amount_company_currency_signed_pro = payment.amount_company_currency
+                rec.amount_signed_reconciliation_currency = rec.amount_reconciliation_currency
 
     # TODO revisar depends
-    @api.depends("payment_total", "to_pay_amount", "amount_company_currency_signed_pro")
+    @api.depends("payment_total", "to_pay_amount", "amount_signed_reconciliation_currency")
     def _compute_payment_difference(self):
         for rec in self:
             rec.payment_difference = rec.to_pay_amount - rec.payment_total
@@ -511,11 +546,21 @@ class AccountPayment(models.Model):
     def _compute_selected_debt(self):
         for rec in self:
             # factor = 1
-            amount_residual = sum(rec.to_pay_move_line_ids._origin.mapped("amount_residual"))
-            if self.env.context.get("pay_now") and amount_residual != sum(
-                rec.to_pay_move_line_ids._origin.mapped("amount_residual_currency")
-            ):
+            # si la deuda de conciliacion es la de la cia entonces sumamos deuda en moneda de cia
+            # si son distintas, tenemos garantias de que toda la deuda seleccionada es de la misma moneda y por ende
+            # podemos sumar la columna amount_residual_currency
+            if rec.reconciliation_currency_id == rec.company_currency_id:
+                amount_residual = sum(rec.to_pay_move_line_ids._origin.mapped("amount_residual"))
+                if self.env.context.get("pay_now") and amount_residual != sum(
+                    rec.to_pay_move_line_ids._origin.mapped("amount_residual")
+                ):
+                    amount_residual = sum(rec.to_pay_move_line_ids._origin.mapped("amount_residual"))
+            else:
                 amount_residual = sum(rec.to_pay_move_line_ids._origin.mapped("amount_residual_currency"))
+                if self.env.context.get("pay_now") and amount_residual != sum(
+                    rec.to_pay_move_line_ids._origin.mapped("amount_residual_currency")
+                ):
+                    amount_residual = sum(rec.to_pay_move_line_ids._origin.mapped("amount_residual_currency"))
             rec.selected_debt = amount_residual * (-1.0 if rec.partner_type == "supplier" else 1.0)
 
             # TODO error en la creacion de un payment desde el menu?

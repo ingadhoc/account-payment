@@ -118,7 +118,7 @@ msgid "Amount"
 msgstr "Importe"
 
 #. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__amount_company_currency_signed_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__amount_signed_reconciliation_currency
 msgid "Amount Company Currency Signed Pro"
 msgstr "Importe"
 
