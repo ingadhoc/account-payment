@@ -134,11 +134,11 @@ class AccountPayment(models.Model):
                 rec.env["account.write_off.type"].search([("company_ids", "=", rec.company_id.id)], limit=1)
             )
 
-    @api.constrains("to_pay_move_line_ids")
+    @api.constrains("to_pay_move_line_ids", "state")
     def _check_to_pay_lines_account(self):
         """TODO ver si esto tmb lo llevamos a la UI y lo mostramos como un warning.
         tmb podemos dar mas info al usuario en el error"""
-        for rec in self:
+        for rec in self.filtered(lambda x: x.partner_id and x.state != "draft"):
             accounts = rec.to_pay_move_line_ids.mapped("account_id")
             if len(accounts) > 1:
                 raise ValidationError(_("To Pay Lines must be of the same account!"))
