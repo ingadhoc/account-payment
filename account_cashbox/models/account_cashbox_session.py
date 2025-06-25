@@ -155,24 +155,25 @@ class AccountCashboxSession(models.Model):
                     )
                 )
 
-            self._check_session_balance()
-            wizard = self.env["account.cashbox.rounding.adjustment.wizard"].create(
-                {
-                    "cashbox_session_id": self.id,
+            if self._check_session_balance():
+                wizard = self.env["account.cashbox.rounding.adjustment.wizard"].create(
+                    {
+                        "cashbox_session_id": self.id,
+                    }
+                )
+                return {
+                    "name": _("Rounding Adjustment"),
+                    "view_mode": "form",
+                    "res_model": "account.cashbox.rounding.adjustment.wizard",
+                    "type": "ir.actions.act_window",
+                    "res_id": wizard.id,
+                    "target": "new",
                 }
-            )
-            return {
-                "name": _("Rounding Adjustment"),
-                "view_mode": "form",
-                "res_model": "account.cashbox.rounding.adjustment.wizard",
-                "type": "ir.actions.act_window",
-                "res_id": wizard.id,
-                "target": "new",
-            }
 
         self.write({"state": "closed"})
 
     def _check_session_balance(self):
+        differences = []
         for rec in self:
             for line in rec.line_ids.filtered(lambda c: c.journal_id.id in rec.cashbox_id.cash_control_journal_ids.ids):
                 # if amounts are the same do not check
@@ -195,6 +196,11 @@ class AccountCashboxSession(models.Model):
                             max_diff_in_currency,
                         )
                     )
+                differences.append(diff)
+
+            if all(x == 0 for x in differences):
+                return False
+            return True
 
     def action_session_payments(self):
         list_view = self.env.ref("account.view_account_payment_tree")
