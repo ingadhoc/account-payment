@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_loan_register_form" model="ir.ui.view">
+        <field name="name">account.loan.register.form</field>
+        <field name="model">account.loan.register</field>
+        <field name="arch" type="xml">
+            <form string="Loan Registration">
+                <field name="move_line_ids" invisible="1"/>
+                <field name="currency_id"  invisible="1"/>
+                <field name="company_id"  invisible="1"/>
+                <sheet>
+                    <group invisible="not refinancial_loan_move_ids">
+                        <field name="refinancial_loan_move_ids" widget="many2many_tags"  auto_save="True" readonly="True"/>
+                    </group>
+                    <group>
+                        <group>
+
+                            <field name="card_id" string="Loan" domain="[('is_loan', '=', True)]"/>
+                            <field name="partner_id"/>
+                            <field name="is_invoiceable" invisible="refinancial_loan_move_ids"/>
+                        </group>
+                        <group>
+                            <field name="installment_id" domain="[('card_id', '=', card_id)]"/>
+                            <field name="amount" required="1"/>
+                        </group>
+                    </group>
+                        <group>
+                            <field nolabel="1" name="loan_description" readonly="1"/>
+                        </group>
+                        <group>
+                            <field nolabel="1" name="note" placeholder="Write a note..."/>
+                        </group>
+                </sheet>
+                <footer>
+                    <button string="Register Loan" type="object" name="action_register_loan" invisible="refinancial_loan_move_ids" class="btn-primary"/>
+                    <button string="Refinancial Loan" type="object" name="action_refinancial_loan" invisible="not refinancial_loan_move_ids"  class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_loan_extra_charges_form" model="ir.ui.view">
+        <field name="name">account.loan.extra.charges.form</field>
+        <field name="model">account.loan.extra.charges</field>
+        <field name="arch" type="xml">
+            <form string="Loan Registration">
+                <sheet>
+                    <group>
+                        <field name="partner_id" readonly="True"/>
+                    </group>
+                    <group>
+                        <field name="loan_move_id"  domain="[('id', 'in', available_loan_move_ids), ('loan_move_ids', '=', False)]"/>
+                    </group>
+                    <group>
+                        <field name="label"/>
+                        <field name="extra_charges"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Add" type="object" name="action_add_extra_charges" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

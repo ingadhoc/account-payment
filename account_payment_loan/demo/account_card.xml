@@ -1,0 +1,21 @@
+<odoo noupdate="1">
+        <record id="personal_loan" model="account.card">
+            <field name="name">Personal Loans</field>
+            <field name="is_loan" eval="True"/>
+            <field name="loan_due_method">next_day_number</field>
+            <field name="due_day" eval="10"/>
+            <field name="installment_ids" eval="[
+            (0, 0, {'name':'3','divisor':3,'surcharge_coefficient':1.2}),
+            (0, 0, {'name':'12','divisor':12,'surcharge_coefficient':1.4}),
+        ]"/>
+        </record>
+        <record id="refinancial_loan" model="account.card">
+            <field name="name">Refinancial plans</field>
+            <field name="is_loan" eval="True"/>
+            <field name="loan_due_method">create_day</field>
+            <field name="installment_ids" eval="[
+            (0, 0, {'name':'3','divisor':3,'surcharge_coefficient':1.6}),
+            (0, 0, {'name':'12','divisor':12,'surcharge_coefficient':1.8}),
+        ]"/>
+        </record>
+</odoo>

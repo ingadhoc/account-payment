@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.l10n_bd_reports</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='default_accounts']" position="inside">
+                <block title="Loan Settings" id="loan_settings">
+                    <setting string="Default Loan Journal:" company_dependent="1"
+                            help="Journal to be used for registering loan transactions.">
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label for="loan_journal_id" class="col-lg-5 o_light_label"/>
+                                <field name="loan_journal_id" domain="[('company_id', '=', company_id)]"/>
+                            </div>
+                        </div>
+                    </setting>
+
+                    <setting string="Late Payment Interest" company_dependent="1"
+                            help="Monthly interest rate for late payments (e.g. 0.10 = 10%). This is prorated to a daily rate.">
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label for="late_payment_interest" class="col-lg-5 o_light_label"/>
+                                <field name="late_payment_interest" widget="percentage"/>
+                            </div>
+                        </div>
+                    </setting>
+
+                    <setting string="Account for Late Payment Interest" company_dependent="1"
+                            help="Account used to record income from late payment interests.">
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label for="account_late_payment_interest" class="col-lg-5 o_light_label"/>
+                                <field name="account_late_payment_interest"/>
+                            </div>
+                        </div>
+                    </setting>
+
+                    <setting string="Account for Loan Extra Charges" company_dependent="1"
+                            help="Account used to record additional charges related to loan operations.">
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label for="account_loan_extra_charges" class="col-lg-5 o_light_label"/>
+                                <field name="account_loan_extra_charges"/>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

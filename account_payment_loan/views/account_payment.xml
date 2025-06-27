@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_payment_form_inherited" model="ir.ui.view">
+        <field name="name">account.payment.form.inherited</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account_payment_pro.latam_check_view_account_payment_form_inherited"/>
+        <field name="arch" type="xml">
+            <field name="selected_debt" position="after">
+                <field name="loan_surcharge" invisible="not is_loan_payment" />
+                <!-- <field name="loan_extra_charges" invisible="not is_loan_payment"/> -->
+            </field>
+        </field>
+    </record>
+
+</odoo>

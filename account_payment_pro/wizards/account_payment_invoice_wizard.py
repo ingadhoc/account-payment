@@ -37,6 +37,7 @@ class AccountPaymentInvoiceWizard(models.TransientModel):
         required=True,
         domain=[("sale_ok", "=", True)],
     )
+    product_account_id = fields.Many2one("account.account")
     tax_ids = fields.Many2many(
         "account.tax",
         string="Taxes",
@@ -217,6 +218,9 @@ class AccountPaymentInvoiceWizard(models.TransientModel):
             "price_unit": self.amount_untaxed,
             "tax_ids": [(6, 0, self.tax_ids.ids)],
         }
+        # force the account off the product
+        if self.product_account_id:
+            line_vals["account_id"] = self.product_account_id.id
         if self.analytic_distribution:
             line_vals["analytic_distribution"] = self.analytic_distribution
         invoice_vals["invoice_line_ids"] = [(0, 0, line_vals)]

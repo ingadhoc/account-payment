@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_move_form" model="ir.ui.view">
+        <field name="name">account.move.form</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <button name="button_draft" position="after">
+                <button
+                    name="action_register_loan"
+                    invisible="state not in ['draft', 'posted'] or move_type not in ('out_invoice', 'out_refund')"
+                    string="Register Loan"
+                    type="object"
+                />
+            </button>
+            <group id="other_tab_entry_group">
+                <group string="Loan" name="loan_info_group">
+                    <field name="last_interest_date_calculation" groups="account_payment_loan.loan_admin"/>
+                </group>
+            </group>
+        </field>
+    </record>
+
+</odoo>

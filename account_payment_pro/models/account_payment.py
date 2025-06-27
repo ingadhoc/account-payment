@@ -626,8 +626,7 @@ class AccountPayment(models.Model):
                     % (rec.partner_id.name, to_pay_partners.name)
                 )
 
-    def action_post(self):
-        res = super().action_post()
+    def _reconcile_after_post(self):
         for rec in self.filtered(lambda x: x.company_id.use_payment_pro and not x.is_internal_transfer):
             counterpart_aml = rec.mapped("move_id.line_ids").filtered(
                 lambda r: not r.reconciled and r.account_id.account_type in self._get_valid_payment_account_types()
@@ -642,6 +641,9 @@ class AccountPayment(models.Model):
             #     for invoices in (rec.reconciled_invoice_ids + rec.reconciled_bill_ids):
             #         invoices.matched_payment_ids += rec
 
+    def action_post(self):
+        res = super().action_post()
+        self._reconcile_after_post()
         return res
 
     def _get_mached_payment(self):
