@@ -1,4 +1,5 @@
 from odoo import api, fields, models
+from odoo.tools import index_exists
 
 
 class AccountMove(models.Model):
@@ -82,3 +83,20 @@ class AccountMove(models.Model):
                 move.made_sequence_gap = move.sequence_number > 1 and (move.sequence_number - 1) not in previous_numbers
 
         super(AccountMove, self - with_receiptbook)._compute_made_sequence_gap()
+
+    _sql_constraints = [
+        (
+            "unique_name_receiptbook",
+            "",
+            "Another entry with the same name already exists.",
+        )
+    ]
+
+    def _auto_init(self):
+        super()._auto_init()
+        if not index_exists(self.env.cr, "account_move_unique_name_receiptbook"):
+            self.env.cr.execute("""
+                CREATE UNIQUE INDEX account_move_unique_name_receiptbook
+                                 ON account_move(name, receiptbook_id)
+                              WHERE (state = 'posted' AND name != '/')
+            """)
