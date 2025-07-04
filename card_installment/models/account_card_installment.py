@@ -3,6 +3,7 @@
 # directory
 ##############################################################################
 from odoo import _, api, fields, models
+from odoo.exceptions import ValidationError
 
 
 class AccountCardInstallment(models.Model):
@@ -35,6 +36,12 @@ class AccountCardInstallment(models.Model):
         for record in self:
             record.display_name = f"{record.name} ({record.card_id.name})"
 
+    @api.constrains("divisor")
+    def _check_divisor(self):
+        for record in self:
+            if record.divisor < 0:
+                raise ValidationError(_("Divisor cannot be negative"))
+
     def get_fees(self, amount):
         self.ensure_one()
         return amount * self.surcharge_coefficient - amount
@@ -55,6 +62,7 @@ class AccountCardInstallment(models.Model):
     def map_installment_values(self, amount_total):
         self.ensure_one()
         amount = amount_total * self.surcharge_coefficient
+        installment_amount = amount / self.divisor if self.divisor > 0 else 0.0
         return {
             "id": self.id,
             "name": self.name,
@@ -65,5 +73,5 @@ class AccountCardInstallment(models.Model):
             "base_amount": amount_total,
             "amount": amount,
             "fee": amount - amount_total,
-            "description": _("%s installment of %.2f (total %.2f)") % (self.divisor, amount / self.divisor, amount),
+            "description": _("%s installment of %.2f (total %.2f)") % (self.divisor, installment_amount, amount),
         }
