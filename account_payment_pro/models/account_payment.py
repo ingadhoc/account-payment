@@ -633,3 +633,7 @@ class AccountPayment(models.Model):
                 {"matched_payment_ids": self._get_mached_payment()}
             )
         return super().web_read(specification)
+
+    @api.depends("journal_id")
+    def _compute_available_partner_bank_ids(self):
+        super()._compute_available_partner_bank_ids()
