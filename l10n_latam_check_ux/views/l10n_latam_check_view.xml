@@ -25,6 +25,9 @@
                 <xpath expr="//field[@name='payment_date']" position="before">
                     <field name="date" optional="show"/>
                 </xpath>
+                <xpath expr="//field[@name='issue_state']" position="after">
+                    <field name="memo" optional="hide"/>
+                </xpath>
             </field>
         </record>
 </odoo>

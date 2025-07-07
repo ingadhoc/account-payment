@@ -12,6 +12,7 @@ class l10nLatamAccountPaymentCheck(models.Model):
         readonly=True,
     )
     date = fields.Date(related="first_operation.date")
+    memo = fields.Char(related="payment_id.memo")
 
     @api.depends("operation_ids.state", "payment_id.state")
     def _compute_first_operation(self):
