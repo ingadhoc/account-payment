@@ -27,4 +27,14 @@
                 </xpath>
             </field>
         </record>
+        <record id="view_account_third_party_check_operations_tree" model="ir.ui.view">
+            <field name="name">account.check.operations.list.inherit</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="l10n_latam_check.view_account_third_party_check_operations_tree"/>
+            <field name="arch" type="xml">
+                <field name="state" position="after">
+                    <field name="l10n_latam_move_check_ids_operation_date" optional="hide"/>
+                </field>
+            </field>
+        </record>
 </odoo>

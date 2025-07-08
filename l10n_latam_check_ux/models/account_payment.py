@@ -1,9 +1,13 @@
-from odoo import models
+from odoo import fields, models
 from odoo.exceptions import ValidationError
 
 
 class AccountPayment(models.Model):
     _inherit = "account.payment"
+
+    l10n_latam_move_check_ids_operation_date = fields.Datetime(
+        string="Operation Date",
+    )
 
     def action_post(self):
         # nosotros queremos bloquear tmb nros de cheques de terceros que sea unicos
@@ -14,6 +18,8 @@ class AccountPayment(models.Model):
         for rec in self:
             if rec.l10n_latam_check_warning_msg:
                 raise ValidationError("%s" % rec.l10n_latam_check_warning_msg)
+            if not rec.l10n_latam_move_check_ids_operation_date:
+                rec.l10n_latam_move_check_ids_operation_date = fields.Datetime.now()
         super().action_post()
 
     def _create_paired_internal_transfer_payment(self):
