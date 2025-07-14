@@ -1,18 +1,13 @@
-from . import models
+import logging
+
+from odoo.upgrade import util
+
+_logger = logging.getLogger(__name__)
 
 
-def update_chart_template(env):
-    """Existing companies that have the Argentinean Chart of Accounts set"""
-    template_codes = ["ar_ri", "ar_ex", "ar_base"]
-    ar_companies = env["res.company"].search([("chart_template", "in", template_codes), ("parent_id", "=", False)])
-    for company in ar_companies:
-        template_code = company.chart_template
-        ChartTemplate = env["account.chart.template"].with_company(company)
-        if journals_to_create := ChartTemplate._get_payment_bundle_account_journal(template_code):
-            ChartTemplate._load_data({"account.journal": journals_to_create})
-
-
-def update_payment_receipt_template(env):
+def migrate(cr, version):
+    env = util.env(cr)
+    _logger.info("Payment receipt template updated from l10n_ar_payment_bundle")
     template = env.ref("account.mail_template_data_payment_receipt", raise_if_not_found=False)
     if template:
         template.write(
@@ -58,8 +53,3 @@ def update_payment_receipt_template(env):
             template.with_context(lang="es_419").write({"body_html": text_es})
         if env["res.lang"].search([("code", "=", "es_AR")]):
             template.with_context(lang="es_AR").write({"body_html": text_es})
-
-
-def post_init_hook(env):
-    update_chart_template(env)
-    update_payment_receipt_template(env)
