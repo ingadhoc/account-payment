@@ -257,7 +257,7 @@ class AccountPayment(models.Model):
                 force_amount_company_currency = False
             rec.force_amount_company_currency = force_amount_company_currency
 
-    @api.depends("amount", "other_currency", "force_amount_company_currency", "amount_company_currency_signed")
+    @api.depends("amount", "other_currency", "force_amount_company_currency")
     def _compute_amount_company_currency(self):
         """
         * Si las monedas son iguales devuelve 1
@@ -270,7 +270,7 @@ class AccountPayment(models.Model):
             elif rec.force_amount_company_currency:
                 amount_company_currency = rec.force_amount_company_currency
             else:
-                amount_company_currency = rec.amount_company_currency_signed or rec.currency_id._convert(
+                amount_company_currency = rec.currency_id._convert(
                     rec.amount, rec.company_id.currency_id, rec.company_id, rec.date
                 )
             rec.amount_company_currency = amount_company_currency
