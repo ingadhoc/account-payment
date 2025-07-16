@@ -1,43 +1,48 @@
 <odoo>
-        <!-- Heredamos la vista de l10n_latam_check l10n_latam_check_view_form para agregar el botón para debitar cheques propios. -->
-        <record id="l10n_latam_check_view_form" model="ir.ui.view">
-            <field name="name">l10n_latam.check.form.inherited</field>
-            <field name="model">l10n_latam.check</field>
-            <field name="inherit_id" ref="l10n_latam_check.l10n_latam_check_view_form" />
-            <field name="arch" type="xml">
-                <xpath expr="//button[@name='action_void']" position="after">
-                    <field name='check_add_debit_button' invisible="1"/>
-                    <button name="%(action_debit_check_wizard)d" string="Debit check" invisible="payment_method_code != 'own_checks' or issue_state != 'handed' or not check_add_debit_button" type="action"/>
-                </xpath>
+    <!-- Heredamos la vista de l10n_latam_check l10n_latam_check_view_form para agregar el botón para debitar cheques propios. -->
+    <record id="l10n_latam_check_view_form" model="ir.ui.view">
+        <field name="name">l10n_latam.check.form.inherited</field>
+        <field name="model">l10n_latam.check</field>
+        <field name="inherit_id" ref="l10n_latam_check.l10n_latam_check_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_void']" position="after">
+                <field name="check_add_debit_button" invisible="1"/>
+                <button name="%(action_debit_check_wizard)d"
+                        string="Debit check"
+                        invisible="payment_method_code != 'own_checks' or issue_state != 'handed' or not check_add_debit_button"
+                        type="action"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="view_account_own_check_tree">
+        <field name="name">account.check.list</field>
+        <field name="model">l10n_latam.check</field>
+        <field name="priority" eval="109"/>
+        <field name="inherit_id" ref="l10n_latam_check.view_account_own_check_tree" />
+        <field name="arch" type="xml">
+            <list position="inside">
+                <header>
+                    <button name="%(action_debit_check_wizard)d" type="action" string="Debit check"/>
+                </header>
+            </list>
+            <xpath expr="//field[@name='payment_date']" position="before">
+                <field name="date" optional="show"/>
+            </xpath>
+            <xpath expr="//field[@name='issue_state']" position="after">
+                <field name="memo" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_account_third_party_check_operations_tree" model="ir.ui.view">
+        <field name="name">account.check.operations.list.inherit</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="l10n_latam_check.view_account_third_party_check_operations_tree"/>
+        <field name="arch" type="xml">
+            <field name="state" position="after">
+                <field name="l10n_latam_move_check_ids_operation_date" optional="hide"/>
             </field>
-        </record>
-        <record model="ir.ui.view" id="view_account_own_check_tree">
-            <field name="name">account.check.list</field>
-            <field name="model">l10n_latam.check</field>
-            <field name="priority" eval="109"/>
-            <field name="inherit_id" ref="l10n_latam_check.view_account_own_check_tree" />
-            <field name="arch" type="xml">
-                <list position="inside">
-                    <header>
-                        <button name="%(action_debit_check_wizard)d" type="action" string="Debit check"/>
-                    </header>
-                </list>
-                <xpath expr="//field[@name='payment_date']" position="before">
-                    <field name="date" optional="show"/>
-                </xpath>
-                <xpath expr="//field[@name='issue_state']" position="after">
-                    <field name="memo" optional="hide"/>
-                </xpath>
-            </field>
-        </record>
-        <record id="view_account_third_party_check_operations_tree" model="ir.ui.view">
-            <field name="name">account.check.operations.list.inherit</field>
-            <field name="model">account.payment</field>
-            <field name="inherit_id" ref="l10n_latam_check.view_account_third_party_check_operations_tree"/>
-            <field name="arch" type="xml">
-                <field name="state" position="after">
-                    <field name="l10n_latam_move_check_ids_operation_date" optional="hide"/>
-                </field>
-            </field>
-        </record>
+        </field>
+    </record>
 </odoo>

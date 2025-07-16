@@ -11,8 +11,23 @@ class l10nLatamAccountPaymentCheck(models.Model):
         store=True,
         readonly=True,
     )
+
     date = fields.Date(related="first_operation.date")
     memo = fields.Char(related="payment_id.memo")
+    company_id = fields.Many2one(
+        compute="_compute_company_id", store=True, compute_sudo=True, comodel_name="res.company"
+    )
+    operation_ids = fields.Many2many(check_company=False)
+    payment_state = fields.Selection(
+        related="payment_id.state",
+        readonly=True,
+    )
+
+    @api.depends("operation_ids.state", "payment_id.state")
+    def _compute_company_id(self):
+        for rec in self:
+            last_operation = rec._get_last_operation() or rec.payment_id
+            rec.company_id = last_operation.company_id
 
     @api.depends("operation_ids.state", "payment_id.state")
     def _compute_first_operation(self):

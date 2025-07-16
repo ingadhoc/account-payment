@@ -1,11 +1,32 @@
-from odoo import _, api, models
+from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
 
 class L10nLatamPaymentMassTransfer(models.TransientModel):
     _inherit = "l10n_latam.payment.mass.transfer"
 
+    main_company_id = fields.Many2one(
+        "res.company",
+        compute="_compute_main_company",
+    )
+    destination_journal_id = fields.Many2one(
+        check_company=False,
+        domain="[('type', 'in', ('bank', 'cash')), ('id', '!=', journal_id), ('company_id', 'child_of', main_company_id)]",
+    )
+    check_ids = fields.Many2many(
+        check_company=False,
+    )
+
+    @api.depends("company_id")
+    def _compute_main_company(self):
+        for rec in self:
+            rec.main_company_id = rec.company_id.parent_id or rec.company_id
+
     def _create_payments(self):
+        if self.destination_journal_id.company_id != self.journal_id.company_id:
+            raise ValidationError(
+                _("In order to transfer checks between branches you need to use internal transfer menu.")
+            )
         # Ensure that third-party check deposits made through the Odoo wizard
         # behave the same way as an internal transfer.
         outbound_payment = super(

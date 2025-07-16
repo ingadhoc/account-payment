@@ -60,4 +60,5 @@ class AccountPayment(models.Model):
                             default_l10n_latam_move_check_ids=rec.l10n_latam_move_check_ids,
                         ),
                     )._create_paired_internal_transfer_payment()
+                rec._get_latam_checks()._compute_company_id()
             super(AccountPayment, self - third_party_checks)._create_paired_internal_transfer_payment()
