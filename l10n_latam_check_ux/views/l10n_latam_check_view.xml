@@ -32,6 +32,9 @@
             <xpath expr="//field[@name='issue_state']" position="after">
                 <field name="memo" optional="hide"/>
             </xpath>
+            <xpath expr="//field[@name='amount']" position="attributes">
+                <attribute name="sum">Total</attribute>
+            </xpath>
         </field>
     </record>
 
