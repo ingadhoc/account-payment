@@ -1,4 +1,3 @@
-import ast
 import json
 
 from odoo import _, models
@@ -32,8 +31,7 @@ class ReSequenceWizard(models.TransientModel):
         for journal in original_move_ids.journal_id:
             move_ids = original_move_ids.filtered(lambda x: x.journal_id == journal)
 
-            # Use ast.literal_eval to parse Python-style dict string
-            all_moves = ast.literal_eval(original_wizard.read()[0]["new_values"])
+            all_moves = json.loads(original_wizard.read()[0]["new_values"])
 
             # Filter only the moves for this journal
             filtered_moves = {str(mid.id): all_moves[str(mid.id)] for mid in move_ids if str(mid.id) in all_moves}
