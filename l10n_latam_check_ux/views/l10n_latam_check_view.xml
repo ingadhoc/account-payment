@@ -45,4 +45,15 @@
             </field>
         </field>
     </record>
+
+    <record model="ir.ui.view" id="view_account_payment_search">
+        <field name="name">account.check.search.inherit</field>
+        <field name="model">l10n_latam.check</field>
+        <field name="inherit_id" ref="l10n_latam_check.view_account_payment_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='payment_date']" position="after">
+                <filter string="Last 90 days" name="last_90_days" domain="[('payment_date', '&gt;=', (context_today() - relativedelta(days=90)).strftime('%Y-%m-%d'))]" />
+            </xpath>
+        </field>
+    </record>
 </odoo>

@@ -6,4 +6,18 @@
     <record model="ir.ui.menu" id="l10n_latam_check.menu_third_party_check">
         <field name="parent_id" ref="account_internal_transfer.menu_finance_bank_and_cash"/>
     </record>
+    <record id="view_account_payment_form_inherited" model="ir.ui.view">
+        <field name="name">account.payment.form.inherited.add.context</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="l10n_latam_check.view_account_payment_form_inherited"/>
+        <field name="arch" type="xml">
+        <xpath expr="//field[@name='l10n_latam_move_check_ids']" position="attributes">
+            <attribute name="context">
+            {
+                'search_default_last_90_days': payment_method_code in ['in_third_party_checks', 'out_third_party_checks', 'return_third_party_checks'],
+            }
+            </attribute>
+        </xpath>
+        </field>
+    </record>
 </odoo>
