@@ -169,6 +169,7 @@ result = withholdable_base_amount * 0.10
                 'withholdable_invoiced_amount')
             vals['amount'] = computed_withholding_amount
             vals['computed_withholding_amount'] = computed_withholding_amount
+            vals['date'] = payment_group.payment_date
 
             # por ahora no imprimimos el comment, podemos ver de llevarlo a
             # otro campo si es de utilidad
