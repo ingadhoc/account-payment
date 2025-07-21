@@ -2,7 +2,7 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import _, fields, models
+from odoo import _, api, fields, models
 
 
 class AccountCardInstallment(models.Model):
@@ -30,12 +30,10 @@ class AccountCardInstallment(models.Model):
     )
     active = fields.Boolean(default=True)
 
-    def name_get(self):
-        result = []
+    @api.depends("card_id", "card_id.name", "name")
+    def _compute_display_name(self):
         for record in self:
-            name = record.card_id.name + " " + record.name
-            result.append((record.id, name))
-        return result
+            record.display_name = f"{record.name} ({record.card_id.name})"
 
     def get_fees(self, amount):
         self.ensure_one()
