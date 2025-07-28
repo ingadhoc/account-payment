@@ -268,7 +268,7 @@ result = withholdable_base_amount * 0.10
                     same_period_amounts[0] + same_period_amounts[1]
             previous_withholding_amount = sum(
                 self.env['account.payment'].search(
-                    previos_payments_domain).mapped('amount'))
+                    previos_payments_domain).mapped('amount_company_currency'))
 
         total_amount = (
             accumulated_amount +
