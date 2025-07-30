@@ -1,6 +1,6 @@
 /** @odoo-module **/
-import publicWidget from "@web/legacy/js/public/public_widget";
 import PaymentForm from '@payment/js/payment_form';
+import publicWidget from "@web/legacy/js/public/public_widget";
 
 
 publicWidget.registry.portalDetails = publicWidget.Widget.extend({
@@ -19,7 +19,7 @@ publicWidget.registry.portalDetails = publicWidget.Widget.extend({
     _updatePaySelectedVisibility: function () {
         var checkedCount = this.$('.checkbox_amount_residual:checked').length;
         var $btn = this.$('.multi_payment_selector');
-        $btn.toggle(checkedCount >= 2);
+        $btn.toggle(checkedCount >= 1);
     },
 
     _selectCheckboxInvoice: function(events) {
