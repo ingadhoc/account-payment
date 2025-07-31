@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from odoo import Command, _, api, fields, models
 from odoo.exceptions import ValidationError
 
@@ -47,6 +49,9 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
             outbound_payment.move_id.line_ids.full_reconcile_id.reconciled_line_ids.mapped("move_id")
             .filtered(lambda x: x.id != outbound_payment.move_id.id)
             .mapped("payment_ids")
+        )
+        inbound_payment.l10n_latam_move_check_ids_operation_date = (
+            outbound_payment.l10n_latam_move_check_ids_operation_date + timedelta(seconds=1)
         )
 
         # Set the paired internal transfer payment IDs to establish the link

@@ -8,6 +8,5 @@ def migrate(cr, version):
     cr.execute("""
         UPDATE account_payment
         SET l10n_latam_move_check_ids_operation_date = create_date
-        WHERE state NOT IN ('draft', 'canceled')
         AND l10n_latam_move_check_ids_operation_date IS NULL
     """)
