@@ -38,10 +38,12 @@ class l10nLatamAccountPaymentCheck(models.Model):
             rec.first_operation = sorted_ops[:1].id or False
 
     def button_open_check_operations(self):
-        action = super().button_open_check_operations()
+        action = super(l10nLatamAccountPaymentCheck, self.sudo()).button_open_check_operations()
         self.ensure_one()
         operations = self.operation_ids.sorted(lambda r: r.l10n_latam_move_check_ids_operation_date, reverse=True)
-        operations = (operations + self.payment_id).filtered(lambda x: x.state not in ["draft", "canceled"])
+        operations = (operations + self.payment_id).filtered(
+            lambda x: x.state not in ["draft", "canceled"] and x.company_id == self.company_id
+        )
         action = {
             "name": _("Check Operations"),
             "type": "ir.actions.act_window",

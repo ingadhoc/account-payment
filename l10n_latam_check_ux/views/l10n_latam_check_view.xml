@@ -59,4 +59,8 @@
             </xpath>
         </field>
     </record>
+    <record id="l10n_latam_check.action_third_party_check" model="ir.actions.act_window">
+        <field name="domain">[('payment_method_code', '=', 'new_third_party_checks'), ('payment_state', '!=', 'draft')]</field>
+    </record>
+
 </odoo>
