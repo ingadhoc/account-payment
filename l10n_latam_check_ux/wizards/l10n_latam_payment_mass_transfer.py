@@ -18,7 +18,9 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
     check_ids = fields.Many2many(
         check_company=False,
     )
-    split_payment = fields.Boolean()
+    split_payment = fields.Boolean(
+        help="If this option is selected, each check will be registered as an individual payment instead of being grouped into a single payment."
+    )
 
     @api.depends("company_id")
     def _compute_main_company(self):

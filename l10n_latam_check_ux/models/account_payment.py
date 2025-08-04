@@ -62,3 +62,13 @@ class AccountPayment(models.Model):
                     )._create_paired_internal_transfer_payment()
                 rec._get_latam_checks()._compute_company_id()
             super(AccountPayment, self - third_party_checks)._create_paired_internal_transfer_payment()
+
+    def action_draft(self):
+        for check in self.mapped("l10n_latam_move_check_ids") + self.mapped("l10n_latam_new_check_ids"):
+            last_operation = check._get_last_operation()
+            if self != last_operation:
+                raise ValidationError(
+                    "You cannot reset this operation to draft because it is not the last operation for the checks."
+                )
+
+        super().action_draft()
