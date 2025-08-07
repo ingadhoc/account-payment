@@ -1,7 +1,7 @@
 # © 2016 ADHOC SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import models, api, fields, _, Command
+from odoo import Command, _, api, fields, models
 from odoo.exceptions import ValidationError
 
 
@@ -73,7 +73,7 @@ class AccountPaymentGroup(models.Model):
     )
 
     currency_id = fields.Many2one('res.currency', related='company_id.currency_id', store=True)
-    
+
     payment_date = fields.Date(
         string='Payment Date',
         required=True,
@@ -345,7 +345,7 @@ class AccountPaymentGroup(models.Model):
     def _compute_selected_debt(self):
         for rec in self:
             rec.selected_debt = sum(rec.to_pay_move_line_ids._origin.mapped('amount_residual')) * (-1.0 if rec.partner_type == 'supplier' else 1.0)
-                
+
     @api.depends(
         'selected_debt', 'unreconciled_amount')
     def _compute_to_pay_amount(self):
@@ -437,6 +437,12 @@ class AccountPaymentGroup(models.Model):
         2. do not reconcile (reconciled by super)
         3. do not check double validation
         TODO: may be we can improve code and actually do what we want for payments from payment groups"""
+
+        # En ciertos casos por redondeo genera el asiento aunque tenga activo el reconcile on company currency.
+        # Este contexto evita esos casos
+        if self.company_id.reconcile_on_company_currency:
+            self = self.with_context(no_exchange_difference=True)
+
         created_automatically = self._context.get('created_automatically')
         posted_payment_groups = self.filtered(lambda x: x.state == 'posted')
         if posted_payment_groups:
@@ -485,7 +491,7 @@ class AccountPaymentGroup(models.Model):
                     rec.payment_ids.mapped('name')) and ', '.join(
                     rec.payment_ids.mapped('name')) or False
 
-            # Filtro porque los pagos electronicos solo pueden estar en pending si la transaccion esta en pending 
+            # Filtro porque los pagos electronicos solo pueden estar en pending si la transaccion esta en pending
             # y no los puedo conciliar esto no es un comportamiento del core
             # sino que esta implementado en account_payment_ux
             posted_payments = rec.payment_ids.filtered(lambda x: x.state == 'posted')
