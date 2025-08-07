@@ -281,3 +281,14 @@ class AccountPayment(models.Model):
         super()._compute_partner_id()
         for rec in self.filtered("main_payment_id"):
             rec.partner_id = rec.main_payment_id.partner_id
+
+    def _compute_payment_difference(self):
+        for rec in self.filtered("main_payment_id"):
+            rec.payment_difference = (
+                rec.main_payment_id.selected_debt
+                - sum(rec.main_payment_id.link_payment_ids.mapped("amount"))
+                - rec.main_payment_id.withholdings_amount
+                - rec.main_payment_id.write_off_amount
+            )
+        for rec in self - self.filtered("main_payment_id"):
+            return super()._compute_payment_difference()
