@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="report_payment_receipt_document" inherit_id="l10n_ar_tax.report_payment_receipt_document">
-        <xpath  expr="//t[@t-foreach='payment_bundle.filtered(lambda x: not x._is_latam_check_payment())']/tr" position="attributes">
+        <xpath  expr="//t[@id='payment_bundle_doc']/tr" position="attributes">
             <attribute name="t-if">doc.payment_method_line_id.payment_method_id.code != 'payment_bundle'</attribute>
         </xpath>
         <xpath expr="//table[@name='payments_table']/tfoot" position="attributes">
