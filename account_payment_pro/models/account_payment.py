@@ -552,7 +552,9 @@ class AccountPayment(models.Model):
         # cambio el partner, compania o partner_type
         self = self.filtered(lambda x: x.state == "draft")
         internal_transfers = self.filtered(lambda x: x.is_internal_transfer)
-        with_payment_pro = self.filtered(lambda x: x.company_id.use_payment_pro and not x.is_internal_transfer)
+        with_payment_pro = self.filtered(
+            lambda x: x.company_id.use_payment_pro and not x.is_internal_transfer and not x.payment_transaction_id
+        )
         if internal_transfers or not self._context.get("pay_now"):
             ((internal_transfers or self) - with_payment_pro).to_pay_move_line_ids = [Command.clear()]
         for rec in with_payment_pro:
