@@ -51,14 +51,14 @@
         <!-- queremos que la moneda sea la que define el diario y que para el resto se use counterpart currency (mas info en el porque de counterpart currency).
         Ahora bien, hacemos este inivisble de esta manera por compatibilidad hacia atras, pagos que ya estaban con otra moneda van a tener el campo visible y editable -->
         <xpath expr="//div[@name='amount_div']//field[@name='currency_id']" position="attributes">
-            <attribute name="invisible">currency_id in [journal_currency_id, company_currency_id]</attribute>
+            <attribute name="invisible">currency_id in [journal_currency_id, company_currency_id] and (not destination_journal_currency_id or currency_id==destination_journal_currency_id)</attribute>
         </xpath>
 
         <div name="amount_div" position="after">
             <field name="company_currency_id" invisible="True"/>
             <field name="other_currency" invisible="True"/>
             <field name="force_amount_company_currency" invisible="True"/>
-            <div class="o_row" invisible="not other_currency">
+            <div class="o_row" name="exchange_rate_div" invisible="not other_currency">
                 <div class="o_cell" colspan="2">
                     <strong>Rate = <field name="exchange_rate" nolabel="1"/></strong>
                 </div>
