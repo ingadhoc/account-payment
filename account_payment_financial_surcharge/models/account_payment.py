@@ -103,7 +103,7 @@ class AccountPayment(models.Model):
                             "journal_id": journal.id,
                             "product_id": product.id,
                             "tax_ids": [(6, 0, taxes.ids)],
-                            "amount_total": self.financing_surcharge,
+                            "amount_total": rec.financing_surcharge,
                         }
                     )
                 )
