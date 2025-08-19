@@ -66,7 +66,7 @@ class AccountPayment(models.Model):
     @api.depends("use_payment_pro", "main_payment_id")
     def _compute_available_journal_ids(self):
         super()._compute_available_journal_ids()
-        for rec in self.filtered(lambda x: x.main_payment_id or not x.use_payment_pro):
+        for rec in self.filtered(lambda x: x.main_payment_id or not x.use_payment_pro and x.company_id):
             bundle_journal_id = rec.company_id._get_bundle_journal(rec.payment_type)
             rec.available_journal_ids = rec.available_journal_ids.filtered(
                 lambda x: x._origin.id != bundle_journal_id and not x._origin.currency_id
