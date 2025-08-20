@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from odoo import fields, models
 from odoo.exceptions import ValidationError
 
@@ -60,6 +62,14 @@ class AccountPayment(models.Model):
                             default_l10n_latam_move_check_ids=rec.l10n_latam_move_check_ids,
                         ),
                     )._create_paired_internal_transfer_payment()
+
+                rec.write(
+                    {
+                        "l10n_latam_move_check_ids_operation_date": rec.l10n_latam_move_check_ids_operation_date
+                        - timedelta(seconds=1)
+                    }
+                )
+                rec._get_latam_checks()._compute_current_journal()
                 rec._get_latam_checks()._compute_company_id()
             super(AccountPayment, self - third_party_checks)._create_paired_internal_transfer_payment()
 
