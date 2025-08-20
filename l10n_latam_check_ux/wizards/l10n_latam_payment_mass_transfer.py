@@ -133,6 +133,12 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
                 # the operation_ids is filled with the two payments
                 inbound_payment.with_context(l10n_ar_skip_remove_check=True).action_post()
 
+            inbound_payment.write(
+                {
+                    "l10n_latam_move_check_ids_operation_date": inbound_payment.l10n_latam_move_check_ids_operation_date
+                    + timedelta(seconds=1)
+                }
+            )
             body_inbound = _("This payment has been created from: ") + outbound_payment._get_html_link()
             inbound_payment.message_post(body=body_inbound)
             body_outbound = _("A second payment has been created: ") + inbound_payment._get_html_link()
