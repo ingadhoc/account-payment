@@ -23,10 +23,16 @@ class PaymentTransaction(models.Model):
                 ("create_date", ">=", retry_limit_date),
             ]
         )
+        i = 0
+        limit = len(tx_ids)
         for tx_id in tx_ids[0:tx_limit]:
+            i += 1
             try:
-                tx_id._send_payment_request()
+                self.env["ir.cron"]._notify_progress(done=i, remaining=limit - i)
+                if tx_id.state == "draft":
+                    tx_id._send_payment_request()
             except Exception as exp:
+                tx_id.state = "error"
                 _logger.error(_("Error al enviar request tx id %i: %s") % (tx_id.id, str(exp)))
         if len(tx_ids) > tx_limit:
             self.env.ref("payment_retry.payment_asynchronous_process")._trigger()
