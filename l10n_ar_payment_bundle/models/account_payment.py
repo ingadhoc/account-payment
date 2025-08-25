@@ -267,6 +267,9 @@ class AccountPayment(models.Model):
             rec.matched_amount += sum(linked_payments.mapped("matched_amount"))
             rec.unmatched_amount = abs(rec.payment_total) - rec.matched_amount
 
+        for rec in self - self.filtered("is_main_payment"):
+            rec.unmatched_amount = 0.0
+
     @api.depends("move_id.line_ids")
     def _compute_matched_move_line_ids(self):
         super()._compute_matched_move_line_ids()
@@ -286,7 +289,7 @@ class AccountPayment(models.Model):
         for rec in self.filtered("main_payment_id"):
             rec.payment_difference = (
                 rec.main_payment_id.selected_debt
-                - sum(rec.main_payment_id.link_payment_ids.mapped("amount"))
+                - sum(rec.main_payment_id.link_payment_ids.mapped("amount_company_currency_signed"))
                 - rec.main_payment_id.withholdings_amount
                 - rec.main_payment_id.write_off_amount
             )
