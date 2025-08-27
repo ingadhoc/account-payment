@@ -1,4 +1,5 @@
 from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 
 class l10nLatamAccountPaymentCheck(models.Model):
@@ -65,3 +66,15 @@ class l10nLatamAccountPaymentCheck(models.Model):
             .filtered(lambda x: x.state not in ["draft", "canceled"] and x.l10n_latam_move_check_ids_operation_date)
             .sorted(key=lambda payment: (payment.l10n_latam_move_check_ids_operation_date))[-1:]
         )
+
+    @api.ondelete(at_uninstall=False)
+    def _check_unlink_restriction(self):
+        for check in self:
+            if any(payment.state in ["in_process", "paid"] for payment in check.operation_ids):
+                raise UserError("You must unlink all transactions related to this check before deleting it.")
+
+    @api.onchange("amount", "payment_date", "name")
+    def _onchange_check_data(self):
+        for check in self:
+            if any(payment.state in ["in_process", "paid"] for payment in check.operation_ids):
+                raise UserError("You cannot change the check data because it is already used in a transaction.")
