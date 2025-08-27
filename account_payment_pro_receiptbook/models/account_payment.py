@@ -65,3 +65,9 @@ class AccountPayment(models.Model):
                     limit=1,
                 )
                 rec.receiptbook_id = receiptbook
+
+    @api.depends()
+    def _compute_name(self):
+        super(
+            AccountPayment, self.filtered(lambda x: not x.move_id or x.move_id.state != "draft" or not x.receiptbook_id)
+        )._compute_name()
