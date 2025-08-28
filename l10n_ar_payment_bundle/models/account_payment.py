@@ -132,7 +132,8 @@ class AccountPayment(models.Model):
 
         start_number = len(self.link_payment_ids.filtered(lambda x: x.name is not False))
         for i, payment in enumerate(self.link_payment_ids, start=start_number):
-            payment.name = f"{self.name} ({i + 1})"
+            if not payment.name:
+                payment.name = f"{self.name} ({i + 1})"
 
         draft_linked = self.link_payment_ids.filtered(lambda x: x.state == "draft")
         if draft_linked:
