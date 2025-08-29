@@ -6,7 +6,11 @@
         <field name="model">payment.transaction.retry</field>
         <field name="arch" type="xml">
             <form string="retry">
+                <div class="m-0" name="warnings" invisible="not warnings">
+                    <field name="warnings" class="o_field_html" widget="actionable_errors"/>
+                </div>
                 <sheet>
+
                     <div class="oe_right">
                         <label for='percentage' string="Percentage:" class="col-4"/>
                         <field name="percentage" class="col-2"/> %
@@ -32,7 +36,7 @@
                     </group>
                 </sheet>
                 <footer>
-                    <button string="Create payments" type="object" name="action_create_payments" class="btn-primary" data-hotkey="q"/>
+                    <button string="Create payments" invisible="not validate_emails" type="object" name="action_create_payments" class="btn-primary" data-hotkey="q"/>
                     <button string="Discard" class="btn-secondary" special="cancel" data-hotkey="z" />
                 </footer>
             </form>

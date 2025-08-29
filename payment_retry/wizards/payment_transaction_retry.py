@@ -1,4 +1,6 @@
 from odoo import Command, _, api, fields, models
+from odoo.exceptions import ValidationError
+from odoo.tools import email_normalize
 
 
 class PaymentTransactionRetry(models.TransientModel):
@@ -11,6 +13,35 @@ class PaymentTransactionRetry(models.TransientModel):
     asynchronous_process = fields.Boolean()
     line_ids = fields.One2many("payment.transaction.retry.lines", "retry_id")
     percentage = fields.Float(default=100)
+    validate_emails = fields.Boolean(compute="_compute_validate_emails")
+    warnings = fields.Json(
+        compute="_compute_warnings",
+    )
+
+    @api.onchange("line_ids")
+    def _compute_validate_emails(self):
+        for rec in self:
+            email_oks = True
+            for partner in rec.line_ids.mapped("partner_id"):
+                if not partner.email or not email_normalize(partner.email):
+                    email_oks = False
+            rec.validate_emails = email_oks
+
+    @api.depends("validate_emails")
+    def _compute_warnings(self):
+        for rec in self:
+            warnings = {}
+            if not rec.validate_emails:
+                partners_without_mail = rec.line_ids.mapped("partner_id").filtered(
+                    lambda x: not x.email or not email_normalize(x.email)
+                )
+                warnings["validate_emails"] = {
+                    "level": "error",
+                    "message": _("Partner(s) should have an email address."),
+                    "action_text": _("View Partner(s)"),
+                    "action": partners_without_mail._get_records_action(name=_("Check Partner(s) Email(s)")),
+                }
+            rec.warnings = warnings
 
     @api.onchange("percentage")
     def _onchange_percentage(self):
@@ -42,6 +73,8 @@ class PaymentTransactionRetry(models.TransientModel):
         return rec
 
     def action_create_payments(self):
+        if not self.validate_emails:
+            raise ValidationError(_("Partner(s) should have an email address."))
         tx_ids = self.env["payment.transaction"]
         for line in self.line_ids.filtered(lambda x: x.payment_token_id and x.amount_to_pay > 0):
             txs_vals = {
