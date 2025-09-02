@@ -32,7 +32,9 @@ class PaymentTransaction(models.Model):
                 if tx_id.state == "draft":
                     tx_id._send_payment_request()
             except Exception as exp:
+                self.env.cr.rollback()  # pragma pylint: disable=invalid-rollback
                 tx_id.state = "error"
                 _logger.error(_("Error al enviar request tx id %i: %s") % (tx_id.id, str(exp)))
+                self.env.cr.commit()  # pragma pylint: disable=invalid-commit
         if len(tx_ids) > tx_limit:
             self.env.ref("payment_retry.payment_asynchronous_process")._trigger()

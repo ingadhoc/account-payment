@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from odoo import Command, _, api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools import email_normalize
@@ -14,6 +16,7 @@ class PaymentTransactionRetry(models.TransientModel):
     line_ids = fields.One2many("payment.transaction.retry.lines", "retry_id")
     percentage = fields.Float(default=100)
     validate_emails = fields.Boolean(compute="_compute_validate_emails")
+    message = fields.Text()
     warnings = fields.Json(
         compute="_compute_warnings",
     )
@@ -27,7 +30,7 @@ class PaymentTransactionRetry(models.TransientModel):
                     email_oks = False
             rec.validate_emails = email_oks
 
-    @api.depends("validate_emails")
+    @api.depends("validate_emails", "message")
     def _compute_warnings(self):
         for rec in self:
             warnings = {}
@@ -40,6 +43,11 @@ class PaymentTransactionRetry(models.TransientModel):
                     "message": _("Partner(s) should have an email address."),
                     "action_text": _("View Partner(s)"),
                     "action": partners_without_mail._get_records_action(name=_("Check Partner(s) Email(s)")),
+                }
+            if rec.message:
+                warnings["message"] = {
+                    "level": "error",
+                    "message": rec.message,
                 }
             rec.warnings = warnings
 
@@ -75,6 +83,12 @@ class PaymentTransactionRetry(models.TransientModel):
     def action_create_payments(self):
         if not self.validate_emails:
             raise ValidationError(_("Partner(s) should have an email address."))
+
+        if "bypass_check_similar_transactions" not in self.env.context:
+            action_fallback = self.action_check_for_similar_transactions()
+            if self.message:
+                return action_fallback
+
         tx_ids = self.env["payment.transaction"]
         for line in self.line_ids.filtered(lambda x: x.payment_token_id and x.amount_to_pay > 0):
             txs_vals = {
@@ -109,6 +123,52 @@ class PaymentTransactionRetry(models.TransientModel):
             "target": "new",
             "type": "ir.actions.act_window",
         }
+
+    def action_check_for_similar_transactions(self):
+        self.message = self._check_for_similar_transactions()
+        return {
+            "name": _("Retry payments"),
+            "res_model": "payment.transaction.retry",
+            "view_mode": "form",
+            "view_id": self.env.ref("payment_retry.payment_transaction_retry_view_form").id,
+            "res_id": self.id,
+            "context": self.env.context,
+            "target": "new",
+            "type": "ir.actions.act_window",
+        }
+
+    def _check_for_similar_transactions(self):
+        self.ensure_one()
+        message = ""
+        days_frame = int(
+            self.env["ir.config_parameter"].sudo().get_param("payment_retry.similar_transactions_days_frame", 1)
+        )
+        partner_ids = self.line_ids.mapped("partner_id")
+        token_ids = self.line_ids.mapped("payment_token_id")
+        similar_tx_ids = self.env["payment.transaction"].search(
+            [
+                ("state", "!=", "cancel"),
+                ("create_date", ">=", fields.Datetime.now() - timedelta(days=days_frame)),
+                "|",
+                ("token_id", "in", token_ids.ids),
+                ("partner_id", "in", partner_ids.ids),
+            ]
+        )
+        for similar_tx in similar_tx_ids:
+            message += _(
+                "odoo: A similar transaction of %.2f %s for %s via %s was created on %s and is currently in state %s.\n",
+                similar_tx.amount,
+                similar_tx.currency_id.name,
+                similar_tx.partner_id.display_name,
+                similar_tx.provider_id.name,
+                fields.Datetime.to_string(similar_tx.create_date),
+                similar_tx.state,
+            )
+        for provider_id, token_ids in token_ids.grouped(lambda x: x.provider_id).items():
+            method = f"{provider_id.code}_check_for_similar_transactions"
+            if hasattr(self.env["payment.token"], method):
+                message += getattr(token_ids, method)(days_frame=days_frame)
+        return message
 
 
 class PaymentTransactionRetryLines(models.TransientModel):

@@ -36,8 +36,11 @@
                     </group>
                 </sheet>
                 <footer>
-                    <button string="Create payments" invisible="not validate_emails" type="object" name="action_create_payments" class="btn-primary" data-hotkey="q"/>
+
+                    <button string="Create payments" invisible="not validate_emails or message" type="object" name="action_create_payments" class="btn-primary" data-hotkey="q"/>
+                    <button string="Create payments without check" confirm="Are you sure you want to create these payments?" context="{'bypass_check_similar_transactions': True}" invisible="not validate_emails or not message" type="object" name="action_create_payments" class="btn-danger" data-hotkey="q"/>
                     <button string="Discard" class="btn-secondary" special="cancel" data-hotkey="z" />
+                    <button string="Check similar" invisible="not validate_emails" type="object" name="action_check_for_similar_transactions" class="btn-link" data-hotkey="c"/>
                 </footer>
             </form>
         </field>
