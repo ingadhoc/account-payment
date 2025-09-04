@@ -472,10 +472,22 @@ class AccountPayment(models.Model):
             if len(lines) != 0:
                 rec.has_outstanding = True
 
+    def _get_write_off_signed_amount(self):
+        self.ensure_one()
+        if not self.write_off_amount:
+            return 0.0
+        if self.payment_type == "inbound":
+            # Receive money.
+            return self.write_off_amount
+        else:
+            # Send money.
+            return -self.write_off_amount
+
     @api.depends("amount_company_currency_signed_pro", "write_off_amount")
     def _compute_payment_total(self):
         for rec in self:
-            rec.payment_total = rec.amount_company_currency_signed_pro + rec.write_off_amount
+            write_off_amount_currency = rec._get_write_off_signed_amount()
+            rec.payment_total = rec.amount_company_currency_signed_pro + write_off_amount_currency
 
     @api.depends("amount_company_currency", "payment_type")
     def _compute_amount_company_currency_signed_pro(self):
