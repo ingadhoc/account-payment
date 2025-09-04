@@ -102,6 +102,9 @@ class AccountPayment(models.Model):
     def _onchange_withholdings(self):
         main_payments = self.filtered("is_main_payment")
         main_payments.amount = 0
+        for rec in self.filtered(lambda x: x.main_payment_id):
+            amount = rec.amount + rec.payment_difference
+            rec.amount = amount if amount > 0 else 0
         super(AccountPayment, self - main_payments)._onchange_withholdings()
 
     @api.onchange("counterpart_currency_id")
@@ -288,11 +291,21 @@ class AccountPayment(models.Model):
 
     def _compute_payment_difference(self):
         for rec in self.filtered("main_payment_id"):
+            payments = rec.main_payment_id.link_payment_ids
+            amount_outbound = sum(
+                payments.filtered(lambda p: p.payment_type == "outbound").mapped("amount_company_currency_signed")
+            )
+            amount_inbound = sum(
+                payments.filtered(lambda p: p.payment_type == "inbound").mapped("amount_company_currency_signed")
+            )
+            amount_payments = abs(amount_inbound + amount_outbound)
+
             rec.payment_difference = (
                 rec.main_payment_id.selected_debt
-                - sum(rec.main_payment_id.link_payment_ids.mapped("amount_company_currency_signed"))
+                - amount_payments
                 - rec.main_payment_id.withholdings_amount
                 - rec.main_payment_id.write_off_amount
             )
+
         for rec in self - self.filtered("main_payment_id"):
             return super()._compute_payment_difference()
