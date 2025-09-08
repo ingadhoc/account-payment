@@ -440,7 +440,13 @@ class AccountPaymentGroup(models.Model):
 
         # En ciertos casos por redondeo genera el asiento aunque tenga activo el reconcile on company currency.
         # Este contexto evita esos casos
-        if self.company_id.reconcile_on_company_currency:
+        if (
+                self.company_id.reconcile_on_company_currency
+                and not (
+                    self.partner_id.property_account_payable_id.currency_id
+                    or self.partner_id.property_account_receivable_id.currency_id
+                )
+            ):
             self = self.with_context(no_exchange_difference=True)
 
         created_automatically = self._context.get('created_automatically')
