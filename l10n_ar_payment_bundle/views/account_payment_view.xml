@@ -64,13 +64,13 @@
 
             <!--Ocultar campos de counterpart en linked cuando main no tiene sc-->
             <xpath expr="//label[@for='counterpart_currency_amount']" position="attributes">
-                <attribute name="invisible">not counterpart_currency_id</attribute>
+                <attribute name="invisible">not counterpart_currency_id or other_currency</attribute>
             </xpath>
             <xpath expr="//div[@name='counterpart_currency_amount']" position="attributes">
-                <attribute name="invisible">not counterpart_currency_id</attribute>
+                <attribute name="invisible">not counterpart_currency_id or other_currency</attribute>
             </xpath>
             <xpath expr="//field[@name='counterpart_currency_amount']" position="attributes">
-                <attribute name="invisible">not counterpart_currency_id</attribute>
+                <attribute name="invisible">not counterpart_currency_id or other_currency</attribute>
             </xpath>
             <button name="action_draft" position="attributes">
                 <attribute name="groups">base.group_no_one</attribute>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="res.groups" id="group_edit_published_checks">
+        <field name="category_id" ref="base.module_category_hidden"/>
+        <field name="name">Allow edit published checks</field>
+    </record>
+</odoo>
