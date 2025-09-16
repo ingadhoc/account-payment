@@ -1,5 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from odoo import Command, _, api, fields, models
+from odoo.exceptions import UserError
 
 
 class AccountLoanRegister(models.TransientModel):
@@ -123,6 +124,8 @@ class AccountLoanRegister(models.TransientModel):
             amls = self.env["account.move.line"].browse(self.env.context.get("active_ids", [])).filtered("debit")
             res["move_line_ids"] = [Command.set(amls.ids)]
             res["amount"] = sum(amls.mapped("amount_residual"))
+        if not res.get("move_line_ids") or res.get("amount", 0) <= 0:
+            raise UserError(_("No valid lines or amount found."))
         return res
 
     def _prepare_loan_move_data(self):
