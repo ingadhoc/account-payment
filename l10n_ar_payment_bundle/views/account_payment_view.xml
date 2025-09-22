@@ -40,6 +40,7 @@
             </xpath> -->
             <field name="partner_id" position="attributes">
                 <attribute name="invisible">1</attribute>
+                <attribute name="force_save">1</attribute>
             </field>
             <xpath expr="//field[@name='partner_id'][2]" position="attributes">
                 <attribute name="invisible">1</attribute>
