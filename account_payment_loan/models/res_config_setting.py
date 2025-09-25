@@ -28,3 +28,9 @@ class ResConfigSettings(models.TransientModel):
         readonly=False,
         help="Account used to record additional charges related to loan operations.",
     )
+    use_loan_terms = fields.Boolean(
+        string="Default Loan Terms & Conditions",
+        config_parameter="account.use_loan_terms",
+    )
+
+    loan_terms = fields.Html(related="company_id.loan_terms", string="Terms & Conditions", readonly=False)
