@@ -9,7 +9,7 @@
             <button name="button_draft" position="after">
                 <button
                     name="action_register_loan"
-                    invisible="state not in ['draft', 'posted'] or move_type not in ('out_invoice', 'out_refund')"
+                    invisible="state not in ['draft', 'posted'] or move_type not in ('out_invoice', 'out_refund') or amount_residual &lt;= 0"
                     string="Register Loan"
                     type="object"
                 />
