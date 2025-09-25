@@ -17,7 +17,7 @@
     ],
     "demo": [],
     "images": [],
-    "installable": True,
+    'installable': False,
     "auto_install": False,
     "post_load": "monkey_patches",
     "uninstall_hook": "uninstall_hook",
