@@ -17,3 +17,4 @@ class ResCompany(models.Model):
         "account.account",
         help="Account used to record extra charges related to loans.",
     )
+    loan_terms = fields.Html(string=" Loan Default Terms and Conditions", translate=True)

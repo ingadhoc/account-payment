@@ -46,6 +46,15 @@
                             </div>
                         </div>
                     </setting>
+                    <setting id="use_loan_terms" company_dependent="1" help="Add your Loan terms &amp; conditions.">
+                        <field name="use_loan_terms"/>
+                        <div class="content-group" invisible="not use_loan_terms">
+                            <field name="loan_terms"
+                                invisible="not use_loan_terms"
+                                class="oe_account_terms mt-5 w-100"
+                                placeholder="Insert your terms &amp; conditions here..."/>
+                        </div>
+                    </setting>
                 </block>
             </xpath>
         </field>

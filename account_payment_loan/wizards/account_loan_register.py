@@ -48,6 +48,8 @@ class AccountLoanRegister(models.TransientModel):
 
     note = fields.Text(compute="_compute_note", readonly=False, string="Internal Note")
 
+    loan_terms = fields.Html(related="company_id.loan_terms", string="Terms & Conditions", readonly=False)
+
     @api.depends("installment_id", "amount")
     def _compute_note(self):
         for record in self.filtered("installment_id"):
