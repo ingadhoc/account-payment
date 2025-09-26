@@ -24,7 +24,7 @@
         "wizards/account_loan_debt_report.xml",
         "wizards/account_loan_extra_charges.xml",
     ],
-    'installable': False,
+    "installable": False,
     "auto_install": False,
     "application": False,
     "post_init_hook": "post_init_hook",

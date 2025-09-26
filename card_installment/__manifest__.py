@@ -7,7 +7,7 @@
     "depends": ["product", "account"],
     "license": "LGPL-3",
     "images": [],
-    'installable': False,
+    "installable": False,
     "data": [
         "security/ir.model.access.csv",
         "security/ir_rule.xml",

@@ -24,7 +24,7 @@
         "views/account_journal_views.xml",
         "data/l10n_latam.document.type.csv",
     ],
-    'installable': False,
+    "installable": False,
     "auto_install": False,
     "application": False,
     "post_init_hook": "_generate_receiptbooks",

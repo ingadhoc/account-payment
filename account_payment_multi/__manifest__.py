@@ -12,7 +12,7 @@
         ],
     },
     "data": ["views/account_portal_templates.xml", "views/payment_form_template.xml"],
-    'installable': False,
+    "installable": False,
     "application": False,
     "license": "LGPL-3",
 }

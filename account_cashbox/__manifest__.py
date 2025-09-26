@@ -31,6 +31,6 @@
         "wizards/account_payment_register.xml",
         "wizards/account_cashbox_rounding_adjustment.xml",
     ],
-    'installable': False,
+    "installable": False,
     "application": False,
 }

@@ -7,7 +7,7 @@
     "depends": ["account"],
     "license": "LGPL-3",
     "images": [],
-    'installable': False,
+    "installable": False,
     "data": [
         "security/ir.model.access.csv",
         "data/ir_cron.xml",

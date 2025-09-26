@@ -8,7 +8,7 @@
     "author": "ADHOC SA",
     "license": "AGPL-3",
     "application": False,
-    'installable': False,
+    "installable": False,
     "auto_install": True,
     "external_dependencies": {
         "python": [],
