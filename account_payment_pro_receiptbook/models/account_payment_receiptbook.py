@@ -4,7 +4,8 @@
 ##############################################################################
 import logging
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -101,3 +102,12 @@ class AccountPaymentReceiptbook(models.Model):
                 )
             )
         return recs
+
+    @api.ondelete(at_uninstall=False)
+    def _unlink_except_used(self):
+        # Prevent deleting used receiptbook
+        is_used = self.env["account.payment"].search(
+            [("receiptbook_id", "in", self.ids), ("state", "not in", ["draft", "canceled"])], limit=1
+        )
+        if is_used:
+            raise UserError(_("You can't delete receiptbook used in publish payments."))
