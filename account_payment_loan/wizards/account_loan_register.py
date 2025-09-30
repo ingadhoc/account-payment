@@ -46,16 +46,11 @@ class AccountLoanRegister(models.TransientModel):
 
     loan_description = fields.Html(compute="_compute_loan_description")
 
-    note = fields.Text(compute="_compute_note", readonly=False, string="Internal Note")
+    note = fields.Text(string="Internal Note")
 
     loan_terms = fields.Html(related="company_id.loan_terms", string="Terms & Conditions", readonly=False)
 
-    @api.depends("installment_id", "amount")
-    def _compute_note(self):
-        for record in self.filtered("installment_id"):
-            record.note = record.installment_id.map_installment_values(record.amount).get("description")
-
-    def _get_loan_instalemnts(self):
+    def _get_loan_installemnts(self):
         installments = []
         amount_total = self.amount * self.installment_id.surcharge_coefficient
         for divisor in range(1, self.installment_id.divisor + 1):
@@ -73,16 +68,12 @@ class AccountLoanRegister(models.TransientModel):
 
     @api.depends("installment_id", "amount")
     def _compute_loan_description(self):
-        html = '<table class="table table-sm  table-striped">'
-        html += _("<tr><th>Installment</th><th>Date due</th><th>Amount</th></tr>")
-        for installment in self._get_loan_instalemnts():
-            html += _("<tr><td>Fee N. %s</td><td>%s</td><td>%s</td></tr>") % (
-                installment["divisor"],
-                fields.Date.to_string(installment["date_maturity"]),
-                self.currency_id.format(installment["amount"]),
+        with_instament = self.filtered("installment_id")
+        for record in with_instament:
+            record.loan_description = self.env["ir.ui.view"]._render_template(
+                "account_payment_loan.loan_description", {"doc": record}
             )
-        html += "<table>"
-        self.loan_description = html
+        (self - with_instament).loan_description = ""
 
     @api.depends("move_line_ids")
     def _compute_currency_id(self):
@@ -136,6 +127,8 @@ class AccountLoanRegister(models.TransientModel):
         loan_move_data = {
             "partner_id": self.partner_id.id,
             "journal_id": self.company_id.loan_journal_id.id,
+            "loan_description": "%s %s <p>%s</p>"
+            % (self.loan_description, self.company_id.loan_terms, self.note or ""),
             "line_ids": [],
         }
         debit_total = credit_total = 0.0
@@ -176,7 +169,7 @@ class AccountLoanRegister(models.TransientModel):
                 )
             )
 
-        for installment in self._get_loan_instalemnts():
+        for installment in self._get_loan_installemnts():
             debit_total += self.currency_id.round(installment["amount"])
             loan_move_data["line_ids"].append(
                 Command.create(

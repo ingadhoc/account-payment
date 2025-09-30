@@ -32,5 +32,4 @@ class ResConfigSettings(models.TransientModel):
         string="Default Loan Terms & Conditions",
         config_parameter="account.use_loan_terms",
     )
-
-    loan_terms = fields.Html(related="company_id.loan_terms", string="Terms & Conditions", readonly=False)
+    loan_terms = fields.Html(related="company_id.loan_terms", string="Loan Terms & Conditions", readonly=False)

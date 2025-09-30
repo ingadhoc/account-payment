@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="loan_description">
+            <t t-value="doc.move_line_ids.mapped('move_id').filtered(lambda x: x.move_type in ['out_invoice', 'out_refund'])" t-set="invoice_ids"/>
+            <t t-value="doc._get_loan_installemnts()" t-set="installments"/>
+            <t t-if="invoice_ids">
+                <table class="table table-condensed">
+                    Relacionado  al comprobante N°:  <strong><span t-field="invoice_ids.name"/></strong>
+
+                    <t t-foreach="invoice_ids.invoice_line_ids" t-as="line">
+                        <tr>
+                            <td><span t-esc="line.quantity"/></td>
+                            <td><span t-field="line.name"/></td>
+                            <td class="text-right">
+                                <span t-field="line.price_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                            </td>
+                        </tr>
+                    </t>
+                </table>
+            </t>
+        <p>
+            El/los cual/es se financiará en <strong><span t-field="doc.installment_id.divisor"/> Cuotas</strong>
+            iguales, mensuales y consecutivas de <strong><span t-raw="installments[0]['amount']" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></strong>.
+        </p>
+        <!-- <p>
+            Cada cuota estará compuesta por <strong><span t-field="doc.installment_capital_amount" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></strong> en concepto de capital, y
+            <strong><span t-field="doc.installment_interest_amount" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></strong> en concepto de intereses.
+        </p> -->
+        <p>
+            La tasa de interés efectiva es del <strong><span t-raw="round((doc.installment_id.surcharge_coefficient -1 ) * 100,2)"/>%</strong>.
+        </p>
+        <table class="table table-sm  table-striped">
+            <tr t-foreach="installments" t-as="installment">
+                <td>Fee N. <span t-raw="installment['divisor']"/></td>
+                <td><span t-raw="installment['date_maturity']"/></td>
+                <td><span t-raw="installment['amount']" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+            </tr>
+        </table>
+
+    </template>
+
+    <template id="report_promissory_note">
+        <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+                <t t-foreach="docs" t-as="doc">
+                    <div class="page" style="font-size: 0.8em;">
+                        <div>
+                            <span t-field="doc.company_id.city"/>, <span t-esc="doc.date.strftime('%d de %B de %Y')"/>
+                        </div>
+                        <div>
+                            <strong>Número: <span t-field="doc.name"/></strong>
+                        </div>
+                        <div>
+                            <strong>Por: <span t-field="doc.amount_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></strong>
+                        </div>
+                        <div  style="border: 1px solid black; padding: 15px;">
+
+                            <div class="col-xs-12" style="">
+                                <p>
+                                    A la vista, pagaré a <strong><span t-field="doc.company_id.name"/></strong>, o a su orden la suma de <strong><!--span t-esc="doc.amount_to_text()"/--></strong>
+                                    por igual valor recibido en efectos a entera satisfacción, pactándose la cláusula "sin protesto". Interés moratorio por falta de pago: <strong>8% mensual</strong>.
+                                    El plazo para la presentación al pago se amplía a tres años (art. 36 dec-ley 5965/63).
+                                </p>
+                                <p>
+                                    En caso de ejecución, se pacta expresamente la competencia de los Tribunales Ordinarios del Departamento Judicial de la ciudad de <strong>Junín</strong>.
+                                </p>
+                                <p>
+                                    Lugar de pago: <strong><span t-field="doc.company_id.street"/></strong> de la ciudad de <strong><span t-field="doc.company_id.city"/></strong>.
+                                </p>
+                                <p>
+                                    Se prorroga el plazo de prescripción a <strong>5 años</strong>.
+                                </p>
+                                <p>
+                                    Conforme a la Ley 25.326 e informado del contenido del Art. 6 de la misma y los alcances y efectos de la declaración,
+                                    presto consentimiento para que los datos que he proporcionado voluntariamente a esta Empresa así como los que refieren
+                                    al grado de cumplimiento de mis obligaciones frente a ésta sean registrados por la misma y cedidos e informados a
+                                    terceros que almacenan y suministran información comercial relativa a solvencia económica que interesan a sus
+                                    asociados para la evaluación y otorgamiento de créditos.
+                                </p>
+                            </div>
+                            <div class="col-12" >
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-6">Firma Co-Deudor</th>
+                                            <th class="col-6">Firma Deudor</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr style="height: 60px;">
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Aclaración:</strong></td>
+                                            <td><strong>Aclaración:</strong> <span t-field="doc.partner_id.name"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>DNI:</strong></td>
+                                            <td><strong>DNI:</strong> <span t-field="doc.partner_id.vat"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Domicilio:</strong></td>
+                                            <td><strong>Domicilio:</strong> <span t-field="doc.partner_id.contact_address"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Teléfono:</strong></td>
+                                            <td><strong>Teléfono:</strong> <span t-field="doc.partner_id.phone"/></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row" style="border: 1px solid black; padding: 15px;">
+                            <div class="col-xs-12">
+                                <h4>
+                                    <strong>ANEXO PAGARÉ N°: <span t-field="doc.name"/></strong>
+                                </h4>
+                                <p class="text-right">
+                                    <span t-field="doc.company_id.city"/>, <span t-esc="doc.date.strftime('%d de %B de %Y')"/>
+                                </p>
+                                <p>
+                                    En cumplimiento de lo establecido en el artículo 36 de la Ley de Defensa del Consumidor (24.240), se deja expresa
+                                    constancia que el Pagaré N° <strong t-field="doc.name"/>, garantiza la compra del/los siguiente/s artículo/s).
+                                </p>
+
+                                <span t-field="doc.loan_description"/>
+
+                                <p>
+                                    El sistema de amortización del capital y pago de intereses es de <strong>Tasa Directa</strong> donde los intereses se calculan sobre el total
+                                    y se suman al mismo; a este monto se lo divide por la cantidad de cuotas a pagar resultando una cuota de valor constante.
+                                </p>
+                                <p>
+                                    El monto del pagaré no incluye otros conceptos posiblemente facturados tales como gastos de sellados y otros gastos de otorgamiento del crédito.
+                                </p>
+                                <p>
+                                    La falta de pago de cualquiera de las cuotas aquí mencionadas habilita a <span t-field="doc.company_id.name"/>, o al portador legítimo en
+                                    caso de endoso, para llevar adelante la ejecución del pagaré <strong t-field="doc.name"/> proceso en el cual se reconocerá como pago
+                                    parcial el monto de las cuotas ya abonadas.
+                                </p>
+                                <table class="table" style="margin-top: 50px;">
+                                    <tbody>
+                                        <tr style="height: 60px;">
+                                            <td style="border-top: 1px solid black; width: 40%;"><strong>Firma</strong></td>
+                                            <td style="border-top: none;"></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Aclaración:</strong> <span t-field="doc.partner_id.name"/></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>DNI:</strong> <span t-field="doc.partner_id.vat"/></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Ciudad:</strong> <span t-field="doc.partner_id.city"/></td>
+                                            <td><strong>Provincia:</strong> <span t-field="doc.partner_id.state_id.name"/></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+        <record id="account_promissory_note" model="ir.actions.report">
+            <field name="name">PDF Promissory Note</field>
+            <field name="model">account.move</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">account_payment_loan.report_promissory_note</field>
+            <field name="report_file">account_payment_loan.report_promissory_note</field>
+            <field name="print_report_name">'promissory_note_%s' % (object.name)</field>
+            <field name="attachment"/>
+            <field name="binding_model_id" ref="model_account_move"/>
+            <field name="binding_type">report</field>
+            <field name="domain" eval="[('move_type', '=', 'entry'), ('is_loan', '=', True)]"/>
+        </record>
+</odoo>

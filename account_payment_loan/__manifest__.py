@@ -15,6 +15,7 @@
     "data": [
         "security/ir.model.access.csv",
         "security/res.groups.xml",
+        "views/report_promissory_note.xml",
         "views/account_card.xml",
         "views/res_company_setting.xml",
         "views/account_move_views.xml",
