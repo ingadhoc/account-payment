@@ -71,6 +71,15 @@ class AccountPayment(models.Model):
                 )
                 rec._get_latam_checks()._compute_current_journal()
                 rec._get_latam_checks()._compute_company_id()
+
+                # If the journal belongs to the third-party checks journal, posting the move was incorrectly removing the checks,
+                # even though the payment method line is for checks.
+                # To fix this, we replicate the same behavior as in Odoo's "transfer check" wizard by setting the proper payment method.
+                correct_dest_payment_method = rec.destination_journal_id.inbound_payment_method_line_ids.filtered(
+                    lambda x: x.code == "in_third_party_checks"
+                )
+                if correct_dest_payment_method:
+                    rec.paired_internal_transfer_payment_id.payment_method_line_id = correct_dest_payment_method
             super(AccountPayment, self - third_party_checks)._create_paired_internal_transfer_payment()
 
     def action_draft(self):
