@@ -4,10 +4,16 @@ from odoo import Command, _, fields, models
 class AccountMove(models.Model):
     _inherit = "account.move"
 
+    is_loan = fields.Boolean(compute="_compute_is_loan")
     loan_move_ids = fields.Many2many("account.move", "account_move_loan_rel", "move_id", "loan_move_id")
+    loan_description = fields.Html()
     last_interest_date_calculation = fields.Date(
         help="The date when the last interest calculation was performed for this move."
     )
+
+    def _compute_is_loan(self):
+        for rec in self:
+            rec.is_loan = bool(rec.journal_id == rec.company_id.loan_journal_id and not rec.loan_move_ids)
 
     def action_register_loan(self):
         return self.line_ids.action_register_loan()
