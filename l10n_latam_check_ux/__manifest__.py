@@ -19,7 +19,7 @@
 ##############################################################################
 {
     "name": "Latam Check UX",
-    "version": "18.0.2.1.0",
+    "version": "19.0.1.0.0",
     "category": "Accounting",
     "sequence": 14,
     "summary": "",
@@ -43,7 +43,7 @@
         "security/ir.model.access.csv",
     ],
     "demo": [],
-    "installable": False,
+    "installable": True,
     "auto_install": True,
     "application": False,
 }

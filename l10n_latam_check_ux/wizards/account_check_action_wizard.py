@@ -17,7 +17,7 @@ class AccountCheckActionWizard(models.TransientModel):
 
     def action_confirm(self):
         """Este método sirve para hacer el débito de cheques con cuenta outstanding desde los payments con método de pago de cheques."""
-        checks = self.env["l10n_latam.check"].browse(self._context.get("active_ids", False))
+        checks = self.env["l10n_latam.check"].browse(self.env.context.get("active_ids", False))
         if checks.filtered(lambda x: not x.check_add_debit_button):
             raise UserError(_("At least one check is in a journal where the 'Add Debit Date' option is not enabled."))
         for check in checks:
