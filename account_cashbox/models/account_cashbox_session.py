@@ -39,9 +39,10 @@ class AccountCashboxSession(models.Model):
     allow_concurrent_sessions = fields.Boolean(related="cashbox_id.allow_concurrent_sessions")
     company_id = fields.Many2one(related="cashbox_id.company_id", store=True)
 
-    _sql_constraints = [
-        ("uniq_name_cashbox", "unique(name, cashbox_id)", "El nombre de esta sesión de caja debe ser único!")
-    ]
+    _uniq_name_cashbox = models.Constraint(
+        "unique(name, cashbox_id)",
+        "El nombre de esta sesión de caja debe ser único!",
+    )
 
     @api.depends("cashbox_id")
     def _compute_user_ids(self):
