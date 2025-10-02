@@ -30,7 +30,10 @@ class PopSessionJournalControl(models.Model):
     currency_id = fields.Many2one("res.currency", compute="_compute_curency")
     require_cash_control = fields.Boolean("require_cash_control", compute="_compute_require_cash_control")
 
-    _sql_constraints = [("uniq_line", "unique(cashbox_session_id, journal_id)", "Control line must be unique")]
+    _uniq_line = models.Constraint(
+        "unique(cashbox_session_id, journal_id)",
+        "Control line must be unique",
+    )
 
     @api.depends("cashbox_session_id.payment_ids", "cashbox_session_id.payment_ids.state", "balance_start")
     def _compute_amounts(self):
