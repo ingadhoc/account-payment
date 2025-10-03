@@ -32,9 +32,9 @@
                     <button special="cancel" data-hotkey="x" string="Cancel" class="btn-secondary"/>
                 </footer>
             </form> -->
-            <field name="payment_type" position="attributes">
+            <!-- <field name="payment_type" position="attributes">
                 <attribute name="invisible">1</attribute>
-            </field>
+            </field> -->
             <!-- no anda <xpath expr="//field[@name='company_id'][1]" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath> -->
@@ -75,6 +75,10 @@
             <button name="action_draft" position="attributes">
                 <attribute name="groups">base.group_no_one</attribute>
                 <attribute name="confirm">IMPORTANT: Linked draft validation must be done from main receipt. Draft validation of a linked payment is only used for corrections and advanced use cases. Are you sure you want to continue?</attribute>
+            </button>
+            <button name="action_post" position="attributes">
+                <attribute name="groups">base.group_no_one</attribute>
+                <attribute name="confirm">WARNING: Validating a linked payment directly is intended only for corrections or advanced scenarios. It is recommended to validate linked payments through the main receipt. Do you want to proceed?</attribute>
             </button>
 
             <xpath expr="//page[@name='debts']" position="attributes">
@@ -167,6 +171,11 @@
             <xpath expr="//page[@name='withholdings_page_editable']" position="attributes">
                 <attribute name="invisible" separator=" or " add=" main_payment_id"/>
             </xpath>
+            <sheet position="before">
+                <div class="m-0" name="warnings" invisible="not warnings">
+                    <field name="warnings" class="o_field_html" widget="actionable_errors"/>
+                </div>
+            </sheet>
         </field>
     </record>
 
@@ -181,6 +190,7 @@
                 <field name="name"/>
                 <field name="journal_id"/>
                 <field name="payment_method_id"/>
+                <field name="payment_type" optional="hide"/>
                 <field name="amount_company_currency_signed" widget="monetary" string="Amount" sum="Total"/>
                 <field name="counterpart_exchange_rate" string="Rate" optional="hide"/>
                 <field name="counterpart_currency_amount" string="Amount in SC" optional="hide" sum="Total" widget="monetary"/>
