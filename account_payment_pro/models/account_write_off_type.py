@@ -12,7 +12,7 @@ class AccountWrite_offType(models.Model):
     account_id = fields.Many2one(
         "account.account",
         required=True,
-        domain="[('deprecated', '=', False), ('account_type', 'in', ['expense', 'income', 'income_other'])]",
+        domain="[('account_type', 'in', ['expense', 'income', 'income_other'])]",
     )
     company_ids = fields.Many2many("res.company", string="Companies", store=True, compute="_compute_company_ids")
     # NTH implementar tolerance para que se pueda restringir importe (en valor porcentual? absoluto?)

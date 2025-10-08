@@ -15,7 +15,7 @@ class AccountMoveLine(models.Model):
         """
         Reciviendo un matched_payment_id por contexto, decimos en ese payment, cuanto se pago para la lína en cuestión.
         """
-        matched_payment_ids = self._context.get("matched_payment_ids")
+        matched_payment_ids = self.env.context.get("matched_payment_ids")
 
         if not matched_payment_ids:
             self.payment_matched_amount = 0.0
@@ -36,7 +36,7 @@ class AccountMoveLine(models.Model):
     def action_register_payment(self, ctx=None):
         to_pay_partners = self.mapped("move_id.commercial_partner_id") or self.mapped("partner_id")
         company_pay_pro = len(self.mapped("company_id").ids) == 1 and self.mapped("company_id").use_payment_pro
-        payment_pro = self._context.get("force_payment_pro")
+        payment_pro = self.env.context.get("force_payment_pro")
         # si force_payment_pro se pasa como False estamos forzando no usar payment pro, vamos a metodo original
         # usamos payment pro si lo pasamos forzado (Caso pay and new donde todavia no tenemos company) o si estoy
         # pagando deuda de una sola cia y tiene payment pro
@@ -46,9 +46,9 @@ class AccountMoveLine(models.Model):
                 lambda r: not r.reconciled and r.account_id.account_type in ["asset_receivable", "liability_payable"]
             )
             if not to_pay_move_lines:
-                partner_type = self._context.get("default_partner_type")
-                to_pay_partner_id = self._context.get("default_partner_id")
-                company_id = self._context.get("default_company_id")
+                partner_type = self.env.context.get("default_partner_type")
+                to_pay_partner_id = self.env.context.get("default_partner_id")
+                company_id = self.env.context.get("default_company_id")
                 if not partner_type or not to_pay_partner_id:
                     raise UserError(_("Nothing to be paid on selected entries"))
             else:
@@ -64,14 +64,14 @@ class AccountMoveLine(models.Model):
                 payment_type = "outbound"
             else:
                 payment_type = "inbound" if partner_type == "customer" else "outbound"
-            create_and_new = True if self._context.get("create_and_new") else False
+            create_and_new = True if self.env.context.get("create_and_new") else False
             context = {
                 "active_model": "account.move.line",
                 "active_ids": self.ids,
                 "default_payment_type": payment_type,
                 "default_partner_type": partner_type,
                 "default_partner_id": to_pay_partner_id,
-                "default_amount": to_pay_amount,
+                "default_amount": abs(to_pay_amount),
                 "default_to_pay_move_line_ids": to_pay_move_lines.ids,
                 # We set this because if became from other view and in the context has 'create=False'
                 # you can't crate payment lines (for ej: subscription)
@@ -79,8 +79,10 @@ class AccountMoveLine(models.Model):
                 "create_and_new": create_and_new,
                 "default_company_id": company_id,
             }
-            if self._context.get("default_l10n_ar_fiscal_position_id") is not None:
-                context["default_l10n_ar_fiscal_position_id"] = self._context.get("default_l10n_ar_fiscal_position_id")
+            if self.env.context.get("default_l10n_ar_fiscal_position_id") is not None:
+                context["default_l10n_ar_fiscal_position_id"] = self.env.context.get(
+                    "default_l10n_ar_fiscal_position_id"
+                )
             return {
                 "name": _("Register Payment"),
                 "res_model": "account.payment",
