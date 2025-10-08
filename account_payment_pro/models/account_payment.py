@@ -204,8 +204,10 @@ class AccountPayment(models.Model):
         # Cambiamos el metodo para que traiga los journals de la compañia sobre la cual se esta imputando el pago.
         # Le agregamos el onchange de company para asegurarnos de que los available journals se computen siempre
         # que se produce un cambio de compañia
+
         if self.company_id:
-            self.env.company = self.company_id
+            # TODO: OVERKILL??? Shouldn't we use with_company?
+            self.env = self.env(context=dict(self.env.context, allowed_company_ids=self.company_id.ids))
         super()._compute_available_journal_ids()
 
     @api.depends("currency_id", "destination_journal_currency_id")
@@ -501,20 +503,6 @@ class AccountPayment(models.Model):
         for rec in self:
             rec.payment_difference = rec.to_pay_amount - rec.payment_total
 
-    def action_post_and_new(self):
-        self.ensure_one()
-        self.action_post()
-        return self.to_pay_move_line_ids.with_context(
-            force_payment_pro=True,
-            create_and_new=True,
-            default_move_journal_types=("bank", "cash"),
-            default_to_pay_amount=self.payment_difference,
-            default_l10n_ar_fiscal_position_id=False,
-            default_partner_type=self.partner_type,
-            default_company_id=self.company_id.id,
-            default_partner_id=self.partner_id.id,
-        ).action_register_payment()
-
     # En el pasado se contaba con to_pay_move_line_ids.amount_residual dentro de los depends,  y no deberiamos por cuestiones de performance, ya que ademas no era necesario
     @api.depends("to_pay_move_line_ids")
     def _compute_selected_debt(self):
@@ -554,7 +542,7 @@ class AccountPayment(models.Model):
     def _compute_to_pay_move_lines(self):
         # TODO ?
         # # if payment group is being created from a payment we dont want to compute to_pay_move_lines
-        # if self._context.get('created_automatically'):
+        # if self.env.context.get('created_automatically'):
         #     return
 
         # Se recomputan las lienas solo si la deuda que esta seleccionada solo si
@@ -564,7 +552,7 @@ class AccountPayment(models.Model):
 
         with_payment_pro = self._get_filter_payments(records, ["direct_debit_mandate_id"])
 
-        if internal_transfers or not self._context.get("pay_now"):
+        if internal_transfers or not self.env.context.get("pay_now"):
             ((internal_transfers or self) - with_payment_pro).to_pay_move_line_ids = [Command.clear()]
         for rec in with_payment_pro:
             rec._add_all()
