@@ -22,16 +22,16 @@ class PaymentTransaction(models.Model):
         # Este hack es para evitar que las transacciones se marquen como post processed = True
         # Cuando las genero pendientes desde el back end
         # 1) Llama a _post_process
-        # https://github.com/odoo/odoo/blob/18.0/addons/account_payment/models/account_payment.py#L141C22-L141C35
+        # https://github.com/odoo/odoo/blob/19.0/addons/account_payment/models/account_payment.py#L141
         # 2) _finalize_post_processing siempre marca la transaccion como _post_process
         # aunque su estado no sea DONE...
-        # https://github.com/odoo/odoo/blob/18.0/addons/payment/models/payment_transaction.py#L873
-        ignoned_post_processed_tx = self.env["payment.transaction"]
+        # https://github.com/odoo/odoo/blob/19.0/addons/payment/models/payment_transaction.py#L1081
+        ignored_post_processed_tx = self.env["payment.transaction"]
         if vals.get("is_post_processed") and vals.get("state", "draft") in ["draft", "pending"]:
             altered_vals = vals.copy()
             del altered_vals["is_post_processed"]
-            ignoned_post_processed_tx = self.filtered(
+            ignored_post_processed_tx = self.filtered(
                 lambda x: x.state in ["draft", "pending"] and x.provider_id.code != "custom"
             )
-            ignoned_post_processed_tx.write(altered_vals)
-        return super(PaymentTransaction, self - ignoned_post_processed_tx).write(vals)
+            ignored_post_processed_tx.write(altered_vals)
+        return super(PaymentTransaction, self - ignored_post_processed_tx).write(vals)
