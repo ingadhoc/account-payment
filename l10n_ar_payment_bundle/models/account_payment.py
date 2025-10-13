@@ -269,13 +269,14 @@ class AccountPayment(models.Model):
     @api.depends()
     def _compute_matched_amounts(self):
         super()._compute_matched_amounts()
-        for rec in self.filtered("is_main_payment"):
-            linked_payments = rec.link_payment_ids
-            rec.matched_amount += sum(linked_payments.mapped("matched_amount"))
-            rec.unmatched_amount = abs(rec.payment_total) - rec.matched_amount
+        if self.filtered(lambda x: x.payment_method_line_id.payment_method_id.code == "payment_bundle"):
+            for rec in self.filtered("is_main_payment"):
+                linked_payments = rec.link_payment_ids
+                rec.matched_amount += sum(linked_payments.mapped("matched_amount"))
+                rec.unmatched_amount = abs(rec.payment_total) - rec.matched_amount
 
-        for rec in self - self.filtered("is_main_payment"):
-            rec.unmatched_amount = 0.0
+            for rec in self - self.filtered("is_main_payment"):
+                rec.unmatched_amount = 0.0
 
     @api.depends("move_id.line_ids")
     def _compute_matched_move_line_ids(self):
