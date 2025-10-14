@@ -9,12 +9,18 @@ class AccountPayment(models.Model):
         "account.payment.receiptbook",
         "ReceiptBook",
         readonly=True,
-        auto_join=True,
+        bypass_search_access=True,
         check_company=True,
         compute="_compute_receiptbook",
         store=True,
         domain="[('partner_type', '=', partner_type)]",
     )
+
+    def write(self, vals):
+        if "receiptbook_id" in vals and any(rec.receiptbook_id.id != vals["receiptbook_id"] for rec in self):
+            vals["name"] = "/"
+        res = super().write(vals)
+        return res
 
     def action_post(self):
         # si no tengo nombre y tengo talonario de recibo, numeramos con el talonario
@@ -27,14 +33,6 @@ class AccountPayment(models.Model):
                     _('Error! The receiptbook "%s" is archived. Please use a differente receipbook.')
                     % rec.receiptbook_id.name
                 )
-            if not rec.receiptbook_id.sequence_id:
-                raise ValidationError(
-                    _("Error!. Please define sequence on the receiptbook related documents to this payment.")
-                )
-
-            if not rec.name or rec.name == "/":
-                name = rec.receiptbook_id.with_context(ir_sequence_date=rec.date).sequence_id.next_by_id()
-                rec.name = "%s %s" % (rec.receiptbook_id.document_type_id.doc_code_prefix, name)
 
         res = super().action_post()
         # Reincorporamos el seteo del l10n_latam_document_type_id para el caso de usar talonario de recibo
@@ -54,8 +52,8 @@ class AccountPayment(models.Model):
             if rec.is_internal_transfer or not rec.company_id.use_receiptbook:
                 rec.receiptbook_id = False
             elif not rec.receiptbook_id or rec.receiptbook_id.company_id != rec.company_id:
-                partner_type = rec.partner_type or self._context.get(
-                    "partner_type", self._context.get("default_partner_type", False)
+                partner_type = rec.partner_type or self.env.context.get(
+                    "partner_type", self.env.context.get("default_partner_type", False)
                 )
                 receiptbook = self.env["account.payment.receiptbook"].search(
                     [

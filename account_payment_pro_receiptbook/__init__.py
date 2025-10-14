@@ -3,7 +3,7 @@ from . import wizard
 from odoo import api, _
 from odoo.exceptions import UserError
 from .hooks import uninstall_hook
-from odoo.addons.account.wizard.account_resequence import ReSequenceWizard
+from odoo.addons.account.wizard.account_resequence import AccountResequenceWizard
 
 
 def _generate_receiptbooks(env):
@@ -15,7 +15,7 @@ def _generate_receiptbooks(env):
 
 def monkey_patches():
     def default_get_patch(self, fields_list):
-        values = super(ReSequenceWizard, self).default_get(fields_list)
+        values = super(AccountResequenceWizard, self).default_get(fields_list)
         if "move_ids" not in fields_list:
             return values
         active_move_ids = self.env["account.move"]
@@ -58,6 +58,16 @@ def monkey_patches():
         values["move_ids"] = [(6, 0, active_move_ids.ids)]
         return values
 
+    def propagate(method1, method2):
+        """Propagate decorators from ``method1`` to ``method2``, and return the
+        resulting method.
+        """
+        if method1:
+            for attr in ("_returns",):
+                if hasattr(method1, attr) and not hasattr(method2, attr):
+                    setattr(method2, attr, getattr(method1, attr))
+        return method2
+
     def _patch_method(cls, name, method):
         """Método para aplicar monkey patches.
         cls --> clase
@@ -66,8 +76,8 @@ def monkey_patches():
 
         origin = getattr(cls, name)
         method.origin = origin
-        wrapped = api.propagate(origin, method)
+        wrapped = propagate(origin, method)
         wrapped.origin = origin
         setattr(cls, name, wrapped)
 
-    _patch_method(ReSequenceWizard, "default_get", default_get_patch)
+    _patch_method(AccountResequenceWizard, "default_get", default_get_patch)

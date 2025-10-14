@@ -4,7 +4,7 @@ from odoo import _, models
 from odoo.exceptions import ValidationError
 
 
-class ReSequenceWizard(models.TransientModel):
+class AccountResequenceWizard(models.TransientModel):
     _inherit = "account.resequence.wizard"
 
     def resequence(self):

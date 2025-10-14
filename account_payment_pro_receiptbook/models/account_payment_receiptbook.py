@@ -38,18 +38,6 @@ class AccountPaymentReceiptbook(models.Model):
         required=True,
         index=True,
     )
-    next_number = fields.Integer(
-        related="sequence_id.number_next_actual",
-        readonly=False,
-    )
-    # payment_type = fields.Selection(
-    #     [('inbound', 'Inbound'), ('outbound', 'Outbound')],
-    #     # [('receipt', 'Receipt'), ('payment', 'Payment')],
-    #     string='Type',
-    #     required=True,
-    # )
-    # lo dejamos solo como ayuda para generar o no la secuencia pero lo que
-    # termina definiendo si es manual o por secuencia es si tiene secuencia
     sequence_id = fields.Many2one(
         "ir.sequence",
         "Entry Sequence",
@@ -58,10 +46,7 @@ class AccountPaymentReceiptbook(models.Model):
         copy=False,
     )
     company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company)
-    prefix = fields.Char(
-        # required=True,
-        # TODO rename field to prefix
-    )
+    prefix = fields.Char()
     active = fields.Boolean(
         default=True,
     )
@@ -70,38 +55,35 @@ class AccountPaymentReceiptbook(models.Model):
         "Document Type",
         required=True,
     )
+    last_sequence = fields.Integer(
+        compute="_compute_last_sequence",
+    )
+    initial_sequence = fields.Integer(default=1)
 
-    def write(self, vals):
-        """
-        If user change prefix we change prefix of sequence.
-        TODO: we can use related field but we need to implement manual
-        receipbooks with sequences. We should also make padding
-        related to sequence
-        """
-        prefix = vals.get("prefix")
+    @api.constrains("company_id", "prefix", "document_type_id", "partner_type")
+    def _check_unique_receipt(self):
         for rec in self:
-            if prefix and rec.sequence_id:
-                rec.sequence_id.prefix = prefix
-        return super().write(vals)
-
-    @api.model_create_multi
-    def create(self, vals_list):
-        recs = super().create(vals_list)
-        for rec in recs.filtered(lambda x: not x.sequence_id):
-            rec.sequence_id = (
-                self.env["ir.sequence"]
-                .sudo()
-                .create(
-                    {
-                        "name": rec.name,
-                        "prefix": rec.prefix,
-                        "padding": 8,
-                        "number_increment": 1,
-                        "company_id": rec.company_id.id,
-                    }
+            domain = [
+                ("id", "!=", rec.id),
+                ("company_id", "=", rec.company_id.id),
+                ("prefix", "=", rec.prefix),
+                ("document_type_id", "=", rec.document_type_id.id),
+                ("partner_type", "=", rec.partner_type),
+            ]
+            if self.search(domain):
+                raise UserError(
+                    _(
+                        "The combination of Company, Prefix, Document Type and Partner Type must be unique. "
+                        "There is already a receiptbook with these values."
+                    )
                 )
+
+    def _compute_last_sequence(self):
+        for rec in self:
+            move_id = self.env["account.move"].search(
+                [("receiptbook_id", "=", rec.id), ("name", "!=", "/")], order="sequence_number DESC", limit=1
             )
-        return recs
+            rec.last_sequence = move_id.sequence_number
 
     @api.ondelete(at_uninstall=False)
     def _unlink_except_used(self):

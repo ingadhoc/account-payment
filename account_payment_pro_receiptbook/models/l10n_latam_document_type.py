@@ -8,5 +8,9 @@ class L10nLatamDocumentType(models.Model):
 
     country_id = fields.Many2one(required=False)
     internal_type = fields.Selection(
-        selection_add=[("customer_payment", "Customer Receipt"), ("supplier_payment", "Supplier Payment")]
+        selection_add=[("customer_payment", "Customer Receipt"), ("supplier_payment", "Supplier Payment")],
+        ondelete={
+            "customer_payment": "set null",
+            "supplier_payment": "set null",
+        },
     )
