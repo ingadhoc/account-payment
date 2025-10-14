@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 {
     "name": "Account Payment receiptbook",
-    "version": "18.0.1.4.0",
+    "version": "19.0.1.0.0",
     "category": "Payment",
     "website": "www.adhoc.com.ar",
     "author": "ADHOC SA",
@@ -24,7 +24,7 @@
         "views/account_journal_views.xml",
         "data/l10n_latam.document.type.csv",
     ],
-    "installable": False,
+    "installable": True,
     "auto_install": False,
     "application": False,
     "post_init_hook": "_generate_receiptbooks",

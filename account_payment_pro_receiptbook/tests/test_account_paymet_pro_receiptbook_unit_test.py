@@ -1,11 +1,12 @@
 import json
 
 from odoo import Command, fields
+from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 from odoo.exceptions import ValidationError
 from odoo.tests import TransactionCase
 
 
-class TestAccountPaymentProReceiptbookUnitTest(TransactionCase):
+class TestAccountPaymentProReceiptbookUnitTest(AccountTestInvoicingCommon, TransactionCase):
     def setUp(self):
         super().setUp()
         self.today = fields.Date.today()
@@ -46,11 +47,10 @@ class TestAccountPaymentProReceiptbookUnitTest(TransactionCase):
         receiptbook_id = self.env["account.payment.receiptbook"].search(
             [("company_id", "=", self.company.id), ("name", "=", "Customer Receipts")]
         )
-        number_next_actual = receiptbook_id.with_context(ir_sequence_date=self.today).sequence_id.number_next_actual
         name = "%s %s%s" % (
             receiptbook_id.document_type_id.doc_code_prefix,
             receiptbook_id.prefix,
-            str(number_next_actual).zfill(receiptbook_id.sequence_id.padding),
+            str(1).zfill(8),
         )
 
         vals = {
@@ -69,7 +69,7 @@ class TestAccountPaymentProReceiptbookUnitTest(TransactionCase):
             {
                 "amount": 100,
                 "payment_type": "inbound",
-                "partner_id": self.partner_ri.id,
+                "partner_id": self.partner_a.id,
                 "journal_id": self.company_bank_journal.id,
                 "date": self.today,
                 "company_id": self.company.id,
@@ -101,9 +101,7 @@ class TestAccountPaymentProReceiptbookUnitTest(TransactionCase):
         try to resequence the first one with the name of the second and validate ValidationError.
         """
         # Search for cash journal
-        cash_journal = self.env["account.journal"].search(
-            [("company_id", "=", self.company.id), ("type", "=", "cash")], limit=1
-        )
+        cash_journal = self.company_data["default_journal_cash"]
         self.assertTrue(self.company_bank_journal, "No bank journal found")
         self.assertTrue(cash_journal, "No cash journal found")
         if cash_journal:

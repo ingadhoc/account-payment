@@ -52,8 +52,8 @@
                         <group>
                             <field name="document_type_id"/>
                             <field name="prefix"/>
-                            <field name="sequence_id"/>
-                            <field name="next_number"/>
+                            <field name="last_sequence" invisible="not last_sequence"/>
+                            <field name="initial_sequence" invisible="last_sequence"/>
                             <field name="company_id" widget="selection" groups="base.group_multi_company"/>
                         </group>
                     </group>
