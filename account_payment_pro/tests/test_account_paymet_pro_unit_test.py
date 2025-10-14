@@ -1,9 +1,10 @@
 from datetime import timedelta
 
 from odoo import Command, fields
-from odoo.tests import common
+from odoo.tests import common, tagged
 
 
+@tagged("post_install", "-at_install")
 class TestAccountPaymentProUnitTest(common.TransactionCase):
     def setUp(self):
         super().setUp()
