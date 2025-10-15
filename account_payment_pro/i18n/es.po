@@ -4,15 +4,14 @@
 # 
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2025
-# Gonzalo, 2025
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0+e\n"
+"Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-22 23:59+0000\n"
-"PO-Revision-Date: 2024-11-13 11:47+0000\n"
-"Last-Translator: Gonzalo, 2025\n"
+"POT-Creation-Date: 2025-10-15 13:14+0000\n"
+"PO-Revision-Date: 2025-10-15 13:14+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2025\n"
 "Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -175,11 +174,6 @@ msgid "Confirm"
 msgstr "Confirmar"
 
 #. module: account_payment_pro
-#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
-msgid "Confirm and New"
-msgstr "Confirmar y Nuevo"
-
-#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_currency_id
 msgid "Counterpart Currency"
 msgstr "Moneda de Imputación"
@@ -227,16 +221,27 @@ msgid "Debts"
 msgstr "Deudas"
 
 #. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__destination_journal_currency_id
+msgid "Destination Journal Currency"
+msgstr ""
+
+#. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__payment_difference
 msgid "Difference between 'To Pay Amount' and 'Payment Total'"
 msgstr ""
 "Diferencia entre Deuda Seleccionada (o Importe a Pagar) e Importe de Pago"
 
 #. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_journal__display_name
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_move__display_name
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_move_line__display_name
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__display_name
+#: model:ir.model.fields,field_description:account_payment_pro.field_res_company__display_name
+#: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__display_name
 msgid "Display Name"
-msgstr "Nombre"
+msgstr "Nombre para mostrar"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__distribution_analytic_account_ids
@@ -270,10 +275,16 @@ msgid "Has Outstanding"
 msgstr "Contiene cuenta de cobro/pago Pendiente"
 
 #. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_journal__id
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_move__id
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_move_line__id
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__id
+#: model:ir.model.fields,field_description:account_payment_pro.field_res_company__id
+#: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__id
 msgid "ID"
-msgstr "ID"
+msgstr ""
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment_invoice_wizard__use_documents
@@ -440,11 +451,6 @@ msgid ""
 "algunas funcionalidades nativas como descuento por pronto pago"
 "                         y sugerencias de diferencia de cambio"
 msgstr ""
-"Payment Pro incorpora funcionalidades que permiten llevar un flujo de cobros"
-"                         y pagos con retenciones, especificamente utilizado "
-"en Argentina. Al activarlo a                         ​su ​vez, se pierden "
-"algunas funcionalidades nativas como descuento por pronto pago"
-"                         y sugerencias de diferencia de cambio"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__payment_total
@@ -496,6 +502,11 @@ msgid "Product"
 msgstr "Producto"
 
 #. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__product_account_id
+msgid "Product Account"
+msgstr ""
+
+#. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "Rate ="
 msgstr "Cotización ="
@@ -537,6 +548,7 @@ msgid "Taxes"
 msgstr "Impuestos"
 
 #. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__destination_journal_currency_id
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__journal_currency_id
 msgid "The currency used to enter statement"
 msgstr "La moneda utilizada para ingresar el estado"
@@ -570,7 +582,7 @@ msgstr "Líneas a Pagar deben contener la misma cuenta"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_tree
 msgid "Total"
-msgstr "Total"
+msgstr ""
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__amount_total
