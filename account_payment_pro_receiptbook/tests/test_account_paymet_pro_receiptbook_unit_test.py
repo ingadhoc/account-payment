@@ -1,11 +1,11 @@
 import json
 
-import odoo.tests.common as common
 from odoo import Command, fields
 from odoo.exceptions import ValidationError
+from odoo.tests import TransactionCase
 
 
-class TestAccountPaymentProReceiptbookUnitTest(common.TransactionCase):
+class TestAccountPaymentProReceiptbookUnitTest(TransactionCase):
     def setUp(self):
         super().setUp()
         self.today = fields.Date.today()
@@ -69,7 +69,7 @@ class TestAccountPaymentProReceiptbookUnitTest(common.TransactionCase):
             {
                 "amount": 100,
                 "payment_type": "inbound",
-                "partner_id": self.env.ref("l10n_ar.res_partner_adhoc").id,
+                "partner_id": self.partner_ri.id,
                 "journal_id": self.company_bank_journal.id,
                 "date": self.today,
                 "company_id": self.company.id,
@@ -106,6 +106,15 @@ class TestAccountPaymentProReceiptbookUnitTest(common.TransactionCase):
         )
         self.assertTrue(self.company_bank_journal, "No bank journal found")
         self.assertTrue(cash_journal, "No cash journal found")
+        if cash_journal:
+            (cash_journal.outbound_payment_method_line_ids + cash_journal.inbound_payment_method_line_ids).write(
+                {"payment_account_id": cash_journal.default_account_id.id}
+            )
+
+        (
+            self.company_bank_journal.outbound_payment_method_line_ids
+            + self.company_bank_journal.inbound_payment_method_line_ids
+        ).write({"payment_account_id": self.company_bank_journal.default_account_id.id})
 
         # Create first payment (bank)
         payment1 = self.env["account.payment"].create(
@@ -120,6 +129,7 @@ class TestAccountPaymentProReceiptbookUnitTest(common.TransactionCase):
             }
         )
         payment1.action_post()
+        payment1.filtered(lambda p: not p.move_id)._generate_journal_entry()
 
         # Create second payment (cash)
         payment2 = self.env["account.payment"].create(
@@ -134,6 +144,7 @@ class TestAccountPaymentProReceiptbookUnitTest(common.TransactionCase):
             }
         )
         payment2.action_post()
+        payment2.filtered(lambda p: not p.move_id)._generate_journal_entry()
 
         # Try to resequence the first payment with the name of the second
         resequence_wizard = self.env["account.resequence.wizard"].create(
