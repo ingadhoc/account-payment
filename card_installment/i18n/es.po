@@ -7,10 +7,10 @@
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0+e\n"
+"Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-20 21:20+0000\n"
-"PO-Revision-Date: 2024-11-14 20:13+0000\n"
+"POT-Creation-Date: 2025-10-17 13:14+0000\n"
+"PO-Revision-Date: 2025-10-17 13:14+0000\n"
 "Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2025\n"
 "Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
@@ -95,6 +95,8 @@ msgstr "Tarjeta de Crédito"
 #. module: card_installment
 #: model:ir.model.fields,field_description:card_installment.field_account_card__display_name
 #: model:ir.model.fields,field_description:card_installment.field_account_card_installment__display_name
+#: model:ir.model.fields,field_description:card_installment.field_res_company__display_name
+#: model:ir.model.fields,field_description:card_installment.field_res_config_settings__display_name
 msgid "Display Name"
 msgstr "Nombre a Mostrar"
 
@@ -124,11 +126,13 @@ msgstr "Nombre de Fantasía"
 #. module: card_installment
 #: model:product.template,name:card_installment.product_product_financial_product_template
 msgid "Financial surchage"
-msgstr "Recargo Financiero"
+msgstr ""
 
 #. module: card_installment
 #: model:ir.model.fields,field_description:card_installment.field_account_card__id
 #: model:ir.model.fields,field_description:card_installment.field_account_card_installment__id
+#: model:ir.model.fields,field_description:card_installment.field_res_company__id
+#: model:ir.model.fields,field_description:card_installment.field_res_config_settings__id
 msgid "ID"
 msgstr "ID (identificación)"
 
