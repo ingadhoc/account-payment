@@ -3,21 +3,35 @@
 # 	* account_payment_ux
 # 
 # Translators:
-# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2024
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2025
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0+e\n"
+"Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-23 12:22+0000\n"
-"PO-Revision-Date: 2024-11-08 12:54+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2024\n"
+"POT-Creation-Date: 2025-10-20 17:57+0000\n"
+"PO-Revision-Date: 2025-10-20 13:57+0000\n"
+"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2025\n"
 "Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Language: es\n"
 "Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
+
+#. module: account_payment_ux
+#: model:ir.model.fields,field_description:account_payment_ux.field_account_move__display_name
+#: model:ir.model.fields,field_description:account_payment_ux.field_account_payment__display_name
+#: model:ir.model.fields,field_description:account_payment_ux.field_payment_transaction__display_name
+msgid "Display Name"
+msgstr "Nombre para mostrar"
+
+#. module: account_payment_ux
+#: model:ir.model.fields,field_description:account_payment_ux.field_account_move__id
+#: model:ir.model.fields,field_description:account_payment_ux.field_account_payment__id
+#: model:ir.model.fields,field_description:account_payment_ux.field_payment_transaction__id
+msgid "ID"
+msgstr ""
 
 #. module: account_payment_ux
 #: model:ir.model,name:account_payment_ux.model_account_move
