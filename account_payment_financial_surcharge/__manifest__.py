@@ -1,6 +1,6 @@
 {
     "name": "Payments with Financial Surchange",
-    "version": "18.0.1.1.0",
+    "version": "19.0.1.0.0",
     "author": "ADHOC SA",
     "license": "AGPL-3",
     "category": "Payment",
@@ -17,8 +17,6 @@
     ],
     "demo": [],
     "images": [],
-    "installable": False,
+    "installable": True,
     "auto_install": False,
-    "post_load": "monkey_patches",
-    "uninstall_hook": "uninstall_hook",
 }
