@@ -18,21 +18,21 @@
 #
 ##############################################################################
 {
-    'author': 'ADHOC SA',
-    'website': 'www.adhoc.com.ar',
-    'license': 'AGPL-3',
-    'category': 'Accounting & Finance',
-    'data': [
-        'views/account_tax_view.xml',
-        'views/account_payment_view.xml',
-        'views/account_journal_views.xml',
-        'data/account_payment_method_data.xml',
+    "author": "ADHOC SA",
+    "website": "www.adhoc.com.ar",
+    "license": "AGPL-3",
+    "category": "Accounting & Finance",
+    "data": [
+        "views/account_tax_view.xml",
+        "views/account_payment_view.xml",
+        "views/account_journal_views.xml",
+        "data/account_payment_method_data.xml",
     ],
-    'depends': [
-        'account',
+    "depends": [
+        "account",
     ],
-    'installable': True,
-    'name': 'Withholdings on Payments',
-    'test': [],
-    'version': "15.0.1.0.0",
+    "installable": True,
+    "name": "Withholdings on Payments",
+    "test": [],
+    "version": "15.0.1.0.0",
 }

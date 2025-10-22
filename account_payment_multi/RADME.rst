@@ -14,8 +14,8 @@
 account_payment_multi
 ==============
 
-This module extends the online invoice payment functionality by allowing you to generate a singlep ayment links to pay multiple invoices. 
-It is available both from the backend and from the customer portal. 
+This module extends the online invoice payment functionality by allowing you to generate a singlep ayment links to pay multiple invoices.
+It is available both from the backend and from the customer portal.
 
 Installation
 ============

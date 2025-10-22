@@ -1,11 +1,11 @@
-from odoo import models, api
+from odoo import api, models
 
 
 class AccountPaymentMethod(models.Model):
-    _inherit = 'account.payment.method'
+    _inherit = "account.payment.method"
 
     @api.model
     def _get_payment_method_information(self):
         res = super()._get_payment_method_information()
-        res['withholding'] = {'mode': 'multi', 'domain': [('type', '=', 'cash')]}
+        res["withholding"] = {"mode": "multi", "domain": [("type", "=", "cash")]}
         return res

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <odoo>
 
     <record id="view_receipt_receiptbook_search" model="ir.ui.view">
@@ -6,12 +6,16 @@
         <field name="model">account.payment.receiptbook</field>
         <field name="arch" type="xml">
             <search string="Receipt Books">
-                <field name="name"/>
-                <field name="report_partner_id"/>
-                <field name="sequence_type"/>
-                <field name="partner_type"/>
-                <field name="document_type_id"/>
-                <field name="company_id" widget="selection" groups="base.group_multi_company"/>
+                <field name="name" />
+                <field name="report_partner_id" />
+                <field name="sequence_type" />
+                <field name="partner_type" />
+                <field name="document_type_id" />
+                <field
+          name="company_id"
+          widget="selection"
+          groups="base.group_multi_company"
+        />
             </search>
         </field>
     </record>
@@ -21,13 +25,17 @@
         <field name="model">account.payment.receiptbook</field>
         <field name="arch" type="xml">
             <tree string="Receipt Books">
-                <field name="sequence" widget="handle"/>
-                <field name="name"/>
-                <field name="report_partner_id"/>
-                <field name="sequence_type"/>
-                <field name="partner_type"/>
-                <field name="document_type_id"/>
-                <field name="company_id" widget="selection" groups="base.group_multi_company"/>
+                <field name="sequence" widget="handle" />
+                <field name="name" />
+                <field name="report_partner_id" />
+                <field name="sequence_type" />
+                <field name="partner_type" />
+                <field name="document_type_id" />
+                <field
+          name="company_id"
+          widget="selection"
+          groups="base.group_multi_company"
+        />
             </tree>
         </field>
     </record>
@@ -40,20 +48,36 @@
                 <sheet string="Receipt Books">
                     <group>
                         <group>
-                            <field name="name"/>
-                            <field name="partner_type"/>
-                            <field name="report_partner_id"/>
-                            <field name="sequence_type"/>
-                            <field name="padding" attrs="{'invisible':[('sequence_type','!=','manual')],'required':[('sequence_type','=','manual')]}"/>
-                            <field name="prefix"/>
-                            <field name="mail_template_id"  context="{'default_model': 'account.payment.group'}"/>
+                            <field name="name" />
+                            <field name="partner_type" />
+                            <field name="report_partner_id" />
+                            <field name="sequence_type" />
+                            <field
+                name="padding"
+                attrs="{'invisible':[('sequence_type','!=','manual')],'required':[('sequence_type','=','manual')]}"
+              />
+                            <field name="prefix" />
+                            <field
+                name="mail_template_id"
+                context="{'default_model': 'account.payment.group'}"
+              />
                         </group>
                         <group>
-                            <field name="document_type_id"/>
-                            <field name="sequence_id" attrs="{'invisible':[('sequence_type','!=','automatic')]}"/>
-                            <field name="next_number" attrs="{'invisible':[('sequence_type','!=','automatic')]}"/>
-                            <field name="company_id" widget="selection" groups="base.group_multi_company"/>
-                            <field name="active"/>
+                            <field name="document_type_id" />
+                            <field
+                name="sequence_id"
+                attrs="{'invisible':[('sequence_type','!=','automatic')]}"
+              />
+                            <field
+                name="next_number"
+                attrs="{'invisible':[('sequence_type','!=','automatic')]}"
+              />
+                            <field
+                name="company_id"
+                widget="selection"
+                groups="base.group_multi_company"
+              />
+                            <field name="active" />
                         </group>
                     </group>
                 </sheet>
@@ -65,9 +89,14 @@
         <field name="name">Receiptbooks</field>
         <field name="res_model">account.payment.receiptbook</field>
         <field name="view_mode">tree,form</field>
-        <field name="search_view_id" ref="view_receipt_receiptbook_search"/>
+        <field name="search_view_id" ref="view_receipt_receiptbook_search" />
     </record>
 
-    <menuitem action="action_receiptbook_form" id="menu_receiptbook_form" sequence="25" parent="account.root_payment_menu"/>
+    <menuitem
+    action="action_receiptbook_form"
+    id="menu_receiptbook_form"
+    sequence="25"
+    parent="account.root_payment_menu"
+  />
 
 </odoo>

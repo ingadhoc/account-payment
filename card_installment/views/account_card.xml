@@ -1,12 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
 	<record id="account_card_tree" model="ir.ui.view">
 		<field name="name">account_card.tree</field>
 		<field name="model">account.card</field>
 		<field name="arch" type="xml">
 			<tree string="Cards">
-				<field name="name"/>
-                <field name="company_id" groups="base.group_multi_company"/>
+				<field name="name" />
+                <field name="company_id" groups="base.group_multi_company" />
 			</tree>
 		</field>
 	</record>
@@ -15,7 +15,7 @@
 		<field name="model">account.card</field>
 		<field name="arch" type="xml">
 			<search string="Cards">
-				<field name="name"/>
+				<field name="name" />
 			</search>
 		</field>
 	</record>
@@ -25,24 +25,24 @@
 		<field name="arch" type="xml">
 			<form string="Cards">
 				<header>
-					<field invisible="1" name="active"/>
+					<field invisible="1" name="active" />
 				</header>
 				<sheet>
 					<h1>
-						<field name="name"/>
+						<field name="name" />
 					</h1>
 					<group col="4">
-						<field name="company_id" groups="base.group_multi_company"/>
+						<field name="company_id" groups="base.group_multi_company" />
 					</group>
 					<group string="Installment plan">
 						<span>
 							<field name="installment_ids">
 								<tree editable="bottom">
-									<field name="name"/>
-									<field name="installment"/>
-									<field name="divisor" optional="show"/>
-									<field name="surcharge_coefficient"/>
-									<field name="bank_discount" optional="hide"/>
+									<field name="name" />
+									<field name="installment" />
+									<field name="divisor" optional="show" />
+									<field name="surcharge_coefficient" />
+									<field name="bank_discount" optional="hide" />
 								</tree>
 							</field>
 						</span>
@@ -61,13 +61,13 @@
 		<field name="model">account.card.installment</field>
 		<field name="arch" type="xml">
 			<tree editable="bottom">
-				<field name="card_id"/>
-				<field name="name"/>
-				<field name="installment"/>
-				<field name="divisor" optional="hide"/>
-				<field name="surcharge_coefficient"/>
-				<field name="bank_discount"/>
-                <field name="active" widget="boolean_toggle" optional="hide"/>
+				<field name="card_id" />
+				<field name="name" />
+				<field name="installment" />
+				<field name="divisor" optional="hide" />
+				<field name="surcharge_coefficient" />
+				<field name="bank_discount" />
+                <field name="active" widget="boolean_toggle" optional="hide" />
 			</tree>
 		</field>
 	</record>
@@ -76,11 +76,16 @@
 		<field name="model">account.card.installment</field>
 		<field name="arch" type="xml">
 			<search string="Card installment">
-				<field name="card_id"/>
-				<field name="name"/>
-				<field name="installment"/>
-				<field name="divisor"/>
-				<filter context="{'group_by' : 'card_id'}" domain="[]" name="by_card" string="By card"/>
+				<field name="card_id" />
+				<field name="name" />
+				<field name="installment" />
+				<field name="divisor" />
+				<filter
+          context="{'group_by' : 'card_id'}"
+          domain="[]"
+          name="by_card"
+          string="By card"
+        />
 			</search>
 		</field>
 	</record>

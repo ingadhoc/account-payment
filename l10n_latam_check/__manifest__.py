@@ -1,10 +1,10 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 {
-    'name': 'Account Check Management',
-    'version': "1.2.0",
-    'category': 'Accounting/Localizations',
-    'summary': 'Checks Management',
-    'description': """
+    "name": "Account Check Management",
+    "version": "1.2.0",
+    "category": "Accounting/Localizations",
+    "summary": "Checks Management",
+    "description": """
 Own Checks Management
 ---------------------
 
@@ -45,23 +45,22 @@ There are 2 main Payment Methods additions:
    * allow the user to do mass check transfers
 
 """,
-    'author': 'ADHOC SA',
-    'license': 'LGPL-3',
-    'images': [
+    "author": "ADHOC SA",
+    "license": "LGPL-3",
+    "images": [],
+    "depends": [
+        "account_check_printing",
     ],
-    'depends': [
-        'account_check_printing',
+    "data": [
+        "data/account_payment_method_data.xml",
+        "security/ir.model.access.csv",
+        "views/account_payment_view.xml",
+        "views/l10n_latam_checkbook_view.xml",
+        "views/account_journal_view.xml",
+        "wizards/account_payment_register_views.xml",
+        "wizards/account_payment_mass_transfer_views.xml",
     ],
-    'data': [
-        'data/account_payment_method_data.xml',
-        'security/ir.model.access.csv',
-        'views/account_payment_view.xml',
-        'views/l10n_latam_checkbook_view.xml',
-        'views/account_journal_view.xml',
-        'wizards/account_payment_register_views.xml',
-        'wizards/account_payment_mass_transfer_views.xml',
-    ],
-    'installable': True,
-    'auto_install': False,
-    'application': True,
+    "installable": True,
+    "auto_install": False,
+    "application": True,
 }

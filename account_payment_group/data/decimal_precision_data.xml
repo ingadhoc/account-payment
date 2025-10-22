@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <odoo noupdate="1">
     <record forcecreate="True" id="report_decimal_price" model="decimal.precision">
         <field name="name">Report Product Price</field>

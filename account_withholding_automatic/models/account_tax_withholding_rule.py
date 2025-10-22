@@ -1,4 +1,4 @@
-from odoo import models, fields
+from odoo import fields, models
 
 
 class AccountTaxWithholdingRule(models.Model):
@@ -13,23 +13,17 @@ class AccountTaxWithholdingRule(models.Model):
     #     required=True,
     #     )
     domain = fields.Char(
-        required=True,
-        default="[]",
-        help='Write a domain over account voucher module'
+        required=True, default="[]", help="Write a domain over account voucher module"
     )
     tax_withholding_id = fields.Many2one(
-        'account.tax',
-        'Tax Withholding',
+        "account.tax",
+        "Tax Withholding",
         required=True,
-        ondelete='cascade',
+        ondelete="cascade",
     )
     percentage = fields.Float(
-        'Percentage',
-        digits=(16, 4),
-        help="Enter % ratio between 0-1."
+        "Percentage", digits=(16, 4), help="Enter % ratio between 0-1."
     )
     fix_amount = fields.Float(
-        'Amount',
-        digits='Account',
-        help="Fixed Amount after percentaje"
+        "Amount", digits="Account", help="Fixed Amount after percentaje"
     )

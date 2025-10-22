@@ -2,7 +2,7 @@
     <record id="account_journal_dashboard_kanban_view" model="ir.ui.view">
         <field name="name">account.journal.dashboard.kanban</field>
         <field name="model">account.journal</field>
-        <field name="inherit_id" ref="account.account_journal_dashboard_kanban_view"/>
+        <field name="inherit_id" ref="account.account_journal_dashboard_kanban_view" />
         <field name="arch" type="xml">
             <!-- we change labels beacause now shou can send or receive from here, you need to create a payment group -->
             <a name="open_spend_money" position="replace">

@@ -2,8 +2,10 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import models
 import logging
+
+from odoo import models
+
 _logger = logging.getLogger(__name__)
 
 
@@ -18,16 +20,22 @@ class AccountChartTemplate(models.Model):
         and they will be disable by default
         """
 
-        bank_journals = super(
-            AccountChartTemplate, self)._create_bank_journals(
-            company, acc_template_ref)
+        bank_journals = super(AccountChartTemplate, self)._create_bank_journals(
+            company, acc_template_ref
+        )
 
         if company._localization_use_withholdings():
-            journal = self.env['account.journal'].with_context(withholding_journal=True).create({
-                'name': 'Retenciones',
-                'type': 'cash',
-                'company_id': company.id,
-            })
+            journal = (
+                self.env["account.journal"]
+                .with_context(withholding_journal=True)
+                .create(
+                    {
+                        "name": "Retenciones",
+                        "type": "cash",
+                        "company_id": company.id,
+                    }
+                )
+            )
             bank_journals += journal
 
             # we dont want this journal to have accounts and we can not inherit

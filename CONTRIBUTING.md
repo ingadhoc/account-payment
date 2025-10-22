@@ -1,6 +1,7 @@
 # ADHOC Guidelines
 
-Please follow the official guide from [Odoo Argentina](https://github.com/ingadhoc/odoo-argentina/wiki).
+Please follow the official guide from
+[Odoo Argentina](https://github.com/ingadhoc/odoo-argentina/wiki).
 
 ## Project Specific Guidelines
 

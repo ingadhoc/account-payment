@@ -2,7 +2,8 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
-from odoo import models, fields, api
+from odoo import api, fields, models
+
 # import odoo.addons.decimal_precision as dp
 # from odoo.exceptions import ValidationError
 # from dateutil.relativedelta import relativedelta
@@ -12,18 +13,17 @@ from odoo import models, fields, api
 class AccountPayment(models.Model):
     _inherit = "account.payment"
 
-    automatic = fields.Boolean(
-    )
+    automatic = fields.Boolean()
     withholding_accumulated_payments = fields.Selection(
-        related='tax_withholding_id.withholding_accumulated_payments',
+        related="tax_withholding_id.withholding_accumulated_payments",
     )
     withholdable_invoiced_amount = fields.Float(
-        'Importe imputado sujeto a retencion',
+        "Importe imputado sujeto a retencion",
         # compute='get_withholding_data',
         readonly=True,
     )
     withholdable_advanced_amount = fields.Float(
-        'Importe a cuenta sujeto a retencion',
+        "Importe a cuenta sujeto a retencion",
         # compute='get_withholding_data',
         readonly=True,
     )
@@ -36,12 +36,12 @@ class AccountPayment(models.Model):
         readonly=True,
     )
     withholding_non_taxable_minimum = fields.Float(
-        'Non-taxable Minimum',
+        "Non-taxable Minimum",
         # compute='get_withholding_data',
         readonly=True,
     )
     withholding_non_taxable_amount = fields.Float(
-        'Non-taxable Amount',
+        "Non-taxable Amount",
         # compute='get_withholding_data',
         readonly=True,
     )
@@ -64,22 +64,22 @@ class AccountPayment(models.Model):
 
     def _get_counterpart_move_line_vals(self, invoice=False):
         vals = super(AccountPayment, self)._get_counterpart_move_line_vals(
-            invoice=invoice)
+            invoice=invoice
+        )
         if self.payment_group_id:
             # we check they are code withholding and we get taxes
             taxes = self.payment_group_id.payment_ids.filtered(
-                lambda x: x.payment_method_code == 'withholding').mapped(
-                'tax_withholding_id')
-            vals['tax_ids'] = [(6, False, taxes.ids)]
+                lambda x: x.payment_method_code == "withholding"
+            ).mapped("tax_withholding_id")
+            vals["tax_ids"] = [(6, False, taxes.ids)]
         return vals
 
-    @api.depends('payment_method_code', 'tax_withholding_id.name')
+    @api.depends("payment_method_code", "tax_withholding_id.name")
     def _compute_payment_method_description(self):
-        payments = self.filtered(
-            lambda x: x.payment_method_code == 'withholding')
+        payments = self.filtered(lambda x: x.payment_method_code == "withholding")
         for rec in payments:
             name = rec.tax_withholding_id.name or rec.payment_method_id.name
             rec.payment_method_description = name
         return super(
-            AccountPayment,
-            (self - payments))._compute_payment_method_description()
+            AccountPayment, (self - payments)
+        )._compute_payment_method_description()
