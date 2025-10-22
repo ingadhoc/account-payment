@@ -83,7 +83,7 @@ class AccountPayment(models.Model):
 
     @api.model
     def default_get(self, default_fields):
-        if self._context.get("open_invoice_payment", False):
+        if self.env.context.get("open_invoice_payment", False):
             self = self.with_context(active_ids=None, active_model=None)
         return super().default_get(default_fields)
 
@@ -120,7 +120,9 @@ class AccountPayment(models.Model):
                 # in order to be able to post/reconcile the payment (this is needed because in odoo 17 we are not able to reconcile
                 # draft account.move. only can reconcile posted ones)
                 move_line_ids = (
-                    self._context.get("to_pay_move_line_ids") if self.env.context.get("open_invoice_payment") else False
+                    self.env.context.get("to_pay_move_line_ids")
+                    if self.env.context.get("open_invoice_payment")
+                    else False
                 )
                 move_lines = (
                     move_line_ids
