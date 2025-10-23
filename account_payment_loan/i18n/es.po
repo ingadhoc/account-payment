@@ -503,13 +503,6 @@ msgid "Register Loan"
 msgstr "Registrar Préstamo"
 
 #. module: account_payment_loan
-#. odoo-python
-#: code:addons/account_payment_loan/models/account_chart_template.py:0
-#: code:addons/account_payment_loan/wizards/account_loan_register.py:0
-msgid "Rounding"
-msgstr "Redondeo"
-
-#. module: account_payment_loan
 #: model:ir.model.fields,help:account_payment_loan.field_account_bank_statement_line__last_interest_date_calculation
 #: model:ir.model.fields,help:account_payment_loan.field_account_move__last_interest_date_calculation
 msgid ""
