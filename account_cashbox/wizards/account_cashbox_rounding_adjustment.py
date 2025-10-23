@@ -14,6 +14,14 @@ class AccountCashboxRoundingAdjustment(models.TransientModel):
 
         # Create journal entries for each line with a rounding difference
         for line in self.cashbox_session_id.line_ids.filtered(lambda x: x.balance_difference != 0):
+            currency = line.journal_id.currency_id or self.cashbox_session_id.company_id.currency_id
+            if currency != self.cashbox_session_id.company_id.currency_id:
+                negative_amount = abs(min(line.balance_difference, 0.0)) / currency.rate
+                positive_amount = max(line.balance_difference, 0.0) / currency.rate
+            else:
+                negative_amount = abs(min(line.balance_difference, 0.0))
+                positive_amount = max(line.balance_difference, 0.0)
+
             move_vals = {
                 "journal_id": line.journal_id.id,
                 "date": fields.Date.today(),
@@ -25,13 +33,15 @@ class AccountCashboxRoundingAdjustment(models.TransientModel):
                         0,
                         {
                             "name": "Cashbox Rounding Adjustment",
-                            "debit": abs(min(line.balance_difference, 0.0)),
-                            "credit": max(line.balance_difference, 0.0),
+                            "debit": negative_amount,
+                            "credit": positive_amount,
                             "account_id": (
                                 line.journal_id.profit_account_id.id
                                 if line.balance_difference > 0
                                 else line.journal_id.loss_account_id.id
                             ),
+                            "currency_id": currency.id,
+                            "amount_currency": -line.balance_difference,
                         },
                     ),
                     (
@@ -39,9 +49,11 @@ class AccountCashboxRoundingAdjustment(models.TransientModel):
                         0,
                         {
                             "name": "Cashbox Rounding Adjustment (Counterpart)",
-                            "debit": max(line.balance_difference, 0.0),
-                            "credit": abs(min(line.balance_difference, 0.0)),
+                            "debit": positive_amount,
+                            "credit": negative_amount,
                             "account_id": line.journal_id.default_account_id.id,
+                            "currency_id": currency.id,
+                            "amount_currency": line.balance_difference,
                         },
                     ),
                 ],
