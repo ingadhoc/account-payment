@@ -54,9 +54,11 @@ class AccountMove(models.Model):
             # intereses ganado  y perdidos
             loan_account_id = rec.company_id.loan_journal_id.default_account_id
             late_payment_interest_account_id = rec.company_id.account_late_payment_interest
+            move_names = ", ".join(rec.filtered(lambda x: not x.loan_move_ids).mapped("name"))
             interest_move_data = {
                 "partner_id": rec.partner_id.id,
                 "journal_id": rec.company_id.loan_journal_id.id,
+                "ref": _("Interest for %s") % move_names,
                 "loan_move_ids": [Command.set(rec.ids)],
                 "line_ids": [
                     Command.create(

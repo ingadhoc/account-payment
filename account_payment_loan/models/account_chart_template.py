@@ -24,11 +24,6 @@ class AccountChartTemplate(models.AbstractModel):
                 "code": "LOE",
                 "account_type": "income_other",
             },
-            "account_loan_round": {
-                "name": _("Rounding"),
-                "code": "LOR",
-                "account_type": "income_other",
-            },
         }
 
     @template(model="account.journal")
