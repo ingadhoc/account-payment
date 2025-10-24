@@ -353,16 +353,11 @@ class AccountPayment(models.Model):
             )
 
         if self._use_counterpart_currency():
-            if self.payment_type == "inbound":
-                # Receive money.
-                liquidity_amount_currency = self.counterpart_currency_amount
-            elif self.payment_type == "outbound":
-                # Send money.
-                liquidity_amount_currency = -self.counterpart_currency_amount
+            sign = 1 if res[1].get("amount_currency", 1) >= 0 else -1
             res[1].update(
                 {
                     "currency_id": self.counterpart_currency_id.id,
-                    "amount_currency": -liquidity_amount_currency,
+                    "amount_currency": sign * abs(self.counterpart_currency_amount),
                 }
             )
         return res
