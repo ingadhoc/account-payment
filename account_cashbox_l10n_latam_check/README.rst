@@ -14,31 +14,61 @@
 Account Cashbox l10n Latam Check
 ================================
 
-Module for cash management.
+This module integrates the Latin American check management system with cashbox sessions, providing seamless check transfer operations within point-of-sale (POP) sessions.
 
-- Cashbox module extension that allows users to transfer one or more checks to a cashbox session.
+**Main Features:**
+- Integrates third-party check operations with cashbox session management
+- Adds cashbox session selection to mass check transfer wizard
+- Enforces cashbox session requirement for users when configured
+- Automatically links check payments to active cashbox sessions
 
 Installation
 ============
 
-To install this module, you need to:
+This module has the following dependencies:
 
-#. account_cashbox
-#. l10n_latam_check
+* ``account_cashbox`` - For cashbox session management
+* ``l10n_latam_check`` - For Latin American check handling
+
+The module is configured as ``auto_install=True``, meaning it will be automatically installed when both dependencies are present.
 
 Configuration
 =============
 
-To configure this module, you need to:
+**User Configuration:**
 
-#. Go to ...
+#. Go to **Settings > Users & Companies > Users**
+#. Select a user and check the field "Requires Account Cashbox Session" if you want to enforce cashbox session usage for that user
+#. Users with this setting enabled must select a cashbox session when performing check transfers
+
+**Cashbox Session Setup:**
+
+#. Ensure cashbox sessions are properly configured in **Accounting > Configuration > Point of Sale Sessions**
+#. Create and open cashbox sessions as needed
+#. Users can be assigned to specific sessions or left unassigned for global access
 
 Usage
 =====
 
-To use this module, you need to:
+**Mass Check Transfer with Cashbox Session:**
 
-#. Go to ...
+#. Navigate to **Accounting > Customers > Checks** or **Accounting > Vendors > Checks**
+#. Select one or more third-party checks
+#. Click "Transfer" button to open the mass transfer wizard
+#. The system will automatically detect and suggest available cashbox sessions:
+
+   - If only one session is open and accessible to the user, it will be pre-selected
+   - If multiple sessions are available, a dropdown will allow selection
+   - If the user requires cashbox session usage, the field becomes mandatory
+
+#. Select the destination journal and cashbox session (if required)
+#. Complete the transfer - all resulting payments will be linked to the selected cashbox session
+
+**Security and Access Control:**
+
+- The transfer button in check lists is restricted to users with "Show Accounting Features" access
+- Cashbox session selection is filtered by user permissions and session status
+- Only open sessions are available for selection
 
 .. image:: https://odoo-community.org/website/image/ir.attachment/5784_f2813bd/datas
    :alt: Try me on Runbot
