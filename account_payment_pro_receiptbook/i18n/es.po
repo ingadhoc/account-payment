@@ -3,15 +3,15 @@
 # 	* account_payment_pro_receiptbook
 # 
 # Translators:
-# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2025
+# ADHOC - Bot <transbot@adhoc.com.ar>, 2025
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0+e\n"
+"Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-04 21:14+0000\n"
-"PO-Revision-Date: 2024-11-13 15:02+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2025\n"
+"POT-Creation-Date: 2025-10-23 20:56+0000\n"
+"PO-Revision-Date: 2025-10-23 20:56+0000\n"
+"Last-Translator: ADHOC - Bot <transbot@adhoc.com.ar>, 2025\n"
 "Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -33,11 +33,6 @@ msgstr "Talonario de Recibos"
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__active
 msgid "Active"
 msgstr "Activo"
-
-#. module: account_payment_pro_receiptbook
-#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__next_number
-msgid "Actual Next Number"
-msgstr "Siguiente número de secuencia"
 
 #. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,help:account_payment_pro_receiptbook.field_l10n_latam_document_type__internal_type
@@ -109,9 +104,18 @@ msgid "Customer Receipts"
 msgstr "Recibos de Cliente"
 
 #. module: account_payment_pro_receiptbook
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_chart_template__display_name
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_journal__display_name
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_move__display_name
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment__display_name
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__display_name
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_register__display_name
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_resequence_wizard__display_name
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_l10n_latam_document_type__display_name
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_res_company__display_name
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_res_config_settings__display_name
 msgid "Display Name"
-msgstr "Nombre a Mostrar"
+msgstr "Nombre para mostrar"
 
 #. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__document_type_id
@@ -142,17 +146,16 @@ msgid ""
 msgstr ""
 
 #. module: account_payment_pro_receiptbook
-#. odoo-python
-#: code:addons/account_payment_pro_receiptbook/models/account_payment.py:0
-msgid ""
-"Error!. Please define sequence on the receiptbook related documents to this "
-"payment."
-msgstr ""
-"Error! Defina la secuencia en los documentos relacionados con el talonario "
-"de recibos de este pago."
-
-#. module: account_payment_pro_receiptbook
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_chart_template__id
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_journal__id
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_move__id
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment__id
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__id
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_register__id
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_resequence_wizard__id
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_l10n_latam_document_type__id
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_res_company__id
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_res_config_settings__id
 msgid "ID"
 msgstr ""
 
@@ -164,6 +167,11 @@ msgid ""
 msgstr ""
 "Si se configura, se enviará un correo electrónico al cliente cuando se haya "
 "publicado la cuenta, pago o  grupo relacionado."
+
+#. module: account_payment_pro_receiptbook
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__initial_sequence
+msgid "Initial Sequence"
+msgstr ""
 
 #. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_l10n_latam_document_type__internal_type
@@ -179,6 +187,11 @@ msgstr "Diario"
 #: model:ir.model,name:account_payment_pro_receiptbook.model_account_move
 msgid "Journal Entry"
 msgstr "Asiento contable"
+
+#. module: account_payment_pro_receiptbook
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__last_sequence
+msgid "Last Sequence"
+msgstr ""
 
 #. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__write_uid
@@ -199,15 +212,6 @@ msgstr "Tipo de Documento Latam"
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__name
 msgid "Name"
 msgstr "Nombre"
-
-#. module: account_payment_pro_receiptbook
-#: model:ir.model.fields,help:account_payment_pro_receiptbook.field_account_payment_receiptbook__next_number
-msgid ""
-"Next number that will be used. This number can be incremented frequently so "
-"the displayed value might already be obsolete"
-msgstr ""
-"Siguiente número que se utilizará. Este número se puede incrementar con "
-"frecuencia, por lo que es posible que el valor mostrado ya esté obsoleto."
 
 #. module: account_payment_pro_receiptbook
 #: model:l10n_latam.document.type,report_name:account_payment_pro_receiptbook.dc_orden_pago_x
@@ -297,6 +301,14 @@ msgstr "Pagos de Proveedores"
 
 #. module: account_payment_pro_receiptbook
 #. odoo-python
+#: code:addons/account_payment_pro_receiptbook/models/account_payment_receiptbook.py:0
+msgid ""
+"The combination of Company, Prefix, Document Type and Partner Type must be "
+"unique. There is already a receiptbook with these values."
+msgstr ""
+
+#. module: account_payment_pro_receiptbook
+#. odoo-python
 #: code:addons/account_payment_pro_receiptbook/wizard/account_resequence.py:0
 msgid ""
 "The following receipt names already exist:\n"
@@ -364,4 +376,10 @@ msgstr ""
 msgid ""
 "You can only resequence items if all selected moves belong to the same "
 "receiptbook, or if none have a receiptbook assigned."
+msgstr ""
+
+#. module: account_payment_pro_receiptbook
+#. odoo-python
+#: code:addons/account_payment_pro_receiptbook/models/account_payment_receiptbook.py:0
+msgid "You can't delete receiptbook used in publish payments."
 msgstr ""

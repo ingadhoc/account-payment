@@ -3,16 +3,15 @@
 # 	* account_cashbox
 # 
 # Translators:
-# Camila Vives, 2025
-# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2025
+# ADHOC - Bot <transbot@adhoc.com.ar>, 2025
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0+e\n"
+"Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-22 12:04+0000\n"
-"PO-Revision-Date: 2024-11-29 14:48+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2025\n"
+"POT-Creation-Date: 2025-10-23 20:57+0000\n"
+"PO-Revision-Date: 2025-10-23 20:57+0000\n"
+"Last-Translator: ADHOC - Bot <transbot@adhoc.com.ar>, 2025\n"
 "Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -128,22 +127,18 @@ msgstr "Saldo Inicial"
 
 #. module: account_cashbox
 #: model:account.journal,name:account_cashbox.journal_billetera_virtual
-msgid "Billetera Virtual - A"
+msgid "Billetera Virtual"
 msgstr ""
 
 #. module: account_cashbox
 #: model:account.journal,name:account_cashbox.journal_caja_central
-msgid "Caja Central - A"
-msgstr ""
-
-#. module: account_cashbox
-#: model_terms:ir.ui.view,arch_db:account_cashbox.view_users_form_extend
-msgid "Cajas"
+msgid "Caja Central"
 msgstr ""
 
 #. module: account_cashbox
 #: model:account.journal,name:account_cashbox.journal_cajas
-msgid "Cajas - A"
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_users_form_extend
+msgid "Cajas"
 msgstr ""
 
 #. module: account_cashbox
@@ -290,6 +285,10 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_rounding_adjustment_wizard__display_name
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__display_name
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__display_name
+#: model:ir.model.fields,field_description:account_cashbox.field_account_move__display_name
+#: model:ir.model.fields,field_description:account_cashbox.field_account_payment__display_name
+#: model:ir.model.fields,field_description:account_cashbox.field_account_payment_register__display_name
+#: model:ir.model.fields,field_description:account_cashbox.field_res_users__display_name
 msgid "Display Name"
 msgstr "Nombre a Mostrar"
 
@@ -352,6 +351,10 @@ msgstr "Tiene Mensaje"
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_rounding_adjustment_wizard__id
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__id
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__id
+#: model:ir.model.fields,field_description:account_cashbox.field_account_move__id
+#: model:ir.model.fields,field_description:account_cashbox.field_account_payment__id
+#: model:ir.model.fields,field_description:account_cashbox.field_account_payment_register__id
+#: model:ir.model.fields,field_description:account_cashbox.field_res_users__id
 msgid "ID"
 msgstr "ID (identificación)"
 
@@ -497,11 +500,6 @@ msgid "New Session"
 msgstr "Nueva sesión"
 
 #. module: account_cashbox
-#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__activity_calendar_event_id
-msgid "Next Activity Calendar Event"
-msgstr ""
-
-#. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__activity_date_deadline
 msgid "Next Activity Deadline"
 msgstr "Siguiente plazo de actividad"
@@ -594,11 +592,6 @@ msgstr "Pagos"
 #: model:ir.model.fields.selection,name:account_cashbox.selection__account_cashbox_session__state__closed
 msgid "Published"
 msgstr "Publicado"
-
-#. module: account_cashbox
-#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__rating_ids
-msgid "Ratings"
-msgstr ""
 
 #. module: account_cashbox
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_form
@@ -728,7 +721,7 @@ msgstr "Validar"
 
 #. module: account_cashbox
 #: model:account.journal,name:account_cashbox.journal_viaticos
-msgid "Viaticos - A"
+msgid "Viaticos"
 msgstr ""
 
 #. module: account_cashbox
