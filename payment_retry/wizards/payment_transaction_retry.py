@@ -59,8 +59,8 @@ class PaymentTransactionRetry(models.TransientModel):
     @api.model
     def default_get(self, default_fields):
         rec = super().default_get(default_fields)
-        active_ids = self._context.get("active_ids") or self._context.get("active_id")
-        active_model = self._context.get("active_model")
+        active_ids = self.env.context.get("active_ids") or self.env.context.get("active_id")
+        active_model = self.env.context.get("active_model")
         if active_model == "account.move":
             move_ids = (
                 self.env[active_model]
@@ -148,6 +148,7 @@ class PaymentTransactionRetry(models.TransientModel):
         similar_tx_ids = self.env["payment.transaction"].search(
             [
                 ("state", "!=", "cancel"),
+                ("operation", "!=", "validation"),
                 ("create_date", ">=", fields.Datetime.now() - timedelta(days=days_frame)),
                 "|",
                 ("token_id", "in", token_ids.ids),
