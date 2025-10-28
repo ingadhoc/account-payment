@@ -42,7 +42,21 @@ class AccountPayment(models.Model):
     @api.depends("amount")
     def _compute_net_amount(self):
         for rec in self:
-            rec.net_amount = rec.amount / (rec.installment_id.surcharge_coefficient or 1)
+            product = rec.company_id.product_surcharge_id
+            taxes = product.taxes_id.filtered(lambda t: t.company_id.id == rec.company_id.id)
+            net_amount = rec.amount / (rec.installment_id.surcharge_coefficient or 1)
+
+            total_excluded = (
+                taxes.filtered(lambda x: not x.price_include)
+                .with_context(force_price_include=True)
+                .compute_all(net_amount - rec.amount, currency=rec.currency_id)["total_excluded"]
+            )
+            total_included = taxes.filtered(lambda x: not x.price_include).compute_all(
+                total_excluded, currency=rec.currency_id
+            )["total_included"]
+
+            rec.financing_surcharge = total_included
+            rec.net_amount = rec.amount + total_included
 
     @api.onchange("installment_id")
     def _onchange_instalment(self):
@@ -54,9 +68,18 @@ class AccountPayment(models.Model):
     @api.onchange("net_amount")
     def _inverse_net_amount(self):
         for rec in self:
-            rec.with_context(skip_account_move_synchronization=True).amount = rec.net_amount * (
-                rec.installment_id.surcharge_coefficient or 1
+            product = rec.company_id.product_surcharge_id
+            taxes = product.taxes_id.filtered(lambda t: t.company_id.id == rec.company_id.id)
+            amount = rec.net_amount * (rec.installment_id.surcharge_coefficient or 1) - rec.net_amount
+            total_excluded = (
+                taxes.filtered(lambda x: not x.price_include)
+                .with_context(force_price_include=True)
+                .compute_all(amount, currency=rec.currency_id)["total_excluded"]
             )
+            total_included = taxes.filtered(lambda x: not x.price_include).compute_all(
+                total_excluded, currency=rec.currency_id
+            )["total_included"]
+            rec.with_context(skip_account_move_synchronization=True).amount = rec.net_amount + total_included
 
     @api.model
     def default_get(self, default_fields):
