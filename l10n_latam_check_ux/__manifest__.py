@@ -19,7 +19,7 @@
 ##############################################################################
 {
     "name": "Latam Check UX",
-    "version": "18.0.2.1.0",
+    "version": "18.0.2.2.0",
     "category": "Accounting",
     "sequence": 14,
     "summary": "",
@@ -34,12 +34,14 @@
     ],
     "data": [
         "wizards/account_check_action_wizard_view.xml",
+        "wizards/checks_to_date_view.xml",
         "views/account_payment_view.xml",
         "views/l10n_latam_check_view.xml",
         "views/account_journal_view.xml",
         "views/report_payment_receipt_templates.xml",
         "wizards/l10n_latam_payment_mass_transfer.xml",
         "reports/report_account_transfer.xml",
+        "reports/report_checks_to_date.xml",
         "security/ir.model.access.csv",
     ],
     "demo": [],
