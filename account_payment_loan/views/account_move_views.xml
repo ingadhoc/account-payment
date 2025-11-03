@@ -17,6 +17,7 @@
             <group id="other_tab_entry_group">
                 <group string="Loan" name="loan_info_group">
                     <field name="last_interest_date_calculation" groups="account_payment_loan.loan_admin"/>
+                    <field name="loan_description" readonly="1"/>
                 </group>
             </group>
         </field>

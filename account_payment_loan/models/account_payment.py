@@ -53,6 +53,10 @@ class AccountPayment(models.Model):
                 # intereses ganado  y perdidos
                 loan_account_id = rec.company_id.loan_journal_id.default_account_id
                 late_payment_interest_account_id = rec.company_id.account_late_payment_interest
+                loan_move_ids = rec.to_pay_move_line_ids.filtered(lambda x: x.account_id == loan_account_id).mapped(
+                    "move_id"
+                )
+                move_names = ", ".join(loan_move_ids.mapped("name"))
                 loan_base_move_ids = (
                     rec.to_pay_move_line_ids.filtered(lambda x: x.account_id == loan_account_id)
                     .mapped("move_id")
@@ -62,6 +66,7 @@ class AccountPayment(models.Model):
                     "partner_id": rec.partner_id.id,
                     "loan_move_ids": [Command.set(loan_base_move_ids.ids)],
                     "journal_id": rec.company_id.loan_journal_id.id,
+                    "ref": _("Interest for %s") % move_names,
                     "line_ids": [
                         Command.create(
                             {
@@ -86,9 +91,6 @@ class AccountPayment(models.Model):
                 # TODO unificar ??
                 # interest_moves = self.env["account.move"].create_financial_surchage_move(rec.loan_surcharge)
 
-                loan_move_ids = rec.to_pay_move_line_ids.filtered(lambda x: x.account_id == loan_account_id).mapped(
-                    "move_id"
-                )
                 loan_move_ids.last_interest_date_calculation = rec.date
                 loan_surcharge_line = interest_move.line_ids.filtered(lambda x: x.account_id == loan_account_id)
                 rec.to_pay_move_line_ids = [Command.link(loan_surcharge_line.id)]

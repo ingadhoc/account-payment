@@ -43,10 +43,11 @@ class accountLoanExtraCharges(models.TransientModel):
             base_loan_move_ids = self.loan_move_id.ids
         else:
             base_loan_move_ids = self.available_loan_move_ids.filtered(lambda x: not x.loan_move_ids).ids
-
+        move_names = ", ".join(self.loan_move_id.mapped("name"))
         extra_charges_move_data = {
             "partner_id": self.partner_id.id,
             "journal_id": self.company_id.loan_journal_id.id,
+            "ref": _("Extra Charges for Loan %s") % move_names if move_names else "",
             "loan_move_ids": [Command.set(base_loan_move_ids)],
             "line_ids": [
                 Command.create(

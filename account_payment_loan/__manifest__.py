@@ -1,6 +1,6 @@
 {
     "name": "Account Payment Personal Loan",
-    "version": "18.0.1.1.0",
+    "version": "18.0.1.2.0",
     "category": "Accounting",
     "sequence": 14,
     "summary": "",
@@ -15,6 +15,7 @@
     "data": [
         "security/ir.model.access.csv",
         "security/res.groups.xml",
+        "views/report_promissory_note.xml",
         "views/account_card.xml",
         "views/res_company_setting.xml",
         "views/account_move_views.xml",
