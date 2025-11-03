@@ -84,5 +84,6 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
 
         payment.action_draft()
         payment.date = self.today
+        payment._compute_amount_company_currency()
         payment.action_post()
         self.assertEqual(payment.exchange_rate, eur_actual_rate_2, "no se tomo de forma correcta el tipo de cambio")
