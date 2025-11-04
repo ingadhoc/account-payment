@@ -108,10 +108,6 @@
         <field name="priority" eval="30"/>
         <field name="inherit_id" ref="account.view_account_payment_form" />
         <field name="arch" type="xml">
-            <!-- TODO: Vamos a eliminar todo. por ahora lo escondo cuando esta instalado bundle-->
-            <button name="action_post_and_new" position="attributes">
-                <attribute name="invisible">1</attribute>
-            </button>
             <button name="button_open_journal_entry" position="attributes">
                 <attribute name="invisible" separator=" and " add="not show_move_button"></attribute>
             </button>
