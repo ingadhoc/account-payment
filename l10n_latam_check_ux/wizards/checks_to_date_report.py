@@ -150,7 +150,7 @@ class AccountCheckToDateReportWizard(models.TransientModel):
             LEFT JOIN
                 account_move AS ap_move ON ap.move_id = ap_move.id
             WHERE
-                (apm.code != 'manual' OR (apm.code = 'manual' AND ap_move.date >= %s));
+                (apm.code != 'manual' OR (apm.code = 'manual' AND ap_move.date > %s));
             """,
             (to_date,),
         )
@@ -176,7 +176,7 @@ class AccountCheckToDateReportWizard(models.TransientModel):
                     LEFT JOIN account_payment ap2 ON ap2.id = rel2.payment_id
                     LEFT JOIN account_move am2 ON am2.id = ap2.move_id
                     WHERE rel2.check_id = c.id
-                    AND am2.date >= %s
+                    AND am2.date > %s
                     AND ap2.payment_method_id IN (
                         SELECT id FROM account_payment_method WHERE code IN ('out_third_party_checks', 'manual')
                     )
