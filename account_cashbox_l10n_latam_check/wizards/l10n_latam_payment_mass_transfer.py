@@ -8,8 +8,13 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
     cashbox_session_id = fields.Many2one(
         "account.cashbox.session",
         string="POP Session",
-        compute="_compute_cashbox_session_id",
         readonly=False,
+<<<<<<< 390c433b65bf3c2424644930a4ef61b5116de555
+||||||| a02e46a88c3be95a2db5bec92a08f90c1f8b8509
+        store=True,
+=======
+        compute="_compute_cashbox_session_id",
+>>>>>>> 56a396646fe8a53182401431fe80a1c2ff537aaa
     )
     requiere_account_cashbox_session = fields.Boolean(
         compute="_compute_requiere_account_cashbox_session",
