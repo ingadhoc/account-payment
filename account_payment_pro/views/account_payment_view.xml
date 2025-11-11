@@ -27,7 +27,8 @@
         </form>
 
         <button name="action_post" position="after">
-            <button name="action_post_and_new" string="Confirm and New" type="object" invisible="is_internal_transfer or state != 'draft' or payment_difference &lt;= 0.0"/>
+            <!-- <button name="action_post_and_new" string="Confirm and New" type="object" invisible="is_internal_transfer or state != 'draft' or payment_difference &lt;= 0.0"/> -->
+            <button name="action_post_and_new" string="Confirm and New" invisible="1"/>
         </button>
 
         <xpath expr="//field[@name='partner_id'][1]" position="attributes">
