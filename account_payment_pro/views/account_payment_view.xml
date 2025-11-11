@@ -21,6 +21,17 @@
     <field name="arch" type="xml">
 
 
+<<<<<<< 997ffaa65767da6f6a9e417b0af69f6fb47879a1
+||||||| 83ab0e7521f93881476589b5c42674538c80ee20
+        <button name="action_post" position="after">
+            <button name="action_post_and_new" string="Confirm and New" type="object" invisible="is_internal_transfer or state != 'draft' or payment_difference &lt;= 0.0"/>
+        </button>
+=======
+        <button name="action_post" position="after">
+            <!-- <button name="action_post_and_new" string="Confirm and New" type="object" invisible="is_internal_transfer or state != 'draft' or payment_difference &lt;= 0.0"/> -->
+            <button name="action_post_and_new" string="Confirm and New" invisible="1"/>
+        </button>
+>>>>>>> 399b4ba4dd4d141383b7000cbff1ca7889d530da
 
         <xpath expr="//field[@name='partner_id'][1]" position="attributes">
             <attribute name="readonly">state != 'draft' or context.get('default_company_id')</attribute>
