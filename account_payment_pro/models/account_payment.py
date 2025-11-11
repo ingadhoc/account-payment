@@ -199,15 +199,9 @@ class AccountPayment(models.Model):
     #             pay.payment_type == 'inbound' else [('outbound_payment_method_line_ids', '!=', False)]
     #         pay.available_journal_ids = journals.filtered_domain(filtered_domain)
 
+    # agreamos depends de company para que re calcule los diarios disponibles
     @api.depends("company_id")
     def _compute_available_journal_ids(self):
-        # Cambiamos el metodo para que traiga los journals de la compañia sobre la cual se esta imputando el pago.
-        # Le agregamos el onchange de company para asegurarnos de que los available journals se computen siempre
-        # que se produce un cambio de compañia
-
-        if self.company_id:
-            # TODO: OVERKILL??? Shouldn't we use with_company?
-            self.env = self.env(context=dict(self.env.context, allowed_company_ids=self.company_id.ids))
         super()._compute_available_journal_ids()
 
     @api.depends("currency_id", "destination_journal_currency_id")
