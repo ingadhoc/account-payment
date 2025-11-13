@@ -11,9 +11,12 @@ _logger = logging.getLogger(__name__)
 
 
 class AccountPaymentReceiptbook(models.Model):
+    """
+    account.payment.receiptbook: analogo a account.journal.document.type pero para pagos
+    """
+
     _name = "account.payment.receiptbook"
     _description = "Account payment Receiptbook"
-    # analogo a account.journal.document.type pero para pagos
     _order = "sequence asc"
     _check_company_auto = True
     _check_company_domain = models.check_company_domain_parent_of
@@ -25,7 +28,7 @@ class AccountPaymentReceiptbook(models.Model):
         "mail.template",
         "Email Template",
         domain=[("model", "=", "account.payment")],
-        help="If set an email will be sent to the customer when the related" " account.payment.group has been posted.",
+        help="If set an email will be sent to the customer when the related account.payment.group has been posted.",
     )
     sequence = fields.Integer(help="Used to order the receiptbooks", default=10)
     name = fields.Char(
@@ -41,12 +44,13 @@ class AccountPaymentReceiptbook(models.Model):
     sequence_id = fields.Many2one(
         "ir.sequence",
         "Entry Sequence",
-        help="This field contains the information related to the numbering "
-        "of the receipt entries of this receiptbook.",
+        help="This field contains the information related to the numbering of the receipt entries of this receiptbook.",
         copy=False,
     )
     company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company)
-    prefix = fields.Char()
+    prefix = fields.Char(
+        copy=False,
+    )
     active = fields.Boolean(
         default=True,
     )
