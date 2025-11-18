@@ -1,6 +1,6 @@
 {
     "name": "Account Payment Personal Loan",
-    "version": "18.0.1.2.0",
+    "version": "19.0.1.0.0",
     "category": "Accounting",
     "sequence": 14,
     "summary": "",
@@ -25,7 +25,7 @@
         "wizards/account_loan_debt_report.xml",
         "wizards/account_loan_extra_charges.xml",
     ],
-    "installable": False,
+    "installable": True,
     "auto_install": False,
     "application": False,
     "post_init_hook": "post_init_hook",
