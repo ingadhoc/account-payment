@@ -41,6 +41,10 @@ class AccountPayment(models.Model):
     )
     exchange_rate = fields.Float(
         compute="_compute_exchange_rate",
+        help="If you enter the Amount in secondary currency and do not complete the Amount in company currency, "
+        "the system will take the closest exchange rate to the date and perform the conversion automatically. "
+        "However, if you want to specify a custom exchange rate, you must complete both amounts "
+        "(secondary currency and company currency), and the system will calculate the Exchange Rate from those values.",
         # readonly=False,
         # inverse='_inverse_exchange_rate',
         # digits=(16, 4),
