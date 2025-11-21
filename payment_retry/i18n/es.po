@@ -3,15 +3,15 @@
 # 	* payment_retry
 # 
 # Translators:
-# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2025
+# ADHOC - Bot <transbot@adhoc.com.ar>, 2025
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0+e\n"
+"Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-11 18:22+0000\n"
-"PO-Revision-Date: 2025-07-07 14:39+0000\n"
-"Last-Translator: Juan José Scarafía <scarafia.juanjose@gmail.com>, 2025\n"
+"POT-Creation-Date: 2025-11-19 12:55+0000\n"
+"PO-Revision-Date: 2025-11-19 12:55+0000\n"
+"Last-Translator: ADHOC - Bot <transbot@adhoc.com.ar>, 2025\n"
 "Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -30,8 +30,24 @@ msgid "Amount To Pay"
 msgstr ""
 
 #. module: payment_retry
+#: model_terms:ir.ui.view,arch_db:payment_retry.payment_transaction_retry_view_form
+msgid "Are you sure you want to create these payments?"
+msgstr ""
+
+#. module: payment_retry
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__asynchronous_process
 msgid "Asynchronous Process"
+msgstr ""
+
+#. module: payment_retry
+#. odoo-python
+#: code:addons/payment_retry/wizards/payment_transaction_retry.py:0
+msgid "Check Partner(s) Email(s)"
+msgstr ""
+
+#. module: payment_retry
+#: model_terms:ir.ui.view,arch_db:payment_retry.payment_transaction_retry_view_form
+msgid "Check similar"
 msgstr ""
 
 #. module: payment_retry
@@ -47,6 +63,11 @@ msgstr ""
 #. module: payment_retry
 #: model_terms:ir.ui.view,arch_db:payment_retry.payment_transaction_retry_view_form
 msgid "Create payments"
+msgstr ""
+
+#. module: payment_retry
+#: model_terms:ir.ui.view,arch_db:payment_retry.payment_transaction_retry_view_form
+msgid "Create payments without check"
 msgstr ""
 
 #. module: payment_retry
@@ -72,10 +93,12 @@ msgid "Discard"
 msgstr ""
 
 #. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_account_move__display_name
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction__display_name
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__display_name
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__display_name
 msgid "Display Name"
-msgstr ""
+msgstr "Nombre para mostrar"
 
 #. module: payment_retry
 #: model:ir.model.fields.selection,name:payment_retry.selection__account_move__payment_state__electronic_pending
@@ -95,10 +118,12 @@ msgid "Error al enviar request tx id %i: %s"
 msgstr ""
 
 #. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_account_move__id
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction__id
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__id
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__id
 msgid "ID"
-msgstr ""
+msgstr "ID (identificación)"
 
 #. module: payment_retry
 #: model_terms:ir.ui.view,arch_db:payment_retry.payment_transaction_retry_view_form
@@ -141,8 +166,19 @@ msgid "Lines"
 msgstr ""
 
 #. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__message
+msgid "Message"
+msgstr ""
+
+#. module: payment_retry
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__partner_id
 msgid "Partner"
+msgstr ""
+
+#. module: payment_retry
+#. odoo-python
+#: code:addons/payment_retry/wizards/payment_transaction_retry.py:0
+msgid "Partner(s) should have an email address."
 msgstr ""
 
 #. module: payment_retry
@@ -195,8 +231,32 @@ msgid "Status In Payment"
 msgstr "Estado en pago"
 
 #. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__validate_emails
+msgid "Validate Emails"
+msgstr ""
+
+#. module: payment_retry
+#. odoo-python
+#: code:addons/payment_retry/wizards/payment_transaction_retry.py:0
+msgid "View Partner(s)"
+msgstr ""
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__warnings
+msgid "Warnings"
+msgstr ""
+
+#. module: payment_retry
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction__asynchronous_process
 msgid "asynchronous_process"
+msgstr ""
+
+#. module: payment_retry
+#. odoo-python
+#: code:addons/payment_retry/wizards/payment_transaction_retry.py:0
+msgid ""
+"odoo: A similar transaction of %.2f %s for %s via %s was created on %s and "
+"is currently in state %s.\n"
 msgstr ""
 
 #. module: payment_retry
