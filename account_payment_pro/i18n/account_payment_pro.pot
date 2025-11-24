@@ -1,0 +1,643 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_payment_pro
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-24 15:16+0000\n"
+"PO-Revision-Date: 2025-11-24 15:16+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "(difference"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid "+ Credit Note"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid "+ Debit Note"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__account_id
+msgid "Account"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__date
+msgid "Accounting Date"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__active
+msgid "Active"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid "Add All / Refresh"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__unreconciled_amount
+msgid "Adjustment / Advance"
+msgstr ""
+
+#. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/account_payment.py:0
+msgid "All to pay lines must be of the same partner"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:res.groups,name:account_payment_pro.group_pay_now_customer_invoices
+msgid "Allow pay now on customer invoices"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__group_pay_now_customer_invoices
+msgid "Allow pay now on customer invoices?"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:res.groups,name:account_payment_pro.group_pay_now_vendor_invoices
+msgid "Allow pay now on vendor invoices"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__group_pay_now_vendor_invoices
+msgid "Allow pay now on vendor invoices?"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
+msgid "Allow to pay customer invoices automatically on invoice validation."
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
+msgid "Allow to pay vendor invoices automatically on invoice validation."
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_res_config_settings__group_pay_now_vendor_invoices
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
+msgid ""
+"Allow users to choose a payment journal on invoices so that invoice is "
+"automatically paid after invoice validation. A payment will be created using"
+" choosen journal"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
+msgid "Amount"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__amount_company_currency_signed_pro
+msgid "Amount Company Currency Signed Pro"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__amount_company_currency
+msgid "Amount on Company Currency"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__analytic_distribution
+msgid "Analytic Distribution"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__analytic_precision
+msgid "Analytic Precision"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__available_journal_ids
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__available_journal_ids
+msgid "Available Journal"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_invoice_wizard
+msgid "Cancel"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__commercial_partner_id
+msgid "Commercial Entity"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model,name:account_payment_pro.model_res_company
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__company_ids
+msgid "Companies"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__company_id
+msgid "Company"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model,name:account_payment_pro.model_res_config_settings
+msgid "Config Settings"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_invoice_wizard
+msgid "Confirm"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_currency_id
+msgid "Counterpart Currency"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_currency_amount
+msgid "Counterpart Currency Amount"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_exchange_rate
+msgid "Counterpart Exchange Rate"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__create_uid
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__create_date
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.actions.act_window,name:account_payment_pro.action_account_payment_invoice_wizard
+msgid "Credit / Debit Note"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_invoice_wizard
+msgid "Credit Note"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__currency_id
+msgid "Currency"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid "Debts"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__destination_journal_currency_id
+msgid "Destination Journal Currency"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__payment_difference
+msgid "Difference between 'To Pay Amount' and 'Payment Total'"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_journal__display_name
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_move__display_name
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_move_line__display_name
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__display_name
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__display_name
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__display_name
+#: model:ir.model.fields,field_description:account_payment_pro.field_res_company__display_name
+#: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__distribution_analytic_account_ids
+msgid "Distribution Analytic Account"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__document_number
+msgid "Document Number"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__journal_document_type_id
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_invoice_wizard
+msgid "Document Type"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__exchange_rate
+msgid "Exchange Rate"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__force_amount_company_currency
+msgid "Forced Amount on Company Currency"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__has_outstanding
+msgid "Has Outstanding"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_journal__id
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_move__id
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_move_line__id
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__id
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__id
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__id
+#: model:ir.model.fields,field_description:account_payment_pro.field_res_company__id
+#: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__id
+msgid "ID"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment_invoice_wizard__use_documents
+msgid ""
+"If active: will be using for legal invoicing (invoices, debit/credit notes)."
+" If not set means that will be used to register accounting entries not "
+"related to invoicing legal documents. For Example: Receipts, Tax Payments, "
+"Register journal entries"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_bank_statement_line__pay_now_journal_id
+#: model:ir.model.fields,help:account_payment_pro.field_account_move__pay_now_journal_id
+msgid ""
+"If you set a journal here, after invoice validation, the invoice will be "
+"automatically paid with this journal. As manual paymentmethod is used, only "
+"journals with manual method are shown."
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model,name:account_payment_pro.model_account_journal
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__journal_id
+msgid "Journal"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__journal_currency_id
+msgid "Journal Currency"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model,name:account_payment_pro.model_account_move
+msgid "Journal Entry"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model,name:account_payment_pro.model_account_move_line
+msgid "Journal Item"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
+msgid "Journal Items"
+msgstr ""
+
+#. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/account_journal.py:0
+msgid "Journal must have manual method!"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__label
+msgid "Label"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_write_off_type__label
+msgid ""
+"Label to be used on journal items labels, if not configured name will be "
+"used"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__write_uid
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__write_date
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__matched_move_line_ids
+msgid ""
+"Lines that has been matched to payments, only available after payment "
+"validation"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__l10n_latam_manual_document_number
+msgid "Manual Number"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__matched_amount
+msgid "Matched Amount"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__matched_move_line_ids
+msgid "Matched Move Line"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__name
+msgid "Name"
+msgstr ""
+
+#. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/account_move_line.py:0
+msgid "Nothing to be paid on selected entries"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_bank_statement_line__open_move_line_ids
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_move__open_move_line_ids
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__open_move_line_ids
+msgid "Open Move Line"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__other_currency
+msgid "Other Currency"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid "Paid"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_with_matched_tree
+msgid "Paid Amount"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_bank_statement_line__pay_now_journal_id
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_move__pay_now_journal_id
+msgid "Pay now Journal"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__payment_id
+msgid "Payment"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_move_line__payment_matched_amount
+msgid "Payment Matched Amount"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
+msgid ""
+"Payment Pro incorpora funcionalidades que permiten llevar un flujo de cobros"
+"                         y pagos con retenciones, especificamente utilizado "
+"en Argentina. Al activarlo a                         ​su ​vez, se pierden "
+"algunas funcionalidades nativas como descuento por pronto pago"
+"                         y sugerencias de diferencia de cambio"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__payment_total
+msgid "Payment Total"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Payment Total (SC)"
+msgstr ""
+
+#. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/wizards/account_payment_invoice_wizard.py:0
+msgid "Payment id %s"
+msgstr ""
+
+#. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/account_payment.py:0
+msgid "Payment is for partner %s but payment lines are of partner %s"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid ""
+"Payment will be automatically matched with the oldest lines of this list (by"
+" maturity date). You can remove any line you dont want to be matched."
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model,name:account_payment_pro.model_account_payment
+msgid "Payments"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__payment_difference
+msgid "Payments Difference"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__product_id
+msgid "Product"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__product_account_id
+msgid "Product Account"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Rate ="
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__description
+msgid "Reason"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__invoice_date
+msgid "Refund Date"
+msgstr ""
+
+#. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/account_move_line.py:0
+msgid "Register Payment"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid "Remove All"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Secondary Currency"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__selected_debt
+msgid "Selected Debt"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__tax_ids
+msgid "Taxes"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__destination_journal_currency_id
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__journal_currency_id
+msgid "The currency used to enter statement"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment_invoice_wizard__currency_id
+msgid "The payment's currency."
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__to_pay_move_line_ids
+msgid "This lines are the ones the user has selected to be paid."
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__to_pay_amount
+msgid "To Pay Amount"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__to_pay_move_line_ids
+msgid "To Pay Lines"
+msgstr ""
+
+#. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/account_payment.py:0
+msgid "To Pay Lines must be of the same account!"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_tree
+msgid "Total"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__amount_total
+msgid "Total Amount"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__unmatched_amount
+msgid "Unmatched Amount"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__amount_untaxed
+msgid "Untaxed Amount"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__use_documents
+msgid "Use Documents?"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__use_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_res_company__use_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__use_payment_pro
+msgid "Use Payment Pro"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
+msgid "Use payment pro module"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Write Off"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__write_off_amount
+msgid "Write Off Amount"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__write_off_available
+msgid "Write Off Available"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__write_off_type_id
+msgid "Write Off Type"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.actions.act_window,name:account_payment_pro.action_account_write_off_type
+#: model:ir.ui.menu,name:account_payment_pro.menu_write_off_type
+msgid "Write Off Types"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Write-off type"
+msgstr ""
+
+#. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/wizards/account_payment_invoice_wizard.py:0
+msgid "You can only set amount total if taxes are of type percentage"
+msgstr ""
+
+#. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/account_payment.py:0
+msgid ""
+"You can't create payments for entries belonging to different companies."
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model,name:account_payment_pro.model_account_payment_invoice_wizard
+msgid "account.payment.invoice.wizard"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model,name:account_payment_pro.model_account_write_off_type
+msgid "account.write_off.type"
+msgstr ""
