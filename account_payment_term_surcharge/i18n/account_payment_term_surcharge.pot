@@ -1,0 +1,302 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_payment_term_surcharge
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-25 17:16+0000\n"
+"PO-Revision-Date: 2025-11-25 17:16+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: account_payment_term_surcharge
+#: model_terms:ir.ui.view,arch_db:account_payment_term_surcharge.res_config_settings_view_form
+msgid ""
+"<span class=\"fa fa-lg fa-building-o\" title=\"Values set here are company-"
+"specific.\" aria-label=\"Values set here are company-specific.\" "
+"groups=\"base.group_multi_company\" role=\"img\"/>"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model_terms:ir.ui.view,arch_db:account_payment_term_surcharge.res_config_settings_view_form
+msgid ""
+"<span class=\"o_form_label\">Default payment term surcharge product</span>\n"
+"                        <span class=\"fa fa-lg fa-building-o\" title=\"Values set here are company-specific.\" aria-label=\"Values set here are company-specific.\" groups=\"base.group_multi_company\" role=\"img\"/>"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model_terms:ir.ui.view,arch_db:account_payment_term_surcharge.view_payment_term_line_surcharge_form
+msgid "<span class=\"o_form_label\">of the month</span>"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_bank_statement_line__avoid_surcharge_invoice
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_move__avoid_surcharge_invoice
+msgid "Avoid Surcharge Invoice"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model,name:account_payment_term_surcharge.model_res_company
+msgid "Companies"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model,name:account_payment_term_surcharge.model_res_config_settings
+msgid "Config Settings"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.actions.server,name:account_payment_term_surcharge.cron_recurring_surcharges_invoices_ir_actions_server
+msgid "Create Surcharges Invoices"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_payment_term_surcharge__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_payment_term_surcharge__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_payment_term_surcharge__day_of_the_month
+#: model_terms:ir.ui.view,arch_db:account_payment_term_surcharge.view_payment_term_surcharge_tree
+msgid "Day of the month"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,help:account_payment_term_surcharge.field_account_payment_term_surcharge__day_of_the_month
+msgid ""
+"Day of the month on which the invoice must come to its term. If zero or "
+"negative, this value will be ignored, and no specific day will be set. If "
+"greater than the last day of a month, this number will instead select the "
+"last day of this month."
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#. odoo-python
+#: code:addons/account_payment_term_surcharge/models/account_move.py:0
+msgid ""
+"Deuda Vencida al %s: %s\n"
+"Tasa de interés: %s"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_move__display_name
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_payment_term__display_name
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_payment_term_surcharge__display_name
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_res_company__display_name
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_res_config_settings__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model_terms:ir.ui.view,arch_db:account_payment_term_surcharge.view_payment_term_line_surcharge_form
+msgid "Due"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model_terms:ir.ui.view,arch_db:account_payment_term_surcharge.view_payment_term_line_surcharge_form
+msgid "Due Date Computation"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model_terms:ir.ui.view,arch_db:account_payment_term_surcharge.view_payment_term_line_surcharge_form
+msgid "Due the"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,help:account_payment_term_surcharge.field_account_payment_term_surcharge__sequence
+msgid ""
+"Gives the sequence order when displaying a list of payment terms lines."
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_move__id
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_payment_term__id
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_payment_term_surcharge__id
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_res_company__id
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_res_config_settings__id
+msgid "ID"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model,name:account_payment_term_surcharge.model_account_move
+msgid "Journal Entry"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_payment_term_surcharge__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_payment_term_surcharge__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_bank_statement_line__next_surcharge_date
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_move__next_surcharge_date
+msgid "Next Surcharge Date"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_bank_statement_line__next_surcharge_percent
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_move__next_surcharge_percent
+msgid "Next Surcharge Percent"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_payment_term_surcharge__days
+msgid "Number of Days"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model_terms:ir.ui.view,arch_db:account_payment_term_surcharge.view_payment_term_line_surcharge_form
+msgid "On the"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_payment_term_surcharge__option
+msgid "Options"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_res_company__payment_term_surcharge_invoice_auto_post
+msgid "Payment Term Surcharge Invoice Auto Post"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model_terms:ir.ui.view,arch_db:account_payment_term_surcharge.view_payment_term_surcharge_tree
+msgid "Payment Term Surcharges"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model,name:account_payment_term_surcharge.model_account_payment_term
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_payment_term_surcharge__payment_term_id
+msgid "Payment Terms"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model,name:account_payment_term_surcharge.model_account_payment_term_surcharge
+msgid "Payment Terms Surcharge"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model_terms:ir.ui.view,arch_db:account_payment_term_surcharge.view_payment_term_line_surcharge_form
+msgid "Payment Terms Surcharges"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#. odoo-python
+#: code:addons/account_payment_term_surcharge/models/account_payment_term_surcharge.py:0
+msgid "Percentages on the Payment Terms lines must be between 0 and 100."
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_res_config_settings__payment_term_surcharge_product_id
+msgid "Producto por defecto para los recargos"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model_terms:ir.ui.view,arch_db:account_payment_term_surcharge.res_config_settings_view_form
+msgid "Producto por defecto para realizar recargos"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_payment_term_surcharge__sequence
+msgid "Sequence"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_payment_term__show_surcharge_warning
+msgid "Show Surcharge Warning"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#. odoo-python
+#: code:addons/account_payment_term_surcharge/models/account_move.py:0
+msgid ""
+"Something went wrong creating the surcharge invoice from this invoice. "
+"Please take a look on it."
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_res_company__payment_term_surcharge_product_id
+msgid "Surcharge Product"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_payment_term_surcharge__surcharge
+msgid "Surcharge [%]"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_account_payment_term__surcharge_ids
+#: model_terms:ir.ui.view,arch_db:account_payment_term_surcharge.view_payment_term_form
+msgid "Surcharges"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#. odoo-python
+#: code:addons/account_payment_term_surcharge/models/account_payment_term_surcharge.py:0
+msgid "The day of the month used for this term must be strictly positive."
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#. odoo-python
+#: code:addons/account_payment_term_surcharge/models/account_payment_term_surcharge.py:0
+msgid "The number of days used for a payment term cannot be negative."
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model_terms:ir.ui.view,arch_db:account_payment_term_surcharge.view_payment_term_form
+msgid ""
+"The selected company for this payment term does not have a surcharge product configured.\n"
+"                        Please configure the product in Settings / Accounting for the selected company or companies."
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields,field_description:account_payment_term_surcharge.field_res_config_settings__payment_term_surcharge_invoice_auto_post
+msgid "Validad automaticamente las facturas"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model_terms:ir.ui.view,arch_db:account_payment_term_surcharge.res_config_settings_view_form
+msgid "Validar automaticamente facturas de recargo"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#. odoo-python
+#: code:addons/account_payment_term_surcharge/models/account_move.py:0
+msgid "We couldn't run surcharges cron job in the following invoice: %s."
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields.selection,name:account_payment_term_surcharge.selection__account_payment_term_surcharge__option__after_invoice_month
+msgid "days after the end of the invoice month"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields.selection,name:account_payment_term_surcharge.selection__account_payment_term_surcharge__option__day_after_invoice_date
+msgid "days after the invoice date"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields.selection,name:account_payment_term_surcharge.selection__account_payment_term_surcharge__option__day_current_month
+msgid "of the current month"
+msgstr ""
+
+#. module: account_payment_term_surcharge
+#: model:ir.model.fields.selection,name:account_payment_term_surcharge.selection__account_payment_term_surcharge__option__day_following_month
+msgid "of the following month"
+msgstr ""
