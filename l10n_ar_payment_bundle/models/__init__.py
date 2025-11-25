@@ -1,5 +1,8 @@
-from . import res_company
-from . import account_chart_template
-from . import account_payment
-from . import account_payment_method
-from . import account_journal
+from . import (
+    account_chart_template,
+    account_journal,
+    account_move,
+    account_payment,
+    account_payment_method,
+    res_company,
+)
