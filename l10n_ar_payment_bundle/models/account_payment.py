@@ -69,11 +69,21 @@ class AccountPayment(models.Model):
     @api.depends("use_payment_pro", "main_payment_id")
     def _compute_available_journal_ids(self):
         super()._compute_available_journal_ids()
-        for rec in self.filtered(lambda x: x.main_payment_id or not x.use_payment_pro and x.company_id):
+        for rec in self:
+            if not rec.company_id:
+                continue
+
             bundle_journal_id = rec.company_id._get_bundle_journal(rec.payment_type)
-            rec.available_journal_ids = rec.available_journal_ids.filtered(
-                lambda x: x._origin.id != bundle_journal_id and not x._origin.currency_id
-            )
+            journals = rec.available_journal_ids
+
+            # If it's a linked payment remove bundle journal and journals with currency
+            if rec.main_payment_id:
+                journals = journals.filtered(lambda j: j._origin.id != bundle_journal_id and not j.currency_id)
+            # If company doesn't use Payment Pro just remove bundle journal
+            elif not rec.use_payment_pro:
+                journals = journals.filtered(lambda j: j._origin.id != bundle_journal_id)
+
+            rec.available_journal_ids = journals
 
     @api.depends("main_payment_id.to_pay_move_line_ids")
     def _compute_to_pay_move_lines(self):
@@ -168,7 +178,9 @@ class AccountPayment(models.Model):
 
     def _generate_journal_entry(self, write_off_line_vals=None, force_balance=None, line_ids=None):
         super(AccountPayment, self - self._bypass_journal_entry())._generate_journal_entry(
-            write_off_line_vals=write_off_line_vals, force_balance=force_balance, line_ids=line_ids
+            write_off_line_vals=write_off_line_vals,
+            force_balance=force_balance,
+            line_ids=line_ids,
         )
 
     def _prepare_move_line_default_vals(self, write_off_line_vals=None, force_balance=None):
