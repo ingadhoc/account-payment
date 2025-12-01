@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from odoo import fields, models
+from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
 
@@ -93,3 +93,9 @@ class AccountPayment(models.Model):
                     )
 
         super().action_draft()
+
+    @api.ondelete(at_uninstall=False)
+    def _checks_state(self):
+        for rec in self:
+            if rec.l10n_latam_new_check_ids:
+                rec.l10n_latam_new_check_ids._check_unlink_restriction()
