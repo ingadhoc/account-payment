@@ -6,14 +6,19 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-25 17:16+0000\n"
-"PO-Revision-Date: 2025-11-25 17:16+0000\n"
+"POT-Creation-Date: 2025-12-03 19:38+0000\n"
+"PO-Revision-Date: 2025-12-03 19:38+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
+
+#. module: l10n_latam_check_ux
+#: model:ir.actions.report,print_report_name:l10n_latam_check_ux.checks_to_date_report
+msgid "'Cheques a fecha - %s' % (object.to_date)"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.report_account_transfer_document
@@ -43,6 +48,14 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.report_account_transfer_document
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.report_payment_receipt_document
 msgid "<span>Payment date</span>"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid ""
+"<strong>\n"
+"                                <span>Total</span>\n"
+"                                </strong>"
 msgstr ""
 
 #. module: l10n_latam_check_ux
@@ -87,6 +100,11 @@ msgid "Cancel"
 msgstr ""
 
 #. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_to_date_report_view
+msgid "Cancelar"
+msgstr ""
+
+#. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__check_ids
 msgid "Check"
 msgstr ""
@@ -109,6 +127,28 @@ msgid "Checks Mass Transfers"
 msgstr ""
 
 #. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_to_date_report_view
+msgid "Cheques a Fecha"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.actions.act_window,name:l10n_latam_check_ux.action_account_check_to_date_report
+#: model:ir.actions.report,name:l10n_latam_check_ux.checks_to_date_report
+#: model:ir.ui.menu,name:l10n_latam_check_ux.menu_account_check_to_date_report
+msgid "Cheques a fecha"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Cheques de terceros"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Cheques propios"
+msgstr ""
+
+#. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__company_id
 msgid "Company"
 msgstr ""
@@ -119,13 +159,25 @@ msgid "Confirm"
 msgstr ""
 
 #. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_to_date_report_view
+msgid "Confirmar"
+msgstr ""
+
+#. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_action_wizard__create_uid
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__create_uid
 msgid "Created by"
 msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_action_wizard__create_date
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__create_date
 msgid "Created on"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Cuit"
 msgstr ""
 
 #. module: l10n_latam_check_ux
@@ -146,7 +198,18 @@ msgid "Destination Journal"
 msgstr ""
 
 #. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__journal_id
+msgid "Diario"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Diario:"
+msgstr ""
+
+#. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_action_wizard__display_name
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__display_name
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_journal__display_name
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_payment__display_name
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__display_name
@@ -155,7 +218,28 @@ msgid "Display Name"
 msgstr ""
 
 #. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Empresa"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Fecha contable"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Fecha de pago"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__to_date
+msgid "Hasta Fecha"
+msgstr ""
+
+#. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_action_wizard__id
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__id
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_journal__id
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_payment__id
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__id
@@ -168,6 +252,11 @@ msgstr ""
 msgid ""
 "If this option is selected, each check will be registered as an individual "
 "payment instead of being grouped into a single payment."
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Importe"
 msgstr ""
 
 #. module: l10n_latam_check_ux
@@ -198,17 +287,24 @@ msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_action_wizard__write_uid
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__write_uid
 msgid "Last Updated by"
 msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_action_wizard__write_date
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__write_date
 msgid "Last Updated on"
 msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.view_account_journal_form_inherited
 msgid "Latam Checks"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Listado de cheques pendientes al"
 msgstr ""
 
 #. module: l10n_latam_check_ux
@@ -227,6 +323,11 @@ msgstr ""
 msgid ""
 "No es posible crear un nuevo débito de cheque sin un método de pagos "
 "'manual' en el diario %s."
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Número"
 msgstr ""
 
 #. module: l10n_latam_check_ux
@@ -286,6 +387,12 @@ msgid "Total"
 msgstr ""
 
 #. module: l10n_latam_check_ux
+#: model:ir.model,name:l10n_latam_check_ux.model_account_check_to_date_report_wizard
+msgid "account.check.to_date.report.wizard"
+msgstr ""
+
+#. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_action_wizard_form_view
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_to_date_report_view
 msgid "or"
 msgstr ""
