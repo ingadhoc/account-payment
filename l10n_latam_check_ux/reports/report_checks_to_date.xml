@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<template id="checks_to_date">
+    <t t-call="web.html_container">
+    <t t-set="company" t-value="env.company"/>
+        <t t-call="web.internal_layout">
+            <h3 class="text-center">Listado de cheques pendientes al <span t-field="docs.to_date"/></h3>
+            <t t-if="docs.journal_id">
+                Diario: <span t-esc="docs.env['account.journal'].browse(docs.journal_id.id).name"/>
+            </t>
+            <div class="page">
+                <t t-if="docs._get_checks_handed(docs.journal_id.id, docs.to_date)">
+                    <br/>
+                    <h5>Cheques propios</h5>
+                    <table class="table table-sm o_main_table table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="text-left">Número</th>
+                                <th class="text-left">Fecha contable</th>
+                                <th class="text-left">Fecha de pago</th>
+                                <th class="text-left">Empresa</th>
+                                <th class="text-left">Importe</th>
+                            </tr>
+                        </thead>
+                        <tbody class="sale_tbody" style="font-size: 15px">
+                            <t t-set="total_issue" t-value="0"/>
+                            <tr t-foreach="docs._get_checks_handed(docs.journal_id.id, docs.to_date)" t-as="tcheck">
+                                <t t-set="total_issue" t-value="tcheck.amount + total_issue"/>
+                                <td>
+                                    <span t-out="tcheck.name"/>
+                                </td>
+                                <td>
+                                    <span t-field="tcheck.payment_id.date"/>
+                                </td>
+                                <td>
+                                    <span t-field="tcheck.payment_date"/>
+                                </td>
+                                <td>
+                                    <span t-out="tcheck.partner_id.name" />
+                                </td>
+                                <td>
+                                    <span t-out="tcheck.amount"  t-options='{"widget": "monetary", "display_currency": tcheck.currency_id}'/>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <div>
+                            <td colspan="1">
+                                <strong>
+                                <span>Total</span>
+                                </strong>
+                            </td>
+                            <td class="text-end" colspan="6">
+                                <span t-esc="total_issue" style="font-size: 15px" t-options='{"widget": "monetary", "display_currency": tcheck.currency_id}'/>
+                            </td>
+                        </div>
+                    </table>
+                    <br/>
+                </t>
+                <t t-if="docs._get_checks_on_hand(docs.journal_id.id, docs.to_date)">
+                    <h5>Cheques de terceros</h5>
+                    <table class="table table-sm o_main_table table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="text-left">Número</th>
+                                <th class="text-left">Fecha contable</th>
+                                <th class="text-left">Fecha de pago</th>
+                                <th class="text-left">Cuit</th>
+                                <th class="text-left">Importe</th>
+                            </tr>
+                        </thead>
+                        <tbody class="sale_tbody" style="font-size: 14px">
+                            <t t-set="total" t-value="0"/>
+                            <tr t-foreach="docs._get_checks_on_hand(docs.journal_id.id, docs.to_date)" t-as="tcheck">
+                                <t t-set="total" t-value="tcheck.amount + total"/>
+                                <td>
+                                    <span t-out="tcheck.name"/>
+                                </td>
+                                <td>
+                                    <span t-field="tcheck.payment_id.date"/>
+                                </td>
+                                <td>
+                                    <span t-field="tcheck.payment_date"/>
+                                </td>
+                                <td>
+                                    <span t-out="tcheck.issuer_vat" />
+                                </td>
+                                <td>
+                                    <span t-out="tcheck.amount"  t-options='{"widget": "monetary", "display_currency": tcheck.currency_id}'/>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <div>
+                            <td>
+                                <strong>
+                                <span>Total</span>
+                                </strong>
+                            </td>
+                            <td class="text-end" colspan="6">
+                                <span t-esc="total" style="font-size: 15px" t-options='{"widget": "monetary", "display_currency": tcheck.currency_id}'/>
+                            </td>
+                        </div>
+                    </table>
+                </t>
+            </div>
+        </t>
+    </t>
+</template>
+
+<record id="checks_to_date_report" model="ir.actions.report">
+    <field name="name">Cheques a fecha</field>
+    <field name="model">account.check.to_date.report.wizard</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">l10n_latam_check_ux.checks_to_date</field>
+    <field name="report_file">l10n_latam_check_ux.checks_to_date</field>
+    <field name="print_report_name">'Cheques a fecha - %s' % (object.to_date)</field>
+</record>
+
+</odoo>
