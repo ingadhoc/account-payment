@@ -69,40 +69,10 @@ class AccountMove(models.Model):
 
     @api.depends()
     def _compute_made_sequence_gap(self):
-        with_receiptbook = self.filtered(lambda move: move.receiptbook_id)
-        unposted_recceiptbook = with_receiptbook.filtered(
-            lambda move: move.sequence_number != 0 and move.state != "posted"
-        )
-        unposted_recceiptbook.made_sequence_gap = True
-
-        for (receiptbook, prefix), moves in (
-            (with_receiptbook - unposted_recceiptbook).grouped(lambda m: (m.receiptbook_id, m.sequence_prefix)).items()
-        ):
-            previous_numbers = set(
-                self.env["account.move"]
-                .sudo()
-                .search(
-                    [
-                        ("receiptbook_id", "=", receiptbook.id),
-                        ("sequence_prefix", "=", prefix),
-                        (
-                            "sequence_number",
-                            ">=",
-                            min(moves.mapped("sequence_number")) - 1,
-                        ),
-                        (
-                            "sequence_number",
-                            "<=",
-                            max(moves.mapped("sequence_number")) - 1,
-                        ),
-                    ]
-                )
-                .mapped("sequence_number")
-            )
-            for move in moves:
-                move.made_sequence_gap = move.sequence_number > 1 and (move.sequence_number - 1) not in previous_numbers
-
-        super(AccountMove, self - with_receiptbook)._compute_made_sequence_gap()
+        use_receiptbook_moves = self.filtered(lambda m: m.receiptbook_id)
+        use_receiptbook_moves.made_sequence_gap = False
+        if other_moves := self - use_receiptbook_moves:
+            super(AccountMove, other_moves)._compute_made_sequence_gap()
 
     def _must_check_constrains_date_sequence(self):
         # OVERRIDES sequence.mixin to skip date sequence check for receiptbook moves
@@ -110,3 +80,7 @@ class AccountMove(models.Model):
         if self.receiptbook_id:
             return False
         return super()._must_check_constrains_date_sequence()
+
+    def _set_next_made_sequence_gap(self, made_gap: bool):
+        if other_moves := self.filtered(lambda m: not m.receiptbook_id):
+            super(AccountMove, other_moves)._set_next_made_sequence_gap(made_gap)
