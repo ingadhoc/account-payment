@@ -1,0 +1,817 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_payment_loan
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-09 21:59+0000\n"
+"PO-Revision-Date: 2025-12-09 21:59+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_res_company__loan_terms
+msgid " Loan Default Terms and Conditions"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.actions.report,print_report_name:account_payment_loan.account_promissory_note
+msgid "'promissory_note_%s' % (object.name)"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid ", garantiza la compra del/los siguiente/s artículo/s)."
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid ", o a su orden la suma de"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid ""
+", o al portador legítimo en\n"
+"                                    caso de endoso, para llevar adelante la ejecución del pagaré"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid "<strong>Aclaración:</strong>"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid "<strong>Ciudad:</strong>"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid "<strong>DNI:</strong>"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid "<strong>Domicilio:</strong>"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid "<strong>Firma</strong>"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid "<strong>Provincia:</strong>"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid "<strong>Teléfono:</strong>"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid "A la vista, pagaré a"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/wizards/account_loan_register.py:0
+msgid ""
+"A new loan %(loan_move)s was created\n"
+"        %(loan_description)s\n"
+"        %(note)s\n"
+"        "
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid "ANEXO PAGARÉ N°:"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model,name:account_payment_loan.model_account_chart_template
+msgid "Account Chart Template"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/models/account_chart_template.py:0
+msgid "Account Extra Charges Loan"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/models/account_chart_template.py:0
+msgid "Account Interest Loan"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_res_company__account_late_payment_interest
+#: model:ir.model.fields,field_description:account_payment_loan.field_res_config_settings__account_late_payment_interest
+msgid "Account Late Payment Interest"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_res_company__account_loan_extra_charges
+#: model:ir.model.fields,field_description:account_payment_loan.field_res_config_settings__account_loan_extra_charges
+msgid "Account Loan Extra Charges"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model,name:account_payment_loan.model_account_loan_register
+msgid "Account Loan Register"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model,name:account_payment_loan.model_account_loan_debt_report
+msgid "Account Loan debt report"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model,name:account_payment_loan.model_account_loan_extra_charges
+msgid "Account Loan extra charges"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/models/account_chart_template.py:0
+msgid "Account Receivable Loan"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.res_config_settings_view_form
+msgid "Account for Late Payment Interest"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.res_config_settings_view_form
+msgid "Account for Loan Extra Charges"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,help:account_payment_loan.field_res_config_settings__account_loan_extra_charges
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.res_config_settings_view_form
+msgid "Account used to record additional charges related to loan operations."
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,help:account_payment_loan.field_res_company__account_loan_extra_charges
+msgid "Account used to record extra charges related to loans."
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,help:account_payment_loan.field_res_config_settings__account_late_payment_interest
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.res_config_settings_view_form
+msgid "Account used to record income from late payment interests."
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,help:account_payment_loan.field_res_company__account_late_payment_interest
+msgid "Account used to record late payment interest charges."
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.view_account_loan_extra_charges_form
+msgid "Add"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.res_config_settings_view_form
+msgid "Add your Loan terms & conditions."
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_debt_report__amount
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__amount
+msgid "Amount"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_debt_report__amount_to_pay
+msgid "Amount To Pay"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.view_account_loan_debt_report_form
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.view_account_loan_extra_charges_form
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.view_account_loan_register_form
+msgid "Cancel"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__card_id
+msgid "Card"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model,name:account_payment_loan.model_res_company
+msgid "Companies"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_debt_report__company_id
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__company_id
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__company_id
+msgid "Company"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model,name:account_payment_loan.model_res_config_settings
+msgid "Config Settings"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid ""
+"Conforme a la Ley 25.326 e informado del contenido del Art. 6 de la misma y los alcances y efectos de la declaración,\n"
+"                                    presto consentimiento para que los datos que he proporcionado voluntariamente a esta Empresa así como los que refieren\n"
+"                                    al grado de cumplimiento de mis obligaciones frente a ésta sean registrados por la misma y cedidos e informados a\n"
+"                                    terceros que almacenan y suministran información comercial relativa a solvencia económica que interesan a sus\n"
+"                                    asociados para la evaluación y otorgamiento de créditos."
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model,name:account_payment_loan.model_res_partner
+msgid "Contact"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_debt_report__create_uid
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__create_uid
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_debt_report__create_date
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__create_date
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model,name:account_payment_loan.model_account_card
+msgid "Credit Card"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.loan_description
+msgid "Cuotas"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_debt_report__currency_id
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__currency_id
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__currency_id
+msgid "Currency"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.view_account_loan_debt_report_form
+msgid "Customer"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.view_account_loan_debt_report_form
+msgid "Debt"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.res_config_settings_view_form
+msgid "Default Loan Journal:"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_res_config_settings__use_loan_terms
+msgid "Default Loan Terms & Conditions"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_card__display_name
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_card_installment__display_name
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_chart_template__display_name
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_debt_report__display_name
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__display_name
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__display_name
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_move__display_name
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_move_line__display_name
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_payment__display_name
+#: model:ir.model.fields,field_description:account_payment_loan.field_res_company__display_name
+#: model:ir.model.fields,field_description:account_payment_loan.field_res_config_settings__display_name
+#: model:ir.model.fields,field_description:account_payment_loan.field_res_partner__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_card__due_day
+msgid "Due Day"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid ""
+"El monto del pagaré no incluye otros conceptos posiblemente facturados tales"
+" como gastos de sellados y otros gastos de otorgamiento del crédito."
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid ""
+"El sistema de amortización del capital y pago de intereses es de <strong>Tasa Directa</strong> donde los intereses se calculan sobre el total\n"
+"                                    y se suman al mismo; a este monto se lo divide por la cantidad de cuotas a pagar resultando una cuota de valor constante."
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.loan_description
+msgid "El/los cual/es se financiará en"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid ""
+"En caso de ejecución, se pacta expresamente la competencia de los Tribunales"
+" Ordinarios del Departamento Judicial de la ciudad de "
+"<strong>Junín</strong>."
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid ""
+"En cumplimiento de lo establecido en el artículo 36 de la Ley de Defensa del Consumidor (24.240), se deja expresa\n"
+"                                    constancia que el Pagaré N°"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/wizards/account_loan_extra_charges.py:0
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__extra_charges
+msgid "Extra Charges"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/wizards/account_loan_extra_charges.py:0
+msgid "Extra Charges for Loan %s"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.loan_description
+msgid "Fee N."
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.view_account_loan_debt_report_form
+msgid "Filter loans"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_debt_report__financial_surchage
+msgid "Financial Surchage"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/wizards/account_loan_register.py:0
+msgid "Financial Surcharge"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid "Firma Co-Deudor"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid "Firma Deudor"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_card__id
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_card_installment__id
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_chart_template__id
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_debt_report__id
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__id
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__id
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_move__id
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_move_line__id
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_payment__id
+#: model:ir.model.fields,field_description:account_payment_loan.field_res_company__id
+#: model:ir.model.fields,field_description:account_payment_loan.field_res_config_settings__id
+#: model:ir.model.fields,field_description:account_payment_loan.field_res_partner__id
+msgid "ID"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,help:account_payment_loan.field_account_loan_register__is_invoiceable
+msgid "If checked, se creara una ND sino un asiento contable"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.res_config_settings_view_form
+msgid "Insert your terms & conditions here..."
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__installment_id
+msgid "Installment plan"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/models/account_move.py:0
+#: code:addons/account_payment_loan/models/account_payment.py:0
+msgid "Interest for %s"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__note
+msgid "Internal Note"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__is_invoiceable
+msgid "Is Invoiceable"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_bank_statement_line__is_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_card__is_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_card_installment__is_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_move__is_loan
+msgid "Is Loan"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_payment__is_loan_payment
+msgid "Is Loan Payment"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model,name:account_payment_loan.model_account_move
+msgid "Journal Entry"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model,name:account_payment_loan.model_account_move_line
+msgid "Journal Item"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,help:account_payment_loan.field_res_config_settings__loan_journal_id
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.res_config_settings_view_form
+msgid "Journal to be used for registering loan transactions."
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid ""
+"La falta de pago de cualquiera de las cuotas aquí mencionadas habilita a"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.loan_description
+msgid "La tasa de interés efectiva es del"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__label
+msgid "Label"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_bank_statement_line__last_interest_date_calculation
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_move__last_interest_date_calculation
+msgid "Last Interest Date Calculation"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_debt_report__write_uid
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__write_uid
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_debt_report__write_date
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__write_date
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_res_company__late_payment_interest
+#: model:ir.model.fields,field_description:account_payment_loan.field_res_config_settings__late_payment_interest
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.res_config_settings_view_form
+msgid "Late Payment Interest"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/models/account_move.py:0
+#: code:addons/account_payment_loan/models/account_payment.py:0
+msgid "Late payment interest"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/wizards/account_loan_register.py:0
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_debt_report__loan_move_id
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__loan_move_id
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.view_account_loan_register_form
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.view_move_form
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.view_move_line_payment_tree
+msgid "Loan"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_bank_statement_line__loan_description
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__loan_description
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_move__loan_description
+msgid "Loan Description"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_card__loan_due_method
+msgid "Loan Due Method"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/models/res_partner.py:0
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.view_move_line_payment_tree
+msgid "Loan Extra Charges"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_res_company__loan_journal_id
+#: model:ir.model.fields,field_description:account_payment_loan.field_res_config_settings__loan_journal_id
+msgid "Loan Journal"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_debt_report__move_line_ids
+msgid "Loan Lines"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_bank_statement_line__loan_move_ids
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_move__loan_move_ids
+msgid "Loan Move"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.view_account_loan_debt_report_form
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.view_account_loan_extra_charges_form
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.view_account_loan_register_form
+msgid "Loan Registration"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.res_config_settings_view_form
+msgid "Loan Settings"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_payment__loan_surcharge
+msgid "Loan Surcharge"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_res_config_settings__loan_terms
+msgid "Loan Terms & Conditions"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:res.groups,name:account_payment_loan.loan_admin
+msgid "Loan administration"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/models/res_partner.py:0
+msgid "Loan debit report"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/wizards/account_loan_register.py:0
+msgid "Loan of %s"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_debt_report__available_loan_move_ids
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__available_loan_move_ids
+msgid "Loans"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid "Lugar de pago:"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.res_config_settings_view_form
+msgid ""
+"Monthly interest rate for late payments (e.g. 0.10 = 10%). This is prorated "
+"to a daily rate."
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,help:account_payment_loan.field_res_company__late_payment_interest
+#: model:ir.model.fields,help:account_payment_loan.field_res_config_settings__late_payment_interest
+msgid ""
+"Monthly interest rate for late payments, expressed as a percentage (e.g., "
+"0.10 for 10%). This would be prorated to a daily interest rate of 1/30 of "
+"the monthly rate."
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__move_line_ids
+msgid "Move Lines"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/wizards/account_loan_register.py:0
+msgid "No valid lines or amount found."
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid "Número:"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.actions.report,name:account_payment_loan.account_promissory_note
+msgid "PDF Promissory Note"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_debt_report__partner_id
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__partner_id
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__partner_id
+msgid "Partner"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.view_account_loan_debt_report_form
+msgid "Pay selected lines"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model,name:account_payment_loan.model_account_payment
+msgid "Payments"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/models/account_chart_template.py:0
+msgid "Personal Loans"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid "Por:"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/wizards/account_loan_debt_report.py:0
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__refinancial_loan_move_ids
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.view_account_loan_register_form
+msgid "Refinancial Loan"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/wizards/account_loan_register.py:0
+msgid "Refinancing"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/wizards/account_loan_register.py:0
+msgid "Refinancing of %s"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/models/account_move_line.py:0
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.view_account_loan_register_form
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.view_move_form
+msgid "Register Loan"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.loan_description
+msgid "Relacionado  al comprobante N°:"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/wizards/account_loan_register.py:0
+msgid "Rounding"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid "Se prorroga el plazo de prescripción a <strong>5 años</strong>."
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__loan_terms
+msgid "Terms & Conditions"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields,help:account_payment_loan.field_account_bank_statement_line__last_interest_date_calculation
+#: model:ir.model.fields,help:account_payment_loan.field_account_move__last_interest_date_calculation
+msgid ""
+"The date when the last interest calculation was performed for this move."
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/wizards/account_loan_register.py:0
+msgid ""
+"This %(loan_move)s is refinancial\n"
+"        %(loan_description)s\n"
+"        %(note)s\n"
+"        "
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.view_account_loan_register_form
+msgid "Write a note..."
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model,name:account_payment_loan.model_account_card_installment
+msgid "amount to add for collection in installments"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/wizards/account_loan_register.py:0
+msgid "credit"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid "de la ciudad de"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/wizards/account_loan_register.py:0
+msgid "divisor"
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields.selection,name:account_payment_loan.selection__account_card__loan_due_method__create_day
+msgid "every month on the same day it was created "
+msgstr ""
+
+#. module: account_payment_loan
+#: model:ir.model.fields.selection,name:account_payment_loan.selection__account_card__loan_due_method__next_day_number
+msgid "every month on the same day number "
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/wizards/account_loan_register.py:0
+msgid "fee N. %s due date %s"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.loan_description
+msgid "iguales, mensuales y consecutivas de"
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid ""
+"por igual valor recibido en efectos a entera satisfacción, pactándose la cláusula \"sin protesto\". Interés moratorio por falta de pago: <strong>8% mensual</strong>.\n"
+"                                    El plazo para la presentación al pago se amplía a tres años (art. 36 dec-ley 5965/63)."
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.report_promissory_note
+msgid ""
+"proceso en el cual se reconocerá como pago\n"
+"                                    parcial el monto de las cuotas ya abonadas."
+msgstr ""
+
+#. module: account_payment_loan
+#: model_terms:ir.ui.view,arch_db:account_payment_loan.view_account_loan_debt_report_form
+msgid "refinance loans"
+msgstr ""
