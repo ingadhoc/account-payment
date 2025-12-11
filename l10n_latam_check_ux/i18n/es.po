@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-03 19:38+0000\n"
+"POT-Creation-Date: 2025-12-11 15:46+0000\n"
 "PO-Revision-Date: 2025-11-12 19:07+0000\n"
 "Last-Translator: ADHOC - Bot <transbot@adhoc.com.ar>, 2025\n"
 "Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
@@ -77,6 +77,12 @@ msgstr "Asistente de Acción de Verificación de Cuenta"
 #. module: l10n_latam_check_ux
 #: model:ir.model,name:l10n_latam_check_ux.model_l10n_latam_check
 msgid "Account payment check"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_res_partner__add_check_credit
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_res_users__add_check_credit
+msgid "Agregar Crédito de Cheques"
 msgstr ""
 
 #. module: l10n_latam_check_ux
@@ -175,6 +181,11 @@ msgid "Confirmar"
 msgstr "Confirmar"
 
 #. module: l10n_latam_check_ux
+#: model:ir.model,name:l10n_latam_check_ux.model_res_partner
+msgid "Contact"
+msgstr ""
+
+#. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_action_wizard__create_uid
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__create_uid
 msgid "Created by"
@@ -225,6 +236,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_payment__display_name
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__display_name
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__display_name
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_res_partner__display_name
 msgid "Display Name"
 msgstr "Nombre a Mostrar"
 
@@ -255,6 +267,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_payment__id
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__id
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__id
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_res_partner__id
 msgid "ID"
 msgstr "ID (identificación)"
 
