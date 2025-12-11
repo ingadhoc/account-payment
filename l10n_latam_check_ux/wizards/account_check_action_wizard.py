@@ -60,7 +60,12 @@ class AccountCheckActionWizard(models.TransientModel):
                 )
 
     def _get_outstanding_account(self, check):
-        """Obtenemos la cuenta para hacer el débito de cheques y hacemos las validaciones correspondientes. Siempre necesitamos que se encuentre establecido un método de pago manual en el diario para poder hacer el débito, no vamos a buscar la cuenta outstanding en configuración en caso de que no esté establecido el método de pago manual. Primero buscamos método de pago con code manual y nombre 'Manual' y si no lo encuentra buscamos el primer método de pago manual que se creó."""
+        """Obtenemos la cuenta para hacer el débito de cheques y hacemos las validaciones correspondientes.
+        Siempre necesitamos que se encuentre establecido un método de pago manual en el diario para poder
+        hacer el débito, no vamos a buscar la cuenta outstanding en configuración en caso de que no esté
+        establecido el método de pago manual. Primero buscamos método de pago con code manual y nombre
+        'Manual' y si no lo encuentra buscamos el primer método de pago manual que se creó.
+        """
         journal = check.original_journal_id
         journal_manual_payment_method = journal.outbound_payment_method_line_ids.filtered(lambda x: x.code == "manual")
         if not journal_manual_payment_method:
