@@ -50,3 +50,17 @@ class l10nLatamAccountPaymentCheck(models.Model):
             .filtered(lambda x: x.state not in ["draft", "canceled"] and x.l10n_latam_move_check_ids_operation_date)
             .sorted(key=lambda payment: (payment.l10n_latam_move_check_ids_operation_date))[-1:]
         )
+
+    @api.depends("payment_method_line_id.code", "payment_id.partner_id")
+    def _compute_bank_id(self):
+        payment_method_change = self._origin.payment_method_line_id != self.payment_method_line_id
+        partner_id_change = self._origin.payment_id.partner_id != self.payment_id.partner_id
+        if payment_method_change or partner_id_change:
+            super()._compute_bank_id()
+
+    @api.depends("payment_method_line_id.code", "payment_id.partner_id")
+    def _compute_issuer_vat(self):
+        payment_method_change = self._origin.payment_method_line_id != self.payment_method_line_id
+        partner_id_change = self._origin.payment_id.partner_id != self.payment_id.partner_id
+        if payment_method_change or partner_id_change:
+            super()._compute_issuer_vat()
