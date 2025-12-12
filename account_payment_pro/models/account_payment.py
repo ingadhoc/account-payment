@@ -572,9 +572,6 @@ class AccountPayment(models.Model):
                 "asset_receivable" if self.partner_type == "customer" else "liability_payable",
             ),
         ]
-        # TODO revisar bien estos, no debería ser necesario, ver el blame porque se agrego lo del active_ids
-        if self.env.context.get("active_ids") and self.env.context.get("active_model") == "account.move.line":
-            domain.append(("move_id.line_ids", "in", self.env.context.get("active_ids")))
         return domain
 
     def _add_all(self):
