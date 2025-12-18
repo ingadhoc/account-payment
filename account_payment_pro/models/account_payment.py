@@ -32,7 +32,8 @@ class AccountPayment(models.Model):
     )
     journal_currency_id = fields.Many2one(related="journal_id.currency_id", string="Journal Currency")
     destination_journal_currency_id = fields.Many2one(
-        related="destination_journal_id.currency_id", string="Destination Journal Currency"
+        related="destination_journal_id.currency_id",
+        string="Destination Journal Currency",
     )
     force_amount_company_currency = fields.Monetary(
         string="Forced Amount on Company Currency",
@@ -57,7 +58,9 @@ class AccountPayment(models.Model):
         compute="_compute_amount_company_currency_signed_pro",
     )
     payment_total = fields.Monetary(
-        compute="_compute_payment_total", tracking=True, currency_field="company_currency_id"
+        compute="_compute_payment_total",
+        tracking=True,
+        currency_field="company_currency_id",
     )
     available_journal_ids = fields.Many2many(comodel_name="account.journal", compute="_compute_available_journal_ids")
     # desde account_payment_group, modelo account.payment.group
@@ -322,7 +325,10 @@ class AccountPayment(models.Model):
                     "currency_id": self.currency_id.id,
                     "amount_currency": write_off_amount_currency,
                     "balance": self.currency_id._convert(
-                        write_off_amount_currency, self.company_id.currency_id, self.company_id, self.date
+                        write_off_amount_currency,
+                        self.company_id.currency_id,
+                        self.company_id,
+                        self.date,
                     ),
                 }
             )
@@ -374,7 +380,11 @@ class AccountPayment(models.Model):
         # esto esta ligado de alguna manera a un llamado que se hace dos veces por "culpa" del método
         # "_inverse_amount_company_currency". Si bien no es elegante para todas las pruebas que hicimos funcionó bien.
         if self.mapped("move_id"):
-            res = res + ("force_amount_company_currency", "counterpart_exchange_rate", "counterpart_currency_id")
+            res = res + (
+                "force_amount_company_currency",
+                "counterpart_exchange_rate",
+                "counterpart_currency_id",
+            )
         return res + (
             "write_off_amount",
             "write_off_type_id",
@@ -636,3 +646,8 @@ class AccountPayment(models.Model):
     @api.depends("journal_id")
     def _compute_available_partner_bank_ids(self):
         super()._compute_available_partner_bank_ids()
+
+    @api.onchange("journal_id")
+    def _onchange_journal_id(self):
+        if self.journal_id.currency_id:
+            self.counterpart_currency_id = False
