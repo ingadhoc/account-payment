@@ -21,6 +21,13 @@ class AccountPayment(models.Model):
         compute_sudo=False,
     )
 
+    destination_cashbox_session_id = fields.Many2one(
+        "account.cashbox.session",
+        string="Destination POP Session",
+        help="In case of internal transfer payments, this field indicates the destination POP session.",
+        domain="[('state', '=', 'opened'), '|', ('user_ids', '=', uid), ('user_ids', '=', False)]",
+    )
+
     @api.depends_context("uid")
     # dummy depends para que se compute(no estamos seguros porque solo con el depends_context no computa)
     @api.depends("partner_id")
@@ -51,7 +58,16 @@ class AccountPayment(models.Model):
                 raise ValidationError(_("The currency of the journal must be the of the payment."))
 
     def _create_paired_internal_transfer_payment(self):
-        super(AccountPayment, self.with_context(paired_transfer=True))._create_paired_internal_transfer_payment()
+        for payment in self:
+            super(
+                AccountPayment,
+                payment.with_context(
+                    paired_transfer=True,
+                    default_cashbox_session_id=payment.destination_cashbox_session_id,
+                ),
+            )._create_paired_internal_transfer_payment()
+            if payment.paired_internal_transfer_payment_id:
+                payment.paired_internal_transfer_payment_id.destination_cashbox_session_id = False
 
     def action_post(self):
         for rec in self:
