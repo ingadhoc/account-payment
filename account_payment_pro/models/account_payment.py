@@ -18,7 +18,13 @@ class AccountPayment(models.Model):
         currency_field="counterpart_currency_id",
         compute="_compute_counterpart_currency_amount",
     )
-    counterpart_currency_id = fields.Many2one("res.currency")
+    counterpart_currency_id = fields.Many2one(
+        "res.currency",
+        compute="_compute_counterpart_currency_id",
+        store=True,
+        readonly=False,
+        precompute=True,
+    )
     counterpart_exchange_rate = fields.Float(
         readonly=False,
         compute="_compute_counterpart_exchange_rate",
@@ -126,6 +132,10 @@ class AccountPayment(models.Model):
     use_payment_pro = fields.Boolean(compute="_compute_use_payment_pro")
 
     open_move_line_ids = fields.One2many(related="move_id.open_move_line_ids")
+
+    @api.depends("journal_id")
+    def _compute_counterpart_currency_id(self):
+        self.filtered(lambda x: x.journal_id.currency_id == x.counterpart_currency_id).counterpart_currency_id = False
 
     @api.depends("company_id", "outstanding_account_id")
     def _compute_use_payment_pro(self):
