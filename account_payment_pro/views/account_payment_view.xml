@@ -51,17 +51,9 @@
             <field name="other_currency" invisible="True"/>
             <field name="force_amount_company_currency" invisible="True"/>
             <div class="o_row" name="exchange_rate_div" invisible="not other_currency">
-                <div class="o_cell" colspan="2">
-                    <strong>Rate = <field name="exchange_rate" nolabel="1"/></strong>
-                </div>
+                <span><strong>Rate = </strong></span><strong><field name="exchange_rate" nolabel="1"/></strong>
             </div>
-
-            <div class="o_row" invisible="not other_currency">
-                <div class="o_cell" colspan="2">
-                    <field name="amount_company_currency" readonly="state != 'draft'"/>
-                    <label for="amount_company_currency" string=" "/>
-                </div>
-            </div>
+            <field name="amount_company_currency" readonly="state != 'draft'" nolabel="1" invisible="not other_currency"/>
             <label for="write_off_amount" string="Write Off"  invisible="not write_off_available or is_internal_transfer or not use_payment_pro"/>
             <div name="write_off_amount" class="o_row" invisible="not write_off_available or is_internal_transfer or not use_payment_pro">
                 <field name="write_off_amount" readonly="state != 'draft'"/>
