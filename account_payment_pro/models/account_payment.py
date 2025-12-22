@@ -656,8 +656,3 @@ class AccountPayment(models.Model):
     @api.depends("journal_id")
     def _compute_available_partner_bank_ids(self):
         super()._compute_available_partner_bank_ids()
-
-    @api.onchange("journal_id")
-    def _onchange_journal_id(self):
-        if self.journal_id.currency_id:
-            self.counterpart_currency_id = False
