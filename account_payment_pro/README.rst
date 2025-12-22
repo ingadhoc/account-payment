@@ -14,37 +14,47 @@
 Account Payment Pro
 ===================
 
-​This module is designed to enhance and extend the functionality of Odoo's core payment models.
-This module is essential for managing withholdings in Argentina.
+This module is designed to enhance and extend the functionality of Odoo's core payment models. This module is essential for managing withholdings in Argentina.
 
-​Functionalities
+**To manage Argentina withholdings it's mandatory to have "l10n_ar_withholding" module installed.**
 
-Select Debts to Pay: Users can choose specific debts to settle during the payment process.
-Manage Withholdings Calculation: The module facilitates the calculation of withholdings as part of the payment processing.
-Register Write-Offs: Users can register write-offs directly within the payment.
-Immediate Payment Option in invoices: Provides a "Pay Now" feature for instant payment processing.
+Functionalities
+===============
 
+This module provides advanced payment capabilities:
+
+* **Select Debts to Pay**: Users can choose specific debts to settle during the payment process.
+* **Manage Withholdings Calculation**: The module facilitates the calculation of withholdings as part of the payment processing.
+* **Register Write-Offs**: Users can register write-offs directly within the payment.
+* **Immediate Payment Option in Invoices**: Provides a "Pay Now" feature for instant payment processing from invoices.
+* **Argentina Withholding Support**: When combined with the "l10n_ar_withholding" module, enables a dedicated withholdings tab for managing Argentina-specific tax withholdings.
 
 Installation
 ============
 
 To install this module, you need to:
 
-#. account_ux
+#. Install the "account_ux" module
+#. For Argentina withholding features, install the "l10n_ar_withholding" module
 
 Configuration
 =============
 
 To configure this module, you need to:
 
-#. Go to ...
+#. Go to Accounting > Configuration > Write-off Types to configure write-off types
+#. Go to Accounting > Configuration > Settings > Payment to configure payment settings
 
 Usage
 =====
 
-To use this module, you need to:
+To use this module:
 
-#. Go to ...
+#. Go to Accounting > Payments to create and manage payments
+#. Use the "Pay Now" button on invoices for quick payment processing
+#. Select specific debts to pay when creating a payment
+#. Register withholdings and write-offs directly in the payment form
+#. For Argentina withholdings: ensure "l10n_ar_withholding" is installed to access the withholdings tab
 
 .. image:: https://odoo-community.org/website/image/ir.attachment/5784_f2813bd/datas
    :alt: Try me on Runbot
