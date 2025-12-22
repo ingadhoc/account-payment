@@ -87,7 +87,7 @@ class AccountPaymentGroup(models.Model):
             # caso viene in_invoice o out_invoice y en search de tax filtrar
             # por impuestos de venta y compra (y no los nuestros de pagos
             # y cobros)
-            self.env['account.tax'].with_context(type=None).search([
+            self.env['account.tax'].with_context(type=None, active_test=True).search([
                 ('type_tax_use', '=', rec.partner_type),
                 ('company_id', '=', rec.company_id.id),
             ]).create_payment_withholdings(rec)
