@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-06 22:57+0000\n"
-"PO-Revision-Date: 2025-12-22 23:10+0000\n"
+"PO-Revision-Date: 2025-12-23 17:10+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/"
 "account-payment-19-0/account-payment-19-0-account_cashbox/es/>\n"
@@ -119,7 +119,7 @@ msgstr "Usuarios permitidos"
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__amount
 msgid "Amount"
-msgstr "Cantidad"
+msgstr "Monto"
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__message_attachment_count
@@ -442,7 +442,7 @@ msgstr "Diario"
 #. module: account_cashbox
 #: model:ir.model,name:account_cashbox.model_account_move
 msgid "Journal Entry"
-msgstr "Asiento contable"
+msgstr "Asiento Contable"
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__cash_control_journal_ids
