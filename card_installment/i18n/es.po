@@ -11,14 +11,17 @@ msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-22 08:25+0000\n"
-"PO-Revision-Date: 2025-10-17 13:14+0000\n"
-"Last-Translator: ADHOC - Bot <transbot@adhoc.com.ar>, 2025\n"
-"Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
+"PO-Revision-Date: 2025-12-23 17:10+0000\n"
+"Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
+"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/"
+"account-payment-19-0/account-payment-19-0-card_installment/es/>\n"
+"Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Language: es\n"
-"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == 0)"
+" ? 1 : 2);\n"
+"X-Generator: Weblate 5.10.4\n"
 
 #. module: card_installment
 #. odoo-python
@@ -64,7 +67,7 @@ msgstr "Tarjetas"
 #. module: card_installment
 #: model:ir.model,name:card_installment.model_res_company
 msgid "Companies"
-msgstr "Compañías"
+msgstr "Empresas"
 
 #. module: card_installment
 #: model:ir.model.fields,field_description:card_installment.field_account_card__company_id
@@ -104,13 +107,13 @@ msgstr "Nombre a Mostrar"
 #. module: card_installment
 #: model:ir.model.fields,field_description:card_installment.field_account_card_installment__divisor
 msgid "Divisor"
-msgstr ""
+msgstr "Divisor"
 
 #. module: card_installment
 #. odoo-python
 #: code:addons/card_installment/models/account_card_installment.py:0
 msgid "Divisor cannot be negative"
-msgstr ""
+msgstr "El divisor no puede ser negativo"
 
 #. module: card_installment
 #: model:ir.model.fields,help:card_installment.field_account_card_installment__surcharge_coefficient
@@ -127,7 +130,7 @@ msgstr "Nombre de Fantasía"
 #. module: card_installment
 #: model:product.template,name:card_installment.product_product_financial_product_template
 msgid "Financial surchage"
-msgstr ""
+msgstr "Recargo financiero"
 
 #. module: card_installment
 #: model:ir.model.fields,field_description:card_installment.field_account_card__id
@@ -169,7 +172,7 @@ msgstr "Última actualización el"
 #. module: card_installment
 #: model:ir.model.fields,help:card_installment.field_account_card_installment__name
 msgid "Nombre informativo del plan a mostrar"
-msgstr ""
+msgstr "Nombre informativo del plan a mostrar"
 
 #. module: card_installment
 #: model:ir.model.fields,help:card_installment.field_account_card_installment__divisor
@@ -177,6 +180,7 @@ msgid ""
 "Número por el cual se dividirá el total de cuotas que pagará el usuario "
 "final"
 msgstr ""
+"Número por el cual se dividirá el total de cuotas que pagará el usuario final"
 
 #. module: card_installment
 #: model:ir.model.fields,help:card_installment.field_account_card_installment__installment
