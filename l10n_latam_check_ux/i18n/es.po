@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-11 15:46+0000\n"
-"PO-Revision-Date: 2025-12-22 23:10+0000\n"
+"PO-Revision-Date: 2025-12-23 17:10+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/"
 "account-payment-19-0/account-payment-19-0-l10n_latam_check_ux/es/>\n"
@@ -25,7 +25,7 @@ msgstr ""
 #. module: l10n_latam_check_ux
 #: model:ir.actions.report,print_report_name:l10n_latam_check_ux.checks_to_date_report
 msgid "'Cheques a fecha - %s' % (object.to_date)"
-msgstr ""
+msgstr "'Cheques a fecha - %s' % (object.to_date)"
 
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.report_account_transfer_document
@@ -64,6 +64,9 @@ msgid ""
 "                                <span>Total</span>\n"
 "                                </strong>"
 msgstr ""
+"<strong>\n"
+"                                <span>Total</span>\n"
+"                                </strong>"
 
 #. module: l10n_latam_check_ux
 #. odoo-python
@@ -85,13 +88,13 @@ msgstr ""
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_res_partner__add_check_credit
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_res_users__add_check_credit
 msgid "Agregar Crédito de Cheques"
-msgstr ""
+msgstr "Agregar Crédito de Cheques"
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_journal__check_add_debit_button
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__check_add_debit_button
 msgid "Agregar botón de débito"
-msgstr ""
+msgstr "Agregar botón de débito"
 
 #. module: l10n_latam_check_ux
 #. odoo-python
@@ -116,8 +119,6 @@ msgstr "Cancelar"
 
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_to_date_report_view
-#, fuzzy
-#| msgid "Cancel"
 msgid "Cancelar"
 msgstr "Cancelar"
 
