@@ -1,26 +1,26 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # 	* account_payment_pro
-# 
+#
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2025
 # ADHOC - Bot <transbot@adhoc.com.ar>, 2025
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-14 13:55+0000\n"
+"POT-Creation-Date: 2025-12-23 21:00+0000\n"
 "PO-Revision-Date: 2025-12-23 17:10+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
-"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/"
-"account-payment-19-0/account-payment-19-0-account_payment_pro/es/>\n"
+"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
+"payment-19-0/account-payment-19-0-account_payment_pro/es/>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == 0)"
-" ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == "
+"0) ? 1 : 2);\n"
 "X-Generator: Weblate 5.10.4\n"
 
 #. module: account_payment_pro
@@ -37,6 +37,11 @@ msgstr "+ Nota de Cŕedito"
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid "+ Debit Note"
 msgstr "+ Nota de Débito"
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "<span><strong>Rate = </strong></span>"
+msgstr ""
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__account_id
@@ -100,16 +105,16 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
 msgid "Allow to pay vendor invoices automatically on invoice validation."
 msgstr ""
-"Permitir pagar las facturas de los proveedores automáticamente al validar la"
-" factura."
+"Permitir pagar las facturas de los proveedores automáticamente al validar la "
+"factura."
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_res_config_settings__group_pay_now_vendor_invoices
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
 msgid ""
 "Allow users to choose a payment journal on invoices so that invoice is "
-"automatically paid after invoice validation. A payment will be created using"
-" choosen journal"
+"automatically paid after invoice validation. A payment will be created using "
+"choosen journal"
 msgstr ""
 "Permitir a los usuarios elegir un diario de pagos en las facturas para que "
 "la factura se pague automáticamente después de su validación. Se creará un "
@@ -293,8 +298,8 @@ msgstr "ID (identificación)"
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment_invoice_wizard__use_documents
 msgid ""
-"If active: will be using for legal invoicing (invoices, debit/credit notes)."
-" If not set means that will be used to register accounting entries not "
+"If active: will be using for legal invoicing (invoices, debit/credit notes). "
+"If not set means that will be used to register accounting entries not "
 "related to invoicing legal documents. For Example: Receipts, Tax Payments, "
 "Register journal entries"
 msgstr ""
@@ -312,8 +317,8 @@ msgid ""
 "journals with manual method are shown."
 msgstr ""
 "Si configura un diario aquí, después de la validación de la factura, la "
-"factura se pagará automáticamente con este diario. Como se utiliza el método"
-" de pago manual, solo se muestran los diarios con método manual."
+"factura se pagará automáticamente con este diario. Como se utiliza el método "
+"de pago manual, solo se muestran los diarios con método manual."
 
 #. module: account_payment_pro
 #: model:ir.model,name:account_payment_pro.model_account_journal
@@ -355,8 +360,7 @@ msgstr "Etiqueta"
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_write_off_type__label
 msgid ""
-"Label to be used on journal items labels, if not configured name will be "
-"used"
+"Label to be used on journal items labels, if not configured name will be used"
 msgstr ""
 "Etiqueta que se utilizará en el detalle de los apuntes contables, si no se "
 "configura se utilizará el nombre por defecto."
@@ -449,11 +453,11 @@ msgstr "Importe Conciliado del Pago"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
 msgid ""
-"Payment Pro incorpora funcionalidades que permiten llevar un flujo de cobros"
-"                         y pagos con retenciones, especificamente utilizado "
-"en Argentina. Al activarlo a                         ​su ​vez, se pierden "
-"algunas funcionalidades nativas como descuento por pronto pago"
-"                         y sugerencias de diferencia de cambio"
+"Payment Pro incorpora funcionalidades que permiten llevar un flujo de "
+"cobros                         y pagos con retenciones, especificamente "
+"utilizado en Argentina. Al activarlo a                         ​su ​vez, se "
+"pierden algunas funcionalidades nativas como descuento por pronto "
+"pago                         y sugerencias de diferencia de cambio"
 msgstr ""
 "Payment Pro incorpora funcionalidades que permiten llevar un flujo de "
 "cobros                         y pagos con retenciones, especificamente "
@@ -488,8 +492,8 @@ msgstr ""
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid ""
-"Payment will be automatically matched with the oldest lines of this list (by"
-" maturity date). You can remove any line you dont want to be matched."
+"Payment will be automatically matched with the oldest lines of this list (by "
+"maturity date). You can remove any line you dont want to be matched."
 msgstr ""
 "El pago se emparejará automáticamente con las líneas más antiguas de esta "
 "lista (por fecha de vencimiento). Puedes eliminar cualquier línea que no "
@@ -666,11 +670,9 @@ msgstr ""
 #. module: account_payment_pro
 #. odoo-python
 #: code:addons/account_payment_pro/models/account_payment.py:0
-msgid ""
-"You can't create payments for entries belonging to different companies."
+msgid "You can't create payments for entries belonging to different companies."
 msgstr ""
-"No se pueden crear pagos para asientos que pertenezcan a diferentes "
-"compañías"
+"No se pueden crear pagos para asientos que pertenezcan a diferentes compañías"
 
 #. module: account_payment_pro
 #: model:ir.model,name:account_payment_pro.model_account_payment_invoice_wizard
