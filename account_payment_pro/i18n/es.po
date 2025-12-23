@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-14 13:55+0000\n"
-"PO-Revision-Date: 2025-12-22 23:10+0000\n"
+"PO-Revision-Date: 2025-12-23 17:10+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/"
 "account-payment-19-0/account-payment-19-0-account_payment_pro/es/>\n"
@@ -118,7 +118,7 @@ msgstr ""
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
 msgid "Amount"
-msgstr "Importe"
+msgstr "Monto"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__amount_company_currency_signed_pro
@@ -160,7 +160,7 @@ msgstr "Entidad Comercial"
 #: model:ir.model,name:account_payment_pro.model_res_company
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__company_ids
 msgid "Companies"
-msgstr "Compañías"
+msgstr "Empresas"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__company_id
@@ -329,7 +329,7 @@ msgstr "Moneda del Diario"
 #. module: account_payment_pro
 #: model:ir.model,name:account_payment_pro.model_account_move
 msgid "Journal Entry"
-msgstr "Asiento contable"
+msgstr "Asiento Contable"
 
 #. module: account_payment_pro
 #: model:ir.model,name:account_payment_pro.model_account_move_line
@@ -469,7 +469,7 @@ msgstr "Total Pago"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "Payment Total (SC)"
-msgstr "Importe total a imputar"
+msgstr "Total del pago (Moneda Secundaria)"
 
 #. module: account_payment_pro
 #. odoo-python
