@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: Odoo Server 18.0+e\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-08-30 12:58+0000\n"
-"PO-Revision-Date: 2025-12-23 17:10+0000\n"
+"PO-Revision-Date: 2025-12-26 17:10+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/"
 "account-payment-19-0/account-payment-19-0-account_payment_loan/es/>\n"
@@ -140,7 +140,7 @@ msgstr "Monto"
 #. module: account_payment_loan
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_debt_report__amount_to_pay
 msgid "Amount To Pay"
-msgstr ""
+msgstr "Monto a Pagar"
 
 #. module: account_payment_loan
 #: model_terms:ir.ui.view,arch_db:account_payment_loan.view_account_loan_debt_report_form
@@ -164,7 +164,7 @@ msgstr "Empresas"
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__company_id
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__company_id
 msgid "Company"
-msgstr ""
+msgstr "Empresa"
 
 #. module: account_payment_loan
 #: model:ir.model,name:account_payment_loan.model_res_config_settings
@@ -181,14 +181,14 @@ msgstr "Contacto"
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__create_uid
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__create_uid
 msgid "Created by"
-msgstr ""
+msgstr "Creado por"
 
 #. module: account_payment_loan
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_debt_report__create_date
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__create_date
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__create_date
 msgid "Created on"
-msgstr ""
+msgstr "Creado el"
 
 #. module: account_payment_loan
 #: model:ir.model,name:account_payment_loan.model_account_card
@@ -200,7 +200,7 @@ msgstr "Tarjeta de Crédito"
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__currency_id
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__currency_id
 msgid "Currency"
-msgstr ""
+msgstr "Moneda"
 
 #. module: account_payment_loan
 #: model_terms:ir.ui.view,arch_db:account_payment_loan.view_account_loan_debt_report_form
@@ -222,7 +222,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__display_name
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__display_name
 msgid "Display Name"
-msgstr ""
+msgstr "Nombre a Mostrar"
 
 #. module: account_payment_loan
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_card__due_day
@@ -257,7 +257,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__id
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__id
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #. module: account_payment_loan
 #: model:ir.model.fields,help:account_payment_loan.field_account_loan_register__is_invoiceable
@@ -322,14 +322,14 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__write_uid
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__write_uid
 msgid "Last Updated by"
-msgstr ""
+msgstr "Última modificación por"
 
 #. module: account_payment_loan
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_debt_report__write_date
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__write_date
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__write_date
 msgid "Last Updated on"
-msgstr ""
+msgstr "Última Actualización el"
 
 #. module: account_payment_loan
 #: model:ir.model.fields,field_description:account_payment_loan.field_res_company__late_payment_interest
@@ -448,7 +448,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_extra_charges__partner_id
 #: model:ir.model.fields,field_description:account_payment_loan.field_account_loan_register__partner_id
 msgid "Partner"
-msgstr ""
+msgstr "Contacto"
 
 #. module: account_payment_loan
 #: model_terms:ir.ui.view,arch_db:account_payment_loan.view_account_loan_debt_report_form
