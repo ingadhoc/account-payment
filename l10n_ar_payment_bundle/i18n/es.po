@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-12 20:01+0000\n"
-"PO-Revision-Date: 2025-12-23 17:10+0000\n"
+"PO-Revision-Date: 2025-12-26 17:10+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/"
 "account-payment-19-0/account-payment-19-0-l10n_ar_payment_bundle/es/>\n"
@@ -50,7 +50,7 @@ msgstr "Monto en Moneda Secundaria"
 #. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__bundle_counterpart_currency_amount
 msgid "Bundle Counterpart Currency Amount"
-msgstr ""
+msgstr "Monto en moneda del pago múltiple de la contrapartida"
 
 #. module: l10n_ar_payment_bundle
 #: model:ir.model,name:l10n_ar_payment_bundle.model_res_company
@@ -74,7 +74,7 @@ msgstr "Cliente/Proveedor"
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment_method__display_name
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_res_company__display_name
 msgid "Display Name"
-msgstr "Nombre para mostrar"
+msgstr "Nombre a Mostrar"
 
 #. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_chart_template__id
@@ -83,7 +83,7 @@ msgstr "Nombre para mostrar"
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment_method__id
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_res_company__id
 msgid "ID"
-msgstr "ID (identificación)"
+msgstr "ID"
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_from_bundle_form
