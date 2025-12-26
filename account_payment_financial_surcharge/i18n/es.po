@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-12 19:58+0000\n"
-"PO-Revision-Date: 2025-12-22 23:10+0000\n"
+"PO-Revision-Date: 2025-12-26 17:10+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/"
 "account-payment-19-0/"
@@ -54,7 +54,7 @@ msgstr "Ajustes de configuración"
 #: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_payment_method_line__display_name
 #: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_res_config_settings__display_name
 msgid "Display Name"
-msgstr "Nombre para mostrar"
+msgstr "Nombre a Mostrar"
 
 #. module: account_payment_financial_surcharge
 #: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_payment__financing_surcharge
@@ -67,7 +67,7 @@ msgstr "Recargo Financiero"
 #: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_payment_method_line__id
 #: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_res_config_settings__id
 msgid "ID"
-msgstr "ID (identificación)"
+msgstr "ID"
 
 #. module: account_payment_financial_surcharge
 #: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_payment__installment_id
