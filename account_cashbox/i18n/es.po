@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-06 22:57+0000\n"
-"PO-Revision-Date: 2025-12-23 17:10+0000\n"
+"PO-Revision-Date: 2025-12-26 17:10+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/"
 "account-payment-19-0/account-payment-19-0-account_cashbox/es/>\n"
@@ -224,7 +224,7 @@ msgstr "Fecha de Cierre"
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__company_id
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__company_id
 msgid "Company"
-msgstr "Compañía"
+msgstr "Empresa"
 
 #. module: account_cashbox
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_form
@@ -369,7 +369,7 @@ msgstr "Tiene Mensaje"
 #: model:ir.model.fields,field_description:account_cashbox.field_account_payment_register__id
 #: model:ir.model.fields,field_description:account_cashbox.field_res_users__id
 msgid "ID"
-msgstr "ID (identificación)"
+msgstr "ID"
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__activity_exception_icon
@@ -456,7 +456,7 @@ msgstr "Diarios con control de Apertura/Cierre"
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__write_uid
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__write_uid
 msgid "Last Updated by"
-msgstr "Última actualización por"
+msgstr "Última modificación por"
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__write_date
@@ -465,7 +465,7 @@ msgstr "Última actualización por"
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__write_date
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__write_date
 msgid "Last Updated on"
-msgstr "Última actualización el"
+msgstr "Última Actualización el"
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__line_ids
