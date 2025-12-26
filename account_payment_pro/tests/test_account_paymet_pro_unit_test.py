@@ -20,6 +20,16 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
 
         self.eur_currency = self.env["res.currency"].with_context(active_test=False).search([("name", "=", "EUR")])
         self.eur_currency.active = True
+
+        # Delete existing rates for this company and dates to ensure clean test data
+        self.env["res.currency.rate"].search(
+            [
+                ("currency_id", "=", self.eur_currency.id),
+                ("company_id", "=", self.company.id),
+                ("name", "in", ["2024-01-01", (self.today - timedelta(days=10)).strftime("%Y-%m-%d")]),
+            ]
+        ).unlink()
+
         self.rates = self.env["res.currency.rate"].create(
             [
                 {
