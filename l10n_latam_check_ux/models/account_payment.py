@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from odoo import fields, models
+from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
 
@@ -12,6 +12,22 @@ class AccountPayment(models.Model):
         default=fields.Datetime.now(),
     )
 
+    @api.constrains("state")
+    def _check_last_operation_on_state_change(self):
+        """
+        Constraint to prevent changing the state of a check operation if it is not the last operation.
+        """
+        for rec in self:
+            # Only validate if the payment has checks associated and state is changing
+            checks = rec.l10n_latam_move_check_ids | rec.l10n_latam_new_check_ids
+            for check in checks:
+                last_operation = check._get_last_operation()
+                if last_operation and rec != last_operation:
+                    raise ValidationError(
+                        "You cannot change the state of this operation because it is not the last operation for check %s."
+                        % check.name
+                    )
+
     def action_post(self):
         # nosotros queremos bloquear tmb nros de cheques de terceros que sea unicos
         # para esto chequeamos el campo computado de warnings que ya lo tiene incorporado
@@ -21,7 +37,8 @@ class AccountPayment(models.Model):
         for rec in self:
             if rec.l10n_latam_check_warning_msg:
                 raise ValidationError("%s" % rec.l10n_latam_check_warning_msg)
-            rec.l10n_latam_move_check_ids_operation_date = fields.Datetime.now()
+            if not rec.l10n_latam_move_check_ids_operation_date:
+                rec.l10n_latam_move_check_ids_operation_date = fields.Datetime.now()
         super().action_post()
 
     def _create_paired_internal_transfer_payment(self):
