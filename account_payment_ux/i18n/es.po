@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-06 20:49+0000\n"
-"PO-Revision-Date: 2025-12-23 17:10+0000\n"
+"PO-Revision-Date: 2025-12-26 17:10+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/"
 "account-payment-19-0/account-payment-19-0-account_payment_ux/es/>\n"
@@ -28,14 +28,14 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_ux.field_account_payment__display_name
 #: model:ir.model.fields,field_description:account_payment_ux.field_payment_transaction__display_name
 msgid "Display Name"
-msgstr "Nombre para mostrar"
+msgstr "Nombre a Mostrar"
 
 #. module: account_payment_ux
 #: model:ir.model.fields,field_description:account_payment_ux.field_account_move__id
 #: model:ir.model.fields,field_description:account_payment_ux.field_account_payment__id
 #: model:ir.model.fields,field_description:account_payment_ux.field_payment_transaction__id
 msgid "ID"
-msgstr "ID (identificación)"
+msgstr "ID"
 
 #. module: account_payment_ux
 #: model:ir.model,name:account_payment_ux.model_account_move
