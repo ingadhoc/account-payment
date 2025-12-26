@@ -11,16 +11,16 @@ msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-23 21:00+0000\n"
-"PO-Revision-Date: 2025-12-23 17:10+0000\n"
+"PO-Revision-Date: 2025-12-26 17:10+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
-"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
-"payment-19-0/account-payment-19-0-account_payment_pro/es/>\n"
+"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/"
+"account-payment-19-0/account-payment-19-0-account_payment_pro/es/>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == "
-"0) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == 0)"
+" ? 1 : 2);\n"
 "X-Generator: Weblate 5.10.4\n"
 
 #. module: account_payment_pro
@@ -41,7 +41,7 @@ msgstr "+ Nota de Débito"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "<span><strong>Rate = </strong></span>"
-msgstr ""
+msgstr "<span><strong>Tasa de Cambio = </strong></span>"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__account_id
@@ -159,7 +159,7 @@ msgstr "Cancelar"
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__commercial_partner_id
 msgid "Commercial Entity"
-msgstr "Entidad Comercial"
+msgstr "Entidad comercial"
 
 #. module: account_payment_pro
 #: model:ir.model,name:account_payment_pro.model_res_company
@@ -170,7 +170,7 @@ msgstr "Empresas"
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__company_id
 msgid "Company"
-msgstr "Compañía"
+msgstr "Empresa"
 
 #. module: account_payment_pro
 #: model:ir.model,name:account_payment_pro.model_res_config_settings
@@ -207,7 +207,7 @@ msgstr "Creado por"
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__create_date
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__create_date
 msgid "Created on"
-msgstr "Creado en"
+msgstr "Creado el"
 
 #. module: account_payment_pro
 #: model:ir.actions.act_window,name:account_payment_pro.action_account_payment_invoice_wizard
@@ -250,7 +250,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_company__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__display_name
 msgid "Display Name"
-msgstr "Nombre para mostrar"
+msgstr "Nombre a Mostrar"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__distribution_analytic_account_ids
@@ -293,7 +293,7 @@ msgstr "Contiene cuenta de cobro/pago Pendiente"
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_company__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__id
 msgid "ID"
-msgstr "ID (identificación)"
+msgstr "ID"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment_invoice_wizard__use_documents
@@ -369,13 +369,13 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__write_uid
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__write_uid
 msgid "Last Updated by"
-msgstr "Última vez actualizado por"
+msgstr "Última modificación por"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__write_date
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__write_date
 msgid "Last Updated on"
-msgstr "Última vez actualizado en"
+msgstr "Última Actualización el"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__matched_move_line_ids
