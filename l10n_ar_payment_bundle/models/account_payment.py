@@ -176,11 +176,6 @@ class AccountPayment(models.Model):
         if self.payment_method_code == "payment_bundle":
             bundle_account = self.payment_method_line_id.payment_account_id
             res = [line for line in res if not (line.get("account_id") == bundle_account.id)]
-            for line in res:
-                if "tax_repartition_line_id" in line:
-                    tax_id = self.env["account.tax.repartition.line"].browse(line["tax_repartition_line_id"]).tax_id
-                    if tax_id.l10n_ar_withholding_payment_type:
-                        line["name"] = tax_id.name
         return res
 
     @api.depends("partner_id", "amount", "date", "payment_type")
