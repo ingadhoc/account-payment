@@ -221,18 +221,24 @@ class AccountPayment(models.Model):
             self.env.company = self.company_id
         super()._compute_available_journal_ids()
 
-    @api.depends("currency_id", "destination_journal_currency_id")
+    @api.depends(
+        "currency_id",
+        "company_currency_id",
+        "is_internal_transfer",
+        "destination_journal_currency_id",
+    )
     def _compute_other_currency(self):
         for rec in self:
-            rec.other_currency = False
-            if rec.company_currency_id and rec.currency_id and rec.company_currency_id != rec.currency_id:
-                rec.other_currency = True
-            elif (
-                rec.is_internal_transfer
-                and rec.destination_journal_currency_id
-                and rec.company_currency_id != rec.destination_journal_currency_id
-            ):
-                rec.other_currency = True
+            company_currency = rec.company_currency_id
+            rec.other_currency = bool(
+                (company_currency and rec.currency_id and company_currency != rec.currency_id)
+                or (
+                    rec.is_internal_transfer
+                    and company_currency
+                    and rec.destination_journal_currency_id
+                    and company_currency != rec.destination_journal_currency_id
+                )
+            )
 
     @api.depends("amount", "other_currency", "amount_company_currency")
     def _compute_exchange_rate(self):
@@ -271,6 +277,7 @@ class AccountPayment(models.Model):
     @api.onchange("amount_company_currency")
     def _inverse_amount_company_currency(self):
         for rec in self:
+            rec._compute_other_currency()
             if rec.other_currency and rec.amount_company_currency != rec.currency_id._convert(
                 rec.amount, rec.company_id.currency_id, rec.company_id, rec.date
             ):
