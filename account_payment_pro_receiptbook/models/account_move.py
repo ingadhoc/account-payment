@@ -59,7 +59,10 @@ class AccountMove(models.Model):
     @api.depends()
     def _compute_name(self):
         super()._compute_name()
-        for move in self.filtered(lambda x: x.origin_payment_id.receiptbook_id and x.state == "draft"):
+        for move in self.filtered(
+            lambda x: x.origin_payment_id.receiptbook_id
+            and (x.state == "draft" or x.origin_payment_id.payment_transaction_id)
+        ):
             move.name = move.origin_payment_id.name
 
     @api.depends("origin_payment_id.receiptbook_id")
