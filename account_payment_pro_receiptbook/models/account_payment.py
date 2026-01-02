@@ -69,5 +69,9 @@ class AccountPayment(models.Model):
     @api.depends()
     def _compute_name(self):
         super(
-            AccountPayment, self.filtered(lambda x: not x.move_id or x.move_id.state != "draft" or not x.receiptbook_id)
+            AccountPayment,
+            self.filtered(
+                lambda x: (not x.move_id or x.move_id.state != "draft" or not x.receiptbook_id)
+                and not (x.receiptbook_id and x.payment_transaction_id)
+            ),
         )._compute_name()
