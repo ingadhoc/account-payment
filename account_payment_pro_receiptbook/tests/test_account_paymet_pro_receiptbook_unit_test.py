@@ -19,7 +19,8 @@ class TestAccountPaymentProReceiptbookUnitTest(AccountTestInvoicingCommon, Trans
         )
         self.company.use_payment_pro = True
         self.company.use_receiptbook = True
-        self.partner_ri = self.env["res.partner"].search([("name", "=", "Deco Addict")])
+        ar = self.env.ref("base.ar")
+        self.partner_ri = self.env["res.partner"].create(dict(name="RI Partner", vat="34278580484", country_id=ar.id))
         self.receiptbook = self.env["account.payment.receiptbook"].search(
             [("company_id", "=", self.company.id), ("name", "=", "Customer Receipts")]
         )
