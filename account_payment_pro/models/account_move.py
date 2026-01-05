@@ -60,19 +60,18 @@ class AccountMove(models.Model):
                 )
             )
 
+            # compute payment_difference here to avoid lazy evaluation issues
+            difference = payment.payment_difference
+
             # el difference es positivo para facturas (de cliente o proveedor) pero negativo para NC.
             # para factura de proveedor o NC de cliente es outbound
             # para factura de cliente o NC de proveedor es inbound
             # igualmente lo hacemos con el difference y no con el type por las dudas de que facturas en negativo
-            if (
-                partner_type == "supplier"
-                and payment.payment_difference >= 0.0
-                or partner_type == "customer"
-                and payment.payment_difference < 0.0
-            ):
+            if partner_type == "supplier" and difference >= 0.0 or partner_type == "customer" and difference < 0.0:
                 payment.payment_type = "outbound"
                 payment.payment_method_id = pay_journal._get_manual_payment_method_id(payment_type).id
-            payment.amount = abs(payment.payment_difference)
+
+            payment.amount = abs(difference)
             payment.action_post()
             rec.write({"matched_payment_ids": [(4, payment.id)]})
 
