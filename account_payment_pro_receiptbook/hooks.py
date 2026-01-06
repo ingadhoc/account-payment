@@ -7,5 +7,5 @@ def _revert_method(cls, name):
     setattr(cls, name, method.origin)
 
 
-def uninstall_hook(cr, registry):
+def uninstall_hook(env):
     _revert_method(AccountResequenceWizard, "default_get")
