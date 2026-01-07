@@ -17,7 +17,7 @@ class AccountPayment(models.Model):
         """
         Constraint to prevent changing the state of a check operation if it is not the last operation.
         """
-        for rec in self:
+        for rec in self.filtered(lambda x: x.state != "draft" and x.l10n_latam_new_check_ids):
             # Only validate if the payment has checks associated and state is changing
             checks = rec.l10n_latam_move_check_ids | rec.l10n_latam_new_check_ids
             for check in checks:
