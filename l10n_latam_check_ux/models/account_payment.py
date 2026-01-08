@@ -12,12 +12,15 @@ class AccountPayment(models.Model):
         default=fields.Datetime.now(),
     )
 
-    @api.constrains("state")
+    @api.constrains("l10n_latam_move_check_ids_operation_date", "state")
     def _check_last_operation_on_state_change(self):
         """
         Constraint to prevent changing the state of a check operation if it is not the last operation.
         """
-        for rec in self.filtered(lambda x: x.state != "draft" and x.l10n_latam_new_check_ids):
+        import_file = self.env.context.get("import_file")
+        if not import_file:
+            return
+        for rec in self:
             # Only validate if the payment has checks associated and state is changing
             checks = rec.l10n_latam_move_check_ids | rec.l10n_latam_new_check_ids
             for check in checks:
