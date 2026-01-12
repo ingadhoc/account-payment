@@ -277,7 +277,6 @@ class AccountPayment(models.Model):
     @api.onchange("amount_company_currency")
     def _inverse_amount_company_currency(self):
         for rec in self:
-            rec._compute_other_currency()
             if rec.other_currency and rec.amount_company_currency != rec.currency_id._convert(
                 rec.amount, rec.company_id.currency_id, rec.company_id, rec.date
             ):
