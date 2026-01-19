@@ -114,22 +114,37 @@ class AccountCheckToDateReportWizard(models.TransientModel):
     def _get_checks_on_hand(self, journal_id, to_date):
         self.env.cr.execute("DROP TABLE IF EXISTS t;")
         # Buscamos la última operation (payment) de cada cheque
-        self.env.cr.execute("""
+        self.env.cr.execute(
+            """
             CREATE TEMPORARY TABLE t AS
-            SELECT
-                rel.check_id,
-                MAX(rel.payment_id) AS payment_id
-            FROM
-                l10n_latam_check_account_payment_rel rel
-            LEFT JOIN
-                account_payment AS ap ON ap.id = rel.payment_id
-            LEFT JOIN
-                account_payment_method AS apm ON apm.id = ap.payment_method_id
-            LEFT JOIN
-                account_move AS ap_move ON ap.move_id = ap_move.id
+            SELECT check_id, MAX(payment_id) as payment_id
+            FROM (
+                SELECT
+                    rel.check_id,
+                    rel.payment_id AS payment_id
+                FROM
+                    l10n_latam_check_account_payment_rel rel
+                LEFT JOIN
+                    account_payment AS ap ON ap.id = rel.payment_id
+                LEFT JOIN
+                    account_payment_method AS apm ON apm.id = ap.payment_method_id
+                LEFT JOIN
+                    account_move AS ap_move ON ap.move_id = ap_move.id
+                WHERE ap.date <= %s
+            UNION ALL
+                SELECT
+                    llc.id as check_id,
+                    llc.payment_id as payment_id
+                FROM l10n_latam_check llc
+                JOIN account_payment ap on ap.id = llc.payment_id
+                WHERE ap.date <= %s
+
+            ) AS query
             GROUP BY
-                rel.check_id;
-        """)
+                query.check_id;
+        """,
+            (to_date, to_date),
+        )
 
         self.env.cr.execute("DROP TABLE IF EXISTS t2;")
         # De la última operación de cada cheque filtramos los cheques cuya última operacioń no es manual (es decir, no
@@ -164,7 +179,7 @@ class AccountCheckToDateReportWizard(models.TransientModel):
             SELECT c.id AS check_id, ap_move.date AS operation_date, apm.code AS operation_code
             FROM t2
             LEFT JOIN l10n_latam_check c ON c.id = t2.check_id
-            LEFT JOIN account_payment AS ap ON ap.id = c.payment_id
+            LEFT JOIN account_payment AS ap ON ap.id = t2.payment_id
             LEFT JOIN account_payment_method AS apm ON apm.id = ap.payment_method_id
             LEFT JOIN account_move AS ap_move ON ap.move_id = ap_move.id
             LEFT JOIN account_journal AS journal ON ap_move.journal_id = journal.id
