@@ -25,6 +25,12 @@ class AccountCashboxSession(models.Model):
     user_ids = fields.Many2many(
         "res.users", required=True, readonly=False, tracking=True, compute="_compute_user_ids", store=True
     )
+    allowed_res_users_ids = fields.Many2many(
+        "res.users",
+        related="cashbox_id.allowed_res_users_ids",
+        readonly=True,
+        store=False,
+    )
     opening_date = fields.Datetime(readonly=True, copy=False)
     closing_date = fields.Datetime(readonly=True, copy=False)
     state = fields.Selection(
@@ -89,6 +95,14 @@ class AccountCashboxSession(models.Model):
                 )
                 for journal in rec.cashbox_id.journal_ids
             ]
+
+            @api.constrains("user_ids", "cashbox_id")
+            def _check_user_ids_allowed(self):
+                for rec in self:
+                    if rec.cashbox_id.restrict_users and rec.user_ids:
+                        allowed = set(rec.cashbox_id.allowed_res_users_ids.ids)
+                        if not set(rec.user_ids.ids).issubset(allowed):
+                            raise ValidationError(_("All session users must be allowed on the cashbox."))
 
     @api.model_create_multi
     def create(self, vals_list):

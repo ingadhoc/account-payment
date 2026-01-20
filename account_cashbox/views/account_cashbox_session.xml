@@ -58,7 +58,7 @@
                     <group>
                         <group>
                             <field name="cashbox_id" force_save="True" options="{'no_create':True}" invisible="context.get('hide_cashbox_id')"/>
-                            <field name="user_ids" widget="many2many_tags" invisible="not restrict_users" required="restrict_users" options="{'no_create':True}"/>
+                            <field name="user_ids" domain="[('id','in',allowed_res_users_ids)]" widget="many2many_tags" invisible="not restrict_users" required="restrict_users" options="{'no_create':True}" />
                         </group>
                         <group>
                             <field name="opening_date" readonly="not allow_dates_edition"/>
