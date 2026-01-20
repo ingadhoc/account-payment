@@ -71,9 +71,7 @@ class AccountPayment(models.Model):
         super()._compute_available_journal_ids()
         for rec in self.filtered(lambda x: x.main_payment_id or not x.use_payment_pro and x.company_id):
             bundle_journal_id = rec.company_id._get_bundle_journal(rec.payment_type)
-            rec.available_journal_ids = rec.available_journal_ids.filtered(
-                lambda x: x._origin.id != bundle_journal_id and not x._origin.currency_id
-            )
+            rec.available_journal_ids = rec.available_journal_ids.filtered(lambda x: x._origin.id != bundle_journal_id)
 
     @api.depends("main_payment_id.to_pay_move_line_ids")
     def _compute_to_pay_move_lines(self):
