@@ -65,8 +65,7 @@ class AccountCheckToDateReportWizard(models.TransientModel):
                         LEFT JOIN account_journal AS journal
                             ON ap_move.journal_id = journal.id
                         WHERE
-                        c.issue_state = 'handed'
-                        AND apm.code = 'own_checks'
+                        apm.code = 'own_checks'
                         AND ap_move.date <= %(to_date)s
                         ORDER BY c.id, ap_move.date desc
                     ) t
@@ -74,14 +73,13 @@ class AccountCheckToDateReportWizard(models.TransientModel):
                     (
                         SELECT
                             c.id as check_id,
-                            MAX(aml.date) AS operation_date
+                            MAX(aml2.date) AS operation_date
                         FROM l10n_latam_check c
                         JOIN account_payment AS ap
                             ON ap.id = c.payment_id
-                        JOIN account_payment_method AS apm
-                            ON apm.id = ap.payment_method_id
-                        JOIN account_move_line as aml
-                            ON ap.move_id = aml.move_id
+                        JOIN account_move as am
+                            ON ap.move_id = am.id
+                        JOIN account_move_line aml on aml.move_id = am.id
                         JOIN account_account aa
                             ON aa.id = aml.account_id
                         LEFT JOIN account_partial_reconcile afr_partial
@@ -89,8 +87,13 @@ class AccountCheckToDateReportWizard(models.TransientModel):
                                 afr_partial.credit_move_id = aml.id
                                 OR afr_partial.debit_move_id = aml.id
                             )
-                        WHERE apm.code = 'own_checks'
-                        AND aa.reconcile = true
+                        JOIN account_move_line as aml2
+                            ON (
+                                aml2.id = afr_partial.credit_move_id
+                                OR aml2.id=afr_partial.debit_move_id
+                            )
+                        WHERE
+                        aa.reconcile = true and c.issue_state != 'handed'
                         GROUP BY c.id
                         HAVING BOOL_AND(afr_partial.id IS NOT NULL)
                     ) t2
