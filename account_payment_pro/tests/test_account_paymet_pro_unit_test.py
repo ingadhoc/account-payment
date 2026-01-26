@@ -6,38 +6,39 @@ from odoo.tests import common, tagged
 
 @tagged("post_install", "-at_install")
 class TestAccountPaymentProUnitTest(common.TransactionCase):
-    def setUp(self):
-        super().setUp()
-        self.today = fields.Date.today()
-        self.company = self.env.company
-        self.company_bank_journal = self.env["account.journal"].search(
-            [("company_id", "=", self.company.id), ("type", "=", "bank")], limit=1
-        )
-        self.company_journal = self.env["account.journal"].search(
-            [("company_id", "=", self.company.id), ("type", "=", "sale")], limit=1
-        )
-        self.company.use_payment_pro = True
+    @classmethod
+    def setUpClass(cls):
+        super(TestAccountPaymentProUnitTest, cls).setUpClass()
+        cls.today = fields.Date.today()
+        cls.ar = ar = cls.env.ref("base.ar")
 
-        self.eur_currency = self.env["res.currency"].with_context(active_test=False).search([("name", "=", "EUR")])
-        self.eur_currency.active = True
-        self.rates = self.env["res.currency.rate"].create(
+        cls.company = cls.env.company
+        cls.company_bank_journal = cls.env["account.journal"].search(
+            [("company_id", "=", cls.company.id), ("type", "=", "bank")], limit=1
+        )
+        cls.company_journal = cls.env["account.journal"].search(
+            [("company_id", "=", cls.company.id), ("type", "=", "sale")], limit=1
+        )
+        cls.company.use_payment_pro = True
+        cls.eur_currency = cls.env["res.currency"].with_context(active_test=False).search([("name", "=", "EUR")])
+        cls.eur_currency.active = True
+        cls.rates = cls.env["res.currency.rate"].create(
             [
                 {
                     "name": "2024-01-01",
                     "inverse_company_rate": 800,
-                    "currency_id": self.eur_currency.id,
-                    "company_id": self.company.id,
+                    "currency_id": cls.eur_currency.id,
+                    "company_id": cls.company.id,
                 },
                 {
-                    "name": (self.today - timedelta(days=10)).strftime("%Y-%m-%d"),
+                    "name": (cls.today - timedelta(days=10)).strftime("%Y-%m-%d"),
                     "inverse_company_rate": 1000,
-                    "currency_id": self.eur_currency.id,
-                    "company_id": self.company.id,
+                    "currency_id": cls.eur_currency.id,
+                    "company_id": cls.company.id,
                 },
             ]
         )
-
-        self.partner_ri = self.env["res.partner"].search([("name", "=", "Deco Addict")], limit=1)
+        cls.partner_ri = cls.env["res.partner"].create(dict(name="RI Partner", vat="34278580484", country_id=ar.id))
 
     def test_create_payment_with_a_date_rate_then_change_rate(self):
         invoice = self.env["account.move"].create(
