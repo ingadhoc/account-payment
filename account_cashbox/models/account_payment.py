@@ -25,8 +25,27 @@ class AccountPayment(models.Model):
         "account.cashbox.session",
         string="Destination POP Session",
         help="In case of internal transfer payments, this field indicates the destination POP session.",
-        domain="[('state', '=', 'opened'), '|', ('user_ids', '=', uid), ('user_ids', '=', False)]",
+        domain="[('state', '=', 'opened'), ('cashbox_id.journal_ids', '=', destination_journal_id), '|', ('user_ids', '=', uid), ('user_ids', '=', False)]",
     )
+
+    @api.onchange("destination_journal_id")
+    def _onchange_destination_journal_id(self):
+        """Clear destination_cashbox_session_id when destination journal changes
+        and no open sessions exist for the new journal"""
+        if self.destination_journal_id:
+            # Check if the current session is still valid for the new journal
+            if self.destination_cashbox_session_id:
+                valid_session = self.env["account.cashbox.session"].search_count(
+                    [
+                        ("id", "=", self.destination_cashbox_session_id.id),
+                        ("state", "=", "opened"),
+                        ("cashbox_id.journal_ids", "=", self.destination_journal_id.id),
+                    ]
+                )
+                if not valid_session:
+                    self.destination_cashbox_session_id = False
+        else:
+            self.destination_cashbox_session_id = False
 
     @api.depends_context("uid")
     # dummy depends para que se compute(no estamos seguros porque solo con el depends_context no computa)
