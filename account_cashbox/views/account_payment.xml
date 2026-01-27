@@ -19,7 +19,7 @@
             <field name="destination_journal_id" position="after">
                 <field
                     name="destination_cashbox_session_id"
-                    domain="[('state', '=', 'opened'), ('company_id', '=', company_id), '|', ('user_ids', '=', uid), ('user_ids', '=', False)]"
+                    domain="[('state', '=', 'opened'), ('company_id', '=', company_id), ('cashbox_id.journal_ids', '=', destination_journal_id), '|', ('user_ids', '=', uid), ('user_ids', '=', False)]"
                     required="requiere_account_cashbox_session and state == 'draft' and payment_type == 'transfer'"
                     readonly = "state != 'draft'"
                     invisible = "not is_internal_transfer or not destination_journal_id or (paired_internal_transfer_payment_id and not destination_cashbox_session_id)"
