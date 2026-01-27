@@ -320,7 +320,7 @@ class AccountPayment(models.Model):
     def _prepare_move_line_default_vals(self, write_off_line_vals=None, force_balance=None):
         # TODO: elimino los write_off_line_vals  porque los regenero tanto aca
         # como en retenciones. esto puede generar problemas
-        if not self.company_id.use_payment_pro:
+        if not self.company_id.use_payment_pro and not self.is_internal_transfer:
             return super()._prepare_move_line_default_vals(
                 write_off_line_vals=write_off_line_vals, force_balance=force_balance
             )
