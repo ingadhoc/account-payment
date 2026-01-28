@@ -174,7 +174,11 @@ class AccountPayment(models.Model):
         return res
 
     def _bypass_journal_entry(self):
-        return self.filtered(lambda x: x.is_main_payment and not (x.write_off_amount or x.withholdings_amount))
+        # Only main bundle payments (is_main_payment, no main_payment_id) without write-off or withholdings skip journal entry.
+        # Linked payments and regular payments always create journal entries, including write-off.
+        return self.filtered(
+            lambda x: x.is_main_payment and not x.main_payment_id and not (x.write_off_amount or x.withholdings_amount)
+        )
 
     def _generate_journal_entry(self, write_off_line_vals=None, force_balance=None, line_ids=None):
         super(AccountPayment, self - self._bypass_journal_entry())._generate_journal_entry(
