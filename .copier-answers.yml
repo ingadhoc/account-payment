@@ -1,5 +1,5 @@
 # Do NOT update manually; changes here will be overwritten by Copier
-_commit: 2f2f7c4
+_commit: 0d084b9
 _src_path: https://github.com/ingadhoc/addons-repo-template.git
 description: Odoo Invoicing Extension Addons
 is_private: false
