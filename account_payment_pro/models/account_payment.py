@@ -281,6 +281,11 @@ class AccountPayment(models.Model):
                 force_amount_company_currency = False
             rec.force_amount_company_currency = force_amount_company_currency
 
+    @api.onchange("company_id")
+    def _onchange_company_id(self):
+        if self.company_id != self._origin.company_id and self.state == "draft":
+            self.remove_all()
+
     @api.depends("amount", "other_currency", "force_amount_company_currency")
     def _compute_amount_company_currency(self):
         """
