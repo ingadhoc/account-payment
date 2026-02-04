@@ -32,6 +32,7 @@ class AccountPayment(models.Model):
         readonly=True,
     )
     total_amount = fields.Float(
+        'Total Payment Amount',
         # compute='get_withholding_data',
         readonly=True,
     )
