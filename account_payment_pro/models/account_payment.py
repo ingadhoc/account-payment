@@ -542,6 +542,11 @@ class AccountPayment(models.Model):
             ):
                 rec.unreconciled_amount = rec.to_pay_amount - rec.selected_debt
 
+    @api.onchange("company_id")
+    def _onchange_company_id(self):
+        if self._origin.company_id and self.company_id != self._origin.company_id and self.state == "draft":
+            self.remove_all()
+
     # We dont set 'is_internal_transfer' as a dependencies as it could leed to recompute to_pay_move_line_ids
     @api.depends("partner_id", "partner_type", "company_id")
     def _compute_to_pay_move_lines(self):
