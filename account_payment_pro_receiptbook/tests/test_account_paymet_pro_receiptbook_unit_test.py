@@ -18,9 +18,24 @@ class TestAccountPaymentProReceiptbookUnitTest(TransactionCase):
         )
         self.company.use_payment_pro = True
         self.company.use_receiptbook = True
-        self.partner_ri = self.env["res.partner"].search([("name", "=", "Deco Addict")])
+        # Create a test partner instead of relying on demo data
+        self.partner_ri = self.env["res.partner"].create(
+            {
+                "name": "Test Partner",
+                "email": "test@example.com",
+                "is_company": True,
+            }
+        )
         self.receiptbook = self.env["account.payment.receiptbook"].search(
             [("company_id", "=", self.company.id), ("name", "=", "Customer Receipts")]
+        )
+        # Create a simple product for testing instead of relying on external ID
+        self.test_product = self.env["product.product"].create(
+            {
+                "name": "Test Product",
+                "list_price": 100.0,
+                "type": "service",
+            }
         )
 
     def test_create_payment_with_receiptbook(self):
@@ -34,7 +49,7 @@ class TestAccountPaymentProReceiptbookUnitTest(TransactionCase):
                 "invoice_line_ids": [
                     Command.create(
                         {
-                            "product_id": self.env.ref("product.product_product_16").id,
+                            "product_id": self.test_product.id,
                             "quantity": 1,
                             "price_unit": 100,
                         }
@@ -165,3 +180,162 @@ class TestAccountPaymentProReceiptbookUnitTest(TransactionCase):
         with self.assertRaises(ValidationError) as cm:
             resequence_wizard.resequence()
         self.assertIn("already exist", str(cm.exception))
+
+    def test_payment_register_keeps_receiptbook_sequence(self):
+        """
+        Test the specific use case:
+        1. Create a payment with receiptbook (to advance the sequence)
+        2. Create 2 invoices
+        3. Use payment register wizard to pay both invoices
+        4. Verify payment names follow receiptbook sequence, not Odoo numbering
+
+        This validates the fix where _compute_name should not recompute names
+        for posted payments with receiptbook.
+        """
+        # Step 1: Create an initial payment with receiptbook to advance the sequence
+        # We need a vendor receiptbook for outbound payments
+        vendor_receiptbook = self.env["account.payment.receiptbook"].search(
+            [("partner_type", "=", "supplier"), ("company_id", "=", self.company.id)], limit=1
+        )
+        if not vendor_receiptbook:
+            # Create a vendor receiptbook if it doesn't exist
+            vendor_receiptbook = self.env["account.payment.receiptbook"].create(
+                {
+                    "name": "Vendor Payments",
+                    "partner_type": "supplier",
+                    "company_id": self.company.id,
+                    "sequence_id": self.env["ir.sequence"]
+                    .create(
+                        {
+                            "name": "Vendor Payment Sequence",
+                            "code": "vendor.payment",
+                            "prefix": "OP-X 0001-",
+                            "padding": 8,
+                        }
+                    )
+                    .id,
+                    "document_type_id": self.env["l10n_latam.document.type"]
+                    .search(
+                        [
+                            ("code", "=", "112")  # Recibo code
+                        ],
+                        limit=1,
+                    )
+                    .id,
+                }
+            )
+
+        initial_payment = self.env["account.payment"].create(
+            {
+                "amount": 50,
+                "payment_type": "outbound",
+                "partner_id": self.partner_ri.id,
+                "journal_id": self.company_bank_journal.id,
+                "date": self.today,
+                "company_id": self.company.id,
+                "receiptbook_id": vendor_receiptbook.id,
+            }
+        )
+        initial_payment.action_post()
+
+        # Get the next expected receiptbook numbers
+        receiptbook_sequence = vendor_receiptbook.sequence_id
+        next_number_after_initial = receiptbook_sequence.number_next_actual
+
+        # Step 2: Create 2 vendor invoices
+        invoice1 = self.env["account.move"].create(
+            {
+                "partner_id": self.partner_ri.id,
+                "invoice_date": self.today,
+                "move_type": "in_invoice",
+                "journal_id": self.env["account.journal"]
+                .search([("company_id", "=", self.company.id), ("type", "=", "purchase")], limit=1)
+                .id,
+                "company_id": self.company.id,
+                "invoice_line_ids": [
+                    Command.create(
+                        {
+                            "product_id": self.test_product.id,
+                            "quantity": 1,
+                            "price_unit": 100,
+                        }
+                    ),
+                ],
+            }
+        )
+
+        invoice2 = self.env["account.move"].create(
+            {
+                "partner_id": self.partner_ri.id,
+                "invoice_date": self.today,
+                "move_type": "in_invoice",
+                "journal_id": self.env["account.journal"]
+                .search([("company_id", "=", self.company.id), ("type", "=", "purchase")], limit=1)
+                .id,
+                "company_id": self.company.id,
+                "invoice_line_ids": [
+                    Command.create(
+                        {
+                            "product_id": self.test_product.id,
+                            "quantity": 1,
+                            "price_unit": 200,
+                        }
+                    ),
+                ],
+            }
+        )
+
+        invoice1.action_post()
+        invoice2.action_post()
+
+        # Step 3: Use payment register wizard to pay both invoices
+        payment_register = (
+            self.env["account.payment.register"]
+            .with_context(active_model="account.move", active_ids=[invoice1.id, invoice2.id])
+            .create(
+                {
+                    "journal_id": self.company_bank_journal.id,
+                    "group_payment": False,  # Create separate payments for each invoice
+                }
+            )
+        )
+
+        # Process the payment register
+        action = payment_register.action_create_payments()
+        payment_ids = action["domain"][0][2] if action.get("domain") else []
+        created_payments = self.env["account.payment"].browse(payment_ids)
+
+        # Step 4: Verify payment names follow receiptbook sequence
+        self.assertEqual(len(created_payments), 2, "Should create 2 separate payments")
+
+        # Sort payments by id to have consistent order
+        payments_sorted = created_payments.sorted("id")
+
+        # Build expected receiptbook names
+        expected_names = []
+        for i in range(2):
+            expected_number = next_number_after_initial + i
+            expected_name = "%s %s%s" % (
+                vendor_receiptbook.document_type_id.doc_code_prefix,
+                vendor_receiptbook.prefix,
+                str(expected_number).zfill(vendor_receiptbook.sequence_id.padding),
+            )
+            expected_names.append(expected_name)
+
+        # Verify each payment has the correct receiptbook name
+        for payment, expected_name in zip(payments_sorted, expected_names):
+            self.assertEqual(
+                payment.name,
+                expected_name,
+                f"Payment {payment.id} should have receiptbook name {expected_name}, got {payment.name}",
+            )
+
+            # Trigger _compute_name to ensure the fix works
+            payment._compute_name()
+
+            # Verify name is still preserved after _compute_name
+            self.assertEqual(
+                payment.name,
+                expected_name,
+                f"Payment {payment.id} should preserve receiptbook name {expected_name} after _compute_name, got {payment.name}",
+            )

@@ -19,8 +19,9 @@ class AccountPayment(models.Model):
     def action_post(self):
         # si no tengo nombre y tengo talonario de recibo, numeramos con el talonario
         for rec in self.filtered(
-            lambda x: x.receiptbook_id
-            and (not x.name or x.name == "/" or (x.move_id and not x.move_id._get_last_sequence()))
+            lambda x: (
+                x.receiptbook_id and (not x.name or x.name == "/" or (x.move_id and not x.move_id._get_last_sequence()))
+            )
         ):
             if not rec.receiptbook_id.active:
                 raise ValidationError(
@@ -71,7 +72,9 @@ class AccountPayment(models.Model):
         super(
             AccountPayment,
             self.filtered(
-                lambda x: (not x.move_id or x.move_id.state != "draft" or not x.receiptbook_id)
-                and not (x.receiptbook_id and x.payment_transaction_id)
+                lambda x: (
+                    (not x.move_id or x.move_id.state == "draft" or not x.receiptbook_id)
+                    and not (x.receiptbook_id and x.payment_transaction_id)
+                )
             ),
         )._compute_name()
