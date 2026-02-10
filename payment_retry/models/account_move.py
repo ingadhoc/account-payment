@@ -18,3 +18,9 @@ class AccountMove(models.Model):
             and {"pending", "authorized"}.intersection(set(x.transaction_ids.mapped("state")))
         ):
             rec.payment_state = "electronic_pending"
+
+    def _has_to_be_paid(self):
+        self.ensure_one()
+        if self.transaction_ids.filtered(lambda tx: tx.state in ("electronic_pending")):
+            return False
+        return super()._has_to_be_paid()
