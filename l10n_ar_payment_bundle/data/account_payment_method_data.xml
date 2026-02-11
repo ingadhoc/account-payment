@@ -11,5 +11,15 @@
         <field name="code">payment_bundle</field>
         <field name="payment_type">inbound</field>
     </record>
+        <record id="account_payment_out_payment_bundle" model="account.payment.method">
+        <field name="name">Payment multiple SC</field>
+        <field name="code">payment_bundle_sc</field>
+        <field name="payment_type">outbound</field>
+    </record>
+    <record id="account_payment_in_payment_bundle" model="account.payment.method">
+        <field name="name">Payment multiple SC</field>
+        <field name="code">payment_bundle_sc</field>
+        <field name="payment_type">inbound</field>
+    </record>
 
 </odoo>

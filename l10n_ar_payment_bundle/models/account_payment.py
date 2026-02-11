@@ -29,7 +29,10 @@ class AccountPayment(models.Model):
     @api.depends("payment_method_line_id")
     def _compute_is_main_payment(self):
         for rec in self:
-            rec.is_main_payment = rec.payment_method_line_id.payment_method_id.code == "payment_bundle"
+            rec.is_main_payment = rec.payment_method_line_id.payment_method_id.code in [
+                "payment_bundle",
+                "payment_bundle_sc",
+            ]
 
     @api.onchange("is_main_payment")
     def _onchange_is_main_payment(self):
@@ -189,7 +192,7 @@ class AccountPayment(models.Model):
 
     def _prepare_move_line_default_vals(self, write_off_line_vals=None, force_balance=None):
         res = super()._prepare_move_line_default_vals(write_off_line_vals=None, force_balance=None)
-        if self.payment_method_code == "payment_bundle":
+        if self.payment_method_code in ["payment_bundle", "payment_bundle_sc"]:
             bundle_account = self.payment_method_line_id.payment_account_id
             res = [line for line in res if not (line.get("account_id") == bundle_account.id)]
         return res
@@ -280,7 +283,9 @@ class AccountPayment(models.Model):
     @api.depends()
     def _compute_matched_amounts(self):
         super()._compute_matched_amounts()
-        if self.filtered(lambda x: x.payment_method_line_id.payment_method_id.code == "payment_bundle"):
+        if self.filtered(
+            lambda x: x.payment_method_line_id.payment_method_id.code in ["payment_bundle", "payment_bundle_sc"]
+        ):
             for rec in self.filtered("is_main_payment"):
                 linked_payments = rec.link_payment_ids
                 rec.matched_amount += sum(linked_payments.mapped("matched_amount"))
