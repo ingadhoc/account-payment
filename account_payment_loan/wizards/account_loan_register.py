@@ -132,6 +132,7 @@ class AccountLoanRegister(models.TransientModel):
         loan_move_data = {
             "partner_id": self.partner_id.id,
             "journal_id": self.company_id.loan_journal_id.id,
+            "company_id": self.company_id.id,
             "ref": ref,
             "loan_description": "%s %s <p>%s</p>"
             % (self.loan_description, self.company_id.loan_terms, self.note or ""),
@@ -265,7 +266,7 @@ class AccountLoanRegister(models.TransientModel):
         debit_lines = (
             (debit_note_id + move_id)
             .mapped("line_ids")
-            .filtered(lambda x: x.account_id.account_type == "asset_receivable")
+            .filtered(lambda x: x.account_id.account_type == "asset_receivable" and not x.reconciled)
         )
         (counterpart_line + debit_lines).reconcile()
         body = _(
