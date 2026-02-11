@@ -18,6 +18,9 @@
             }
             </attribute>
         </xpath>
+        <xpath expr="//field[@name='l10n_latam_move_check_ids']/list[@name='existing_checks']" position="attributes">
+            <attribute name="create">false</attribute>
+        </xpath>
         </field>
     </record>
 </odoo>
