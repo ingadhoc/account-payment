@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
+
     <record id="view_account_payment_from_bundle_tree" model="ir.ui.view">
         <field name="name">account.payment.tree</field>
         <field name="model">account.payment</field>
@@ -108,6 +110,14 @@
         <field name="priority" eval="30"/>
         <field name="inherit_id" ref="account.view_account_payment_form" />
         <field name="arch" type="xml">
+            <button name="action_draft" position="after">
+                <button name="%(l10n_ar_payment_bundle.action_payment_rename_wizard)d"
+                        type="action"
+                        string="Rename"
+                        class="btn-secondary"
+                        invisible="not is_main_payment or state not in ['in_process', 'paid']"
+                        groups="base.group_no_one"/>
+            </button>
             <button name="button_open_journal_entry" position="attributes">
                 <attribute name="invisible" separator=" and " add="not show_move_button"></attribute>
             </button>

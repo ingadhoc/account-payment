@@ -19,6 +19,8 @@
         "account_payment_pro_receiptbook",
     ],
     "data": [
+        "security/ir.model.access.csv",
+        "views/payment_rename_wizard_view.xml",
         "data/account_payment_method_data.xml",
         "views/account_payment_view.xml",
         "views/report_payment_receipt_templates.xml",
