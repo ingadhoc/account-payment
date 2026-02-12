@@ -187,13 +187,6 @@ class AccountPayment(models.Model):
             line_ids=line_ids,
         )
 
-    def _prepare_move_line_default_vals(self, write_off_line_vals=None, force_balance=None):
-        res = super()._prepare_move_line_default_vals(write_off_line_vals=None, force_balance=None)
-        if self.payment_method_code == "payment_bundle":
-            bundle_account = self.payment_method_line_id.payment_account_id
-            res = [line for line in res if not (line.get("account_id") == bundle_account.id)]
-        return res
-
     @api.depends("partner_id", "amount", "date", "payment_type")
     def _compute_duplicate_payment_ids(self):
         # Delete this when https://github.com/odoo/odoo/pull/210164 is merged
