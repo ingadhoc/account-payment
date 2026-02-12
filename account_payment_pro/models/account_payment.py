@@ -317,62 +317,43 @@ class AccountPayment(models.Model):
             else:
                 super(AccountPayment, rec)._compute_destination_account_id()
 
-    def _prepare_move_line_default_vals(self, write_off_line_vals=None, force_balance=None):
-        # TODO: elimino los write_off_line_vals  porque los regenero tanto aca
+    def _prepare_move_lines_per_type(self, write_off_line_vals=None, force_balance=None):
+        # TODO: elimino los write_off_line_vals porque los regenero tanto aca
         # como en retenciones. esto puede generar problemas
-        if not self.company_id.use_payment_pro and not self.is_internal_transfer:
-            return super()._prepare_move_line_default_vals(
-                write_off_line_vals=write_off_line_vals, force_balance=force_balance
-            )
-        write_off_line_vals = []
-        if self.write_off_amount:
-            if self.payment_type == "inbound":
-                # Receive money.
-                write_off_amount_currency = self.write_off_amount
-            else:
-                # Send money.
-                write_off_amount_currency = -self.write_off_amount
-
+        if self.company_id.use_payment_pro and self.write_off_amount:
+            write_off_line_vals = []
+            amount = self.write_off_amount if self.payment_type == "inbound" else -self.write_off_amount
             write_off_line_vals.append(
                 {
                     "name": self.write_off_type_id.label or self.write_off_type_id.name,
                     "account_id": self.write_off_type_id.account_id.id,
                     "partner_id": self.partner_id.id,
                     "currency_id": self.currency_id.id,
-                    "amount_currency": write_off_amount_currency,
+                    "amount_currency": amount,
                     "balance": self.currency_id._convert(
-                        write_off_amount_currency,
-                        self.company_id.currency_id,
-                        self.company_id,
-                        self.date,
+                        amount, self.company_id.currency_id, self.company_id, self.date
                     ),
                 }
             )
-        res = super()._prepare_move_line_default_vals(
-            write_off_line_vals=write_off_line_vals, force_balance=force_balance
-        )
-        if self.force_amount_company_currency:
-            difference = self.force_amount_company_currency - res[0]["credit"] - res[0]["debit"]
-            if res[0]["credit"]:
-                liquidity_field = "credit"
-                counterpart_field = "debit"
-            else:
-                liquidity_field = "debit"
-                counterpart_field = "credit"
-            res[0].update(
-                {
-                    liquidity_field: self.force_amount_company_currency,
-                }
-            )
-            res[1].update(
-                {
-                    counterpart_field: res[1][counterpart_field] + difference,
-                }
-            )
 
-        if self._use_counterpart_currency():
-            sign = 1 if res[1].get("amount_currency", 1) >= 0 else -1
-            res[1].update(
+        res = super()._prepare_move_lines_per_type(write_off_line_vals=write_off_line_vals, force_balance=force_balance)
+
+        if not self.company_id.use_payment_pro and not self.is_internal_transfer:
+            return res
+
+        liquidity_lines = res.get("liquidity_lines", [])
+        counterpart_lines = res.get("counterpart_lines", [])
+
+        if self.force_amount_company_currency and liquidity_lines and counterpart_lines:
+            sign = 1 if liquidity_lines[0]["balance"] > 0 else -1
+            new_balance = sign * self.force_amount_company_currency
+            difference = new_balance - liquidity_lines[0]["balance"]
+            liquidity_lines[0]["balance"] = new_balance
+            counterpart_lines[0]["balance"] -= difference
+
+        if self._use_counterpart_currency() and counterpart_lines:
+            sign = 1 if counterpart_lines[0].get("amount_currency", 1) >= 0 else -1
+            counterpart_lines[0].update(
                 {
                     "currency_id": self.counterpart_currency_id.id,
                     "amount_currency": sign * abs(self.counterpart_currency_amount),
