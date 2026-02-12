@@ -342,6 +342,14 @@ class AccountPayment(models.Model):
 
         res = super()._prepare_move_lines_per_type(write_off_line_vals=write_off_line_vals, force_balance=force_balance)
 
+        if self.company_id.use_payment_pro and write_off_line_vals and not res.get("write_off_lines"):
+            res["write_off_lines"] = write_off_line_vals
+            w_balance = sum(line["balance"] for line in write_off_line_vals)
+            w_amount_currency = sum(line["amount_currency"] for line in write_off_line_vals)
+            if res.get("counterpart_lines"):
+                res["counterpart_lines"][0]["balance"] -= w_balance
+                res["counterpart_lines"][0]["amount_currency"] -= w_amount_currency
+
         if not self.company_id.use_payment_pro and not self.is_internal_transfer:
             return res
 
