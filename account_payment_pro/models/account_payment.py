@@ -324,21 +324,22 @@ class AccountPayment(models.Model):
     def _prepare_move_lines_per_type(self, write_off_line_vals=None, force_balance=None):
         # TODO: elimino los write_off_line_vals porque los regenero tanto aca
         # como en retenciones. esto puede generar problemas
-        if self.company_id.use_payment_pro and self.write_off_amount:
+        if self.company_id.use_payment_pro:
             write_off_line_vals = []
-            amount = self.write_off_amount if self.payment_type == "inbound" else -self.write_off_amount
-            write_off_line_vals.append(
-                {
-                    "name": self.write_off_type_id.label or self.write_off_type_id.name,
-                    "account_id": self.write_off_type_id.account_id.id,
-                    "partner_id": self.partner_id.id,
-                    "currency_id": self.currency_id.id,
-                    "amount_currency": amount,
-                    "balance": self.currency_id._convert(
-                        amount, self.company_id.currency_id, self.company_id, self.date
-                    ),
-                }
-            )
+            if self.write_off_amount:
+                amount = self.write_off_amount if self.payment_type == "inbound" else -self.write_off_amount
+                write_off_line_vals.append(
+                    {
+                        "name": self.write_off_type_id.label or self.write_off_type_id.name,
+                        "account_id": self.write_off_type_id.account_id.id,
+                        "partner_id": self.partner_id.id,
+                        "currency_id": self.currency_id.id,
+                        "amount_currency": amount,
+                        "balance": self.currency_id._convert(
+                            amount, self.company_id.currency_id, self.company_id, self.date
+                        ),
+                    }
+                )
 
         res = super()._prepare_move_lines_per_type(write_off_line_vals=write_off_line_vals, force_balance=force_balance)
 
