@@ -31,7 +31,9 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
             },
         ])
 
-        self.partner_ri = self.env['res.partner'].search([('name', '=', 'Deco Addict')])
+        ar = self.env.ref("base.ar")        
+        self.partner_ri = self.env["res.partner"].create(dict(name="RI Partner", vat="34278580484", country_id=ar.id))
+
 
     def test_create_payment_with_a_date_rate_then_change_rate(self):
         invoice = self.env['account.move'].create({
