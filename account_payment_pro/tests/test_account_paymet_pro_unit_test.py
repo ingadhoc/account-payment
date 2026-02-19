@@ -18,6 +18,7 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
         )
         self.company.use_payment_pro = True
 
+<<<<<<< 91d79be69de79791620293df8f7efe3fc1318e97
         self.eur_currency = self.env["res.currency"].with_context(active_test=False).search([("name", "=", "EUR")])
         self.eur_currency.active = True
         self.rates = self.env["res.currency.rate"].create(
@@ -38,6 +39,13 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
         )
         ar = ar = self.env.ref("base.ar")
         self.partner_ri = self.env["res.partner"].create(dict(name="RI Partner", vat="34278580484", country_id=ar.id))
+||||||| e31532c4f4172d44d993481c1c9564dcaf85991d
+        self.partner_ri = self.env['res.partner'].search([('name', '=', 'Deco Addict')])
+=======
+        ar = self.env.ref("base.ar")        
+        self.partner_ri = self.env["res.partner"].create(dict(name="RI Partner", vat="34278580484", country_id=ar.id))
+
+>>>>>>> f10f009adde0742fec41d4a418592dd28ffedc04
 
     def test_create_payment_with_a_date_rate_then_change_rate(self):
         invoice = self.env["account.move"].create(

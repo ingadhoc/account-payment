@@ -9,7 +9,13 @@ class TestAccountPaymentProReceiptbookUnitTest(TransactionCase):
     def setUp(self):
         super().setUp()
         self.today = fields.Date.today()
+<<<<<<< 91d79be69de79791620293df8f7efe3fc1318e97
         self.company = self.env.company
+||||||| e31532c4f4172d44d993481c1c9564dcaf85991d
+        self.company = self.env.ref('l10n_ar.company_ri')
+=======
+        self.company = self.env.ref('base.main_company')
+>>>>>>> f10f009adde0742fec41d4a418592dd28ffedc04
         self.company_bank_journal = self.env["account.journal"].search(
             [("company_id", "=", self.company.id), ("type", "=", "bank")], limit=1
         )
@@ -23,6 +29,8 @@ class TestAccountPaymentProReceiptbookUnitTest(TransactionCase):
         self.receiptbook = self.env["account.payment.receiptbook"].search(
             [("company_id", "=", self.company.id), ("name", "=", "Customer Receipts")]
         )
+        ar = self.env.ref("base.ar")        
+        self.partner_ri = self.env["res.partner"].create(dict(name="RI Partner", vat="34278580484", country_id=ar.id))
 
     def test_create_payment_with_receiptbook(self):
         invoice = self.env["account.move"].create(
@@ -66,6 +74,7 @@ class TestAccountPaymentProReceiptbookUnitTest(TransactionCase):
 
     def test_payment_amount_update(self):
         """Test creating a payment, posting it, resetting to draft, updating amount, and validating name."""
+<<<<<<< 91d79be69de79791620293df8f7efe3fc1318e97
         payment = self.env["account.payment"].create(
             {
                 "amount": 100,
@@ -77,6 +86,27 @@ class TestAccountPaymentProReceiptbookUnitTest(TransactionCase):
                 "receiptbook_id": self.receiptbook.id,
             }
         )
+||||||| e31532c4f4172d44d993481c1c9564dcaf85991d
+        payment = self.env["account.payment"].create({
+            "amount": 100,
+            "payment_type": "inbound",
+            "partner_id": self.env.ref("l10n_ar.res_partner_adhoc").id,
+            "journal_id": self.company_bank_journal.id,
+            "date": self.today,
+            "company_id": self.company.id,
+            "receiptbook_id": self.receiptbook.id
+        })
+=======
+        payment = self.env["account.payment"].create({
+            "amount": 100,
+            "payment_type": "inbound",
+            "partner_id": self.partner_ri.id,
+            "journal_id": self.company_bank_journal.id,
+            "date": self.today,
+            "company_id": self.company.id,
+            "receiptbook_id": self.receiptbook.id
+        })
+>>>>>>> f10f009adde0742fec41d4a418592dd28ffedc04
 
         # Post the payment
         payment.action_post()
