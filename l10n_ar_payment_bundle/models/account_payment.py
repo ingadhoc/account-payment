@@ -1,5 +1,6 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
+from odoo.fields import Command
 
 
 class AccountPayment(models.Model):
@@ -34,6 +35,11 @@ class AccountPayment(models.Model):
     @api.onchange("is_main_payment")
     def _onchange_is_main_payment(self):
         self.filtered("is_main_payment").amount = 0
+
+    @api.onchange("company_id")
+    def _onchange_company_id(self):
+        if self.link_payment_ids:
+            self.link_payment_ids = [Command.clear()]
 
     @api.depends("link_payment_ids")
     def _compute_payment_total(self):
@@ -110,6 +116,15 @@ class AccountPayment(models.Model):
     def _check_amount_in_main_payment(self):
         if self.filtered(lambda x: x.is_main_payment and x.amount != 0):
             raise ValidationError(_("The payment bundle amount always must be Zero"))
+
+    @api.constrains("company_id", "main_payment_id", "link_payment_ids")
+    def _check_bundle_company_consistency(self):
+        for rec in self:
+            if rec.main_payment_id and rec.company_id != rec.main_payment_id.company_id:
+                raise ValidationError(_("The main payment and linked payment must belong to the same company."))
+
+            if rec.link_payment_ids.filtered(lambda p: p.company_id != rec.company_id):
+                raise ValidationError(_("The main payment and linked payments must belong to the same company."))
 
     @api.onchange("withholdings_amount")
     def _onchange_withholdings(self):
