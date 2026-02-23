@@ -287,7 +287,7 @@ class AccountPayment(models.Model):
 
     @api.onchange("company_id")
     def _onchange_company_id(self):
-        if self.company_id != self._origin.company_id and self.state == "draft":
+        if self._origin.company_id and self.company_id != self._origin.company_id and self.state == "draft":
             self.remove_all()
 
     @api.depends("amount", "other_currency", "force_amount_company_currency")
