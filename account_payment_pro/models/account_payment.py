@@ -469,7 +469,7 @@ class AccountPayment(models.Model):
             # damos vuelta signo porque el payments_amount tmb lo da vuelta,
             # en realidad porque siempre es positivo y se define en funcion
             # a si es pago entrante o saliente
-            sign = rec.partner_type == "supplier" and -1.0 or 1.0
+            sign = rec.payment_type == "outbound" and -1.0 or 1.0
             rec.matched_amount = sign * sum(
                 rec.matched_move_line_ids.with_context(matched_payment_ids=rec.ids).mapped("payment_matched_amount")
             )
