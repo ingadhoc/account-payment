@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-25 18:26+0000\n"
-"PO-Revision-Date: 2025-11-25 18:26+0000\n"
+"POT-Creation-Date: 2026-02-23 18:51+0000\n"
+"PO-Revision-Date: 2026-02-23 18:51+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -78,6 +78,12 @@ msgid "Activity Type Icon"
 msgstr ""
 
 #. module: account_cashbox
+#. odoo-python
+#: code:addons/account_cashbox/models/account_cashbox_session.py:0
+msgid "All session users must be allowed on the cashbox."
+msgstr ""
+
+#. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__allow_concurrent_sessions
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__allow_concurrent_sessions
 msgid "Allow Concurrent Sessions"
@@ -96,6 +102,7 @@ msgstr ""
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__allowed_res_users_ids
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__allowed_res_users_ids
 msgid "Allowed Users"
 msgstr ""
 
@@ -269,6 +276,11 @@ msgid "Default Cashbox"
 msgstr ""
 
 #. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_payment__destination_cashbox_session_id
+msgid "Destination POP Session"
+msgstr ""
+
+#. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__balance_difference
 msgid "Difference"
 msgstr ""
@@ -396,6 +408,13 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_cashbox/models/account_cashbox_session.py:0
 msgid "Import payment"
+msgstr ""
+
+#. module: account_cashbox
+#: model:ir.model.fields,help:account_cashbox.field_account_payment__destination_cashbox_session_id
+msgid ""
+"In case of internal transfer payments, this field indicates the destination "
+"POP session."
 msgstr ""
 
 #. module: account_cashbox
