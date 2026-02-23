@@ -1,25 +1,25 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # 	* l10n_ar_payment_bundle
-# 
+#
 # Translators:
 # ADHOC - Bot <transbot@adhoc.com.ar>, 2025
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-12 20:01+0000\n"
+"POT-Creation-Date: 2026-02-23 14:32+0000\n"
 "PO-Revision-Date: 2025-12-26 17:10+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
-"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/"
-"account-payment-19-0/account-payment-19-0-l10n_ar_payment_bundle/es/>\n"
+"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
+"payment-19-0/account-payment-19-0-l10n_ar_payment_bundle/es/>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == 0)"
-" ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == "
+"0) ? 1 : 2);\n"
 "X-Generator: Weblate 5.10.4\n"
 
 #. module: l10n_ar_payment_bundle
@@ -89,8 +89,8 @@ msgstr "ID"
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_from_bundle_form
 msgid ""
 "IMPORTANT: Linked draft validation must be done from main receipt. Draft "
-"validation of a linked payment is only used for corrections and advanced use"
-" cases. Are you sure you want to continue?"
+"validation of a linked payment is only used for corrections and advanced use "
+"cases. Are you sure you want to continue?"
 msgstr ""
 "IMPORTANTE: La validación del borrador vinculado debe realizarse desde el "
 "recibo principal. La validación del borrador de un pago vinculado solo se "
@@ -101,8 +101,8 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
 msgid ""
 "IMPORTANT: Linked payment validation must be done from main receipt. Manual "
-"validation of a linked payment is only used for corrections and advanced use"
-" cases. Are you sure you want to continue?"
+"validation of a linked payment is only used for corrections and advanced use "
+"cases. Are you sure you want to continue?"
 msgstr ""
 "IMPORTANTE: La validación de un pago vinculado debe realizarse desde el "
 "recibo principal. La validación manual de un pago vinculado solo se utiliza "
@@ -203,6 +203,18 @@ msgstr "Mostrar botón Mover"
 #. module: l10n_ar_payment_bundle
 #. odoo-python
 #: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
+msgid "The main payment and linked payment must belong to the same company."
+msgstr ""
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
+msgid "The main payment and linked payments must belong to the same company."
+msgstr ""
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
 msgid ""
 "The main payment must have a name before a linked payment can be posted."
 msgstr ""
@@ -262,8 +274,8 @@ msgstr "Advertencias"
 #. odoo-python
 #: code:addons/l10n_ar_payment_bundle/models/account_journal.py:0
 msgid ""
-"You cannot assign a currency to journals that use the payment bundle payment"
-" method."
+"You cannot assign a currency to journals that use the payment bundle payment "
+"method."
 msgstr ""
 "No puede asignar una Moneda a los diarios que utilizan el método de pago de "
 "Múltiples Pagos."
