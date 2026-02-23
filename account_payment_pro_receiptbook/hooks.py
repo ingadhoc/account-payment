@@ -4,7 +4,9 @@ from odoo.addons.account.wizard.account_resequence import AccountResequenceWizar
 def _revert_method(cls, name):
     """Revertir el método original llamado 'name'"""
     method = getattr(cls, name)
-    setattr(cls, name, method.origin)
+    origin = getattr(method, "origin", None)
+    if origin:
+        setattr(cls, name, origin)
 
 
 def uninstall_hook(env):
