@@ -4,6 +4,11 @@ from odoo import _, api, fields, models
 class l10nLatamAccountPaymentCheck(models.Model):
     _inherit = "l10n_latam.check"
 
+    name = fields.Char(tracking=True)
+    issuer_vat = fields.Char(tracking=True)
+    payment_date = fields.Date(tracking=True)
+    bank_id = fields.Many2one(tracking=True)
+
     check_add_debit_button = fields.Boolean(related="original_journal_id.check_add_debit_button", readonly=True)
     first_operation = fields.Many2one(
         "account.payment",
@@ -22,6 +27,13 @@ class l10nLatamAccountPaymentCheck(models.Model):
         related="payment_id.state",
         readonly=True,
     )
+    user_can_write = fields.Boolean(
+        compute="_compute_user_can_write",
+    )
+
+    def _compute_user_can_write(self):
+        for rec in self:
+            rec.user_can_write = rec.env.user.has_group("account.group_account_user")
 
     @api.depends("operation_ids.state", "payment_id.state")
     def _compute_company_id(self):
