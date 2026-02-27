@@ -55,7 +55,7 @@ class AccountPayment(models.Model):
 
     def action_post(self):
         for rec in self:
-            if not rec.cashbox_session_id and self.env.user.requiere_account_cashbox_session:
+            if not rec.cashbox_session_id and rec.requiere_account_cashbox_session:
                 rec._compute_cashbox_session_id()
             elif rec.cashbox_session_id and rec.cashbox_session_id.state != "opened":
                 raise UserError(
@@ -68,7 +68,7 @@ class AccountPayment(models.Model):
 
             if (
                 not self.env.context.get("paired_transfer")
-                and self.env.user.requiere_account_cashbox_session
+                and rec.requiere_account_cashbox_session
                 and not rec.cashbox_session_id
             ):
                 raise UserError(
