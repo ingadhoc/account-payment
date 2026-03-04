@@ -323,12 +323,6 @@ msgstr ""
 "y a los Ajustes."
 
 #. module: l10n_ar_payment_bundle
-#. odoo-python
-#: code:addons/l10n_ar_payment_bundle/wizard/payment_rename.py:0
-msgid "This action is only available for bundle payments."
-msgstr "Esta acción solo está disponible para pagos múltiples."
-
-#. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,help:l10n_ar_payment_bundle.field_account_payment__to_pay_move_line_ids
 msgid "This lines are the ones the user has selected to be paid."
 msgstr "Estas líneas son las que el usuario ha seleccionado para pagar."
@@ -371,12 +365,6 @@ msgstr ""
 
 #. module: l10n_ar_payment_bundle
 #. odoo-python
-#: code:addons/l10n_ar_payment_bundle/wizard/payment_rename.py:0
-msgid "You cannot rename canceled payments."
-msgstr "No puede renombrar pagos cancelados."
-
-#. module: l10n_ar_payment_bundle
-#. odoo-python
 #: code:addons/l10n_ar_payment_bundle/wizard/account_resequence.py:0
 msgid ""
 "You cannot resequence moves linked to a bundle payment. Please resequence "
@@ -384,3 +372,9 @@ msgid ""
 msgstr ""
 "No puede resecuenciar movimientos vinculados a un pago múltiple. Por favor "
 "resecuencie el pago en su lugar."
+
+#~ msgid "This action is only available for bundle payments."
+#~ msgstr "Esta acción solo está disponible para pagos múltiples."
+
+#~ msgid "You cannot rename canceled payments."
+#~ msgstr "No puede renombrar pagos cancelados."
