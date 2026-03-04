@@ -29,4 +29,5 @@
         "views/res_company_setting.xml",
     ],
     "demo": [],
+    "post_init_hook": "_post_init_hooks",
 }
