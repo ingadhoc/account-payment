@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-23 21:00+0000\n"
-"PO-Revision-Date: 2025-12-23 21:00+0000\n"
+"POT-Creation-Date: 2026-03-04 14:51+0000\n"
+"PO-Revision-Date: 2026-03-04 14:51+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -231,6 +231,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__display_name
+#: model:ir.model.fields,field_description:account_payment_pro.field_base_language_install__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_company__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__display_name
 msgid "Display Name"
@@ -274,6 +275,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__id
+#: model:ir.model.fields,field_description:account_payment_pro.field_base_language_install__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_company__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__id
 msgid "ID"
@@ -295,6 +297,11 @@ msgid ""
 "If you set a journal here, after invoice validation, the invoice will be "
 "automatically paid with this journal. As manual paymentmethod is used, only "
 "journals with manual method are shown."
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model,name:account_payment_pro.model_base_language_install
+msgid "Install Language"
 msgstr ""
 
 #. module: account_payment_pro
