@@ -1,6 +1,6 @@
 {
     "name": "Account Cashbox Bundle",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.1.0",
     "category": "Accounting",
     "summary": "Technical bridge module for account_cashbox and l10n_ar_payment_bundle",
     "author": "ADHOC SA",
