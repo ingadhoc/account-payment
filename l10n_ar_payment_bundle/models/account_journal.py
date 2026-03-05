@@ -8,9 +8,11 @@ class AccountJournal(models.Model):
     @api.constrains("currency_id")
     def _currency_in_bundle_journal(self):
         if self.filtered(
-            lambda x: x.currency_id
-            and "payment_bundle"
-            in (x.inbound_payment_method_line_ids + x.outbound_payment_method_line_ids).mapped("code")
+            lambda x: (
+                x.currency_id
+                and "payment_bundle"
+                in (x.inbound_payment_method_line_ids + x.outbound_payment_method_line_ids).mapped("code")
+            )
         ):
             raise ValidationError(
                 _("You cannot assign a currency to journals that use the payment bundle payment method.")
@@ -20,8 +22,10 @@ class AccountJournal(models.Model):
     def create(self, vals_list):
         journals = super().create(vals_list)
         if bundle_journals := journals.filtered(
-            lambda x: any(line.payment_method_id.code == "payment_bundle" for line in x.inbound_payment_method_line_ids)
-            or any(line.payment_method_id.code == "payment_bundle" for line in x.outbound_payment_method_line_ids)
+            lambda x: (
+                any(line.payment_method_id.code == "payment_bundle" for line in x.inbound_payment_method_line_ids)
+                or any(line.payment_method_id.code == "payment_bundle" for line in x.outbound_payment_method_line_ids)
+            )
         ):
             for journal in bundle_journals:
                 start_code = "6.0.0.00.001"
@@ -35,3 +39,15 @@ class AccountJournal(models.Model):
         if "inbound_payment_method_line_ids" in vals or "outbound_payment_method_line_ids" in vals:
             self.env.registry.clear_cache()
         return res
+
+    @api.constrains("inbound_payment_method_line_ids", "outbound_payment_method_line_ids")
+    def _check_payment_pro_enabled(self):
+        for journal in self:
+            payment_methods = (
+                journal.inbound_payment_method_line_ids + journal.outbound_payment_method_line_ids
+            ).mapped("payment_method_id")
+            if payment_methods.filtered(lambda x: x.code == "payment_bundle"):
+                if not journal.company_id.use_payment_pro:
+                    raise ValidationError(
+                        _("Payment bundle method requires Payment PRO to be enabled in the company configuration.")
+                    )
