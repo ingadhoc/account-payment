@@ -648,7 +648,9 @@ class AccountPayment(models.Model):
             counterpart_aml = rec.mapped("move_id.line_ids").filtered(
                 lambda r: not r.reconciled and r.account_id.account_type in self._get_valid_payment_account_types()
             )
-            debt_aml = rec.to_pay_move_line_ids.filtered(lambda r: not r.reconciled)
+            debt_aml = rec.to_pay_move_line_ids.filtered(
+                lambda r: not r.reconciled and r.account_id.id == counterpart_aml.account_id.id
+            )
             if counterpart_aml and debt_aml:
                 (counterpart_aml + (debt_aml)).reconcile()
             # Lo sacamos ya que no es correcto de odoo cuando se deslinkea el pago
