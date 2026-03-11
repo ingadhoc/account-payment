@@ -156,7 +156,7 @@ class AccountPayment(models.Model):
         tmb podemos dar mas info al usuario en el error"""
         for rec in self.filtered(lambda x: x.partner_id and x.state != "draft"):
             accounts = rec.to_pay_move_line_ids.mapped("account_id")
-            if len(accounts) > 1:
+            if len(accounts) > 1 and not self.env.context.get("default_mode") == "check_balance":
                 raise ValidationError(_("To Pay Lines must be of the same account!"))
 
     def action_draft(self):
