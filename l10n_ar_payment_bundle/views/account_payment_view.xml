@@ -118,6 +118,9 @@
                         invisible="not is_main_payment or state not in ['in_process', 'paid']"
                         groups="base.group_no_one"/>
             </button>
+            <field name="counterpart_currency_id" position="attributes">
+                <attribute name="readonly" separator=" or " add="main_payment_id"/>
+            </field>
             <button name="button_open_journal_entry" position="attributes">
                 <attribute name="invisible" separator=" and " add="not show_move_button"></attribute>
             </button>
