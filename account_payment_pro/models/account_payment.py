@@ -155,6 +155,7 @@ class AccountPayment(models.Model):
         """TODO ver si esto tmb lo llevamos a la UI y lo mostramos como un warning.
         tmb podemos dar mas info al usuario en el error"""
         for rec in self.filtered(lambda x: x.partner_id and x.state != "draft"):
+            rec._clean_invalid_to_pay_lines()
             accounts = rec.to_pay_move_line_ids.mapped("account_id")
             if len(accounts) > 1 and not self.env.context.get("default_mode") == "check_balance":
                 raise ValidationError(_("To Pay Lines must be of the same account!"))
@@ -612,6 +613,19 @@ class AccountPayment(models.Model):
 
     def remove_all(self):
         self.to_pay_move_line_ids = False
+
+    def _clean_invalid_to_pay_lines(self):
+        """Elimina de to_pay_move_line_ids las líneas que ya no cumplen con el dominio válido.
+        Esto es útil cuando un move se pone en draft o cambia de cuenta."""
+        for rec in self:
+            if rec.to_pay_move_line_ids:
+                # Obtener el dominio válido y buscar líneas que cumplen
+                domain = rec._get_to_pay_move_lines_domain()
+                valid_line_ids = self.env["account.move.line"].search(domain).ids
+                # Mantener solo las líneas actuales que están en el dominio válido
+                valid_lines = rec.to_pay_move_line_ids.filtered(lambda line: line.id in valid_line_ids)
+                if valid_lines != rec.to_pay_move_line_ids:
+                    rec.to_pay_move_line_ids = valid_lines
 
     @api.constrains("partner_id", "to_pay_move_line_ids")
     def check_to_pay_lines(self):
