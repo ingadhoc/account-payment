@@ -13,6 +13,8 @@ class AccountPaymentGroup(models.Model):
     financing_surcharge = fields.Monetary(
         compute='_computed_financing_surcharge')
 
+    surcharge_invoiced = fields.Boolean(default=False)
+
     @api.depends('payment_ids.net_amount')
     def _computed_financing_surcharge(self):
         for rec in self:
@@ -32,7 +34,7 @@ class AccountPaymentGroup(models.Model):
             related_debit_note = self.to_pay_move_line_ids.mapped('move_id').filtered(lambda x: x.l10n_latam_document_type_id.internal_type == 'debit_note')
             surchage_products_total =  sum(related_debit_note.mapped('line_ids').filtered(lambda x:  x.product_id == product).mapped('price_total'))
             financing_surcharge_to_invoice = self.financing_surcharge - (min(surchage_products_total, sum(related_debit_note.mapped('amount_residual'))))
-            if financing_surcharge_to_invoice > 0:                    
+            if financing_surcharge_to_invoice > 0 and not self.surcharge_invoiced:   
                 taxes = product.taxes_id.filtered(lambda t: t.company_id.id == self.company_id.id)
                 journal = self.env['account.journal'].search([('type', '=', 'sale'), ('company_id', '=', self.company_id.id)], limit=1)
                 wiz = self.env['account.payment.group.invoice.wizard'].with_context(
@@ -49,6 +51,8 @@ class AccountPaymentGroup(models.Model):
 
                 # We added this commit in case the connection is lost or there is an error before payment 
                 # validation and prevents the debit note from being created multiple times
+
+                self.surcharge_invoiced = True
                 self.env.cr.commit()
 
                 # If we are registering a payment of a draft invoice then we need to remove the invoice from the debts of the payment group
