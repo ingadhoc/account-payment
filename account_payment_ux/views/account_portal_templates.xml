@@ -1,0 +1,7 @@
+<odoo>
+    <template id="transaction_status" inherit_id="payment.transaction_status">
+        <t t-if="status_message" position="after">
+            <a t-if="invoice.get_portal_last_transaction().state == 'pending'" t-att-href="invoice.get_portal_url(query_string='&amp;cancel_pending_transactions=yes')" class="btn btn-warning">Cancel last payment</a>
+        </t>
+    </template>
+</odoo>
