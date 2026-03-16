@@ -14,7 +14,7 @@ class PaymentTransaction(models.Model):
             if tx.payment_id.currency_id == tx.currency_id and tx.payment_id.amount == abs(tx.amount):
                 tx.payment_id.action_post()
                 if tx.invoice_ids:
-                    (tx.payment_id.line_ids + tx.invoice_ids.line_ids).filtered(
+                    (tx.payment_id.move_id.line_ids + tx.invoice_ids.line_ids).filtered(
                         lambda line: line.account_id == tx.payment_id.destination_account_id and not line.reconciled
                     ).reconcile()
 
