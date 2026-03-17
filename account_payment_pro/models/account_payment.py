@@ -155,7 +155,6 @@ class AccountPayment(models.Model):
         """TODO ver si esto tmb lo llevamos a la UI y lo mostramos como un warning.
         tmb podemos dar mas info al usuario en el error"""
         for rec in self.filtered(lambda x: x.partner_id and x.state != "draft"):
-            rec._clean_invalid_to_pay_lines()
             accounts = rec.to_pay_move_line_ids.mapped("account_id")
             if len(accounts) > 1 and not self.env.context.get("default_mode") == "check_balance":
                 raise ValidationError(_("To Pay Lines must be of the same account!"))
@@ -165,6 +164,7 @@ class AccountPayment(models.Model):
         # Nos salteamos la siguente validacion
         # https://github.com/odoo/odoo/blob/b6b90636938ae961c339807ea893cabdede9f549/addons/account/models/account_move.py#L2474
         if self.company_id.use_payment_pro:
+            self._clean_invalid_to_pay_lines()
             self.move_id.posted_before = False
         super().action_draft()
 
@@ -640,7 +640,7 @@ class AccountPayment(models.Model):
                 valid_line_ids = self.env["account.move.line"].search(domain).ids
                 # Mantener solo las líneas actuales que están en el dominio válido
                 valid_lines = rec.to_pay_move_line_ids.filtered(lambda line: line.id in valid_line_ids)
-                if valid_lines != rec.to_pay_move_line_ids:
+                if rec.move_id.posted_before and valid_lines != rec.to_pay_move_line_ids:
                     rec.to_pay_move_line_ids = valid_lines
 
     @api.constrains("partner_id", "to_pay_move_line_ids")
