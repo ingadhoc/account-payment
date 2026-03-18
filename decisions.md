@@ -29,9 +29,10 @@ en la cuenta contable o en las líneas de deuda.
 
 **Contexto:** Se evaluó hacerlo siempre editable para mayor flexibilidad.
 
-**Decisión:** Solo editable cuando la cuenta no tiene moneda definida Y no hay deuda
-seleccionada (o hay reconcile). Si la cuenta tiene moneda definida, el campo es
-informativo; si hay deuda seleccionada sin reconcile, la moneda la dictan las líneas.
+**Decisión:** Solo editable cuando la cuenta no tiene moneda definida (o es igual a la
+de la compañía) Y (no hay reconcile O no hay deuda seleccionada). Si la cuenta tiene
+moneda definida (distinta a la de la compañía), el campo es informativo; si hay deuda
+seleccionada sin reconcile, la moneda la dictan las líneas.
 
 ---
 
@@ -40,8 +41,9 @@ informativo; si hay deuda seleccionada sin reconcile, la moneda la dictan las l�
 
 **Contexto:** `force_amount_company_currency` era un boolean + monto acoplado.
 
-**Decisión:** Separar en `accounting_rate` (Float, tasa A→C). Es más explícito,
-consistente con como Odoo maneja otras tasas, y permite edición directa de la tasa.
+**Decisión:** Separar en `accounting_rate` (Float, tasa A→C en formato Odoo nativo).
+Es más explícito, consistente con como Odoo maneja otras tasas, y permite edición
+directa de la tasa.
 
 ---
 
@@ -56,6 +58,11 @@ anexo separado para `l10n_ar_tax`.
 
 **Riesgo:** Hay que validar cuidadosamente que el cambio de moneda en
 `withholdable_advanced_amount` y `withholdings_amount` no rompa los cálculos existentes.
+
+**Riesgo adicional:** `l10n_ar_tax._prepare_move_withholding_lines` usa
+`self.exchange_rate or 1.0` para calcular `amount_currency`. Con el renombre a
+`accounting_rate` y el cambio de formato (user-friendly → Odoo nativo), esa fórmula
+produce resultados incorrectos. La adaptación se hace en la iteración de retenciones.
 
 ---
 
@@ -93,12 +100,14 @@ invertido (ej: `0.000667` ARS/USD). Los usuarios argentinos esperan ver `1 USD =
 Se evaluó un mixin compartido y también cambiar el formato de almacenamiento.
 
 **Decisión:** Mantener el formato interno de Odoo en los campos almacenados
-(`accounting_rate`, `counterpart_exchange_rate`). Agregar dos campos auxiliares no
+(`accounting_rate`, `counterpart_rate`). Agregar dos campos auxiliares no
 almacenados con compute + inverse (`user_accounting_rate`, `user_counterpart_rate`)
 directamente en el modelo, sin mixin.
 
 - `user_accounting_rate`: siempre invierte (A es siempre la débil respecto a C en AR).
-- `user_counterpart_rate`: inversión condicional según si el rate almacenado es `< 1.0`.
+- `user_counterpart_rate`: inversión condicional según si el rate almacenado es `< 1.0`
+  (estricto, no `<= 1.0`). Cuando `rate == 1.0` exacto (paridad 1:1 o misma moneda),
+  se muestra directo sin inversión.
 
 **Por qué sin mixin:** Con solo dos campos concretos, un mixin agrega indirección sin
 beneficio real. Si en el futuro hay más casos (ej. `account_ux` adopta el mismo approach),
@@ -137,3 +146,19 @@ Odoo no encola nada. `post_migrate.py` verifica que no queden NULLs en pagos pos
 
 **Aplica a:** `counterpart_rate` (rename + invert), `accounting_rate` (nueva columna,
 calculada desde `amount` y `amount_company_currency`).
+
+---
+
+## ADR-010 — `write_off_amount` migra a `destination_currency_id`
+**Fecha:** 2025-03-18 | **Estado:** Aceptado
+
+**Contexto:** `write_off_amount` estaba en `company_currency_id`. Al migrar todos los
+campos de UX del pago a `destination_currency_id`, `write_off_amount` debe acompañar
+el cambio para que la experiencia sea consistente.
+
+**Decisión:** Migrar `write_off_amount` a `destination_currency_id`. El migration script
+hace backup de la columna original y convierte los valores usando `counterpart_rate`.
+
+**Consecuencias:** Los pagos existentes con write-off tendrán sus montos re-expresados
+en moneda B. Cualquier reporte o lógica que lea `write_off_amount` asumiendo moneda C
+necesita adaptarse.

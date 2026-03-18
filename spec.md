@@ -3,13 +3,13 @@
 **Módulo principal:** `account_payment_pro` (ADHOC)
 **Módulos afectados:**
 - `account` (Odoo SA — sin modificaciones directas, herencia)
-- `account_ux` (ADHOC — provee `reconcile_on_company_currency`, agregar como dependencia)
+- `account_ux` (ADHOC — provee `reconcile_on_company_currency` en `res.company`, agregar como dependencia)
 - `l10n_ar_tax` (ADHOC equipo Contable — campos de retenciones migran a `destination_currency_id`)
 
 **Issue:** T-62550
 **Autor:** Juan
 **Fecha:** 2025-03-17
-**Estado:** En Review
+**Estado:** Final
 
 ---
 
@@ -29,18 +29,20 @@ clarificar la UX y eliminar campos deprecated que ya no tienen sentido.
 **Entra:**
 - Redefinición del modelo de monedas del pago (A / B1 / B2 / C)
 - Nuevos campos calculados `counterpart_currency_id` y `destination_currency_id`
-- Renombrar `exchange_rate` (non-stored) → `accounting_rate` (stored)
+- Renombrar `exchange_rate` (non-stored) → `accounting_rate` (stored, formato Odoo nativo)
 - Renombrar `counterpart_exchange_rate` (stored, formato user-friendly) → `counterpart_rate` (stored, formato Odoo nativo) + migration script que invierte los valores
-- Agregar `account_ux` como dependencia (provee `reconcile_on_company_currency`)
+- Agregar `account_ux` como dependencia (provee campo `reconcile_on_company_currency` en `res.company`, que hace que si la cuenta de deuda AR/AP no tiene moneda definida, la conciliación se haga siempre en moneda de la compañía)
 - Deprecar y archivar campos legacy (`force_amount_company_currency`, `amount_company_currency`, `amount_company_currency_signed_pro`)
+- Migrar `write_off_amount` a `destination_currency_id` (incluye migration de datos)
 - Adaptar vista del formulario de pago
 - Revisar y adaptar `_prepare_move_lines_per_type` para cubrir todos los casos del modelo tri-monetario
 - Adaptar lógica de `payment_matched_amount` en `account.move.line`
+- Adaptar `_get_trigger_fields_to_synchronize` y `_create_paired_internal_transfer_payment`
 - Migration scripts (ver sección dedicada)
 - Tests para los 10 casos de uso documentados
 
 **No entra (scope futuro / anexo separado):**
-- Lógica de cálculo de retenciones en `l10n_ar_tax` (será spec aparte)
+- Lógica de cálculo de retenciones en `l10n_ar_tax` (será spec aparte). **NOTA:** `l10n_ar_tax._prepare_move_withholding_lines` actualmente usa `self.exchange_rate` que cambia de semántica (formato user-friendly → Odoo nativo). Esa adaptación se hará en la iteración de retenciones.
 - Deprecación completa de `reconcile_on_company_currency` (evaluación futura)
 
 ---
@@ -78,7 +80,7 @@ sino:
             → company_currency_id  (editable por usuario)
 ```
 
-**Editable solo cuando:** la cuenta no tiene moneda definida Y (no hay reconcile O no hay deuda seleccionada).
+**Editable solo cuando:** la cuenta no tiene moneda definida (o es igual a la de la compañía) Y (no hay reconcile O no hay deuda seleccionada).
 
 ### `destination_currency_id` (B2) — Calculado, NO almacenado
 
@@ -177,7 +179,10 @@ cuando B1 == C.
 
 **Campo UX auxiliar `user_counterpart_rate` (non-stored):**
 Se invierte condicionalmente: si el rate almacenado es `< 1.0` (A es la moneda débil),
-se muestra invertido. Si `>= 1.0` (A es la fuerte), se muestra directo.
+se muestra invertido. Si `>= 1.0` (A es la fuerte o paridad 1:1), se muestra directo.
+
+**Edge case rate == 1.0:** Cuando `counterpart_rate == 1.0` exacto (misma moneda o paridad 1:1),
+se muestra directo sin inversión. La condición es estricta `< 1.0`, no `<= 1.0`.
 
 ```python
 user_counterpart_rate = fields.Float(
@@ -189,15 +194,20 @@ user_counterpart_rate = fields.Float(
 def _compute_user_counterpart_rate(self):
     for rec in self:
         rate = rec.counterpart_rate
-        rec.user_counterpart_rate = 1.0 / rate if (rate and rate < 1.0) else rate
+        if rate and rate < 1.0:
+            rec.user_counterpart_rate = 1.0 / rate
+        else:
+            rec.user_counterpart_rate = rate or 0.0
 
 def _inverse_user_counterpart_rate(self):
     for rec in self:
-        rate = rec.user_counterpart_rate
-        if rate:
-            rec.counterpart_rate = (
-                1.0 / rate if rec.counterpart_rate < 1.0 else rate
-            )
+        user_rate = rec.user_counterpart_rate
+        if not user_rate:
+            continue
+        if rec.counterpart_rate and rec.counterpart_rate < 1.0:
+            rec.counterpart_rate = 1.0 / user_rate
+        else:
+            rec.counterpart_rate = user_rate
 ```
 
 La vista muestra `user_counterpart_rate`. El label es dinámico:
@@ -226,7 +236,7 @@ La vista muestra `user_counterpart_rate`. El label es dinámico:
 | 4 | Venta de divisa | USD→ARS→ARS | Total deuda: 120.000 ARS · Counterpart rate: 1.200 | Monto A: 100 USD (calculado) |
 | 5 | Arbitraje cruzado | USD→EUR→ARS | Total deuda: 100 EUR · C.rate: 1.10 · A.rate: 1.200 | Monto A: 110 USD (por transitividad) |
 | 6 | Pago mixto/parcial | ARS→USD→ARS | Monto A: 60.000 ARS · C.rate: 1.200 | Deuda B: 50 USD (recalculado inverso) |
-| 7 | Pago anticipado | ARS→USD→ARS | Monto A libre · `counterpart_currency_id` editable | `counterpart_exchange_rate` visible |
+| 7 | Pago anticipado | ARS→USD→ARS | Monto A libre · `counterpart_currency_id` editable | `user_counterpart_rate` visible |
 
 ### Con `reconcile_on_company_currency`
 
@@ -251,14 +261,17 @@ La vista muestra `user_counterpart_rate`. El label es dinámico:
 | `counterpart_rate` | Renombrado desde `counterpart_exchange_rate` (stored, formato invertido → Odoo nativo) | — | Stored editable |
 | `user_counterpart_rate` | Nuevo, UX helper (inverso condicional de `counterpart_rate`) | — | Computed non-stored + inverse |
 | `counterpart_currency_amount` | Adaptar lógica, moneda a `destination_currency_id` | `destination_currency_id` | Computed stored + inverse |
-| `selected_debt` | Adaptar moneda | `destination_currency_id` | Computed |
+| `selected_debt` | Adaptar moneda y lógica compute (ver sección dedicada) | `destination_currency_id` | Computed |
 | `unreconciled_amount` | Adaptar moneda | `destination_currency_id` | Normal |
 | `to_pay_amount` | Adaptar moneda | `destination_currency_id` | Computed + inverse |
 | `to_pay_amount_company_currency` | Nuevo: `to_pay_amount × accounting_rate` | `company_currency_id` | Computed |
+| `write_off_amount` | Migrar moneda de `company_currency_id` a `destination_currency_id` (incluye migration de datos) | `destination_currency_id` | Normal |
 | `withholdable_advanced_amount` | Mueve moneda a `destination_currency_id` (def. en `l10n_ar_tax`) | `destination_currency_id` | Computed stored editable |
 | `withholdings_amount` | Mueve moneda a `destination_currency_id` (def. en `l10n_ar_tax`) | `destination_currency_id` | Computed |
 | `payment_difference` | Adaptar moneda | `destination_currency_id` | Computed |
 | `payment_total` | Adaptar moneda | `destination_currency_id` | Computed |
+| `matched_amount` | Adaptar moneda | `destination_currency_id` | Computed |
+| `unmatched_amount` | Adaptar moneda | `destination_currency_id` | Computed |
 
 ### Campos deprecated (eliminar como fields de Odoo, backup de columna SQL)
 
@@ -267,6 +280,8 @@ La vista muestra `user_counterpart_rate`. El label es dinámico:
 | `force_amount_company_currency` | Eliminar. Reemplazado por `accounting_rate` |
 | `amount_company_currency` | Eliminar |
 | `amount_company_currency_signed_pro` | Evaluar si se puede eliminar |
+| `exchange_rate` | Eliminar (reemplazado por `accounting_rate` stored) |
+| `other_currency` | Evaluar eliminar (reemplazable por `currency_id != company_currency_id`) |
 | `selected_debt_untaxed` | Evaluar eliminar (definido en `l10n_ar_tax`) |
 | `matched_amount_untaxed` | Evaluar eliminar (definido en `l10n_ar_tax`) |
 
@@ -282,6 +297,31 @@ my_rate_field = fields.Float(string='...', digits=0, min_display_digits=2)
 
 ---
 
+## Lógica de `selected_debt` con moneda `destination_currency_id`
+
+Al migrar `selected_debt` a `destination_currency_id`, el compute debe seleccionar el
+campo correcto de las líneas de deuda según la moneda de destino:
+
+```python
+@api.depends("to_pay_move_line_ids", "destination_currency_id")
+def _compute_selected_debt(self):
+    for rec in self:
+        sign = -1.0 if rec.partner_type == "supplier" else 1.0
+        if rec.destination_currency_id and rec.destination_currency_id != rec.company_currency_id:
+            # Deuda en divisa: usar amount_residual_currency
+            amount = sum(rec.to_pay_move_line_ids._origin.mapped("amount_residual_currency"))
+        else:
+            # Deuda en moneda de la compañía: usar amount_residual
+            amount = sum(rec.to_pay_move_line_ids._origin.mapped("amount_residual"))
+        rec.selected_debt = amount * sign
+```
+
+La misma lógica aplica para `matched_amount` y `unmatched_amount`: cuando
+`destination_currency_id != company_currency_id`, los importes deben expresarse
+en moneda B (divisa) y no en moneda C (compañía).
+
+---
+
 ## Cambios en `account.move.line`
 
 ### Campo `payment_matched_amount`
@@ -289,8 +329,69 @@ my_rate_field = fields.Float(string='...', digits=0, min_display_digits=2)
 Actualmente computa en `company_currency_id`. Reimplementar para expresar el importe
 cancelado en **moneda B** (`destination_currency_id`).
 
-Lógica: buscar partials ligados al pago por contexto (`matched_payment_ids`),
-sumar `amount` (en C), convertir → A via `accounting_rate`, luego → B via `counterpart_rate`.
+Se agrega un campo auxiliar `payment_matched_currency_id` para que el campo monetary
+sepa en qué moneda está.
+
+```python
+class AccountMoveLine(models.Model):
+    _inherit = "account.move.line"
+
+    payment_matched_currency_id = fields.Many2one(
+        'res.currency',
+        string="Payment Matched Currency",
+        compute='_compute_payment_matched_values',
+    )
+
+    payment_matched_amount = fields.Monetary(
+        compute="_compute_payment_matched_values",
+        currency_field="payment_matched_currency_id",
+        string="Paid Amount",
+    )
+
+    @api.depends_context("matched_payment_ids")
+    def _compute_payment_matched_values(self):
+        payment_ids = self._context.get("matched_payment_ids")
+        if not payment_ids:
+            self.payment_matched_amount = 0.0
+            self.payment_matched_currency_id = False
+            return
+
+        payments = self.env["account.payment"].browse(payment_ids)
+        main_payment = payments[0]
+
+        target_currency = main_payment.destination_currency_id or main_payment.company_currency_id
+        accounting_rate = main_payment.accounting_rate or 1.0
+        counterpart_rate = main_payment.counterpart_rate or 1.0
+
+        for rec in self:
+            rec.payment_matched_currency_id = target_currency
+
+            matched_partials = (
+                rec.matched_debit_ids.filtered(
+                    lambda p: p.debit_move_id.payment_id in payments)
+                | rec.matched_credit_ids.filtered(
+                    lambda p: p.credit_move_id.payment_id in payments)
+            )
+
+            total_amount_company_currency = sum(matched_partials.mapped('amount'))
+
+            if total_amount_company_currency == 0:
+                rec.payment_matched_amount = 0.0
+                continue
+
+            # Conversión C → A → B
+            # En formato Odoo nativo: rate = to_currency / from_currency
+            # accounting_rate convierte C → A
+            # counterpart_rate convierte A → B1
+            amount_in_a = total_amount_company_currency * accounting_rate
+            amount_in_b = amount_in_a / counterpart_rate if counterpart_rate else amount_in_a
+
+            rec.payment_matched_amount = amount_in_b
+```
+
+> **NOTA sobre conversión con formato Odoo nativo:** Verificar la dirección de las
+> tasas durante la implementación. En Odoo `_get_conversion_rate(from, to)` devuelve
+> `to/from`, así que `amount_from * rate = amount_to`.
 
 ---
 
@@ -306,8 +407,49 @@ parcialmente los casos del modelo tri-monetario:
 **Tareas concretas:**
 1. Eliminar la lógica de `force_amount_company_currency` y reemplazar por cálculo via `accounting_rate`
 2. Reescribir `_use_counterpart_currency()` o eliminarla e inline la lógica en el método principal
-3. Validar que cada caso de la tabla de casos de uso genera los asientos esperados
-4. Los tests de integración deben verificar `balance` y `amount_currency` de cada línea generada
+3. La línea de liquidez siempre usa `currency_id` (A) con `amount_currency` en A y `balance` calculado via `accounting_rate`
+4. La línea de contrapartida usa `counterpart_currency_id` (B1) con `amount_currency` en B1 y `balance` cuadrado por diferencia
+5. Validar que cada caso de la tabla de casos de uso genera los asientos esperados
+6. Los tests de integración deben verificar `balance` y `amount_currency` de cada línea generada
+
+---
+
+## Adaptaciones en métodos auxiliares
+
+### `_get_trigger_fields_to_synchronize`
+
+El código actual agrega `force_amount_company_currency`, `counterpart_exchange_rate`,
+`counterpart_currency_id` al resultado de `super()`. Con el refactor:
+
+```python
+@api.model
+def _get_trigger_fields_to_synchronize(self):
+    res = super()._get_trigger_fields_to_synchronize()
+    if self.mapped("move_id"):
+        res = res + (
+            "accounting_rate",
+            "counterpart_rate",
+            "counterpart_currency_id",
+        )
+    return res + (
+        "write_off_amount",
+        "write_off_type_id",
+    )
+```
+
+### `_create_paired_internal_transfer_payment`
+
+El código actual propaga `force_amount_company_currency` en contexto para la
+transferencia interna pareada. Con el refactor, propagar `accounting_rate`:
+
+```python
+def _create_paired_internal_transfer_payment(self):
+    for rec in self:
+        super(
+            AccountPayment,
+            rec.with_context(default_accounting_rate=rec.accounting_rate),
+        )._create_paired_internal_transfer_payment()
+```
 
 ---
 
@@ -357,8 +499,23 @@ def migrate(cr, version):
         "account_payment": [
             ("force_amount_company_currency", "x_bkp_force_amount_company_currency", None),
             ("amount_company_currency", "x_bkp_amount_company_currency", None),
+            ("write_off_amount", "x_bkp_write_off_amount", None),
         ]
     })
+
+    # 4. write_off_amount: migrar de company_currency a destination_currency
+    #    Para pagos donde el counterpart_rate != 0, convertimos el importe.
+    #    write_off_amount_new = write_off_amount_old / counterpart_rate (Odoo nativo)
+    #    Nota: counterpart_rate ya está invertido en paso 1.
+    cr.execute("""
+        UPDATE account_payment
+        SET write_off_amount = write_off_amount / counterpart_rate
+        WHERE write_off_amount IS NOT NULL
+          AND write_off_amount != 0
+          AND counterpart_rate IS NOT NULL
+          AND counterpart_rate != 0
+          AND counterpart_rate != 1.0;
+    """)
 ```
 
 ### `post_migrate.py`
@@ -392,11 +549,57 @@ def migrate(cr, version):
 
 ### Sección montos
 
-Ver XML de referencia en spec original (sección "Sección montos").
-Label de `counterpart_currency_amount`: usar `string="Amount in"` estático por ahora.
-El campo monetary ya muestra el símbolo de la moneda, así queda razonablemente claro.
-Label dinámico tipo "Amount in USD" no es posible en Odoo con el atributo `string` —
-`:string` con expresión no funciona. Pendiente investigar si hay otro approach en v19.
+```xml
+<div name="amount_div" position="after">
+    <label for="user_counterpart_rate" string="Rate"
+        invisible="currency_id == counterpart_currency_id
+                   or counterpart_currency_id == company_currency_id"/>
+    <div name="counterpart_rate_div" class="d-flex gap-1 text-muted"
+        invisible="currency_id == counterpart_currency_id
+                   or counterpart_currency_id == company_currency_id">
+        <span>1</span>
+        <field name="currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
+        <span>=</span>
+        <field name="user_counterpart_rate" readonly="state != 'draft'" style="max-width: 21ch;"/>
+        <field name="counterpart_currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
+    </div>
+
+    <field name="company_currency_id" invisible="True"/>
+    <field name="destination_currency_id" invisible="True"/>
+    <field name="counterpart_currency_amount" string="Amount in"
+        invisible="currency_id == counterpart_currency_id"/>
+    <label for="write_off_amount" string="Write Off"
+        invisible="not write_off_available or is_internal_transfer or not use_payment_pro"/>
+    <div name="write_off_amount" class="o_row"
+        invisible="not write_off_available or is_internal_transfer or not use_payment_pro">
+        <field name="write_off_amount" readonly="state != 'draft'"/>
+        <field name="write_off_type_id" placeholder="Write-off type"
+            invisible="not write_off_amount" readonly="state != 'draft'"
+            required="write_off_amount" options="{'no_create': True, 'no_open': True}"/>
+    </div>
+    <label for="payment_total" readonly="state != 'draft'"
+        invisible="not use_payment_pro or is_internal_transfer"/>
+    <div name="payment_total" invisible="not use_payment_pro or is_internal_transfer">
+        <field name="payment_total" class="oe_inline"/>
+        <span invisible="state != 'draft'" class="text-muted">
+            (difference <field name="payment_difference" class="oe_inline"/>)
+        </span>
+    </div>
+    <label for="user_accounting_rate" string="Rate"
+        invisible="currency_id == company_currency_id"/>
+    <div name="accounting_rate_div" class="d-flex gap-1 text-muted"
+        invisible="currency_id == company_currency_id">
+        <span>1</span>
+        <field name="currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
+        <span>=</span>
+        <field name="user_accounting_rate" readonly="state != 'draft'" style="max-width: 21ch;"/>
+        <field name="company_currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
+    </div>
+</div>
+```
+
+Label de `counterpart_currency_amount`: usar `string="Amount in"` estático.
+El campo monetary ya muestra el símbolo de la moneda.
 
 ---
 
@@ -411,6 +614,9 @@ Label dinámico tipo "Amount in USD" no es posible en Odoo con el atributo `stri
 - [ ] Las tasas de cambio se almacenan con `digits=0, min_display_digits=2`
 - [ ] Post-migración: cero pagos posted con `accounting_rate` o `counterpart_rate` en NULL
 - [ ] `counterpart_rate` almacena en formato Odoo nativo (< 1 para ARS/USD)
+- [ ] `write_off_amount` migrado a `destination_currency_id`
+- [ ] `_get_trigger_fields_to_synchronize` actualizado con los campos renombrados
+- [ ] `_create_paired_internal_transfer_payment` propaga `accounting_rate` en vez de `force_amount_company_currency`
 
 ---
 
@@ -419,5 +625,6 @@ Label dinámico tipo "Amount in USD" no es posible en Odoo con el atributo `stri
 | Módulo | Equipo | Tipo | Acción requerida |
 |--------|--------|------|-----------------|
 | `l10n_ar_tax` | Equipo Contable | Breaking: campos de moneda cambian a `destination_currency_id` | Review + adaptar campos `withholdable_advanced_amount`, `withholdings_amount`, `matched_amount_untaxed` |
-| `account_ux` | ADHOC | Dependencia nueva: provee `reconcile_on_company_currency` | Agregar al `__manifest__.py` de `account_payment_pro` |
+| `l10n_ar_tax` | Equipo Contable | Breaking: `exchange_rate` cambia semántica → `accounting_rate` en formato Odoo nativo | `_prepare_move_withholding_lines` usa `self.exchange_rate or 1.0` → adaptar fórmula. **Scope: iteración siguiente.** |
+| `account_ux` | ADHOC | Dependencia nueva: provee `reconcile_on_company_currency` en `res.company` | Agregar al `__manifest__.py` de `account_payment_pro` |
 | `account` (Odoo SA) | — | Sin modificaciones directas | Verificar que la herencia no rompa nada en v19 |
