@@ -10,13 +10,15 @@ class AccountPayment(models.Model):
     counterpart_currency_amount = fields.Monetary(
         currency_field="destination_currency_id",
         compute="_compute_counterpart_currency_amount",
+        inverse="_inverse_counterpart_currency_amount",
+        store=True,
+        readonly=False,
     )
     counterpart_currency_id = fields.Many2one(
         "res.currency",
         compute="_compute_counterpart_currency_id",
         store=True,
         readonly=False,
-        precompute=True,
     )
     destination_currency_id = fields.Many2one(
         "res.currency",
@@ -26,8 +28,8 @@ class AccountPayment(models.Model):
     counterpart_rate = fields.Float(
         readonly=False,
         compute="_compute_counterpart_rate",
+        inverse="_inverse_counterpart_rate",
         store=True,
-        precompute=True,
         copy=False,
         digits=0,
         min_display_digits=2,
@@ -137,33 +139,110 @@ class AccountPayment(models.Model):
 
     open_move_line_ids = fields.One2many(related="move_id.open_move_line_ids")
 
-    @api.depends("journal_id")
+    @api.depends(
+        "destination_account_id",
+        "destination_account_id.currency_id",
+        "to_pay_move_line_ids",
+        "company_id",
+        "company_currency_id",
+    )
     def _compute_counterpart_currency_id(self):
-        self.filtered(lambda x: x.journal_id.currency_id == x.counterpart_currency_id).counterpart_currency_id = False
+        for rec in self:
+            account_currency = rec.destination_account_id.currency_id
+            company_currency = rec.company_currency_id
 
+            # Caso 1: la cuenta tiene moneda propia distinta a la de la compañía → forzar, no editable
+            if account_currency and account_currency != company_currency:
+                rec.counterpart_currency_id = account_currency
+                continue
+
+            # Caso 2: la cuenta no tiene moneda definida (o es la de la compañía)
+            # → editable por el usuario; solo asignamos default si no hay valor previo
+            if rec.counterpart_currency_id:
+                # El usuario ya tiene un valor: respetarlo
+                continue
+
+            if rec.company_id.reconcile_on_company_currency:
+                # Default: moneda de la compañía
+                rec.counterpart_currency_id = company_currency
+            elif rec.to_pay_move_line_ids:
+                # Default: moneda de las líneas de deuda (todas iguales por constraint)
+                rec.counterpart_currency_id = rec.to_pay_move_line_ids[:1].currency_id
+            else:
+                # Sin deuda seleccionada: default moneda de la compañía
+                rec.counterpart_currency_id = company_currency
+
+    @api.depends("counterpart_currency_id", "company_id", "destination_account_id", "company_currency_id")
     def _compute_destination_currency_id(self):
-        pass
+        for rec in self:
+            if not rec.company_id.reconcile_on_company_currency:
+                rec.destination_currency_id = rec.counterpart_currency_id
+            else:
+                dest_currency = rec.destination_account_id.currency_id
+                if dest_currency and dest_currency != rec.company_currency_id:
+                    rec.destination_currency_id = dest_currency
+                else:
+                    rec.destination_currency_id = rec.company_currency_id
 
+    @api.depends("currency_id", "company_currency_id", "company_id", "date")
     def _compute_accounting_rate(self):
-        pass
+        for rec in self:
+            if not rec.currency_id or rec.currency_id == rec.company_currency_id:
+                rec.accounting_rate = 1.0
+            else:
+                # _get_conversion_rate(from=C, to=A) devuelve A/C, que es el formato Odoo nativo que necesitamos
+                rec.accounting_rate = self.env["res.currency"]._get_conversion_rate(
+                    from_currency=rec.company_currency_id,
+                    to_currency=rec.currency_id,
+                    company=rec.company_id,
+                    date=rec.date or fields.Date.context_today(rec),
+                )
 
     def _inverse_accounting_rate(self):
+        # El valor se setea directamente por el usuario o por user_accounting_rate inverse
         pass
 
+    @api.depends("accounting_rate")
     def _compute_user_accounting_rate(self):
-        pass
+        for rec in self:
+            rec.user_accounting_rate = 1.0 / rec.accounting_rate if rec.accounting_rate else 0.0
 
+    @api.onchange("user_accounting_rate")
     def _inverse_user_accounting_rate(self):
-        pass
+        for rec in self:
+            if rec.user_accounting_rate:
+                rec.accounting_rate = 1.0 / rec.user_accounting_rate
 
+    @api.depends("counterpart_rate")
     def _compute_user_counterpart_rate(self):
-        pass
+        for rec in self:
+            rate = rec.counterpart_rate
+            if rate and rate < 1.0:
+                rec.user_counterpart_rate = 1.0 / rate
+            else:
+                rec.user_counterpart_rate = rate or 0.0
 
+    @api.onchange("user_counterpart_rate")
     def _inverse_user_counterpart_rate(self):
-        pass
+        for rec in self:
+            user_rate = rec.user_counterpart_rate
+            if not user_rate:
+                continue
+            if rec.counterpart_rate and rec.counterpart_rate < 1.0:
+                rec.counterpart_rate = 1.0 / user_rate
+            else:
+                rec.counterpart_rate = user_rate
+            # Propagar a accounting_rate si B1 == C
+            if rec.counterpart_currency_id == rec.company_currency_id:
+                rec.accounting_rate = rec.counterpart_rate
 
+    @api.depends("to_pay_amount", "accounting_rate")
     def _compute_to_pay_amount_company_currency(self):
-        pass
+        for rec in self:
+            if rec.accounting_rate:
+                rec.to_pay_amount_company_currency = rec.to_pay_amount / rec.accounting_rate
+            else:
+                rec.to_pay_amount_company_currency = rec.to_pay_amount
 
     @api.depends("company_id", "outstanding_account_id")
     def _compute_use_payment_pro(self):
@@ -286,27 +365,55 @@ class AccountPayment(models.Model):
             else:
                 rec.exchange_rate = False
 
-    @api.depends("payment_total", "counterpart_rate")
+    @api.depends("amount", "counterpart_rate", "counterpart_currency_id", "currency_id")
     def _compute_counterpart_currency_amount(self):
         for rec in self:
-            if rec.counterpart_currency_id and rec.counterpart_rate:
-                rec.counterpart_currency_amount = rec.payment_total / rec.counterpart_rate
+            if rec.counterpart_currency_id and rec.counterpart_currency_id != rec.currency_id:
+                if rec.counterpart_rate:
+                    # amount está en A, convertir a B1 usando counterpart_rate
+                    rec.counterpart_currency_amount = rec.amount * rec.counterpart_rate
+                else:
+                    rec.counterpart_currency_amount = 0.0
             else:
-                rec.counterpart_currency_amount = False
+                # A == B1, son la misma moneda
+                rec.counterpart_currency_amount = rec.amount
 
-    @api.depends("counterpart_currency_id", "company_id", "date")
+    def _inverse_counterpart_currency_amount(self):
+        for rec in self:
+            if rec.counterpart_currency_amount and rec.amount:
+                rec.counterpart_rate = rec.counterpart_currency_amount / rec.amount
+
+    @api.depends(
+        "accounting_rate", "counterpart_currency_id", "currency_id", "company_currency_id", "company_id", "date"
+    )
     def _compute_counterpart_rate(self):
         for rec in self:
-            if rec.counterpart_currency_id:
-                rate = self.env["res.currency"]._get_conversion_rate(
-                    from_currency=rec.company_currency_id,
-                    to_currency=rec.counterpart_currency_id,
-                    company=rec.company_id,
-                    date=rec.date,
-                )
-                rec.counterpart_rate = 1 / rate if rate else False
-            else:
-                rec.counterpart_rate = False
+            if not rec.counterpart_currency_id:
+                rec.counterpart_rate = 1.0
+                continue
+
+            # Caso B1 == C: delegar en accounting_rate (misma conversión)
+            if rec.counterpart_currency_id == rec.company_currency_id:
+                rec.counterpart_rate = rec.accounting_rate
+                continue
+
+            # Caso A == B1: sin conversión
+            if rec.currency_id == rec.counterpart_currency_id:
+                rec.counterpart_rate = 1.0
+                continue
+
+            # Caso general A != B1 != C
+            rec.counterpart_rate = self.env["res.currency"]._get_conversion_rate(
+                from_currency=rec.currency_id,
+                to_currency=rec.counterpart_currency_id,
+                company=rec.company_id,
+                date=rec.date or fields.Date.context_today(rec),
+            )
+
+    def _inverse_counterpart_rate(self):
+        for rec in self:
+            if rec.counterpart_currency_id == rec.company_currency_id:
+                rec.accounting_rate = rec.counterpart_rate
 
     # this onchange is necesary because odoo, sometimes, re-compute
     # and overwrites amount_company_currency. That happends due to an issue
@@ -365,73 +472,70 @@ class AccountPayment(models.Model):
                 super(AccountPayment, rec)._compute_destination_account_id()
 
     def _prepare_move_lines_per_type(self, write_off_line_vals=None, force_balance=None):
-        # TODO: elimino los write_off_line_vals porque los regenero tanto aca
-        # como en retenciones. esto puede generar problemas
-        if self.company_id.use_payment_pro:
-            write_off_line_vals = []
-            if self.write_off_amount:
-                amount = self.write_off_amount if self.payment_type == "inbound" else -self.write_off_amount
-                write_off_line_vals.append(
-                    {
-                        "name": self.write_off_type_id.label or self.write_off_type_id.name,
-                        "account_id": self.write_off_type_id.account_id.id,
-                        "partner_id": self.partner_id.id,
-                        "currency_id": self.currency_id.id,
-                        "amount_currency": amount,
-                        "balance": self.currency_id._convert(
-                            amount, self.company_id.currency_id, self.company_id, self.date
-                        ),
-                    }
-                )
+        if not self.company_id.use_payment_pro:
+            return super()._prepare_move_lines_per_type(
+                write_off_line_vals=write_off_line_vals, force_balance=force_balance
+            )
+
+        # Write-off en moneda B2 (destination_currency_id)
+        write_off_line_vals = []
+        if self.write_off_amount and self.write_off_type_id:
+            wo_sign = 1 if self.payment_type == "inbound" else -1
+            wo_amount = wo_sign * self.write_off_amount
+            wo_balance = self.destination_currency_id._convert(
+                wo_amount, self.company_currency_id, self.company_id, self.date
+            )
+            write_off_line_vals.append(
+                {
+                    "name": self.write_off_type_id.label or self.write_off_type_id.name,
+                    "account_id": self.write_off_type_id.account_id.id,
+                    "partner_id": self.partner_id.id,
+                    "currency_id": self.destination_currency_id.id,
+                    "amount_currency": wo_amount,
+                    "balance": wo_balance,
+                }
+            )
 
         res = super()._prepare_move_lines_per_type(write_off_line_vals=write_off_line_vals, force_balance=force_balance)
-
-        if self.company_id.use_payment_pro and write_off_line_vals and not res.get("write_off_lines"):
-            res["write_off_lines"] = write_off_line_vals
-            w_balance = sum(line["balance"] for line in write_off_line_vals)
-            w_amount_currency = sum(line["amount_currency"] for line in write_off_line_vals)
-            if res.get("counterpart_lines"):
-                res["counterpart_lines"][0]["balance"] -= w_balance
-                res["counterpart_lines"][0]["amount_currency"] -= w_amount_currency
-
-        if not self.company_id.use_payment_pro and not self.is_internal_transfer:
-            return res
 
         liquidity_lines = res.get("liquidity_lines", [])
         counterpart_lines = res.get("counterpart_lines", [])
 
-        if self.force_amount_company_currency and liquidity_lines and counterpart_lines:
-            sign = 1 if liquidity_lines[0]["balance"] > 0 else -1
-            new_balance = sign * self.force_amount_company_currency
-            difference = new_balance - liquidity_lines[0]["balance"]
-            liquidity_lines[0]["balance"] = new_balance
-            counterpart_lines[0]["balance"] -= difference
+        if not liquidity_lines or not counterpart_lines:
+            return res
 
-        if self._use_counterpart_currency() and counterpart_lines:
-            sign = 1 if counterpart_lines[0].get("amount_currency", 1) >= 0 else -1
+        # ── Ajuste de la línea de LIQUIDEZ ────────────────────────────────────────
+        # accounting_rate = A/C (formato Odoo nativo, ej: 0.000667 p/USD→ARS)
+        # balance_en_C = amount_en_A / accounting_rate
+        if self.accounting_rate and self.currency_id != self.company_currency_id:
+            liq_amount_currency = liquidity_lines[0]["amount_currency"]
+            liquidity_lines[0]["balance"] = liq_amount_currency / self.accounting_rate
+
+        # ── Recalcular balance de CONTRAPARTIDA para cerrar el asiento ────────────
+        write_off_balance = sum(line["balance"] for line in res.get("write_off_lines", []))
+        withholding_balance = sum(line["balance"] for line in res.get("withholding_lines", []))
+        new_liq_balance = liquidity_lines[0]["balance"]
+        counterpart_lines[0]["balance"] = -new_liq_balance - write_off_balance - withholding_balance
+
+        # ── Ajuste de MONEDA en la línea de CONTRAPARTIDA ─────────────────────────
+        # Si A != B1: la contrapartida va en moneda B1 (counterpart_currency_id)
+        if self.counterpart_currency_id and self.counterpart_currency_id != self.currency_id:
+            cp_sign = 1 if counterpart_lines[0].get("amount_currency", 0) >= 0 else -1
             counterpart_lines[0].update(
                 {
                     "currency_id": self.counterpart_currency_id.id,
-                    "amount_currency": sign * abs(self.counterpart_currency_amount),
+                    "amount_currency": cp_sign * abs(self.counterpart_currency_amount),
                 }
             )
-        return res
+        # Si A == B1: la moneda ya es correcta (A), solo el balance se actualizó arriba
 
-    def _use_counterpart_currency(self):
-        self.ensure_one()
-        return (
-            self.counterpart_currency_id
-            and self.currency_id == self.company_id.currency_id
-            and self.counterpart_currency_id != self.currency_id
-        )
+        return res
 
     @api.model
     def _get_trigger_fields_to_synchronize(self):
         res = super()._get_trigger_fields_to_synchronize()
-        # si bien es un metodo api.model usamos este hack para chequear si es la creacion de un payment que termina
-        # triggereando un write y luego llamando a este metodo y dando error, por ahora no encontramos una mejor forma
-        # esto esta ligado de alguna manera a un llamado que se hace dos veces por "culpa" del método
-        # "_inverse_amount_company_currency". Si bien no es elegante para todas las pruebas que hicimos funcionó bien.
+        # api.model hack: evita error en la creación de un payment donde se hace un write
+        # que llama a este método antes de que exista move_id
         if self.mapped("move_id"):
             res = res + (
                 "accounting_rate",
@@ -447,7 +551,7 @@ class AccountPayment(models.Model):
         for rec in self:
             super(
                 AccountPayment,
-                rec.with_context(default_force_amount_company_currency=rec.force_amount_company_currency),
+                rec.with_context(default_accounting_rate=rec.accounting_rate),
             )._create_paired_internal_transfer_payment()
 
     ####################################
@@ -494,19 +598,13 @@ class AccountPayment(models.Model):
 
         (self - stored_payments).matched_move_line_ids = False
 
-    @api.depends(
-        "state",
-        "amount_company_currency_signed_pro",
-    )
+    @api.depends("state", "matched_move_line_ids", "payment_total")
     def _compute_matched_amounts(self):
         for rec in self:
             rec.matched_amount = 0.0
             rec.unmatched_amount = 0.0
             if rec.state == "draft":
                 continue
-            # damos vuelta signo porque el payments_amount tmb lo da vuelta,
-            # en realidad porque siempre es positivo y se define en funcion
-            # a si es pago entrante o saliente
             sign = rec.payment_type == "outbound" and -1.0 or 1.0
             rec.matched_amount = sign * sum(
                 rec.matched_move_line_ids.with_context(matched_payment_ids=rec.ids).mapped("payment_matched_amount")
@@ -526,13 +624,33 @@ class AccountPayment(models.Model):
             if len(lines) != 0:
                 rec.has_outstanding = True
 
-    @api.depends("amount_company_currency_signed_pro", "write_off_amount")
+    @api.depends(
+        "amount",
+        "counterpart_currency_amount",
+        "write_off_amount",
+        "currency_id",
+        "destination_currency_id",
+        "payment_type",
+        "partner_type",
+    )
     def _compute_payment_total(self):
         for rec in self:
-            rec.payment_total = rec.amount_company_currency_signed_pro + rec.write_off_amount
+            if rec.currency_id == rec.destination_currency_id:
+                base_amount = rec.amount
+            else:
+                base_amount = rec.counterpart_currency_amount
 
-    @api.depends("amount_company_currency", "payment_type")
-    def _compute_amount_company_currency_signed_pro(self):
+            if (
+                rec.payment_type == "outbound"
+                and rec.partner_type == "customer"
+                or rec.payment_type == "inbound"
+                and rec.partner_type == "supplier"
+            ):
+                base_amount = -base_amount
+
+            rec.payment_total = base_amount + rec.write_off_amount
+
+    def _compute_amount_company_currency_signed_pro(self):  # dead code — campo eliminado
         """new field similar to amount_company_currency_signed but:
         1. is positive for payments to suppliers
         2. we use the new field amount_company_currency instead of amount_total_signed, because amount_total_signed is
@@ -550,28 +668,21 @@ class AccountPayment(models.Model):
                 payment.amount_company_currency_signed_pro = payment.amount_company_currency
 
     # TODO revisar depends
-    @api.depends("payment_total", "to_pay_amount", "amount_company_currency_signed_pro")
+    @api.depends("payment_total", "to_pay_amount")
     def _compute_payment_difference(self):
         for rec in self:
             rec.payment_difference = rec.to_pay_amount - rec.payment_total
 
     # En el pasado se contaba con to_pay_move_line_ids.amount_residual dentro de los depends,  y no deberiamos por cuestiones de performance, ya que ademas no era necesario
-    @api.depends("to_pay_move_line_ids")
+    @api.depends("to_pay_move_line_ids", "destination_currency_id")
     def _compute_selected_debt(self):
         for rec in self:
-            # factor = 1
-            amount_residual = sum(rec.to_pay_move_line_ids._origin.mapped("amount_residual"))
-            if self.env.context.get("pay_now") and amount_residual != sum(
-                rec.to_pay_move_line_ids._origin.mapped("amount_residual_currency")
-            ):
-                amount_residual = sum(rec.to_pay_move_line_ids._origin.mapped("amount_residual_currency"))
-            rec.selected_debt = amount_residual * (-1.0 if rec.partner_type == "supplier" else 1.0)
-
-            # TODO error en la creacion de un payment desde el menu?
-            # if rec.payment_type == 'outbound' and rec.partner_type == 'customer' or \
-            #         rec.payment_type == 'inbound' and rec.partner_type == 'supplier':
-            #     factor = -1
-            # rec.selected_debt = sum(rec.to_pay_move_line_ids._origin.mapped('amount_residual')) * factor
+            sign = -1.0 if rec.partner_type == "supplier" else 1.0
+            if rec.destination_currency_id and rec.destination_currency_id != rec.company_currency_id:
+                amount = sum(rec.to_pay_move_line_ids._origin.mapped("amount_residual_currency"))
+            else:
+                amount = sum(rec.to_pay_move_line_ids._origin.mapped("amount_residual"))
+            rec.selected_debt = amount * sign
 
     @api.depends("selected_debt", "unreconciled_amount")
     def _compute_to_pay_amount(self):
