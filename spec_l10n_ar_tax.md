@@ -2,10 +2,7 @@
 
 **Módulo:** `l10n_ar_tax` (ADHOC)
 **Depende de:** `account_payment_pro` refactor (T-62550) — requiere `destination_currency_id`, `accounting_rate`, `counterpart_rate`
-**Issue:** T-XXXXX
-**Autor:** Juan
-**Fecha:** 2025-03-18 (rev. final)
-**Estado:** Aprobado
+**Estado:** Implementado
 
 ---
 
@@ -28,17 +25,32 @@ del día ni el rate histórico de la factura).
 
 ---
 
+## Decisión de diseño clave: `base_amount` siempre en C (ARS)
+
+> **`base_amount` se mantiene en ARS (C), NO migra a moneda B.**
+
+### Justificación
+
+1. **AFIP exige ARS.** Los certificados de retención muestran ARS; `compute_all` recibe ARS.
+2. **`same_period_base` ya está en ARS.** Los move lines acumulan `balance` en ARS (C).
+   `C + C = C` sin conversión — coherente y directo.
+3. **El usuario edita la base en ARS** — intuitivo en el contexto impositivo argentino.
+4. **No requiere script de migración** — la columna `base_amount` en PG mantiene su semántica.
+5. **Simplifica `_tax_compute_all_helper`** — recibe la base ya en C, no necesita
+   conversión interna.
+
+---
+
 ## Alcance
 
 **Entra:**
 - Helper `_get_withholding_rate()` en `account.payment` (B->C usando rates del pago)
 - Cambiar `currency_field` de `selected_debt_untaxed` a `destination_currency_id`
 - Adaptar `_compute_selected_debt_untaxed` para usar `amount_residual_currency` cuando B!=C
-- Adaptar `_tax_compute_all_helper` para convertir base B->C antes de `compute_all`
+- Adaptar `_tax_compute_all_helper`: `base_amount` ya llega en C — usarlo directamente en `compute_all` sin conversión
 - Adaptar `_prepare_move_withholding_lines`: reemplazar `self.exchange_rate` por `self.accounting_rate`
 - Adaptar `_compute_payment_total` para sumar `withholdings_amount` (B) al total en B
 - Cambiar `currency_field` de `withholdings_amount` a `destination_currency_id` con conversión C->B
-- Agregar `base_currency_id` en `l10n_ar.payment.withholding` para `base_amount` en moneda B
 - Eliminar `withholding_warning` y `_compute_withholding_warning`
 - Tests para los casos documentados
 
@@ -178,23 +190,17 @@ withholdable_advanced_amount = fields.Monetary(
 ### Campos
 
 ```python
-# currency_id se mantiene en C (ARS) — para amount
+# currency_id en C (ARS) — para amount y base_amount
 currency_id = fields.Many2one(related="payment_id.company_currency_id")
 
-# Nuevo: moneda de la base (B)
-base_currency_id = fields.Many2one(
-    "res.currency",
-    related="payment_id.destination_currency_id",
-)
-
-# base_amount pasa a moneda B
+# base_amount en C (ARS) — NO existe base_currency_id
 base_amount = fields.Monetary(
-    currency_field="base_currency_id",
+    currency_field="currency_id",  # C (ARS)
     compute="_compute_base_amount",
     store=True, readonly=False,
 )
 
-# amount se mantiene en C (ARS) — NO cambia
+# amount en C (ARS) — sin cambios
 amount = fields.Monetary(
     currency_field="currency_id",
     compute="_compute_amount",
@@ -202,55 +208,62 @@ amount = fields.Monetary(
 )
 ```
 
-### `_compute_base_amount` — fix comparación pago parcial
+### `_compute_base_amount` — calcular base en B, convertir a C al final
 
-El código actual compara `partial_line.amount_residual` (C) con
-`withholdable_advanced_amount` (ahora B). Corregir para comparar en la misma moneda:
+Los campos de deuda (`selected_debt`, `selected_debt_untaxed`, etc.) están en B.
+Se suman en B y al final se convierte con `_get_withholding_rate()`. Fix de comparación
+pago parcial: usar `amount_residual_currency` cuando B≠C.
 
 ```python
 @api.depends(...)
 def _compute_base_amount(self):
     self.payment_id._compute_to_pay_amount()
     for wth in self.filtered(lambda x: x.payment_id.partner_type == "supplier"):
-        advance_amount = wth.payment_id.withholdable_advanced_amount
+        pay = wth.payment_id
+        advance_amount = pay.withholdable_advanced_amount  # en B
         tax = wth._get_withholding_tax()
-        if advance_amount < 0.0 and wth.payment_id.to_pay_move_line_ids:
+        if advance_amount < 0.0 and pay.to_pay_move_line_ids:
             sorted_to_pay_lines = sorted(
-                wth.payment_id.to_pay_move_line_ids,
+                pay.to_pay_move_line_ids,
                 key=lambda a: a.date_maturity or a.date,
             )
             partial_line = sorted_to_pay_lines[-1]
 
             # Comparar en moneda B (ambos lados)
-            pay = wth.payment_id
             if pay.destination_currency_id != pay.company_currency_id:
                 line_residual = abs(partial_line.amount_residual_currency)
             else:
                 line_residual = abs(partial_line.amount_residual)
 
-            if line_residual < abs(wth.payment_id.withholdable_advanced_amount):
+            if line_residual < abs(pay.withholdable_advanced_amount):
                 raise UserError(...)
 
-            advance_amount = wth.payment_id.unreconciled_amount
+            advance_amount = pay.unreconciled_amount  # B
             if tax.l10n_ar_tax_type != "iibb_total":
                 advance_amount = advance_amount * (
-                    wth.payment_id.selected_debt_untaxed / wth.payment_id.selected_debt
+                    pay.selected_debt_untaxed / pay.selected_debt
                 )
 
+        # Calcular base en B (campos en B)
         if tax.l10n_ar_tax_type == "iibb_total":
-            wth.base_amount = wth.payment_id.selected_debt + advance_amount
+            base_in_b = pay.selected_debt + advance_amount
         else:
-            wth.base_amount = wth.payment_id.selected_debt_untaxed + advance_amount
+            base_in_b = pay.selected_debt_untaxed + advance_amount
 
-    # ratio handling
+        # Convertir B → C al final usando rate del pago
+        wth.base_amount = pay.company_currency_id.round(
+            base_in_b * pay._get_withholding_rate()
+        )
+
+    # ratio handling (opera sobre C, resultado sigue en C)
     for wth in self.filtered(lambda x: x.tax_id.amount_type == "percent" and x.tax_id.ratio != 100):
         wth.base_amount *= wth.tax_id.ratio / 100
 ```
 
-### `_tax_compute_all_helper` — convertir B->C, luego compute_all en ARS
+### `_tax_compute_all_helper` — `base_amount` ya en C, compute_all en ARS
 
-Cambio crítico: convertir `base_amount` (B) a ARS (C) **antes** de sumar acumulados
-del período (que ya están en C) y antes de llamar a `compute_all`.
+`base_amount` llega en C (ARS) desde `_compute_base_amount`. No se necesita conversión.
+Se elimina `base_in_c` y se usa `self.base_amount` directamente:
 
 ```python
 def _tax_compute_all_helper(self):
@@ -262,24 +275,20 @@ def _tax_compute_all_helper(self):
     pay = self.payment_id
     company_currency = pay.company_currency_id
 
-    # 1. Convertir base de B a C usando rate del pago
-    withholding_rate = pay._get_withholding_rate()
-    base_in_c = company_currency.round(self.base_amount * withholding_rate)
-
-    # 2. Para ganancias: sumar acumulados del período (ya en C)
+    # base_amount ya está en C (ARS) — no se necesita conversión
     if tax.l10n_ar_tax_type in ["earnings", "earnings_scale"]:
         same_period_withholdings = self._get_same_period_withholdings_amount()
         same_period_base = self._get_same_period_base_amount()
-        net_amount = base_in_c + same_period_base  # C + C = C
+        net_amount = self.base_amount + same_period_base  # C + C = C
     else:
-        net_amount = base_in_c
+        net_amount = self.base_amount
 
     net_amount = max(0, net_amount - tax.l10n_ar_non_taxable_amount)
 
-    # 3. compute_all SIEMPRE en ARS (C)
+    # compute_all SIEMPRE en ARS (C)
     taxes_res = tax.compute_all(
         net_amount,
-        currency=company_currency,  # <-- era self.payment_id.currency_id (A), ahora C
+        currency=company_currency,
         quantity=1.0,
         product=False,
         partner=False,
@@ -291,22 +300,22 @@ def _tax_compute_all_helper(self):
     tax_account_id = taxes_res["taxes"][0]["account_id"]
     tax_repartition_line_id = taxes_res["taxes"][0]["tax_repartition_line_id"]
 
-    # 4. Ref: usar company_currency para formatear (montos en ARS)
+    # Ref: formatear en ARS (self.base_amount, same_period_base, etc.)
     ref = False
     f = company_currency.format
     if tax.l10n_ar_tax_type in ["earnings", "earnings_scale"]:
         if net_amount <= 0:
             ref = (
-                f"{f(base_in_c)} + {f(same_period_base)}"
+                f"{f(self.base_amount)} + {f(same_period_base)}"
                 f" - {f(tax.l10n_ar_non_taxable_amount)}"
-                f" = {f(base_in_c + same_period_base - tax.l10n_ar_non_taxable_amount)}"
+                f" = {f(self.base_amount + same_period_base - tax.l10n_ar_non_taxable_amount)}"
                 f" (no corresponde aplicar)"
             )
         if tax.l10n_ar_tax_type == "earnings_scale":
             # ... escala logic sin cambios, opera sobre net_amount (C)
             ...
             ref = ref or (
-                f"({f(base_in_c)} + {f(same_period_base)}"
+                f"({f(self.base_amount)} + {f(same_period_base)}"
                 f" - {f(tax.l10n_ar_non_taxable_amount)}"
                 f" - {f(escala.excess_amount)})"
                 f" * {escala.percentage}%"
@@ -315,7 +324,7 @@ def _tax_compute_all_helper(self):
             )
         else:
             ref = (
-                f"({f(base_in_c)} + {f(same_period_base)}"
+                f"({f(self.base_amount)} + {f(same_period_base)}"
                 f" - {f(tax.l10n_ar_non_taxable_amount)})"
                 f" * {tax.amount}%"
                 f" - {f(same_period_withholdings)}"
@@ -326,6 +335,9 @@ def _tax_compute_all_helper(self):
         tax_amount = 0.0
     return tax_amount, tax_account_id, tax_repartition_line_id, ref
 ```
+
+**No existe `base_in_c` ni `withholding_rate` en este método.**
+`self.base_amount` ya es ARS cuando llega aquí.
 
 ### `_prepare_move_withholding_lines` — fix trivial
 
@@ -376,9 +388,8 @@ Retención ejemplo: 3% sobre base neta sin IVA.
 **Cálculo:**
 ```
 selected_debt_untaxed = 1.210 * (1/1.21) = 1.000 ARS
-base_amount           = 1.000 ARS
 _get_withholding_rate = 1.0/1.0 = 1.0
-base_in_c             = 1.000 * 1.0 = 1.000 ARS
+base_amount           = 1.000 * 1.0 = 1.000 ARS  ← C (stored)
 withholding amount    = 1.000 * 3% = 30 ARS (stored en C)
 withholdings_amount   = 30 / 1.0 = 30 ARS (UX en B=C)
 ```
@@ -394,9 +405,8 @@ withholdings_amount   = 30 / 1.0 = 30 ARS (UX en B=C)
 **Cálculo:**
 ```
 selected_debt_untaxed = 1.210 * (1/1.21) = 1.000 USD  (usa amount_residual_currency)
-base_amount           = 1.000 USD
 _get_withholding_rate = 1200/1.0 = 1200
-base_in_c             = 1.000 * 1200 = 1.200.000 ARS
+base_amount           = 1.000 * 1200 = 1.200.000 ARS  ← C (stored)
 withholding amount    = 1.200.000 * 3% = 36.000 ARS (stored)
 withholdings_amount   = 36.000 / 1200 = 30 USD (UX)
 ```
@@ -415,9 +425,8 @@ balance=36.000 ARS, amount_currency = 36.000/1200 = 30 USD, currency_id=USD(A)
 **Cálculo:**
 ```
 selected_debt_untaxed = 1.000 USD (amount_residual_currency)
-base_amount           = 1.000 USD
 _get_withholding_rate = 1.0/0.000667 = 1500
-base_in_c             = 1.000 * 1500 = 1.500.000 ARS
+base_amount           = 1.000 * 1500 = 1.500.000 ARS  ← C (stored)
 withholding amount    = 1.500.000 * 3% = 45.000 ARS (stored)
 withholdings_amount   = 45.000 / 1500 = 30 USD (UX)
 ```
@@ -436,8 +445,8 @@ balance=45.000 ARS, amount_currency = 45.000/1.0 = 45.000 ARS, currency_id=ARS(A
 **Cálculo:**
 ```
 selected_debt_untaxed = (1.210 + 1.210) * (1/1.21) = 2.000 USD
-base_amount           = 2.000 USD
-base_in_c             = 2.000 * 1500 = 3.000.000 ARS
+_get_withholding_rate = 1500
+base_amount           = 2.000 * 1500 = 3.000.000 ARS  ← C (stored)
 withholding amount    = 3.000.000 * 3% = 90.000 ARS
 withholdings_amount   = 90.000 / 1500 = 60 USD
 ```
@@ -460,8 +469,8 @@ Usuario paga solo 750.000 ARS -> contrapartida = 750.000 * 0.000667 = 500 USD.
 ```
 advance_amount = unreconciled_amount * (selected_debt_untaxed / selected_debt)
                = -1.920 * (2.000 / 2.420) = -1.586,78 USD
-base_amount    = 2.000 + (-1.586,78) = 413,22 USD
-base_in_c      = 413,22 * 1500 = 619.835 ARS
+base_in_b      = 2.000 + (-1.586,78) = 413,22 USD
+base_amount    = 413,22 * 1500 = 619.835 ARS  ← C (stored)
 withholding    = 619.835 * 3% = 18.595 ARS
 UX             = 18.595 / 1500 ~ 12,40 USD
 ```
@@ -479,7 +488,7 @@ UX             = 18.595 / 1500 ~ 12,40 USD
 ```
 selected_debt_untaxed = 1.000 EUR
 _get_withholding_rate = 1200 / 0.909 = 1320  (EUR->ARS, correcto!)
-base_in_c             = 1.000 * 1320 = 1.320.000 ARS
+base_amount           = 1.000 * 1320 = 1.320.000 ARS  ← C (stored)
 withholding amount    = 1.320.000 * 3% = 39.600 ARS
 withholdings_amount   = 39.600 / 1320 = 30 EUR
 ```
@@ -497,8 +506,8 @@ Retención ganancias: 7% sobre base, mínimo no imponible 100.000 ARS.
 
 **Cálculo:**
 ```
-base_amount         = 1.000 USD
-base_in_c           = 1.000 * 1500 = 1.500.000 ARS
+_get_withholding_rate = 1500
+base_amount         = 1.000 * 1500 = 1.500.000 ARS  ← C (stored)
 same_period_base    = 500.000 ARS  (de move lines, ya en C)
 net_amount          = 1.500.000 + 500.000 - 100.000 = 1.900.000 ARS  (C + C, correcto)
 withholding         = 1.900.000 * 7% = 133.000 ARS
@@ -528,12 +537,11 @@ withholdings_amount = 118.000 / 1500 ~ 78,67 USD
 
 | Cambio | Detalle |
 |--------|---------|
-| `base_currency_id` | Nuevo: related a `payment_id.destination_currency_id` |
-| `base_amount` | currency_field -> `base_currency_id` |
-| `currency_id` | Se mantiene en `company_currency_id` (para `amount`) |
+| `base_amount` | `currency_field="currency_id"` (C/ARS); `_compute_base_amount` convierte B→C al final |
+| `currency_id` | Se mantiene en `company_currency_id` (para `amount` y `base_amount`) |
 | `amount` | Sin cambios (se mantiene en C) |
-| `_compute_base_amount` | Fix comparación pago parcial (usar amount_residual_currency cuando B!=C) |
-| `_tax_compute_all_helper` | Convertir base B->C, compute_all con currency=company_currency_id, ref en ARS |
+| `_compute_base_amount` | Calcula `base_in_b` en B, convierte a C con `_get_withholding_rate()`; fix comparación pago parcial |
+| `_tax_compute_all_helper` | `base_amount` ya en C — `compute_all` con `currency=company_currency_id`, ref en ARS; sin `base_in_c` |
 
 ### `account_payment_view.xml` (en l10n_ar_tax)
 
@@ -543,21 +551,38 @@ withholdings_amount = 118.000 / 1500 ~ 78,67 USD
 
 ---
 
+## Campos eliminados (no deben buscarse en el código)
+
+| Campo | Reemplazado por |
+|-------|-----------------|
+| `exchange_rate` | `accounting_rate` |
+| `other_currency` | `currency_id != company_currency_id` |
+| `force_amount_company_currency` | eliminado (lógica simplificada) |
+| `amount_company_currency` | eliminado |
+| `amount_company_currency_signed_pro` | eliminado |
+| `withholding_warning` | eliminado (soporte real B!=C) |
+| `base_currency_id` | **nunca fue** — `base_amount` siempre en C |
+
+---
+
 ## Criterios de aceptación
 
 - [ ] Los 7 casos de test tienen test de integración
-- [ ] `withholding_warning` eliminado
+- [ ] `withholding_warning` eliminado de modelo y vista
 - [ ] `selected_debt_untaxed` usa `amount_residual_currency` cuando B!=C
-- [ ] `base_amount` se almacena en moneda B con `base_currency_id`
+- [ ] `base_amount` se almacena en ARS (C) — verificar en shell con `payment.l10n_ar_withholding_line_ids[0].base_amount`
+- [ ] Para pago USD 100 a 1200 ARS/USD con IIBB 3%: `base_amount = 120.000`, `amount = 3.600`
+- [ ] Para pago ARS 120.000 (sin conversión): `base_amount = 120.000`, `amount = 3.600`
 - [ ] `amount` se mantiene en C (ARS)
 - [ ] `_tax_compute_all_helper` pasa `currency=company_currency_id` (C) a `compute_all`
-- [ ] `_tax_compute_all_helper` convierte base B->C antes de sumar acumulados del período
+- [ ] `_tax_compute_all_helper` usa `self.base_amount` (ya en C) directamente; NO existe `base_in_c`
 - [ ] `_get_withholding_rate` cubre los 4 casos (formula general `accounting_rate / counterpart_rate`)
 - [ ] Los asientos de retención mantienen `balance` en ARS
 - [ ] `_prepare_move_withholding_lines` usa `self.accounting_rate` en vez de `self.exchange_rate`
 - [ ] `_compute_payment_total` suma `withholdings_amount` (B) al total en B
-- [ ] Ganancias acumuladas del período no se ven afectadas (acumulados en C via move lines)
-- [ ] Ref string formatea montos en ARS (company_currency.format)
+- [ ] Ganancias: `net_amount = self.base_amount + same_period_base` (ambos en C, sin conversión)
+- [ ] Ref string formatea montos en ARS usando `company_currency.format`
+- [ ] No existe `base_currency_id` como campo de `l10n_ar.payment.withholding`
 
 ---
 
