@@ -360,17 +360,17 @@ La vista muestra `user_counterpart_rate` con dirección estable basada en `count
 | `matched_amount` | Adaptar moneda | `destination_currency_id` | Computed |
 | `unmatched_amount` | Adaptar moneda | `destination_currency_id` | Computed |
 
-### Campos deprecated (eliminar como fields de Odoo, backup de columna SQL)
+### Campos deprecated (eliminados como fields de Odoo, backup de columna SQL)
 
 | Campo | Acción |
 |-------|--------|
-| `force_amount_company_currency` | Eliminar. Reemplazado por `accounting_rate` |
-| `amount_company_currency` | Eliminar |
-| `amount_company_currency_signed_pro` | Evaluar si se puede eliminar |
-| `exchange_rate` | Eliminar (reemplazado por `accounting_rate` stored) |
-| `other_currency` | Evaluar eliminar (reemplazable por `currency_id != company_currency_id`) |
-| `selected_debt_untaxed` | Evaluar eliminar (definido en `l10n_ar_tax`) |
-| `matched_amount_untaxed` | Evaluar eliminar (definido en `l10n_ar_tax`) |
+| `force_amount_company_currency` | **Eliminado.** Reemplazado por `accounting_rate` |
+| `amount_company_currency` | **Eliminado** |
+| `amount_company_currency_signed_pro` | **Eliminado** |
+| `exchange_rate` | **Eliminado** (reemplazado por `accounting_rate` stored) |
+| `other_currency` | **Eliminado** (reemplazado por `currency_id != company_currency_id` inline) |
+| `selected_debt_untaxed` | Pendiente — definido en `l10n_ar_tax`, evaluar en iteración siguiente |
+| `matched_amount_untaxed` | Pendiente — definido en `l10n_ar_tax`, evaluar en iteración siguiente |
 
 > Usar `openupgrade.copy_columns(env.cr, _column_copy)` para backup antes de drop.
 
@@ -487,17 +487,16 @@ class AccountMoveLine(models.Model):
 Este es el método central que genera los asientos del pago. El código actual cubre
 parcialmente los casos del modelo tri-monetario:
 
-- `force_amount_company_currency` se usa para forzar el balance en C → **se elimina**, reemplazar por `accounting_rate`
-- `_use_counterpart_currency()` solo activa cuando `A == C` → **ampliar** para cubrir todos los casos de la tabla
+- `force_amount_company_currency` se usa para forzar el balance en C → **eliminado**, reemplazado por `accounting_rate`
+- `_use_counterpart_currency()` solo activa cuando `A == C` → **eliminar e inline la lógica** en el método principal
 - Los 5 escenarios sin reconcile y los 3 con reconcile deben generar asientos correctos
 
-**Tareas concretas:**
-1. Eliminar la lógica de `force_amount_company_currency` y reemplazar por cálculo via `accounting_rate`
-2. Reescribir `_use_counterpart_currency()` o eliminarla e inline la lógica en el método principal
-3. La línea de liquidez siempre usa `currency_id` (A) con `amount_currency` en A y `balance` calculado via `accounting_rate`
+**Implementado:**
+1. `force_amount_company_currency` eliminado; balance de liquidez calculado via `accounting_rate`
+2. `_use_counterpart_currency()` eliminada; lógica inlineada en `_prepare_move_lines_per_type`
+3. La línea de liquidez usa `currency_id` (A) con `amount_currency` en A y `balance` = `amount_A / accounting_rate`
 4. La línea de contrapartida usa `counterpart_currency_id` (B1) con `amount_currency` en B1 y `balance` cuadrado por diferencia
-5. Validar que cada caso de la tabla de casos de uso genera los asientos esperados
-6. Los tests de integración deben verificar `balance` y `amount_currency` de cada línea generada
+5. Write-off en `destination_currency_id` con conversión a C vía `_convert()`
 
 ---
 
@@ -553,19 +552,32 @@ Si la columna ya tiene datos cuando Odoo monta el módulo, no encola recomputo.
 from openupgradelib import openupgrade
 
 def migrate(cr, version):
-    # 1. counterpart_exchange_rate → counterpart_rate
-    #    El valor stored actual es user-friendly (ej: 1500).
-    #    El nuevo campo usa formato Odoo nativo (ej: 0.000667) → invertir.
-    openupgrade.rename_columns(cr, {
-        "account_payment": [("counterpart_exchange_rate", "counterpart_rate")]
-    })
+    # 1. Backup de todas las columnas modificadas (ANTES de cualquier transformación)
+    #    Captura valores originales con prefijo x_bkp_ para auditoría y rollback.
+    columns_to_backup = []
+    for col in (
+        "counterpart_exchange_rate",
+        "force_amount_company_currency",
+        "amount_company_currency",
+        "write_off_amount",
+    ):
+        if openupgrade.column_exists(cr, "account_payment", col):
+            columns_to_backup.append((col, f"x_bkp_{col}", None))
+    if columns_to_backup:
+        openupgrade.copy_columns(cr, {"account_payment": columns_to_backup})
+
+    # 2. counterpart_exchange_rate → counterpart_rate + invertir valores
+    if openupgrade.column_exists(cr, "account_payment", "counterpart_exchange_rate"):
+        openupgrade.rename_columns(cr, {
+            "account_payment": [("counterpart_exchange_rate", "counterpart_rate")]
+        })
     cr.execute("""
         UPDATE account_payment
         SET counterpart_rate = 1.0 / counterpart_rate
         WHERE counterpart_rate IS NOT NULL AND counterpart_rate != 0;
     """)
 
-    # 2. accounting_rate: nueva columna, poblar desde amount y amount_company_currency
+    # 3. accounting_rate: nueva columna, poblar desde amount y amount_company_currency
     #    exchange_rate era non-stored, no hay columna que renombrar.
     cr.execute("""
         ALTER TABLE account_payment
@@ -581,19 +593,9 @@ def migrate(cr, version):
         WHERE accounting_rate IS NULL;
     """)
 
-    # 3. Backup de campos deprecated antes de drop
-    openupgrade.copy_columns(cr, {
-        "account_payment": [
-            ("force_amount_company_currency", "x_bkp_force_amount_company_currency", None),
-            ("amount_company_currency", "x_bkp_amount_company_currency", None),
-            ("write_off_amount", "x_bkp_write_off_amount", None),
-        ]
-    })
-
     # 4. write_off_amount: migrar de company_currency a destination_currency
-    #    Para pagos donde el counterpart_rate != 0, convertimos el importe.
     #    write_off_amount_new = write_off_amount_old / counterpart_rate (Odoo nativo)
-    #    Nota: counterpart_rate ya está invertido en paso 1.
+    #    Nota: counterpart_rate ya está invertido en paso 2.
     cr.execute("""
         UPDATE account_payment
         SET write_off_amount = write_off_amount / counterpart_rate
@@ -638,12 +640,32 @@ def migrate(cr, version):
 
 ```xml
 <div name="amount_div" position="after">
+    <!-- Campos invisibles de control -->
+    <field name="company_currency_id" invisible="True"/>
+    <field name="destination_currency_id" invisible="True"/>
+    <field name="counterpart_rate_inverted" invisible="True"/>
+    <field name="accounting_rate_inverted" invisible="True"/>
+
+    <!-- Rate de contrapartida: visible solo si A != B1 AND B1 != C -->
     <label for="user_counterpart_rate" string="Rate"
         invisible="currency_id == counterpart_currency_id
                    or counterpart_currency_id == company_currency_id"/>
-    <div name="counterpart_rate_div" class="d-flex gap-1 text-muted"
+    <!-- Caso invertido (B1 fuerte): "1 B1 = X A" -->
+    <div name="counterpart_rate_lt1" class="d-flex gap-1 text-muted"
         invisible="currency_id == counterpart_currency_id
-                   or counterpart_currency_id == company_currency_id">
+                or counterpart_currency_id == company_currency_id
+                or not counterpart_rate_inverted">
+        <span>1</span>
+        <field name="counterpart_currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
+        <span>=</span>
+        <field name="user_counterpart_rate" readonly="state != 'draft'" style="max-width: 21ch;"/>
+        <field name="currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
+    </div>
+    <!-- Caso directo (A fuerte): "1 A = X B1" -->
+    <div name="counterpart_rate_gte1" class="d-flex gap-1 text-muted"
+        invisible="currency_id == counterpart_currency_id
+                or counterpart_currency_id == company_currency_id
+                or counterpart_rate_inverted">
         <span>1</span>
         <field name="currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
         <span>=</span>
@@ -651,10 +673,11 @@ def migrate(cr, version):
         <field name="counterpart_currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
     </div>
 
-    <field name="company_currency_id" invisible="True"/>
-    <field name="destination_currency_id" invisible="True"/>
+    <!-- Importe en moneda de contrapartida: visible si A != B -->
     <field name="counterpart_currency_amount" string="Amount in"
         invisible="currency_id == counterpart_currency_id"/>
+
+    <!-- Write off -->
     <label for="write_off_amount" string="Write Off"
         invisible="not write_off_available or is_internal_transfer or not use_payment_pro"/>
     <div name="write_off_amount" class="o_row"
@@ -664,6 +687,8 @@ def migrate(cr, version):
             invisible="not write_off_amount" readonly="state != 'draft'"
             required="write_off_amount" options="{'no_create': True, 'no_open': True}"/>
     </div>
+
+    <!-- Payment total -->
     <label for="payment_total" readonly="state != 'draft'"
         invisible="not use_payment_pro or is_internal_transfer"/>
     <div name="payment_total" invisible="not use_payment_pro or is_internal_transfer">
@@ -672,10 +697,22 @@ def migrate(cr, version):
             (difference <field name="payment_difference" class="oe_inline"/>)
         </span>
     </div>
+
+    <!-- Accounting rate: visible solo si A != C -->
     <label for="user_accounting_rate" string="Rate"
         invisible="currency_id == company_currency_id"/>
-    <div name="accounting_rate_div" class="d-flex gap-1 text-muted"
-        invisible="currency_id == company_currency_id">
+    <!-- Caso invertido (C fuerte): "1 C = X A" -->
+    <div name="accounting_rate_lt1" class="d-flex gap-1 text-muted"
+        invisible="currency_id == company_currency_id or not accounting_rate_inverted">
+        <span>1</span>
+        <field name="company_currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
+        <span>=</span>
+        <field name="user_accounting_rate" readonly="state != 'draft'" style="max-width: 21ch;"/>
+        <field name="currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
+    </div>
+    <!-- Caso directo (A fuerte): "1 A = X C" -->
+    <div name="accounting_rate_gte1" class="d-flex gap-1 text-muted"
+        invisible="currency_id == company_currency_id or accounting_rate_inverted">
         <span>1</span>
         <field name="currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
         <span>=</span>
@@ -693,17 +730,17 @@ El campo monetary ya muestra el símbolo de la moneda.
 ## Criterios de aceptación
 
 - [ ] Los 10 casos de uso tienen test de integración (verificar `balance` y `amount_currency` de cada línea de asiento)
-- [ ] Los tests existentes pasan o se actualizan justificadamente
-- [ ] Los campos deprecated se eliminan como fields de Odoo
-- [ ] Backup de columnas SQL via `openupgrade.copy_columns` está en el migration script
+- [x] Los tests existentes pasan o se actualizan justificadamente (`test_create_payment_with_a_date_rate_then_change_rate` migrado a `accounting_rate`)
+- [x] Los campos deprecated se eliminan como fields de Odoo (`force_amount_company_currency`, `amount_company_currency`, `amount_company_currency_signed_pro`, `exchange_rate`, `other_currency`)
+- [x] Backup de columnas SQL via `openupgrade.copy_columns` está en el migration script (se hace ANTES del rename, captura valores originales)
 - [ ] `l10n_ar_tax` sigue funcionando (campos de retenciones en `destination_currency_id`)
 - [ ] No se rompe la conciliación con `reconcile_on_company_currency`
-- [ ] Las tasas de cambio se almacenan con `digits=0, min_display_digits=2`
-- [ ] Post-migración: cero pagos posted con `accounting_rate` o `counterpart_rate` en NULL
-- [ ] `counterpart_rate` almacena en formato Odoo nativo (< 1 para ARS/USD)
-- [ ] `write_off_amount` migrado a `destination_currency_id`
-- [ ] `_get_trigger_fields_to_synchronize` actualizado con los campos renombrados
-- [ ] `_create_paired_internal_transfer_payment` propaga `accounting_rate` en vez de `force_amount_company_currency`
+- [x] Las tasas de cambio se almacenan con `digits=0, min_display_digits=2`
+- [x] Post-migración: cero pagos posted con `accounting_rate` o `counterpart_rate` en NULL (verificado por `post_migrate.py`)
+- [x] `counterpart_rate` almacena en formato Odoo nativo (< 1 para ARS/USD)
+- [x] `write_off_amount` migrado a `destination_currency_id`
+- [x] `_get_trigger_fields_to_synchronize` actualizado con los campos renombrados
+- [x] `_create_paired_internal_transfer_payment` propaga `accounting_rate` en vez de `force_amount_company_currency`
 
 ---
 
@@ -715,3 +752,95 @@ El campo monetary ya muestra el símbolo de la moneda.
 | `l10n_ar_tax` | Equipo Contable | Breaking: `exchange_rate` cambia semántica → `accounting_rate` en formato Odoo nativo | `_prepare_move_withholding_lines` usa `self.exchange_rate or 1.0` → adaptar fórmula. **Scope: iteración siguiente.** |
 | `account_ux` | ADHOC | Dependencia nueva: provee `reconcile_on_company_currency` en `res.company` | Agregar al `__manifest__.py` de `account_payment_pro` |
 | `account` (Odoo SA) | — | Sin modificaciones directas | Verificar que la herencia no rompa nada en v19 |
+
+---
+
+## Notas de implementación (referencia para módulos dependientes)
+
+> Esta sección documenta el estado real del código implementado en `19.0.2.0.0`.
+> Usarla como referencia al adaptar `l10n_ar_tax`, `account_ux` u otros módulos.
+
+### Versión del módulo
+
+`account_payment_pro` subió de `19.0.1.3.0` a `19.0.2.0.0`.
+
+### API pública del modelo `account.payment` tras el refactor
+
+| Campo | Tipo | Formato | Observaciones |
+|-------|------|---------|---------------|
+| `currency_id` | Many2one | — | Moneda A. Sin cambios. |
+| `counterpart_currency_id` | Many2one stored | — | Moneda B1. Nuevo. Editable condicionalmente. |
+| `destination_currency_id` | Many2one non-stored | — | Moneda B2. Nuevo. No almacenado. |
+| `accounting_rate` | Float stored | Odoo nativo (`to/from`) | Reemplaza `exchange_rate`. `pre_migrate` lo puebla desde `amount_company_currency / amount`. |
+| `counterpart_rate` | Float stored | Odoo nativo (`to/from`) | Reemplaza `counterpart_exchange_rate`. valores invertidos en `pre_migrate`. |
+| `user_accounting_rate` | Float non-stored | UX (invertido condicionalmente) | Expone `accounting_rate` en dirección estable. |
+| `user_counterpart_rate` | Float non-stored | UX (invertido condicionalmente) | Expone `counterpart_rate` en dirección estable. |
+| `accounting_rate_inverted` | Boolean non-stored | — | `True` si rate teórico A→C < 1.0. Determina dirección de UI. |
+| `counterpart_rate_inverted` | Boolean non-stored | — | `True` si rate teórico A→B1 < 1.0. Determina dirección de UI. |
+| `counterpart_currency_amount` | Monetary stored | `destination_currency_id` | Antes tenía `currency_field` implícito. |
+| `write_off_amount` | Monetary | `destination_currency_id` | Antes en `company_currency_id`. |
+| `payment_total` | Monetary computed | `destination_currency_id` | Antes en `company_currency_id`. |
+| `selected_debt` | Monetary computed | `destination_currency_id` | Antes en `company_currency_id`. |
+| `to_pay_amount` | Monetary computed | `destination_currency_id` | Antes en `company_currency_id`. |
+| `matched_amount` | Monetary computed | `destination_currency_id` | Antes en `company_currency_id`. |
+| `unmatched_amount` | Monetary computed | `destination_currency_id` | Antes en `company_currency_id`. |
+| `payment_difference` | Monetary computed | `destination_currency_id` | Antes en `company_currency_id`. |
+| `to_pay_amount_company_currency` | Monetary computed | `company_currency_id` | Nuevo. `= to_pay_amount / accounting_rate`. |
+
+### Campos eliminados (breaking)
+
+Cualquier módulo que referencie estos campos debe adaptarse:
+
+| Campo eliminado | Reemplazo |
+|----------------|-----------|
+| `exchange_rate` | `accounting_rate` (mismo valor pero formato Odoo nativo, no user-friendly) |
+| `force_amount_company_currency` | `accounting_rate` (tasa directa) |
+| `amount_company_currency` | `amount / accounting_rate` |
+| `amount_company_currency_signed_pro` | Calcular desde `payment_type`/`partner_type` + `amount / accounting_rate` |
+| `other_currency` | `currency_id != company_currency_id` |
+| `counterpart_exchange_rate` | `counterpart_rate` (valores invertidos: antes 1500, ahora 0.000667) |
+
+### Impacto crítico en `l10n_ar_tax`
+
+`l10n_ar_tax._prepare_move_withholding_lines` usa `self.exchange_rate or 1.0` para calcular
+`amount_currency`. Tras el refactor **esa fórmula produce resultados incorrectos** por dos razones:
+
+1. El campo se llama `accounting_rate` (no `exchange_rate`).
+2. El formato cambió: antes `exchange_rate = 1500` (user-friendly), ahora `accounting_rate = 0.000667` (Odoo nativo).
+
+**Adaptación requerida en `l10n_ar_tax`:**
+```python
+# Antes (incorrecto en 19.0.2.0.0+):
+amount_currency = amount_company * (self.exchange_rate or 1.0)
+
+# Después (correcto):
+# accounting_rate = A/C en formato Odoo nativo
+# amount_en_A = amount_en_C * accounting_rate
+amount_currency = amount_company * (self.accounting_rate or 1.0)
+```
+
+Esta adaptación está fuera del scope de este refactor (ADR-005). Se hará en la iteración de retenciones.
+
+### Convención de tasas — resumen para desarrolladores
+
+Odoo usa `_get_conversion_rate(from_currency, to_currency)` que devuelve `to/from`.
+Así: `amount_to = amount_from × rate`.
+
+- `accounting_rate` = `_get_conversion_rate(C, A)` = `A/C`
+  → Para convertir C→A: `amount_A = amount_C × accounting_rate`
+  → Para convertir A→C: `amount_C = amount_A / accounting_rate`
+- `counterpart_rate` = `_get_conversion_rate(A, B1)` = `B1/A`
+  → Para convertir A→B1: `amount_B1 = amount_A × counterpart_rate`
+  → Para convertir B1→A: `amount_A = amount_B1 / counterpart_rate`
+
+### Dirección de visualización de rates (`*_rate_inverted`)
+
+Los campos `accounting_rate_inverted` y `counterpart_rate_inverted` determinan de forma
+estable (basándose en el rate **teórico**, no en el editado) si la UI muestra
+`"1 A = X B"` o `"1 B = X A"`. Esto evita que la pantalla cambie de layout mientras
+el usuario edita el número.
+
+- `accounting_rate_inverted = True` → mostrar `1 C = X A` (C es la fuerte, ej: ARS/USD donde C=ARS, A=USD)
+- `accounting_rate_inverted = False` → mostrar `1 A = X C` (A es la fuerte)
+- `counterpart_rate_inverted = True` → mostrar `1 B1 = X A`
+- `counterpart_rate_inverted = False` → mostrar `1 A = X B1`
