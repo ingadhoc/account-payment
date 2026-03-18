@@ -201,7 +201,7 @@
         <!-- por ahora, cuando estamos viendo info de lo pagado, no mostamos residual actualizado para no confundir con tantos importes -->
         <field name="amount_residual_currency" position="replace"/>
         <field name="amount_residual" position="replace">
-            <field name="payment_matched_amount" string="Paid Amount"/>
+            <field name="payment_matched_amount" string="Paid Amount" sum="Total"/>
             <field name="payment_matched_currency_id" column_invisible="True"/>
         </field>
     </field>
