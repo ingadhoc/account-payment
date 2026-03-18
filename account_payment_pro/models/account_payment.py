@@ -5,17 +5,10 @@ from odoo.exceptions import ValidationError
 class AccountPayment(models.Model):
     _inherit = "account.payment"
 
-    # TODO. por ahora por simplicidad y para mantener lo que teniamos hasta 16 hacemos que todos los campos de deuda y demas
-    # sean en moneda de la compañia (antes era en moneda del pay group que siempre era la moneda de la cia), currency_field='company_currency_id',
+    # Modelo tri-monetario: A (currency_id), B1 (counterpart_currency_id), B2 (destination_currency_id), C (company_currency_id)
     # desde account_payment_group, modelo account.payment
-    amount_company_currency = fields.Monetary(
-        string="Amount on Company Currency",
-        compute="_compute_amount_company_currency",
-        inverse="_inverse_amount_company_currency",
-        currency_field="company_currency_id",
-    )
     counterpart_currency_amount = fields.Monetary(
-        currency_field="counterpart_currency_id",
+        currency_field="destination_currency_id",
         compute="_compute_counterpart_currency_amount",
     )
     counterpart_currency_id = fields.Many2one(
@@ -25,66 +18,77 @@ class AccountPayment(models.Model):
         readonly=False,
         precompute=True,
     )
-    counterpart_exchange_rate = fields.Float(
+    destination_currency_id = fields.Many2one(
+        "res.currency",
+        compute="_compute_destination_currency_id",
+        store=False,
+    )
+    counterpart_rate = fields.Float(
         readonly=False,
-        compute="_compute_counterpart_exchange_rate",
+        compute="_compute_counterpart_rate",
         store=True,
         precompute=True,
         copy=False,
         digits=0,
+        min_display_digits=2,
     )
-    other_currency = fields.Boolean(
-        compute="_compute_other_currency",
+    accounting_rate = fields.Float(
+        compute="_compute_accounting_rate",
+        inverse="_inverse_accounting_rate",
+        store=True,
+        readonly=False,
+        precompute=True,
+        copy=False,
+        digits=0,
+        min_display_digits=2,
+        help="Exchange rate A\u2192C in Odoo native format (e.g., 0.000667 for ARS/USD)",
+    )
+    user_accounting_rate = fields.Float(
+        compute="_compute_user_accounting_rate",
+        inverse="_inverse_user_accounting_rate",
+        store=False,
+        digits=0,
+        min_display_digits=2,
+    )
+    user_counterpart_rate = fields.Float(
+        compute="_compute_user_counterpart_rate",
+        inverse="_inverse_user_counterpart_rate",
+        store=False,
+        digits=0,
+        min_display_digits=2,
     )
     journal_currency_id = fields.Many2one(related="journal_id.currency_id", string="Journal Currency")
     destination_journal_currency_id = fields.Many2one(
         related="destination_journal_id.currency_id",
         string="Destination Journal Currency",
     )
-    force_amount_company_currency = fields.Monetary(
-        string="Forced Amount on Company Currency",
-        currency_field="company_currency_id",
-        copy=False,
-    )
-    exchange_rate = fields.Float(
-        compute="_compute_exchange_rate",
-        # readonly=False,
-        # inverse='_inverse_exchange_rate',
-        # digits=(16, 4),
-    )
     commercial_partner_id = fields.Many2one(related="partner_id.commercial_partner_id")
-    # TODO deberiamos ver de borrar esto. el tema es que los campos nativos de odoo no refelajn importe en moenda de cia
-    # hasta en tanto se guarde el payment (en parte porque vienen heredados desde el move)
-    # no solo eso si no que tmb viene pisado en los payments y computa solo si hay liquidity lines pero no cuentas de
-    # outstanding
-    # TODO de hecho tenemos que analizar si queremos mantener todo lo de matched y demas en moneda de cia o moneda de
-    # pago
-    amount_company_currency_signed_pro = fields.Monetary(
-        currency_field="company_currency_id",
-        compute="_compute_amount_company_currency_signed_pro",
-    )
     payment_total = fields.Monetary(
         compute="_compute_payment_total",
         tracking=True,
+        currency_field="destination_currency_id",
+    )
+    to_pay_amount_company_currency = fields.Monetary(
+        compute="_compute_to_pay_amount_company_currency",
         currency_field="company_currency_id",
     )
     available_journal_ids = fields.Many2many(comodel_name="account.journal", compute="_compute_available_journal_ids")
     # desde account_payment_group, modelo account.payment.group
     matched_amount = fields.Monetary(
         compute="_compute_matched_amounts",
-        currency_field="company_currency_id",
+        currency_field="destination_currency_id",
     )
     unmatched_amount = fields.Monetary(
         compute="_compute_matched_amounts",
-        currency_field="company_currency_id",
+        currency_field="destination_currency_id",
     )
     selected_debt = fields.Monetary(
         compute="_compute_selected_debt",
-        currency_field="company_currency_id",
+        currency_field="destination_currency_id",
     )
     unreconciled_amount = fields.Monetary(
         string="Adjustment / Advance",
-        currency_field="company_currency_id",
+        currency_field="destination_currency_id",
     )
     # reconciled_amount = fields.Monetary(compute='_compute_amounts')
     to_pay_amount = fields.Monetary(
@@ -92,7 +96,7 @@ class AccountPayment(models.Model):
         inverse="_inverse_to_pay_amount",
         readonly=True,
         tracking=True,
-        currency_field="company_currency_id",
+        currency_field="destination_currency_id",
     )
     has_outstanding = fields.Boolean(
         compute="_compute_has_outstanding",
@@ -120,12 +124,12 @@ class AccountPayment(models.Model):
         check_company=True,
     )
     write_off_amount = fields.Monetary(
-        currency_field="company_currency_id",
+        currency_field="destination_currency_id",
     )
     payment_difference = fields.Monetary(
         compute="_compute_payment_difference",
         string="Payments Difference",
-        currency_field="company_currency_id",
+        currency_field="destination_currency_id",
         help="Difference between 'To Pay Amount' and 'Payment Total'",
     )
     write_off_available = fields.Boolean(compute="_compute_write_off_available")
@@ -136,6 +140,30 @@ class AccountPayment(models.Model):
     @api.depends("journal_id")
     def _compute_counterpart_currency_id(self):
         self.filtered(lambda x: x.journal_id.currency_id == x.counterpart_currency_id).counterpart_currency_id = False
+
+    def _compute_destination_currency_id(self):
+        pass
+
+    def _compute_accounting_rate(self):
+        pass
+
+    def _inverse_accounting_rate(self):
+        pass
+
+    def _compute_user_accounting_rate(self):
+        pass
+
+    def _inverse_user_accounting_rate(self):
+        pass
+
+    def _compute_user_counterpart_rate(self):
+        pass
+
+    def _inverse_user_counterpart_rate(self):
+        pass
+
+    def _compute_to_pay_amount_company_currency(self):
+        pass
 
     @api.depends("company_id", "outstanding_account_id")
     def _compute_use_payment_pro(self):
@@ -158,6 +186,18 @@ class AccountPayment(models.Model):
             accounts = rec.to_pay_move_line_ids.mapped("account_id")
             if len(accounts) > 1 and not self.env.context.get("default_mode") == "check_balance":
                 raise ValidationError(_("To Pay Lines must be of the same account!"))
+
+    @api.constrains("to_pay_move_line_ids", "counterpart_currency_id")
+    def _check_to_pay_lines_currency(self):
+        for rec in self:
+            if rec.company_id.reconcile_on_company_currency:
+                continue
+            currencies = rec.to_pay_move_line_ids.mapped("currency_id")
+            if len(currencies) > 1:
+                raise ValidationError(
+                    _("All selected debt lines must have the same currency. " "Found: %s")
+                    % ", ".join(currencies.mapped("name"))
+                )
 
     def action_draft(self):
         # Seteamos posted_before en true para que nos permita pasar a borrador el pago y poder realizar cambio sobre el mismo
@@ -246,16 +286,16 @@ class AccountPayment(models.Model):
             else:
                 rec.exchange_rate = False
 
-    @api.depends("payment_total", "counterpart_exchange_rate")
+    @api.depends("payment_total", "counterpart_rate")
     def _compute_counterpart_currency_amount(self):
         for rec in self:
-            if rec.counterpart_currency_id and rec.counterpart_exchange_rate:
-                rec.counterpart_currency_amount = rec.payment_total / rec.counterpart_exchange_rate
+            if rec.counterpart_currency_id and rec.counterpart_rate:
+                rec.counterpart_currency_amount = rec.payment_total / rec.counterpart_rate
             else:
                 rec.counterpart_currency_amount = False
 
     @api.depends("counterpart_currency_id", "company_id", "date")
-    def _compute_counterpart_exchange_rate(self):
+    def _compute_counterpart_rate(self):
         for rec in self:
             if rec.counterpart_currency_id:
                 rate = self.env["res.currency"]._get_conversion_rate(
@@ -264,9 +304,9 @@ class AccountPayment(models.Model):
                     company=rec.company_id,
                     date=rec.date,
                 )
-                rec.counterpart_exchange_rate = 1 / rate if rate else False
+                rec.counterpart_rate = 1 / rate if rate else False
             else:
-                rec.counterpart_exchange_rate = False
+                rec.counterpart_rate = False
 
     # this onchange is necesary because odoo, sometimes, re-compute
     # and overwrites amount_company_currency. That happends due to an issue
@@ -394,8 +434,8 @@ class AccountPayment(models.Model):
         # "_inverse_amount_company_currency". Si bien no es elegante para todas las pruebas que hicimos funcionó bien.
         if self.mapped("move_id"):
             res = res + (
-                "force_amount_company_currency",
-                "counterpart_exchange_rate",
+                "accounting_rate",
+                "counterpart_rate",
                 "counterpart_currency_id",
             )
         return res + (
