@@ -18,6 +18,7 @@
         "l10n_latam_invoice_document",
         "account_internal_transfer",
         "l10n_latam_check",
+        "account_ux",
     ],
     "data": [
         "security/payment_security.xml",
