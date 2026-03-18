@@ -12,10 +12,9 @@ class AccountPayment(models.Model):
     main_payment_id = fields.Many2one("account.payment")
     link_payment_ids = fields.One2many(comodel_name="account.payment", inverse_name="main_payment_id")
     to_pay_move_line_ids = fields.Many2many(recursive=True)
-    counterpart_exchange_rate = fields.Float(recursive=True)
-    bundle_counterpart_currency_amount = fields.Monetary(
-        currency_field="counterpart_currency_id",
-        compute="_compute_bundle_counterpart_currency_amount",
+    link_payments_total = fields.Monetary(
+        currency_field="destination_currency_id",
+        compute="_compute_link_payments_total",
     )
     partner_id = fields.Many2one(recursive=True)
 
@@ -23,6 +22,33 @@ class AccountPayment(models.Model):
     warnings = fields.Json(
         compute="_compute_warnings",
     )
+    payment_total = fields.Monetary(recursive=True)
+    counterpart_currency_id = fields.Many2one(recursive=True)
+
+    @api.constrains("amount", "is_main_payment")
+    def _check_amount_in_main_payment(self):
+        if self.filtered(lambda x: x.is_main_payment and x.amount != 0):
+            raise ValidationError(_("The payment bundle amount always must be Zero"))
+
+    @api.constrains("company_id", "main_payment_id", "link_payment_ids")
+    def _check_bundle_company_consistency(self):
+        for rec in self:
+            if rec.main_payment_id and rec.company_id != rec.main_payment_id.company_id:
+                raise ValidationError(_("The main payment and linked payment must belong to the same company."))
+
+            if rec.link_payment_ids.filtered(lambda p: p.company_id != rec.company_id):
+                raise ValidationError(_("The main payment and linked payments must belong to the same company."))
+
+    @api.constrains("counterpart_currency_id", "main_payment_id")
+    def _check_bundle_currency_consistency(self):
+        for rec in self.filtered("main_payment_id"):
+            if rec.counterpart_currency_id != rec.main_payment_id.counterpart_currency_id:
+                raise ValidationError(
+                    _(
+                        "The counterpart currency of a linked payment must match "
+                        "the main payment's counterpart currency."
+                    )
+                )
 
     @api.depends("link_payment_ids.move_id")
     def _compute_show_move_button(self):
@@ -34,45 +60,36 @@ class AccountPayment(models.Model):
         for rec in self:
             rec.is_main_payment = rec.payment_method_line_id.payment_method_id.code == "payment_bundle"
 
-    @api.onchange("is_main_payment")
-    def _onchange_is_main_payment(self):
-        self.filtered("is_main_payment").amount = 0
-
-    @api.onchange("company_id")
+    @api.onchange("company_id", "partner_id")
     def _onchange_company_id(self):
+        """si cambia partner o company por ahora limpiamos los pagos, eventualmente podríamos hacer partner_id computado
+        y que, si cambia, se actualice. pero en tal caso habría que revisar otros campos que deberían recomputarse (cuentas, tokens, etc).
+        """
         if self.link_payment_ids:
             self.link_payment_ids = [Command.clear()]
 
-    @api.depends("link_payment_ids")
+    @api.depends("link_payment_ids.payment_total")
     def _compute_payment_total(self):
         super()._compute_payment_total()
         for rec in self:
             rec.payment_total += sum(rec.link_payment_ids.mapped("payment_total"))
 
-    @api.depends("counterpart_currency_amount", "link_payment_ids.counterpart_currency_amount")
-    def _compute_bundle_counterpart_currency_amount(self):
+    @api.depends("main_payment_id.payment_difference")
+    def _compute_to_pay_amount(self):
+        for rec in self.filtered("main_payment_id"):
+            rec.to_pay_amount = rec.main_payment_id.payment_difference
+        super(AccountPayment, self - self.filtered("main_payment_id"))._compute_to_pay_amount()
+
+    @api.depends("link_payment_ids.payment_total")
+    def _compute_link_payments_total(self):
         """
         We added this computed field because we cannot modify counterpart_currency_amount,
         since as it is used into the journal entry.
         """
         main_payment_ids = self.filtered("is_main_payment")
-        (self - main_payment_ids).bundle_counterpart_currency_amount = False
+        (self - main_payment_ids).link_payments_total = False
         for rec in main_payment_ids:
-            rec.bundle_counterpart_currency_amount = float(rec.counterpart_currency_amount) + float(
-                sum(rec.link_payment_ids.mapped("counterpart_currency_amount"))
-            )
-
-    @api.depends()
-    def _compute_counterpart_currency_amount(self):
-        main_payment_ids = self.filtered("is_main_payment")
-        super(AccountPayment, self - main_payment_ids)._compute_counterpart_currency_amount()
-        for rec in main_payment_ids:
-            if rec.counterpart_currency_id and rec.counterpart_exchange_rate:
-                rec.counterpart_currency_amount = (
-                    rec.withholdings_amount + rec.write_off_amount
-                ) / rec.counterpart_exchange_rate
-            else:
-                rec.counterpart_currency_amount = False
+            rec.link_payments_total = sum(rec.link_payment_ids.mapped("payment_total"))
 
     @api.depends("use_payment_pro", "main_payment_id")
     def _compute_available_journal_ids(self):
@@ -84,9 +101,9 @@ class AccountPayment(models.Model):
             bundle_journal_id = rec.company_id._get_bundle_journal(rec.payment_type)
             journals = rec.available_journal_ids
 
-            # If it's a linked payment remove bundle journal and journals with currency
+            # If it's a linked payment remove only the bundle journal (any currency allowed)
             if rec.main_payment_id:
-                journals = journals.filtered(lambda j: j._origin.id != bundle_journal_id and not j.currency_id)
+                journals = journals.filtered(lambda j: j._origin.id != bundle_journal_id)
             # If company doesn't use Payment Pro just remove bundle journal
             elif not rec.use_payment_pro:
                 journals = journals.filtered(lambda j: j._origin.id != bundle_journal_id)
@@ -107,39 +124,67 @@ class AccountPayment(models.Model):
             rec.l10n_ar_withholding_line_ids = False
         super(AccountPayment, self - with_main_payments)._compute_l10n_ar_withholding_line_ids()
 
-    # @api.depends("main_payment_id.counterpart_exchange_rate")
-    # def _compute_counterpart_exchange_rate(self):
-    #     with_main_payments = self.filtered(lambda x: x.main_payment_id and not x.counterpart_exchange_rate)
-    #     for rec in with_main_payments:
-    #         rec.counterpart_exchange_rate = rec.main_payment_id.counterpart_exchange_rate
-    #     super(AccountPayment, self - with_main_payments)._compute_counterpart_exchange_rate()
-
-    @api.constrains("amount", "is_main_payment")
-    def _check_amount_in_main_payment(self):
-        if self.filtered(lambda x: x.is_main_payment and x.amount != 0):
-            raise ValidationError(_("The payment bundle amount always must be Zero"))
-
-    @api.constrains("company_id", "main_payment_id", "link_payment_ids")
-    def _check_bundle_company_consistency(self):
-        for rec in self:
-            if rec.main_payment_id and rec.company_id != rec.main_payment_id.company_id:
-                raise ValidationError(_("The main payment and linked payment must belong to the same company."))
-
-            if rec.link_payment_ids.filtered(lambda p: p.company_id != rec.company_id):
-                raise ValidationError(_("The main payment and linked payments must belong to the same company."))
+    @api.depends("is_main_payment", "withholdings_amount")
+    def _compute_amount(self):
+        main_paments = self.filtered("is_main_payment")
+        main_paments.amount = 0.0
+        super(AccountPayment, self - main_paments)._compute_amount()
 
     @api.onchange("withholdings_amount")
     def _onchange_withholdings(self):
+        """dejamos este onchange además del compute_amount porque "le gana" en ejecución y, si cambian retenciones le asignaba un amount"""
         main_payments = self.filtered("is_main_payment")
         main_payments.amount = 0
-        for rec in self.filtered(lambda x: x.main_payment_id):
-            amount = rec.amount + rec.payment_difference
-            rec.amount = amount if amount > 0 else 0
         super(AccountPayment, self - main_payments)._onchange_withholdings()
 
-    @api.onchange("counterpart_currency_id")
-    def _onchange_counterpart_currency_id(self):
-        self.mapped("link_payment_ids").counterpart_currency_id = self.counterpart_currency_id
+    @api.depends("main_payment_id")
+    def _compute_counterpart_rate(self):
+        super(AccountPayment, self)._compute_counterpart_rate()
+        # si tenemos main payment tomamos el counterpart_rate de ahí, no es necesario que el usuario lo ingrese en los pagos linkeados y así evitamos inconsistencias.
+        # solo lo podemos hacer si la moneda del pago es en moneda de la cia ya que el rate del "bundle" siempre va a estar definido entre counterpart y moneda de la cia.
+        for rec in self.filtered(lambda x: x.main_payment_id and x.currency_id == x.company_currency_id):
+            rec.counterpart_rate = rec.main_payment_id.counterpart_rate
+
+    @api.depends("main_payment_id.counterpart_currency_id")
+    def _compute_counterpart_currency_id(self):
+        for rec in self.filtered("main_payment_id"):
+            rec.counterpart_currency_id = rec.main_payment_id.counterpart_currency_id
+        super(AccountPayment, self - self.filtered("main_payment_id"))._compute_counterpart_currency_id()
+
+    def _compute_payment_difference(self):
+        linked = self.filtered("main_payment_id")
+        for rec in linked:
+            # Usamos payment_total de cada linked (en B2/destination_currency_id) para que la
+            # comparación con selected_debt y withholdings_amount —que también están en B2— sea
+            # siempre en la misma moneda.  Cuando B1==B2 (caso normal), payment_total ==
+            # counterpart_currency_amount, por lo que no hay regresión.  Cuando B1≠B2
+            # (reconcile_on_company_currency), counterpart_currency_amount está en B1 y mezclaría
+            # monedas; payment_total ya convierte A→C correctamente en ese branch.
+            payments = rec.main_payment_id.link_payment_ids
+            total_linked_in_b = sum(payments.mapped("payment_total"))
+            rec.payment_difference = (
+                rec.main_payment_id.selected_debt
+                - total_linked_in_b
+                - rec.main_payment_id.withholdings_amount
+                - rec.main_payment_id.write_off_amount
+            )
+        super(AccountPayment, self - linked)._compute_payment_difference()
+
+    @api.depends("payment_type", "link_payment_ids.payment_type")
+    def _compute_warnings(self):
+        for rec in self:
+            warnings = {}
+            if rec.state == "draft" and rec.is_main_payment and rec.link_payment_ids:
+                linked_types = rec.link_payment_ids.mapped("payment_type")
+                if len(set(linked_types)) > 1 or rec.payment_type not in linked_types:
+                    warnings["payment_type_warning"] = {
+                        "level": "info",
+                        "message": _(
+                            "The payment type of the main payment differs from one or more linked payments. Note that the main payment type only impacts withholdings and write-offs."
+                        ),
+                    }
+
+            rec.warnings = warnings
 
     def _get_payment_bundles(self):
         main_payments = self.filtered("is_main_payment")
@@ -319,46 +364,3 @@ class AccountPayment(models.Model):
 
     def _get_mached_payment(self):
         return super()._get_mached_payment() + self.link_payment_ids.ids
-
-    @api.depends("main_payment_id.partner_id")
-    def _compute_partner_id(self):
-        super()._compute_partner_id()
-        for rec in self.filtered("main_payment_id"):
-            rec.partner_id = rec.main_payment_id.partner_id
-
-    def _compute_payment_difference(self):
-        for rec in self.filtered("main_payment_id"):
-            payments = rec.main_payment_id.link_payment_ids
-            amount_outbound = sum(
-                payments.filtered(lambda p: p.payment_type == "outbound").mapped("amount_company_currency_signed")
-            )
-            amount_inbound = sum(
-                payments.filtered(lambda p: p.payment_type == "inbound").mapped("amount_company_currency_signed")
-            )
-            amount_payments = abs(amount_inbound + amount_outbound)
-
-            rec.payment_difference = (
-                rec.main_payment_id.selected_debt
-                - amount_payments
-                - rec.main_payment_id.withholdings_amount
-                - rec.main_payment_id.write_off_amount
-            )
-
-        for rec in self - self.filtered("main_payment_id"):
-            return super()._compute_payment_difference()
-
-    @api.depends("payment_type", "link_payment_ids.payment_type")
-    def _compute_warnings(self):
-        for rec in self:
-            warnings = {}
-            if rec.state == "draft" and rec.is_main_payment and rec.link_payment_ids:
-                linked_types = rec.link_payment_ids.mapped("payment_type")
-                if len(set(linked_types)) > 1 or rec.payment_type not in linked_types:
-                    warnings["payment_type_warning"] = {
-                        "level": "info",
-                        "message": _(
-                            "The payment type of the main payment differs from one or more linked payments. Note that the main payment type only impacts withholdings and write-offs."
-                        ),
-                    }
-
-            rec.warnings = warnings

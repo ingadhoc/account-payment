@@ -22,7 +22,7 @@ class ResCompany(models.Model):
                 self.env["account.journal"]
                 .search(
                     [
-                        ("inbound_payment_method_line_ids.payment_method_id.code", "=", "payment_bundle"),
+                        ("outbound_payment_method_line_ids.payment_method_id.code", "=", "payment_bundle"),
                         ("company_id", "=", self.id),
                     ]
                 )
