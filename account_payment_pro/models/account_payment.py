@@ -664,3 +664,24 @@ class AccountPayment(models.Model):
     @api.depends("journal_id")
     def _compute_available_partner_bank_ids(self):
         super()._compute_available_partner_bank_ids()
+
+    ### FIX RELATIVO A https://github.com/odoo/odoo/pull/212762
+    # evitamos agregar pr de odoo, lo hacemos en pay pro que es donde lo necesitamos
+    # hasta 18 lo tenemos como pr agregado en odoo
+    ###
+    @api.depends()
+    def _compute_company_id(self):
+        return super()._compute_company_id()
+
+    @api.onchange("journal_id")
+    def _onchange_journal_id_company_id(self):
+        self._compute_company_id()
+
+    # sugerencia de copilot, pero como hasta 18 no lo tenemos, por ahora no implementamos
+    # def write(self, vals):
+    #     # Forzar recompute solo cuando journal_id cambia en write masivo si es necesario
+    #     if 'journal_id' in vals:
+    #         self = self.with_context(force_company_recompute=True)
+    #     return super().write(vals)
+
+    ### FIN FIX RELATIVO A
