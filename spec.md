@@ -104,8 +104,41 @@ El migration script puebla `accounting_rate` desde los datos existentes de `amou
 
 Solo visible si `currency_id != company_currency_id`.
 
+**Campos de dirección de visualización (`*_rate_inverted`) — computed, non-stored:**
+Determina de forma estable en qué dirección mostrar el rate en la UI, basándose en el
+rate **teórico** del par de monedas (no en el valor editado por el usuario). Esto evita
+que la vista cambie de dirección cuando el usuario cruza el umbral de 1.0 durante la
+edición.
+
+```python
+counterpart_rate_inverted = fields.Boolean(
+    compute="_compute_counterpart_rate_inverted", store=False)
+accounting_rate_inverted = fields.Boolean(
+    compute="_compute_accounting_rate_inverted", store=False)
+
+@api.depends("currency_id", "counterpart_currency_id", "company_id", "date")
+def _compute_counterpart_rate_inverted(self):
+    # True si rate teórico A→B1 < 1.0 (B1 es la fuerte)
+    for rec in self:
+        if not rec.currency_id or rec.currency_id == rec.counterpart_currency_id:
+            rec.counterpart_rate_inverted = False
+            continue
+        theoretical = res.currency._get_conversion_rate(A→B1, ...)
+        rec.counterpart_rate_inverted = theoretical < 1.0
+
+@api.depends("currency_id", "company_currency_id", "company_id", "date")
+def _compute_accounting_rate_inverted(self):
+    # True si rate teórico A→C < 1.0 (C es la fuerte)
+    for rec in self:
+        if not rec.currency_id or rec.currency_id == rec.company_currency_id:
+            rec.accounting_rate_inverted = False
+            continue
+        theoretical = res.currency._get_conversion_rate(A→C, ...)
+        rec.accounting_rate_inverted = theoretical < 1.0
+```
+
 **Campo UX auxiliar `user_accounting_rate` (non-stored):**
-Expone el inverso para que el usuario vea y edite `1 USD = 1500 ARS`.
+Expone el rate de forma legible usando `accounting_rate_inverted` para decidir la dirección.
 
 ```python
 user_accounting_rate = fields.Float(
@@ -113,18 +146,30 @@ user_accounting_rate = fields.Float(
     inverse="_inverse_user_accounting_rate",
     store=False, digits=0, min_display_digits=2)
 
-@api.depends("accounting_rate")
+@api.depends("accounting_rate", "accounting_rate_inverted")
 def _compute_user_accounting_rate(self):
     for rec in self:
-        rec.user_accounting_rate = 1.0 / rec.accounting_rate if rec.accounting_rate else 0.0
+        rate = rec.accounting_rate
+        if not rate:
+            rec.user_accounting_rate = 0.0
+        elif rec.accounting_rate_inverted:
+            rec.user_accounting_rate = 1.0 / rate
+        else:
+            rec.user_accounting_rate = rate
 
 def _inverse_user_accounting_rate(self):
     for rec in self:
-        if rec.user_accounting_rate:
-            rec.accounting_rate = 1.0 / rec.user_accounting_rate
+        rate = rec.user_accounting_rate
+        if rate:
+            if rec.accounting_rate_inverted:
+                rec.accounting_rate = 1.0 / rate
+            else:
+                rec.accounting_rate = rate
 ```
 
-La vista muestra `user_accounting_rate` con label `1 {currency_id} = X {company_currency_id}`.
+La vista muestra `user_accounting_rate` con dirección estable basada en `accounting_rate_inverted`:
+- Si `accounting_rate_inverted` → `1 {company_currency_id} = X {currency_id}`
+- Si no → `1 {currency_id} = X {company_currency_id}`
 
 ### `counterpart_rate` (renombrado desde `counterpart_exchange_rate`) — Stored, editable
 
@@ -178,11 +223,11 @@ El inverse de `user_counterpart_rate` también debe propagar a `accounting_rate`
 cuando B1 == C.
 
 **Campo UX auxiliar `user_counterpart_rate` (non-stored):**
-Se invierte condicionalmente: si el rate almacenado es `< 1.0` (A es la moneda débil),
-se muestra invertido. Si `>= 1.0` (A es la fuerte o paridad 1:1), se muestra directo.
+Se invierte condicionalmente usando `counterpart_rate_inverted`, que se basa en el rate
+**teórico** del par A→B1 para garantizar una dirección de visualización estable,
+independientemente del valor editado por el usuario.
 
-**Edge case rate == 1.0:** Cuando `counterpart_rate == 1.0` exacto (misma moneda o paridad 1:1),
-se muestra directo sin inversión. La condición es estricta `< 1.0`, no `<= 1.0`.
+**Edge case rate == 1.0:** Cuando `counterpart_rate == 1.0` exacto, se muestra directo.
 
 ```python
 user_counterpart_rate = fields.Float(
@@ -190,29 +235,71 @@ user_counterpart_rate = fields.Float(
     inverse="_inverse_user_counterpart_rate",
     store=False, digits=0, min_display_digits=2)
 
-@api.depends("counterpart_rate")
+@api.depends("counterpart_rate", "counterpart_rate_inverted")
 def _compute_user_counterpart_rate(self):
     for rec in self:
         rate = rec.counterpart_rate
-        if rate and rate < 1.0:
+        if not rate:
+            rec.user_counterpart_rate = 0.0
+        elif rec.counterpart_rate_inverted:
             rec.user_counterpart_rate = 1.0 / rate
         else:
-            rec.user_counterpart_rate = rate or 0.0
+            rec.user_counterpart_rate = rate
 
 def _inverse_user_counterpart_rate(self):
     for rec in self:
-        user_rate = rec.user_counterpart_rate
-        if not user_rate:
+        rate = rec.user_counterpart_rate
+        if not rate:
             continue
-        if rec.counterpart_rate and rec.counterpart_rate < 1.0:
-            rec.counterpart_rate = 1.0 / user_rate
+        if rec.counterpart_rate_inverted:
+            rec.counterpart_rate = 1.0 / rate
         else:
-            rec.counterpart_rate = user_rate
+            rec.counterpart_rate = rate
+        # Propagar a accounting_rate si B1 == C
+        if rec.counterpart_currency_id == rec.company_currency_id:
+            rec.accounting_rate = rec.counterpart_rate
 ```
 
-La vista muestra `user_counterpart_rate`. El label es dinámico:
-- Si `counterpart_rate < 1.0` → `1 {counterpart_currency_id} = X {currency_id}`
-- Si `counterpart_rate >= 1.0` → `1 {currency_id} = X {counterpart_currency_id}`
+La vista muestra `user_counterpart_rate` con dirección estable basada en `counterpart_rate_inverted`:
+- Si `counterpart_rate_inverted` → `1 {counterpart_currency_id} = X {currency_id}`
+- Si no → `1 {currency_id} = X {counterpart_currency_id}`
+
+```xml
+<!-- Campos de dirección (invisibles, para evaluar condiciones en la vista) -->
+<field name="counterpart_rate_inverted" invisible="True"/>
+<field name="accounting_rate_inverted" invisible="True"/>
+
+<!-- Solo visible si A != C -->
+<field name="user_accounting_rate"
+    invisible="currency_id == company_currency_id"/>
+
+<!-- Caso invertido (C fuerte): "1 C = X A" -->
+<div name="accounting_rate_lt1" ...
+    invisible="currency_id == company_currency_id or not accounting_rate_inverted">
+    <span>1</span> <field name="company_currency_id"/> = <field name="user_accounting_rate"/> <field name="currency_id"/>
+</div>
+<!-- Caso directo (A fuerte): "1 A = X C" -->
+<div name="accounting_rate_gte1" ...
+    invisible="currency_id == company_currency_id or accounting_rate_inverted">
+    <span>1</span> <field name="currency_id"/> = <field name="user_accounting_rate"/> <field name="company_currency_id"/>
+</div>
+
+<!-- Solo visible si A != B1 AND B1 != C -->
+<field name="user_counterpart_rate"
+    invisible="currency_id == counterpart_currency_id
+               or counterpart_currency_id == company_currency_id"/>
+
+<!-- Caso invertido (B1 fuerte): "1 B1 = X A" -->
+<div name="counterpart_rate_lt1" ...
+    invisible="... or not counterpart_rate_inverted">
+    <span>1</span> <field name="counterpart_currency_id"/> = <field name="user_counterpart_rate"/> <field name="currency_id"/>
+</div>
+<!-- Caso directo (A fuerte): "1 A = X B1" -->
+<div name="counterpart_rate_gte1" ...
+    invisible="... or counterpart_rate_inverted">
+    <span>1</span> <field name="currency_id"/> = <field name="user_counterpart_rate"/> <field name="counterpart_currency_id"/>
+</div>
+```
 
 **Regla de prioridad de actualización (campos bidireccionales):**
 1. Usuario modifica `counterpart_currency_amount` →

@@ -59,6 +59,18 @@ class AccountPayment(models.Model):
         digits=0,
         min_display_digits=2,
     )
+    counterpart_rate_inverted = fields.Boolean(
+        compute="_compute_counterpart_rate_inverted",
+        store=False,
+        help="True si el rate teórico A→B1 < 1.0 (B1 es la moneda fuerte). "
+        "Determina la dirección de visualización de user_counterpart_rate.",
+    )
+    accounting_rate_inverted = fields.Boolean(
+        compute="_compute_accounting_rate_inverted",
+        store=False,
+        help="True si el rate teórico A→C < 1.0 (C es la moneda fuerte). "
+        "Determina la dirección de visualización de user_accounting_rate.",
+    )
     journal_currency_id = fields.Many2one(related="journal_id.currency_id", string="Journal Currency")
     destination_journal_currency_id = fields.Many2one(
         related="destination_journal_id.currency_id",
@@ -202,36 +214,76 @@ class AccountPayment(models.Model):
         # El valor se setea directamente por el usuario o por user_accounting_rate inverse
         pass
 
-    @api.depends("accounting_rate")
+    @api.depends("currency_id", "counterpart_currency_id", "company_id", "date")
+    def _compute_counterpart_rate_inverted(self):
+        for rec in self:
+            if not rec.currency_id or rec.currency_id == rec.counterpart_currency_id:
+                rec.counterpart_rate_inverted = False
+                continue
+            theoretical_rate = self.env["res.currency"]._get_conversion_rate(
+                from_currency=rec.currency_id,
+                to_currency=rec.counterpart_currency_id,
+                company=rec.company_id,
+                date=rec.date or fields.Date.context_today(rec),
+            )
+            rec.counterpart_rate_inverted = theoretical_rate < 1.0
+
+    @api.depends("currency_id", "company_currency_id", "company_id", "date")
+    def _compute_accounting_rate_inverted(self):
+        for rec in self:
+            if not rec.currency_id or rec.currency_id == rec.company_currency_id:
+                rec.accounting_rate_inverted = False
+                continue
+            theoretical_rate = self.env["res.currency"]._get_conversion_rate(
+                from_currency=rec.currency_id,
+                to_currency=rec.company_currency_id,
+                company=rec.company_id,
+                date=rec.date or fields.Date.context_today(rec),
+            )
+            rec.accounting_rate_inverted = theoretical_rate < 1.0
+
+    @api.depends("accounting_rate", "accounting_rate_inverted")
     def _compute_user_accounting_rate(self):
         for rec in self:
-            rec.user_accounting_rate = 1.0 / rec.accounting_rate if rec.accounting_rate else 0.0
+            rate = rec.accounting_rate
+            if not rate:
+                rec.user_accounting_rate = 0.0
+            elif rec.accounting_rate_inverted:
+                rec.user_accounting_rate = 1.0 / rate
+            else:
+                rec.user_accounting_rate = rate
 
     @api.onchange("user_accounting_rate")
     def _inverse_user_accounting_rate(self):
         for rec in self:
-            if rec.user_accounting_rate:
-                rec.accounting_rate = 1.0 / rec.user_accounting_rate
+            rate = rec.user_accounting_rate
+            if rate:
+                if rec.accounting_rate_inverted:
+                    rec.accounting_rate = 1.0 / rate
+                else:
+                    rec.accounting_rate = rate
 
-    @api.depends("counterpart_rate")
+    @api.depends("counterpart_rate", "counterpart_rate_inverted")
     def _compute_user_counterpart_rate(self):
         for rec in self:
             rate = rec.counterpart_rate
-            if rate and rate < 1.0:
+            if not rate:
+                rec.user_counterpart_rate = 0.0
+            elif rec.counterpart_rate_inverted:
                 rec.user_counterpart_rate = 1.0 / rate
             else:
-                rec.user_counterpart_rate = rate or 0.0
+                rec.user_counterpart_rate = rate
 
     @api.onchange("user_counterpart_rate")
     def _inverse_user_counterpart_rate(self):
         for rec in self:
-            user_rate = rec.user_counterpart_rate
-            if not user_rate:
+            rate = rec.user_counterpart_rate
+            if not rate:
                 continue
-            if rec.counterpart_rate and rec.counterpart_rate < 1.0:
-                rec.counterpart_rate = 1.0 / user_rate
+            if rec.counterpart_rate_inverted:
+                rec.counterpart_rate = 1.0 / rate
             else:
-                rec.counterpart_rate = user_rate
+                rec.counterpart_rate = rate
             # Propagar a accounting_rate si B1 == C
             if rec.counterpart_currency_id == rec.company_currency_id:
                 rec.accounting_rate = rec.counterpart_rate

@@ -51,11 +51,11 @@
             <label for="user_counterpart_rate" string="Rate"
                 invisible="currency_id == counterpart_currency_id
                         or counterpart_currency_id == company_currency_id"/>
-            <!-- Caso rate < 1: A es la débil → "1 B1 = X A" -->
+            <!-- Caso invertido (B1 fuerte): "1 B1 = X A" -->
             <div name="counterpart_rate_lt1" class="d-flex gap-1 text-muted"
                 invisible="currency_id == counterpart_currency_id
                         or counterpart_currency_id == company_currency_id
-                        or counterpart_rate &gt;= 1.0">
+                        or not counterpart_rate_inverted">
                 <span>1</span>
                 <field name="counterpart_currency_id" readonly="True"
                     options="{'no_open': True}" class="w-auto"/>
@@ -65,11 +65,11 @@
                 <field name="currency_id" readonly="True"
                     options="{'no_open': True}" class="w-auto"/>
             </div>
-            <!-- Caso rate >= 1: A es la fuerte → "1 A = X B1" -->
+            <!-- Caso directo (A fuerte): "1 A = X B1" -->
             <div name="counterpart_rate_gte1" class="d-flex gap-1 text-muted"
                 invisible="currency_id == counterpart_currency_id
                         or counterpart_currency_id == company_currency_id
-                        or counterpart_rate &lt; 1.0">
+                        or counterpart_rate_inverted">
                 <span>1</span>
                 <field name="currency_id" readonly="True"
                     options="{'no_open': True}" class="w-auto"/>
@@ -82,6 +82,8 @@
             <!-- Campos invisibles necesarios para expresiones de dominio/visibilidad -->
             <field name="company_currency_id" invisible="True"/>
             <field name="destination_currency_id" invisible="True"/>
+            <field name="counterpart_rate_inverted" invisible="True"/>
+            <field name="accounting_rate_inverted" invisible="True"/>
             <!-- Importe en moneda de contrapartida: visible si A != B -->
             <field name="counterpart_currency_amount" string="Amount in"
                 invisible="currency_id == counterpart_currency_id"/>
@@ -100,8 +102,18 @@
             <!-- Accounting rate: visible solo si A != C -->
             <label for="user_accounting_rate" string="Rate"
                 invisible="currency_id == company_currency_id"/>
-            <div name="accounting_rate_div" class="d-flex gap-1 text-muted"
-                invisible="currency_id == company_currency_id">
+            <!-- Caso invertido (C fuerte): "1 C = X A" -->
+            <div name="accounting_rate_lt1" class="d-flex gap-1 text-muted"
+                invisible="currency_id == company_currency_id or not accounting_rate_inverted">
+                <span>1</span>
+                <field name="company_currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
+                <span>=</span>
+                <field name="user_accounting_rate" readonly="state != 'draft'" style="max-width: 21ch;"/>
+                <field name="currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
+            </div>
+            <!-- Caso directo (A fuerte): "1 A = X C" -->
+            <div name="accounting_rate_gte1" class="d-flex gap-1 text-muted"
+                invisible="currency_id == company_currency_id or accounting_rate_inverted">
                 <span>1</span>
                 <field name="currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
                 <span>=</span>
