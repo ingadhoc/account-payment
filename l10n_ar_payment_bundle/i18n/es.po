@@ -48,9 +48,9 @@ msgid "Amount in SC"
 msgstr "Monto en Moneda Secundaria"
 
 #. module: l10n_ar_payment_bundle
-#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__bundle_counterpart_currency_amount
-msgid "Bundle Counterpart Currency Amount"
-msgstr "Monto en moneda del pago múltiple de la contrapartida"
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__link_payments_total
+msgid "Link Payments Total"
+msgstr "Total de pagos vinculados"
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_payment_rename_wizard_form

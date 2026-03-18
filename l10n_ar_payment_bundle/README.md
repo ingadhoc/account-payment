@@ -1,74 +1,61 @@
 # Argentinean Payment Bundle
 
-The **Argentinean Payment Bundle** module enhances Odoo's payment functionality by introducing features tailored to the Argentinean market. It allows for the management of complex payment scenarios, including payment bundles, linked payments, and withholding taxes.
+Groups multiple payments into a single "bundle receipt": a main payment (`is_main_payment=True`, amount=0) that concentrates the debt, withholdings, and write-off, plus linked payments (`link_payment_ids`) that represent the actual payment methods. Supports **multi-currency bundles** — linked payments can use journals in any currency (ARS, USD, EUR, etc.), and all amounts are expressed in the main payment's debt currency (B) via each linked payment's own `counterpart_rate`.
 
 ## Features
 
-- **Payment Bundles**: Group multiple payments into a single main payment for easier management.
-- **Linked Payments**: Automatically create and manage linked payments associated with a main payment.
-- **Withholding Tax Management**: Integrates with the `l10n_ar_tax` module to handle withholding taxes during payment processing.
-- **Receipt Books**: Supports receipt book management for payments, leveraging the `account_payment_pro_receiptbook` module.
-- **Custom Payment Methods**: Adds a new payment method, `Payment multiple`, for both inbound and outbound payments.
+- **Payment bundles:** group multiple payments under a single main payment for unified receipt management.
+- **Multi-currency linked payments:** a bundle can mix linked payments in ARS, USD, EUR, etc. Each linked payment computes its own `counterpart_rate` (A→B) according to its journal.
+- **Withholding integration:** integrates with `l10n_ar_tax` to handle tax withholdings within the bundle.
+- **Receipt books:** supports receipt book management via `account_payment_pro_receiptbook`.
+- **Custom payment method:** adds `Payment multiple` for both inbound and outbound payments.
 
 ## Known issues / Roadmap
- - ** Multiple receipt report not implemented in non Argentina companies
- - ** Payment regiter wizard should not allow to select payment bundle journal
 
-## Installation
+- Multiple receipt report not implemented for non-Argentine companies.
+- Payment register wizard should not allow selecting the payment bundle journal.
 
-To install this module, ensure the following dependencies are installed:
+## Dependencies
 
-- `account_payment_pro`
-- `l10n_ar_tax`
-- `account_payment_pro_receiptbook`
-
-Once the dependencies are installed, add this module to your Odoo instance and install it through the Apps menu.
+| Module | Purpose |
+|--------|---------|
+| `account_payment_pro` | Tri-currency payment model |
+| `l10n_ar_tax` | Argentine withholdings |
+| `account_payment_pro_receiptbook` | Receipt book management |
 
 ## Configuration
 
-1. **Payment Bundle Journals**:
-   - Ensure that journals using the `Payment multiple` method are configured correctly.
-   - Journals with this payment method cannot have a currency assigned.
-
-2. **Receipt Books**:
-   - Configure receipt books for managing payments if required.
-
-3. **Withholding Taxes**:
-   - Set up withholding taxes in the `l10n_ar_tax` module to integrate with payments.
+1. **Bundle journals:** journals with the `Payment multiple` method are auto-created for Argentine companies (post-init hook). Verify they are configured correctly.
+2. **Receipt books:** configure as needed for payment receipt management.
+3. **Withholding taxes:** set up in `l10n_ar_tax` to integrate with bundle payments.
 
 ## Usage
 
-### Creating a Payment Bundle
-1. Navigate to the **Payments** menu.
-2. Create a new payment and select the `Payment multiple` method.
-3. Add linked payments to the main payment as needed.
+### Creating a bundle
 
-### Managing Linked Payments
-- Linked payments are automatically created and managed under the main payment.
-- Validation of linked payments must be done through the main payment to ensure consistency.
+1. Go to Payments, create a new payment selecting the `Payment multiple` method.
+2. Add linked payments — each can use a different journal/currency.
+3. The main payment concentrates debt selection, withholdings, and write-off.
+4. Validation is done through the main payment.
 
-### Withholding Taxes
-- Withholding taxes are automatically calculated and applied during payment processing if configured.
+### Multi-currency example
 
-### Receipt Books
-- Use receipt books to manage payment receipts if enabled.
+Invoice: 1.000 USD. Bundle with:
+- Linked 1: 500 USD (cash, `counterpart_rate`=1.0) → 500 USD in B.
+- Linked 2: 600.000 ARS (transfer, `counterpart_rate`≈0.000833) → 500 USD in B.
+- IIBB withholding: 30 USD (≈36.000 ARS stored).
 
-## Technical Details
-
-- **Post-Initialization Hook**: The module includes a post-init hook to create journals for companies using the Argentinean Chart of Accounts.
-- **Custom Payment Method**: The `Payment multiple` method is defined in the `data/account_payment_method_data.xml` file.
-- **Views**: Customizations to the payment form and tree views are defined in `views/account_payment_view.xml`.
-
-## Credits
-
-- **Author**: ADHOC SA
-- **Website**: [www.adhoc.com.ar](https://www.adhoc.com.ar)
-- **License**: AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
+The system adjusts linked amounts automatically when withholdings change.
 
 ## Bug Tracker
 
-Bugs are tracked on [GitHub Issues](https://github.com/ingadhoc/account-payment/issues). If you encounter an issue, please report it with detailed feedback.
+Bugs are tracked on [GitHub Issues](https://github.com/ingadhoc/account-payment/issues).
 
-## Maintainer
+## Credits
 
-This module is maintained by **ADHOC SA**. For contributions or inquiries, visit [www.adhoc.com.ar](https://www.adhoc.com.ar).
+**Author:** ADHOC SA · [www.adhoc.com.ar](https://www.adhoc.com.ar)
+**License:** AGPL-3.0 or later
+
+---
+
+See [DESIGN.md](DESIGN.md) for internal architecture and design decisions.

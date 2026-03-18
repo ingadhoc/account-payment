@@ -71,23 +71,41 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
         action_context = invoice.action_register_payment()["context"]
         payment = self.env["account.payment"].with_context(**action_context).create(vals)
         payment.action_post()
-        eur_actual_rate_1 = 1 / invoice.currency_id._get_rates(self.company, self.today).get(self.eur_currency.id)
-
-        self.assertEqual(payment.exchange_rate, eur_actual_rate_1, "no se tomo de forma correcta el tipo de cambio")
+        # accounting_rate = _get_conversion_rate(from=company_currency=ARS, to=EUR)
+        # formato Odoo nativo: ej. 0.001 para "1 EUR = 1000 ARS"
+        # El pago tiene date=today-1, por lo que aplica la tasa de today-10 (inverse_company_rate=1000)
+        expected_rate_1 = self.env["res.currency"]._get_conversion_rate(
+            from_currency=self.company.currency_id,
+            to_currency=self.eur_currency,
+            company=self.company,
+            date=payment.date,
+        )
+        self.assertEqual(payment.accounting_rate, expected_rate_1, "no se tomo de forma correcta el tipo de cambio")
         self.rates[1].inverse_company_rate = 2000
-        eur_actual_rate_2 = 1 / invoice.currency_id._get_rates(self.company, self.today).get(self.eur_currency.id)
+        expected_rate_2 = self.env["res.currency"]._get_conversion_rate(
+            from_currency=self.company.currency_id,
+            to_currency=self.eur_currency,
+            company=self.company,
+            date=payment.date,
+        )
         self.assertNotEqual(
-            payment.exchange_rate,
-            eur_actual_rate_2,
+            payment.accounting_rate,
+            expected_rate_2,
             "Se tomo de forma incorrecta el tipo de cambio en un pago ya posteado",
         )
-        self.assertEqual(payment.exchange_rate, eur_actual_rate_1, "no se tomo de forma correcta el tipo de cambio")
+        self.assertEqual(payment.accounting_rate, expected_rate_1, "no se tomo de forma correcta el tipo de cambio")
 
         payment.action_draft()
         payment.date = self.today
-        payment._compute_amount_company_currency()
+        payment._compute_accounting_rate()
         payment.action_post()
-        self.assertEqual(payment.exchange_rate, eur_actual_rate_2, "no se tomo de forma correcta el tipo de cambio")
+        expected_rate_today = self.env["res.currency"]._get_conversion_rate(
+            from_currency=self.company.currency_id,
+            to_currency=self.eur_currency,
+            company=self.company,
+            date=self.today,
+        )
+        self.assertEqual(payment.accounting_rate, expected_rate_today, "no se tomo de forma correcta el tipo de cambio")
 
     def test_action_draft_unreconciles_payment(self):
         """Test that action_draft removes partial reconciliations when going back to draft"""
@@ -129,6 +147,7 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
         partials_before = payment_lines.mapped("matched_debit_ids") | payment_lines.mapped("matched_credit_ids")
 
         # Verify that partial reconciliations exist
+        # TODO improve. for this to work, saas_client_adhoc is needed to be installed (For setup of journal)
         self.assertTrue(partials_before, "There should be partial reconciliations after posting the payment")
         self.assertTrue(payment.move_id.posted_before, "posted_before should be True after posting")
 
