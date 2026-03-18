@@ -47,29 +47,67 @@
         </xpath>
 
         <div name="amount_div" position="after">
-            <field name="company_currency_id" invisible="True"/>
-            <field name="other_currency" invisible="True"/>
-            <field name="force_amount_company_currency" invisible="True"/>
-            <div class="o_row" name="exchange_rate_div" invisible="not other_currency">
-                <span><strong>Rate = </strong></span><strong><field name="exchange_rate" nolabel="1"/></strong>
+            <!-- Rate de contrapartida: visible solo si A != B1 AND B1 != C -->
+            <label for="user_counterpart_rate" string="Rate"
+                invisible="currency_id == counterpart_currency_id
+                        or counterpart_currency_id == company_currency_id"/>
+            <!-- Caso rate < 1: A es la débil → "1 B1 = X A" -->
+            <div name="counterpart_rate_lt1" class="d-flex gap-1 text-muted"
+                invisible="currency_id == counterpart_currency_id
+                        or counterpart_currency_id == company_currency_id
+                        or counterpart_rate &gt;= 1.0">
+                <span>1</span>
+                <field name="counterpart_currency_id" readonly="True"
+                    options="{'no_open': True}" class="w-auto"/>
+                <span>=</span>
+                <field name="user_counterpart_rate" readonly="state != 'draft'"
+                    style="max-width: 21ch;"/>
+                <field name="currency_id" readonly="True"
+                    options="{'no_open': True}" class="w-auto"/>
             </div>
-            <field name="amount_company_currency" readonly="state != 'draft'" nolabel="1" invisible="not other_currency"/>
-            <label for="write_off_amount" string="Write Off"  invisible="not write_off_available or is_internal_transfer or not use_payment_pro"/>
+            <!-- Caso rate >= 1: A es la fuerte → "1 A = X B1" -->
+            <div name="counterpart_rate_gte1" class="d-flex gap-1 text-muted"
+                invisible="currency_id == counterpart_currency_id
+                        or counterpart_currency_id == company_currency_id
+                        or counterpart_rate &lt; 1.0">
+                <span>1</span>
+                <field name="currency_id" readonly="True"
+                    options="{'no_open': True}" class="w-auto"/>
+                <span>=</span>
+                <field name="user_counterpart_rate" readonly="state != 'draft'"
+                    style="max-width: 21ch;"/>
+                <field name="counterpart_currency_id" readonly="True"
+                    options="{'no_open': True}" class="w-auto"/>
+            </div>
+            <!-- Campos invisibles necesarios para expresiones de dominio/visibilidad -->
+            <field name="company_currency_id" invisible="True"/>
+            <field name="destination_currency_id" invisible="True"/>
+            <!-- Importe en moneda de contrapartida: visible si A != B -->
+            <field name="counterpart_currency_amount" string="Amount in"
+                invisible="currency_id == counterpart_currency_id"/>
+            <!-- Write off -->
+            <label for="write_off_amount" string="Write Off" invisible="not write_off_available or is_internal_transfer or not use_payment_pro"/>
             <div name="write_off_amount" class="o_row" invisible="not write_off_available or is_internal_transfer or not use_payment_pro">
                 <field name="write_off_amount" readonly="state != 'draft'"/>
                 <field name="write_off_type_id" placeholder="Write-off type" invisible="not write_off_amount" readonly="state != 'draft'" required="write_off_amount" options="{'no_create': True, 'no_open': True}"/>
             </div>
+            <!-- Payment total -->
             <label for="payment_total" readonly="state != 'draft'" invisible="not use_payment_pro or is_internal_transfer"/>
             <div name="payment_total" invisible="not use_payment_pro or is_internal_transfer">
                 <field name="payment_total" class="oe_inline"/>
                 <span invisible="state != 'draft'" class="text-muted"> (difference <field name="payment_difference" class="oe_inline"/>)</span>
             </div>
-            <label for="counterpart_currency_amount" string="Secondary Currency" invisible="is_internal_transfer or not use_payment_pro" groups="base.group_multi_currency"/>
-            <div name="counterpart_currency_amount" class="o_row" invisible="is_internal_transfer or not use_payment_pro" groups="base.group_multi_currency">
-                <field name="counterpart_currency_id" domain="[('id', 'not in', [currency_id, company_currency_id])]" options="{'no_create': True, 'no_open': True}" readonly="state != 'draft'"/>
-                Rate = <field name="counterpart_exchange_rate" readonly="state != 'draft'"/>
+            <!-- Accounting rate: visible solo si A != C -->
+            <label for="user_accounting_rate" string="Rate"
+                invisible="currency_id == company_currency_id"/>
+            <div name="accounting_rate_div" class="d-flex gap-1 text-muted"
+                invisible="currency_id == company_currency_id">
+                <span>1</span>
+                <field name="currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
+                <span>=</span>
+                <field name="user_accounting_rate" readonly="state != 'draft'" style="max-width: 21ch;"/>
+                <field name="company_currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
             </div>
-            <field name="counterpart_currency_amount" string="Payment Total (SC)" invisible="not counterpart_currency_id or is_internal_transfer or not use_payment_pro" required="counterpart_currency_id"/>
         </div>
     </field>
 </record>
@@ -130,9 +168,9 @@
             <field name="statement_id" column_invisible="True" readonly="True"/>
             <field name="account_id" options='{"no_open":True}' domain="[('company_ids', '=', company_id)]" readonly="True" optional="hide"/>
             <field name="balance" optional="hide" string="Amount" readonly="True"/>
-            <field name="amount_residual" readonly="True"/>
+            <field name="amount_residual" optional="hide" readonly="True"/>
             <field name="amount_currency" groups="base.group_multi_currency" readonly="True"/>
-            <field name="amount_residual_currency" optional="hide" groups="base.group_multi_currency" readonly="True"/>
+            <field name="amount_residual_currency" groups="base.group_multi_currency" readonly="True"/>
             <field name="currency_id" column_invisible="True" readonly="True"/>
             <field name="company_currency_id" column_invisible="True" readonly="True"/>
             <field name="company_id" column_invisible="True" readonly="True"/>
