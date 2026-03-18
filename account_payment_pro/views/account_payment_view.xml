@@ -179,10 +179,10 @@
             <field name="ref" optional="show" readonly="True"/>
             <field name="statement_id" column_invisible="True" readonly="True"/>
             <field name="account_id" options='{"no_open":True}' domain="[('company_ids', '=', company_id)]" readonly="True" optional="hide"/>
-            <field name="balance" optional="hide" string="Amount" readonly="True"/>
-            <field name="amount_residual" optional="hide" readonly="True"/>
-            <field name="amount_currency" groups="base.group_multi_currency" readonly="True"/>
-            <field name="amount_residual_currency" groups="base.group_multi_currency" readonly="True"/>
+            <field name="amount_residual_currency" readonly="True" string="Residual"/>
+            <field name="amount_residual" optional="hide" readonly="True" string="Residual CC" help="Residual amount in company currency"/>
+            <field name="amount_currency" readonly="True" string="Amount" help="Total debt"/>
+            <field name="balance" optional="hide" string="Amount CC" help="Total debt amount in company currency" readonly="True"/>
             <field name="currency_id" column_invisible="True" readonly="True"/>
             <field name="company_currency_id" column_invisible="True" readonly="True"/>
             <field name="company_id" column_invisible="True" readonly="True"/>
@@ -198,8 +198,11 @@
     <field name="mode">primary</field>
     <field name="inherit_id" ref="account_payment_pro.view_move_line_tree"/>
     <field name="arch" type="xml">
+        <!-- por ahora, cuando estamos viendo info de lo pagado, no mostamos residual actualizado para no confundir con tantos importes -->
+        <field name="amount_residual_currency" position="replace"/>
         <field name="amount_residual" position="replace">
             <field name="payment_matched_amount" string="Paid Amount"/>
+            <field name="payment_matched_currency_id" column_invisible="True"/>
         </field>
     </field>
 </record>
