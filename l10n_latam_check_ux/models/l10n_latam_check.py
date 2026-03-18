@@ -4,6 +4,8 @@ from odoo import _, api, fields, models
 class l10nLatamAccountPaymentCheck(models.Model):
     _inherit = "l10n_latam.check"
 
+    _unique = models.UniqueIndex("(name, payment_method_line_id) WHERE issue_state IS NOT NULL")
+
     check_add_debit_button = fields.Boolean(related="original_journal_id.check_add_debit_button", readonly=True)
     date = fields.Date(related="payment_id.date")
     memo = fields.Char(related="payment_id.memo")
