@@ -104,10 +104,11 @@ Se evaluó un mixin compartido y también cambiar el formato de almacenamiento.
 almacenados con compute + inverse (`user_accounting_rate`, `user_counterpart_rate`)
 directamente en el modelo, sin mixin.
 
-- `user_accounting_rate`: siempre invierte (A es siempre la débil respecto a C en AR).
-- `user_counterpart_rate`: inversión condicional según si el rate almacenado es `< 1.0`
-  (estricto, no `<= 1.0`). Cuando `rate == 1.0` exacto (paridad 1:1 o misma moneda),
-  se muestra directo sin inversión.
+- `user_accounting_rate`: inversión condicional según `accounting_rate_inverted` (ver ADR-011).
+- `user_counterpart_rate`: inversión condicional según `counterpart_rate_inverted` (ver ADR-011).
+
+Ambos campos `*_rate_inverted` se basan en el rate **teórico** (calculado a la fecha del pago),
+no en el valor almacenado editado por el usuario. Esto garantiza dirección estable en la vista.
 
 **Por qué sin mixin:** Con solo dos campos concretos, un mixin agrega indirección sin
 beneficio real. Si en el futuro hay más casos (ej. `account_ux` adopta el mismo approach),
@@ -162,3 +163,39 @@ hace backup de la columna original y convierte los valores usando `counterpart_r
 **Consecuencias:** Los pagos existentes con write-off tendrán sus montos re-expresados
 en moneda B. Cualquier reporte o lógica que lea `write_off_amount` asumiendo moneda C
 necesita adaptarse.
+
+---
+
+## ADR-011 — Dirección estable en la vista de tasas (`*_rate_inverted`)
+**Fecha:** 2025-03-18 | **Estado:** Aceptado
+
+**Contexto:** Al editar una tasa de cambio manualmente, el valor pasa por `1.0` durante
+la tipeo. Si la dirección del label ("1 A = X B" vs "1 B = X A") depende del rate editado,
+la vista cambia de layout en mitad de la edición, desorientando al usuario.
+
+El approach anterior de ADR-007 (inversión condicional basada en `rate < 1.0`) tenía
+exactamente este problema.
+
+**Decisión:** Se crean dos campos Boolean non-stored:
+- `accounting_rate_inverted`: `True` si rate teórico A→C < 1.0 (C es la moneda fuerte)
+- `counterpart_rate_inverted`: `True` si rate teórico A→B1 < 1.0 (B1 es la moneda fuerte)
+
+El rate teórico se calcula con `_get_conversion_rate` a la fecha del pago, sin considerar
+el valor que el usuario haya podido editar manualmente.
+
+La vista XML usa un patrón dual-div:
+- `[field]_lt1` (invisible si `not *_rate_inverted`): muestra `1 B = X A`
+- `[field]_gte1` (invisible si `*_rate_inverted`): muestra `1 A = X B`
+
+Los campos `user_*` usan `*_rate_inverted` para decidir si mostrar el valor directo
+o el recíproco (`1 / rate`).
+
+**Alternativas descartadas:**
+- Usar el rate editado para decidir la dirección → rechazado (causa swaps durante tipeo).
+- Selector explícito de dirección para el usuario → demasiado complejo.
+
+**Consecuencias:**
+- El layout del formulario es estable durante toda la edición.
+- La dirección se re-evalúa al abrir el formulario (basada en tipo de cambio vigente).
+  Si el usuario guardó una tasa muy diferente al teórico, puede ver la dirección
+  "corregida" al reabrir. Este comportamiento es aceptable y esperado.
