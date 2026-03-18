@@ -388,33 +388,6 @@ class AccountPayment(models.Model):
     def _compute_available_journal_ids(self):
         super()._compute_available_journal_ids()
 
-    @api.depends(
-        "currency_id",
-        "company_currency_id",
-        "is_internal_transfer",
-        "destination_journal_currency_id",
-    )
-    def _compute_other_currency(self):
-        for rec in self:
-            company_currency = rec.company_currency_id
-            rec.other_currency = bool(
-                (company_currency and rec.currency_id and company_currency != rec.currency_id)
-                or (
-                    rec.is_internal_transfer
-                    and company_currency
-                    and rec.destination_journal_currency_id
-                    and company_currency != rec.destination_journal_currency_id
-                )
-            )
-
-    @api.depends("amount", "other_currency", "amount_company_currency")
-    def _compute_exchange_rate(self):
-        for rec in self:
-            if rec.other_currency:
-                rec.exchange_rate = rec.amount and (rec.amount_company_currency / rec.amount) or 0.0
-            else:
-                rec.exchange_rate = False
-
     @api.depends("amount", "counterpart_rate", "counterpart_currency_id", "currency_id")
     def _compute_counterpart_currency_amount(self):
         for rec in self:
@@ -465,43 +438,10 @@ class AccountPayment(models.Model):
             if rec.counterpart_currency_id == rec.company_currency_id:
                 rec.accounting_rate = rec.counterpart_rate
 
-    # this onchange is necesary because odoo, sometimes, re-compute
-    # and overwrites amount_company_currency. That happends due to an issue
-    # with rounding of amount field (amount field is not change but due to
-    # rouding odoo believes amount has changed)
-    @api.onchange("amount_company_currency")
-    def _inverse_amount_company_currency(self):
-        for rec in self:
-            if rec.other_currency and rec.amount_company_currency != rec.currency_id._convert(
-                rec.amount, rec.company_id.currency_id, rec.company_id, rec.date
-            ):
-                force_amount_company_currency = rec.amount_company_currency
-            else:
-                force_amount_company_currency = False
-            rec.force_amount_company_currency = force_amount_company_currency
-
     @api.onchange("company_id")
     def _onchange_company_id(self):
         if self._origin.company_id and self.company_id != self._origin.company_id and self.state == "draft":
             self.remove_all()
-
-    @api.depends("amount", "other_currency", "force_amount_company_currency")
-    def _compute_amount_company_currency(self):
-        """
-        * Si las monedas son iguales devuelve 1
-        * si no, si hay force_amount_company_currency, devuelve ese valor
-        * sino, devuelve el amount convertido a la moneda de la cia
-        """
-        for rec in self:
-            if not rec.other_currency:
-                amount_company_currency = rec.amount
-            elif rec.force_amount_company_currency:
-                amount_company_currency = rec.force_amount_company_currency
-            else:
-                amount_company_currency = rec.currency_id._convert(
-                    rec.amount, rec.company_id.currency_id, rec.company_id, rec.date
-                )
-            rec.amount_company_currency = amount_company_currency
 
     @api.depends("to_pay_move_line_ids")
     def _compute_destination_account_id(self):
@@ -699,23 +639,6 @@ class AccountPayment(models.Model):
                 base_amount = -base_amount
 
             rec.payment_total = base_amount + rec.write_off_amount
-
-    def _compute_amount_company_currency_signed_pro(self):  # dead code — campo eliminado
-        """new field similar to amount_company_currency_signed but:
-        1. is positive for payments to suppliers
-        2. we use the new field amount_company_currency instead of amount_total_signed, because amount_total_signed is
-        computed only after saving
-        We use l10n_ar prefix because this is a pseudo backport of future l10n_ar_withholding module"""
-        for payment in self:
-            if (
-                payment.payment_type == "outbound"
-                and payment.partner_type == "customer"
-                or payment.payment_type == "inbound"
-                and payment.partner_type == "supplier"
-            ):
-                payment.amount_company_currency_signed_pro = -payment.amount_company_currency
-            else:
-                payment.amount_company_currency_signed_pro = payment.amount_company_currency
 
     # TODO revisar depends
     @api.depends("payment_total", "to_pay_amount")
