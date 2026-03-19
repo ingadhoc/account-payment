@@ -85,8 +85,12 @@
             <field name="counterpart_rate_inverted" invisible="True"/>
             <field name="accounting_rate_inverted" invisible="True"/>
             <!-- Importe en moneda de contrapartida: visible si A != B -->
-            <field name="counterpart_currency_amount" string="Amount in"
-                invisible="currency_id == counterpart_currency_id"/>
+            <!-- TODO ver si encontramos una mejor opcion y/o podemos ponerle la negrita tmb al destination_currency_id -->
+            <div class="o_row" invisible="currency_id == counterpart_currency_id">
+                <label for="counterpart_currency_amount" string="Amount in" class="fw-bold text-900 me-1"/>
+                <field name="destination_currency_id" readonly="True" options="{'no_open': True}"/>
+            </div>
+            <field nolabel="1" name="counterpart_currency_amount" readonly="state != 'draft'" invisible="currency_id == counterpart_currency_id"/>
             <!-- Write off -->
             <label for="write_off_amount" string="Write Off" invisible="not write_off_available or is_internal_transfer or not use_payment_pro"/>
             <div name="write_off_amount" class="o_row" invisible="not write_off_available or is_internal_transfer or not use_payment_pro">
