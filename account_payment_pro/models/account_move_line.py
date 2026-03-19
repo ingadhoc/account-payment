@@ -42,28 +42,44 @@ class AccountMoveLine(models.Model):
         )
 
         for rec in self:
-            # Importe de los partials en moneda C (company_currency), campo `amount`
-            debit_amount_c = sum(
-                payment_lines.mapped("matched_debit_ids").filtered(lambda x: x.debit_move_id == rec).mapped("amount")
+            # Usamos debit_amount_currency / credit_amount_currency del partial, que expresan
+            # el importe en la moneda propia de la línea (rec.currency_id).
+            # Esto es correcto porque:
+            #   - La línea AP de una factura USD tiene credit_amount_currency = monto_USD real
+            #   - La línea AP de una entrada EXCH (sólo ARS) tiene amount_currency=0,
+            #     por tanto credit_amount_currency=0 → no infla el importe de la factura
+            # Usar partial.amount (siempre en ARS) y convertir con la tasa del pago daba
+            # resultados incorrectos: e.g. 640,39 USD para la factura y 213,46 para el EXCH
+            # en lugar de 853,85 USD y 0 respectivamente.
+            debit_amount_rec = sum(
+                payment_lines.mapped("matched_debit_ids")
+                .filtered(lambda x: x.debit_move_id == rec)
+                .mapped("debit_amount_currency")
             )
-            credit_amount_c = sum(
-                payment_lines.mapped("matched_credit_ids").filtered(lambda x: x.credit_move_id == rec).mapped("amount")
+            credit_amount_rec = sum(
+                payment_lines.mapped("matched_credit_ids")
+                .filtered(lambda x: x.credit_move_id == rec)
+                .mapped("credit_amount_currency")
             )
-            amount_in_c = debit_amount_c - credit_amount_c
+            amount_in_rec_currency = debit_amount_rec - credit_amount_rec
 
-            # Convertir C → B usando las tasas del pago
-            if target_currency == company_currency:
-                # B == C: sin conversión
-                amount_in_b = amount_in_c
-            else:
-                # C → A: accounting_rate = A/C
-                amount_in_a = amount_in_c * accounting_rate
+            # Convertir desde la moneda de rec hasta B, si difieren
+            rec_currency = rec.currency_id or company_currency
+            if rec_currency == target_currency:
+                amount_in_b = amount_in_rec_currency
+            elif rec_currency == company_currency:
+                # rec está en C, target es B != C → C → A → B
+                amount_in_a = amount_in_rec_currency * accounting_rate
                 if target_currency == main_payment.currency_id:
-                    # B == A
                     amount_in_b = amount_in_a
                 else:
-                    # B == B1: counterpart_rate = B1/A
                     amount_in_b = amount_in_a * counterpart_rate
+            else:
+                # rec está en A (misma que pago), target es B
+                if target_currency == main_payment.currency_id:
+                    amount_in_b = amount_in_rec_currency
+                else:
+                    amount_in_b = amount_in_rec_currency * counterpart_rate
 
             rec.payment_matched_currency_id = target_currency
             rec.payment_matched_amount = amount_in_b
