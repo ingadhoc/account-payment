@@ -339,9 +339,9 @@ def _tax_compute_all_helper(self):
 **No existe `base_in_c` ni `withholding_rate` en este método.**
 `self.base_amount` ya es ARS cuando llega aquí.
 
-### `_prepare_move_withholding_lines` — fix trivial
+### `_prepare_move_withholding_lines` — fix trivial + caso `counterpart_is_foreign`
 
-Reemplazar `self.exchange_rate` (eliminado) por `self.accounting_rate`:
+Fix trivial: reemplazar `self.exchange_rate` (eliminado) por `self.accounting_rate`:
 
 ```python
 # Antes (línea 144):
@@ -356,6 +356,50 @@ porque `accounting_rate` tiene el mismo valor numérico que tenía `exchange_rat
 
 Ejemplo: A=USD, C=ARS, rate=1200. Balance=36.000 ARS.
 `amount_currency = 36.000 / 1200 = 30 USD` (en moneda A para el journal entry) ✓
+
+#### Nuevo caso: `counterpart_is_foreign` (A=C=ARS, B=USD)
+
+Cuando A=C (pago en ARS) pero B≠C (deuda en USD), las withholding lines **permanecen en ARS**.
+Si se usara `currency_id=USD` con `amount_currency=-25 USD`, Odoo base interpretaría ese -25 como
+ARS al restar de la liquidez (que también tiene `currency_id=ARS`), generando un desbalance de
+`50.000 - 25 = 49.975 ARS` y una "Automatic Balancing Line".
+
+Las wth lines siempre tienen `currency_id=ARS`, `balance=-50.000 ARS`, `amount_currency=-50.000 ARS`.
+El ajuste en USD de la contrapartida AP se calcula en `_prepare_move_lines_per_type`:
+```python
+if counterpart_is_foreign:
+    withholding_rate = self._get_withholding_rate()  # = 1/counterpart_rate = 1500
+    wth_amount_in_b = counterpart_currency_id.round(wth_balance / withholding_rate)  # 50.000/1500 = 33.33 USD
+    counterpart_lines[0]["amount_currency"] -= wth_amount_in_b
+```
+
+Tabla final de ramas (en `_prepare_move_withholding_lines`):
+
+| Condición | `currency_id` | `amount_currency` |
+|-----------|--------------|-------------------|
+| `use_company_currency` (A≠C, ej: A=USD) | ARS (C) | `balance` |
+| `counterpart_is_foreign` (A=C=ARS, B=USD) | ARS (C) | `balance` (= balance / 1.0) |
+| else (A=B=C=ARS u otros) | A | `balance / conversion_rate` |
+
+#### Bug 1: `@api.depends` incompleto en `_compute_base_amount`
+
+`_compute_base_amount` llama a `_get_withholding_rate()` que usa `accounting_rate / counterpart_rate`.
+Si el usuario cambia la tasa en el wizard, el cómputo no se re-dispara porque estas
+campos no estaban en el `@api.depends`. Fix:
+
+```python
+@api.depends(
+    "tax_id",
+    "payment_id.selected_debt",
+    "payment_id.selected_debt_untaxed",
+    "payment_id.withholdable_advanced_amount",
+    "payment_id.unreconciled_amount",
+    "payment_id.counterpart_rate",   # ← nuevo
+    "payment_id.accounting_rate",    # ← nuevo
+)
+def _compute_base_amount(self):
+    ...
+```
 
 ---
 
@@ -431,8 +475,17 @@ withholding amount    = 1.500.000 * 3% = 45.000 ARS (stored)
 withholdings_amount   = 45.000 / 1500 = 30 USD (UX)
 ```
 
-**Asiento retención:**
-balance=45.000 ARS, amount_currency = 45.000/1.0 = 45.000 ARS, currency_id=ARS(A)
+**Asiento retención (`counterpart_is_foreign`):**
+balance=-45.000 ARS, amount_currency=-45.000 ARS, currency_id=ARS(C)
+
+El ajuste en USD de la línea AP se hace en `_prepare_move_lines_per_type`:
+- `wth_amount_in_b = 45.000 / 1500 = 30 USD`
+- `counterpart[amount_currency] -= 30 USD`
+
+> _Antes del fix (Bug 2) este asiento generaba una "Automatic Balancing Line" de ARS 49.975
+> porque las wth lines tenían `currency_id=USD, amount_currency=-25 USD`. Odoo base suma
+> `amount_currency` numéricamente y restaba 25 en vez de 50.000 de la liquidez ARS
+> → desbalance de 50.000 - 25 = 49.975 ARS. Fix: wth lines siempre en ARS; ajuste USD en AP._
 
 ---
 
@@ -530,7 +583,7 @@ withholdings_amount = 118.000 / 1500 ~ 78,67 USD
 | `_compute_withholding_warning` | Eliminar método |
 | `selected_debt_untaxed` | currency_field -> `destination_currency_id`, adaptar compute |
 | `withholdable_advanced_amount` | currency_field -> `destination_currency_id` |
-| `_prepare_move_withholding_lines` | `self.exchange_rate` -> `self.accounting_rate` |
+| `_prepare_move_withholding_lines` | `self.exchange_rate` -> `self.accounting_rate`; wth lines siempre en ARS (C), incluso cuando `counterpart_is_foreign` (A=C, B≠C) |
 | `_use_counterpart_currency()` | Ya eliminado en payment_pro, limpiar referencia en warning |
 
 ### `l10n_ar_payment_withholding.py`
@@ -540,7 +593,7 @@ withholdings_amount = 118.000 / 1500 ~ 78,67 USD
 | `base_amount` | `currency_field="currency_id"` (C/ARS); `_compute_base_amount` convierte B→C al final |
 | `currency_id` | Se mantiene en `company_currency_id` (para `amount` y `base_amount`) |
 | `amount` | Sin cambios (se mantiene en C) |
-| `_compute_base_amount` | Calcula `base_in_b` en B, convierte a C con `_get_withholding_rate()`; fix comparación pago parcial |
+| `_compute_base_amount` | Calcula `base_in_b` en B, convierte a C con `_get_withholding_rate()`; fix comparación pago parcial; `@api.depends` incluye `counterpart_rate` y `accounting_rate` |
 | `_tax_compute_all_helper` | `base_amount` ya en C — `compute_all` con `currency=company_currency_id`, ref en ARS; sin `base_in_c` |
 
 ### `account_payment_view.xml` (en l10n_ar_tax)
@@ -579,6 +632,9 @@ withholdings_amount = 118.000 / 1500 ~ 78,67 USD
 - [ ] `_get_withholding_rate` cubre los 4 casos (formula general `accounting_rate / counterpart_rate`)
 - [ ] Los asientos de retención mantienen `balance` en ARS
 - [ ] `_prepare_move_withholding_lines` usa `self.accounting_rate` en vez de `self.exchange_rate`
+- [ ] Escenario A=C=ARS, B=USD: asientos de retención tienen `currency_id=ARS` y `amount_currency = balance` (siempre en ARS, nunca en B)
+- [ ] Escenario A=C=ARS, B=USD: línea de liquidez ajusta `amount_currency += raw_wth_amount_currency` (ARS); línea AP ajusta `amount_currency -= wth_balance / withholding_rate` (USD)
+- [ ] Cambiar `counterpart_rate` o `accounting_rate` en el wizard recalcula `base_amount` (depends correcto)
 - [ ] `_compute_payment_total` suma `withholdings_amount` (B) al total en B
 - [ ] Ganancias: `net_amount = self.base_amount + same_period_base` (ambos en C, sin conversión)
 - [ ] Ref string formatea montos en ARS usando `company_currency.format`
