@@ -234,9 +234,11 @@ class AccountPayment(models.Model):
             if not rec.currency_id or rec.currency_id == rec.company_currency_id:
                 rec.accounting_rate_inverted = False
                 continue
+            # Misma dirección que _compute_accounting_rate: _get_conversion_rate(C→A) = A/C.
+            # Si A/C < 1.0 (A es la moneda fuerte, ej: USD/ARS = 0.000667), mostramos C/A = 1500.
             theoretical_rate = self.env["res.currency"]._get_conversion_rate(
-                from_currency=rec.currency_id,
-                to_currency=rec.company_currency_id,
+                from_currency=rec.company_currency_id,
+                to_currency=rec.currency_id,
                 company=rec.company_id,
                 date=rec.date or fields.Date.context_today(rec),
             )
