@@ -685,3 +685,9 @@ class AccountPayment(models.Model):
     #     return super().write(vals)
 
     ### FIN FIX RELATIVO A
+
+    @api.constrains("journal_id", "move_id")
+    def _check_payment_move_journal_consistency(self):
+        for rec in self.filtered(lambda x: x.move_id and x.move_id.state not in ["draft", "cancel"]):
+            if rec.journal_id != rec.move_id.journal_id:
+                raise ValidationError(_("The payment journal must match the journal of its journal entry."))
