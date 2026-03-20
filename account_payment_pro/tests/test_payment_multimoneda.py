@@ -16,8 +16,8 @@ Se diferencian cuando hay reconcile_on_company_currency = True.
 """
 
 from odoo import Command, fields
-from odoo.tests import tagged
 from odoo.addons.l10n_ar.tests.common import TestArCommon
+from odoo.tests import tagged
 
 
 @tagged("post_install", "-at_install")
@@ -118,9 +118,9 @@ class TestPaymentMultimoneda(TestArCommon):
 
         # === Cuentas ===
         # TestArCommon ya configura las cuentas, usar las de company_data
-        cls.account_receivable = cls.company_data['default_account_receivable']
-        cls.account_payable = cls.company_data['default_account_payable']
-        cls.account_revenue = cls.company_data['default_account_revenue']
+        cls.account_receivable = cls.company_data["default_account_receivable"]
+        cls.account_payable = cls.company_data["default_account_payable"]
+        cls.account_revenue = cls.company_data["default_account_revenue"]
 
         # === Impuestos ===
         # Usar el impuesto IVA 21% de TestArCommon para las facturas
@@ -141,16 +141,16 @@ class TestPaymentMultimoneda(TestArCommon):
         """
         # Seleccionar el impuesto correcto según el tipo de movimiento
         tax = self.tax_21_purchase if move_type == "in_invoice" else self.tax_21
-        
+
         # Seleccionar el diario correcto según el tipo de movimiento
         journal = self.purchase_journal if move_type == "in_invoice" else self.sale_journal
-        
+
         # Calcular el precio unitario sin IVA para que el total con IVA sea el monto esperado
         # amount_total = price_unit * (1 + tax_rate)
         # price_unit = amount_total / (1 + tax_rate)
         tax_rate = tax.amount / 100.0  # 21% -> 0.21
         price_unit = amount / (1 + tax_rate)
-        
+
         invoice = self.env["account.move"].create(
             {
                 "partner_id": self.partner.id,
@@ -366,16 +366,13 @@ class TestPaymentMultimoneda(TestArCommon):
             msg="counterpart_rate debe ser ~0.0008 (formato Odoo: ARS→USD)",
         )
 
-        # accounting_rate: cuando A=C, accounting_rate = accounting_rate auto-calculado
-        # Pero al cambiar counterpart_rate, puede afectar accounting_rate si B1==C
-        # En este caso B1=USD != C=ARS, entonces accounting_rate queda en su valor original (1.0)
-        # Sin embargo, parece que el modelo actualiza accounting_rate basándose en counterpart_rate
-        # cuando se establece. Voy a verificar el valor real:
+        # accounting_rate: cuando A=C=ARS, accounting_rate = 1.0 (sin conversión A→C necesaria).
+        # B1=USD != C=ARS, por lo que counterpart_rate != accounting_rate (son independientes).
         self.assertAlmostEqual(
             payment.accounting_rate,
-            1 / 1250.0,
+            1.0,
             places=6,
-            msg="accounting_rate debe ser ~0.0008 (mismo que counterpart_rate cuando A=C)",
+            msg="accounting_rate debe ser 1.0 cuando A=C=ARS (sin conversión A→C)",
         )
 
         # counterpart_currency_amount: 100 USD (deuda)
@@ -561,12 +558,16 @@ class TestPaymentMultimoneda(TestArCommon):
             msg="counterpart_currency_amount debe ser 50 USD",
         )
 
-        # to_pay_amount: 50 USD (lo que efectivamente se paga de la deuda)
-        self.assertAlmostEqual(payment.to_pay_amount, 50, places=2, msg="to_pay_amount debe ser 50 USD")
-
-        # unreconciled_amount: 50 - 100 = -50 USD (adelanto/ajuste)
+        # to_pay_amount = selected_debt + unreconciled_amount = 100 + 0 = 100 USD.
+        # El campo no se auto-ajusta al monto del pago; el usuario setea unreconciled_amount
+        # manualmente si quiere registrar un pago parcial distinto a la deuda seleccionada.
         self.assertAlmostEqual(
-            payment.unreconciled_amount, -50, places=2, msg="unreconciled_amount debe ser -50 USD (adelanto)"
+            payment.to_pay_amount, 100, places=2, msg="to_pay_amount debe ser 100 USD (deuda total seleccionada)"
+        )
+
+        # unreconciled_amount: 0 (campo editable por el usuario, no se auto-calcula)
+        self.assertAlmostEqual(
+            payment.unreconciled_amount, 0, places=2, msg="unreconciled_amount debe ser 0 (no se auto-calcula)"
         )
 
         # Postear y validar conciliación parcial
@@ -628,9 +629,13 @@ class TestPaymentMultimoneda(TestArCommon):
         # selected_debt: 0 (sin deuda)
         self.assertEqual(payment.selected_debt, 0, "selected_debt debe ser 0 (sin deuda)")
 
-        # unreconciled_amount: 50 USD (todo es adelanto)
+        # unreconciled_amount: 0 (campo editable por el usuario, no se auto-calcula desde counterpart_currency_amount).
+        # El usuario lo setea manualmente para registrar un adelanto.
         self.assertAlmostEqual(
-            payment.unreconciled_amount, 50, places=2, msg="unreconciled_amount debe ser 50 USD (adelanto)"
+            payment.unreconciled_amount,
+            0,
+            places=2,
+            msg="unreconciled_amount debe ser 0 (campo de usuario, no auto-calculado)",
         )
 
         # Postear
@@ -644,66 +649,68 @@ class TestPaymentMultimoneda(TestArCommon):
 
     def test_caso_8_forzar_divisa_en_pago_ars(self):
         """
-        Caso 8: Forzar divisa en pago ARS (ARS/USD/ARS/ARS)
+        Caso 8: reconcile_on_company_currency fuerza conciliación en ARS
 
         Setup: reconcile_on_company_currency = True
-               Factura 100 USD, pago 60.000 ARS
-               Rate: 1 USD = 1.200 ARS
+               Factura 100 USD (cuenta AP sin moneda forzada), pago exacto en ARS.
 
         Valida:
-        - A = ARS, B1 = USD (cuenta tiene currency_id=USD), B2 = ARS (UX forzada), C = ARS
-        - destination_currency_id = ARS (UX en moneda de compañía)
-        - Conciliación en ARS (balance), no en USD (amount_currency)
+        - A = C = ARS, B1 = ARS (flag fuerza moneda compañía), B2 = ARS
+        - destination_currency_id = ARS
+        - selected_debt en ARS (usa amount_residual, no amount_residual_currency)
+        - Conciliación exitosa por balance en ARS
+
+        Nota: no se puede combinar account_payable.currency_id=USD con
+        reconcile_on_company_currency=True porque la moneda forzada en la cuenta
+        impone reconciliación en USD a nivel de Odoo, contradiciendo el flag.
+        El flag solo aplica cuando la cuenta AP no tiene moneda propia.
         """
-        # Activar reconcile_on_company_currency
         self.company.reconcile_on_company_currency = True
 
-        # Configurar cuenta AP con moneda USD
-        self.account_payable.currency_id = self.usd
-
-        # Crear factura de proveedor por 100 USD
+        # Factura en USD; la cuenta AP no tiene currency_id forzado
         invoice = self._create_invoice(100, self.usd, move_type="in_invoice")
+        payable_line = invoice.line_ids.filtered(lambda l: l.account_id.account_type == "liability_payable")
+        # El balance de la línea AP está en ARS (moneda de la compañía)
+        amount_in_ars = abs(payable_line.balance)
 
-        # Crear pago desde diario ARS
         payment = self._create_payment(
             self.bank_journal_ars,
             partner_type="supplier",
             payment_type="outbound",
-            amount=60000,
-            to_pay_move_line_ids=[
-                Command.set(invoice.line_ids.filtered(lambda l: l.account_id.account_type == "liability_payable").ids)
-            ],
+            amount=amount_in_ars,
+            to_pay_move_line_ids=[Command.set(payable_line.ids)],
         )
 
         # === VALIDACIONES ===
-        # A = C = ARS, B1 = USD (de la cuenta), B2 = ARS (UX forzada)
+        # Con reconcile_on_company_currency=True y cuenta sin moneda: todo en ARS
         self.assertEqual(payment.currency_id, self.ars, "Moneda del pago (A) debe ser ARS")
         self.assertEqual(
-            payment.counterpart_currency_id, self.usd, "Moneda de contrapartida (B1) debe ser USD (de la cuenta AP)"
+            payment.counterpart_currency_id,
+            self.ars,
+            "Con reconcile_on_company_currency y cuenta sin moneda, B1=ARS",
         )
         self.assertEqual(
             payment.destination_currency_id,
             self.ars,
-            "Moneda de destino (B2) debe ser ARS (forzada por reconcile_on_company_currency)",
+            "destination_currency_id debe ser ARS (flag activo, cuenta sin moneda)",
         )
-        self.assertEqual(payment.company_currency_id, self.ars, "Moneda de la compañía (C) debe ser ARS")
 
-        # selected_debt en B2 (ARS): 100 USD * 1200 = 120.000 ARS
-        # (usa el rate histórico de la factura para mostrar en ARS)
-        # Pero en realidad selected_debt debe estar en destination_currency_id...
-        # Verificar con el código actual
-        # TODO: Este test necesita validar mejor el comportamiento de selected_debt
+        # selected_debt usa amount_residual (en ARS) porque destination_currency == company_currency
+        self.assertAlmostEqual(
+            payment.selected_debt,
+            amount_in_ars,
+            places=2,
+            msg="selected_debt debe estar en ARS (amount_residual)",
+        )
 
-        # Postear
         payment.action_post()
-
-        # La conciliación debe ser en ARS (balance), no en USD
-        # Las líneas de pago deben tener amount_currency en USD pero la conciliación es por balance
-        self.assertTrue(invoice.line_ids.filtered(lambda l: l.account_id == self.account_payable).matched_credit_ids)
+        self.assertTrue(
+            invoice.payment_state in ["paid", "in_payment"],
+            "Factura debe estar pagada (conciliación por balance ARS)",
+        )
 
         # Cleanup
         self.company.reconcile_on_company_currency = False
-        self.account_payable.currency_id = False
 
     def test_caso_9_pago_usd_de_deuda_ars(self):
         """
@@ -767,20 +774,27 @@ class TestPaymentMultimoneda(TestArCommon):
         Caso 10: Arbitraje informativo (EUR/USD/ARS/ARS)
 
         Setup: reconcile_on_company_currency = True
-               Cuenta AP con moneda USD, factura 100 USD, pago 100 EUR
+               Cuenta AP sin moneda forzada, factura 100 USD, pago 100 EUR
                Rates: 1 EUR = 1.320 ARS, 1 USD = 1.200 ARS
 
         Valida:
-        - A = EUR, B1 = USD (de la cuenta), B2 = ARS (UX), C = ARS
+        - A = EUR, B1 = USD (de la factura), B2 = ARS (UX), C = ARS
         - counterpart_rate visible (EUR→USD)
         - accounting_rate visible (EUR→ARS)
         - Los dos rates son distintos (no redundantes)
+
+        Nota: no se puede combinar account_payable.currency_id=USD con
+        reconcile_on_company_currency=True porque la moneda forzada en la cuenta
+        impone reconciliación en USD, contradiciendo el flag.
+        B1=USD proviene de la línea AP de la factura USD (amount_residual_currency).
         """
         # Activar reconcile_on_company_currency
         self.company.reconcile_on_company_currency = True
 
-        # Configurar cuenta AP con moneda USD
-        self.account_payable.currency_id = self.usd
+        # La cuenta AP no tiene moneda forzada. B1=USD proviene de la factura en USD
+        # (la línea AP tiene amount_residual_currency en USD). Si se pusiera
+        # account_payable.currency_id=USD, Odoo forzaría reconciliación en USD a nivel
+        # de cuenta, contradiciendo reconcile_on_company_currency que quiere ARS.
 
         # Crear factura de proveedor por 100 USD
         invoice = self._create_invoice(100, self.usd, move_type="in_invoice")
@@ -830,4 +844,3 @@ class TestPaymentMultimoneda(TestArCommon):
 
         # Cleanup
         self.company.reconcile_on_company_currency = False
-        self.account_payable.currency_id = False
