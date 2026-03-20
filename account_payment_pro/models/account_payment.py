@@ -795,9 +795,13 @@ class AccountPayment(models.Model):
     # evitamos agregar pr de odoo, lo hacemos en pay pro que es donde lo necesitamos
     # hasta 18 lo tenemos como pr agregado en odoo
     ###
-    @api.depends()
-    def _compute_company_id(self):
-        return super()._compute_company_id()
+    # En Odoo 19, get_depends() recorre TODO el MRO via resolve_mro() y acumula _depends
+    # de cada clase. Ni @api.depends() vacío ni asignar func._depends = () en la función
+    # logran anular los depends del padre porque el padre sigue siendo procesado.
+    # La única forma de cortocircuitar resolve_mro es declarar depends=[] en la definición
+    # del campo: cuando field._depends is not None, get_depends() retorna inmediatamente
+    # sin llamar a resolve_mro().
+    company_id = fields.Many2one(depends=[])
 
     @api.onchange("journal_id")
     def _onchange_journal_id_company_id(self):
