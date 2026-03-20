@@ -70,8 +70,8 @@ def migrate(cr, version):
 
     # ── 3. accounting_rate: nueva columna, poblar desde amount y amount_company_currency ──
     # exchange_rate era non-stored, no hay columna que renombrar.
-    # accounting_rate = A/C en formato Odoo nativo = amount_company_currency / amount
-    # (que era exactamente el inverso de exchange_rate user-friendly).
+    # accounting_rate = A/C en formato Odoo nativo = amount / amount_company_currency
+    # Ejemplo: 100 USD / 120.000 ARS = 0.000833 (= _get_conversion_rate(C→A)).
     cr.execute("""
         ALTER TABLE account_payment
         ADD COLUMN IF NOT EXISTS accounting_rate NUMERIC;
@@ -79,8 +79,8 @@ def migrate(cr, version):
     cr.execute("""
         UPDATE account_payment
         SET accounting_rate = CASE
-            WHEN amount IS NOT NULL AND amount != 0
-                THEN amount_company_currency / amount
+            WHEN amount_company_currency IS NOT NULL AND amount_company_currency != 0
+                THEN amount / amount_company_currency
             ELSE 1.0
         END
         WHERE accounting_rate IS NULL;

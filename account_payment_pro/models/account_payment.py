@@ -284,9 +284,9 @@ class AccountPayment(models.Model):
                 rec.counterpart_rate = 1.0 / rate
             else:
                 rec.counterpart_rate = rate
-            # Propagar a accounting_rate si B1 == C
+            # Propagar a accounting_rate si B1 == C: accounting_rate = 1/counterpart_rate
             if rec.counterpart_currency_id == rec.company_currency_id:
-                rec.accounting_rate = rec.counterpart_rate
+                rec.accounting_rate = (1.0 / rec.counterpart_rate) if rec.counterpart_rate else 1.0
 
     @api.depends("to_pay_amount", "accounting_rate")
     def _compute_to_pay_amount_company_currency(self):
@@ -415,9 +415,10 @@ class AccountPayment(models.Model):
                 rec.counterpart_rate = 1.0
                 continue
 
-            # Caso B1 == C: delegar en accounting_rate (misma conversión)
+            # Caso B1 == C: counterpart_rate = B1/A = C/A = 1/accounting_rate
+            # accounting_rate = A/C, por lo que counterpart_rate es su inversa
             if rec.counterpart_currency_id == rec.company_currency_id:
-                rec.counterpart_rate = rec.accounting_rate
+                rec.counterpart_rate = (1.0 / rec.accounting_rate) if rec.accounting_rate else 1.0
                 continue
 
             # Caso A == B1: sin conversión
@@ -436,7 +437,8 @@ class AccountPayment(models.Model):
     def _inverse_counterpart_rate(self):
         for rec in self:
             if rec.counterpart_currency_id == rec.company_currency_id:
-                rec.accounting_rate = rec.counterpart_rate
+                # counterpart_rate = B1/A = C/A = 1/accounting_rate → accounting_rate = 1/counterpart_rate
+                rec.accounting_rate = (1.0 / rec.counterpart_rate) if rec.counterpart_rate else 1.0
 
     @api.onchange("company_id")
     def _onchange_company_id(self):
