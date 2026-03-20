@@ -680,3 +680,9 @@ class AccountPayment(models.Model):
     @api.depends("journal_id")
     def _compute_available_partner_bank_ids(self):
         super()._compute_available_partner_bank_ids()
+
+    @api.constrains("journal_id", "move_id")
+    def _check_payment_move_journal_consistency(self):
+        for rec in self.filtered(lambda x: x.move_id and x.move_id.state not in ["draft", "cancel"]):
+            if rec.journal_id != rec.move_id.journal_id:
+                raise ValidationError(_("The payment journal must match the journal of its journal entry."))
