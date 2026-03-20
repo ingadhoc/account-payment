@@ -16,26 +16,25 @@ Se diferencian cuando hay reconcile_on_company_currency = True.
 """
 
 from odoo import Command, fields
-from odoo.tests import common, tagged
+from odoo.tests import tagged
+from odoo.addons.l10n_ar.tests.common import TestArCommon
 
 
 @tagged("post_install", "-at_install")
-class TestPaymentMultimoneda(common.TransactionCase):
+class TestPaymentMultimoneda(TestArCommon):
     """Tests del modelo tri-monetario (A / B1 / B2 / C)"""
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.today = fields.Date.today()
-        cls.company = cls.env.company
+
+        # Usar compañía argentina RI (ya configurada por TestArCommon)
+        cls.company = cls.company_ri
         cls.company.use_payment_pro = True
 
-        # Configurar país Argentina (necesario para reconcile_on_company_currency)
-        cls.ar = cls.env.ref("base.ar")
-        cls.company.country_id = cls.ar
-
         # === Configuración de monedas ===
-        # ARS es la moneda de la compañía (C)
+        # ARS es la moneda de la compañía (C) - ya configurada por TestArCommon
         cls.ars = cls.company.currency_id
 
         # Activar USD y EUR
@@ -93,62 +92,81 @@ class TestPaymentMultimoneda(common.TransactionCase):
             }
         )
 
+        # === Diarios para facturas (sin documentos) ===
+        cls.sale_journal = cls.env["account.journal"].create(
+            {
+                "name": "Ventas Test",
+                "type": "sale",
+                "code": "STEST",
+                "company_id": cls.company.id,
+                "l10n_latam_use_documents": False,  # Desactivar documentos para tests
+            }
+        )
+        cls.purchase_journal = cls.env["account.journal"].create(
+            {
+                "name": "Compras Test",
+                "type": "purchase",
+                "code": "PTEST",
+                "company_id": cls.company.id,
+                "l10n_latam_use_documents": False,  # Desactivar documentos para tests
+            }
+        )
+
         # === Partner ===
-        cls.partner = cls.env["res.partner"].create({"name": "Test Partner"})
+        # Usar partner RI existente de TestArCommon
+        cls.partner = cls.res_partner_adhoc
 
         # === Cuentas ===
-        cls.account_receivable = cls.env["account.account"].create(
-            {
-                "name": "Test Receivable",
-                "code": "TREC",
-                "account_type": "asset_receivable",
-                "reconcile": True,
-            }
-        )
-        cls.account_payable = cls.env["account.account"].create(
-            {
-                "name": "Test Payable",
-                "code": "TPAY",
-                "account_type": "liability_payable",
-                "reconcile": True,
-            }
-        )
-        cls.account_revenue = cls.env["account.account"].create(
-            {
-                "name": "Test Revenue",
-                "code": "TREV",
-                "account_type": "income",
-            }
-        )
-        cls.partner.property_account_receivable_id = cls.account_receivable
-        cls.partner.property_account_payable_id = cls.account_payable
+        # TestArCommon ya configura las cuentas, usar las de company_data
+        cls.account_receivable = cls.company_data['default_account_receivable']
+        cls.account_payable = cls.company_data['default_account_payable']
+        cls.account_revenue = cls.company_data['default_account_revenue']
+
+        # === Impuestos ===
+        # Usar el impuesto IVA 21% de TestArCommon para las facturas
+        # (requerido por validación de l10n_ar)
+        # TestArCommon ya define cls.tax_21 y cls.tax_21_purchase
 
     def _create_invoice(self, amount, currency, move_type="out_invoice"):
         """
         Helper: Crea una factura (invoice o bill).
 
         Args:
-            amount: Importe total de la factura
+            amount: Importe total de la factura (incluyendo impuestos)
             currency: Moneda de la factura
             move_type: 'out_invoice' (cliente) o 'in_invoice' (proveedor)
 
         Returns:
             account.move: Factura creada y posteada
         """
+        # Seleccionar el impuesto correcto según el tipo de movimiento
+        tax = self.tax_21_purchase if move_type == "in_invoice" else self.tax_21
+        
+        # Seleccionar el diario correcto según el tipo de movimiento
+        journal = self.purchase_journal if move_type == "in_invoice" else self.sale_journal
+        
+        # Calcular el precio unitario sin IVA para que el total con IVA sea el monto esperado
+        # amount_total = price_unit * (1 + tax_rate)
+        # price_unit = amount_total / (1 + tax_rate)
+        tax_rate = tax.amount / 100.0  # 21% -> 0.21
+        price_unit = amount / (1 + tax_rate)
+        
         invoice = self.env["account.move"].create(
             {
                 "partner_id": self.partner.id,
                 "invoice_date": self.today,
                 "date": self.today,
                 "move_type": move_type,
+                "journal_id": journal.id,
                 "currency_id": currency.id,
                 "invoice_line_ids": [
                     Command.create(
                         {
                             "name": "Test Product",
                             "quantity": 1,
-                            "price_unit": amount,
+                            "price_unit": price_unit,
                             "account_id": self.account_revenue.id,
+                            "tax_ids": [Command.set(tax.ids)],
                         }
                     )
                 ],
