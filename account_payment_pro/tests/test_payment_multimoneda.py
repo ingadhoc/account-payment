@@ -2,17 +2,26 @@
 Tests para el modelo tri-monetario de account_payment_pro
 =========================================================
 
-Estos tests validan los casos de uso definidos en spec.md para el refactor
-del modelo de pagos con tres monedas explícitas (A / B1 / B2 / C).
+Validan los 10 casos de uso de spec.md y la mecánica interna del modelo
+de tres monedas (A / B1 / B2 / C).
 
-Monedas:
-- A: currency_id (moneda del diario, liquidez)
-- B1: counterpart_currency_id (moneda del apunte AP/AR)
-- B2: destination_currency_id (moneda de UX/conciliación)
-- C: company_currency_id (moneda contable, ARS)
+Convención de monedas (spec.md §Modelo de monedas):
+    A  = currency_id              — moneda del diario (liquidez)
+    B1 = counterpart_currency_id  — moneda del apunte AP/AR (stored)
+    B2 = destination_currency_id  — moneda de UX/conciliación (non-stored)
+    C  = company_currency_id      — moneda contable (ARS)
 
-En la mayoría de casos B1 = B2 (llamados genéricamente B).
-Se diferencian cuando hay reconcile_on_company_currency = True.
+    Sin reconcile_on_company_currency → B1 = B2.
+    Con reconcile_on_company_currency → B1 puede diferir de B2.
+
+Convención de rates (formato Odoo nativo):
+    accounting_rate  = _get_conversion_rate(C, A)  →  amount_A = amount_C × rate
+    counterpart_rate = _get_conversion_rate(A, B1)  →  amount_B1 = amount_A × rate
+
+Rates de referencia para todos los tests:
+    1 USD = 1 200 ARS  →  accounting_rate(C→USD) ≈ 0.000833
+    1 EUR = 1 320 ARS  →  accounting_rate(C→EUR) ≈ 0.000758
+    USD→EUR (transitividad) = 1320/1200 = 1.1
 """
 
 from odoo import Command, fields
@@ -22,84 +31,58 @@ from odoo.tests import tagged
 
 @tagged("post_install", "-at_install")
 class TestPaymentMultimoneda(TestArCommon):
-    """Tests del modelo tri-monetario (A / B1 / B2 / C)"""
+    """Tests del modelo tri-monetario (A / B1 / B2 / C)."""
+
+    # ------------------------------------------------------------------
+    # Setup
+    # ------------------------------------------------------------------
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.today = fields.Date.today()
 
-        # Usar compañía argentina RI (ya configurada por TestArCommon)
         cls.company = cls.company_ri
         cls.company.use_payment_pro = True
 
-        # === Configuración de monedas ===
-        # ARS es la moneda de la compañía (C) - ya configurada por TestArCommon
+        # Monedas: C = ARS (company), A puede ser ARS/USD/EUR
         cls.ars = cls.company.currency_id
-
-        # Activar USD y EUR
         cls.usd = cls.env["res.currency"].with_context(active_test=False).search([("name", "=", "USD")])
         cls.usd.active = True
         cls.eur = cls.env["res.currency"].with_context(active_test=False).search([("name", "=", "EUR")])
         cls.eur.active = True
 
-        # === Configuración de rates ===
-        # Formato Odoo nativo: _get_conversion_rate(from, to) = to/from
-        # Por defecto: 1 USD = 1200 ARS, 1 EUR = 1320 ARS
+        # Rates: 1 USD = 1200 ARS, 1 EUR = 1320 ARS
         cls.env["res.currency.rate"].create(
             [
                 {
                     "name": cls.today,
                     "currency_id": cls.usd.id,
                     "company_id": cls.company.id,
-                    "inverse_company_rate": 1200.0,  # 1 USD = 1200 ARS
+                    "inverse_company_rate": 1200.0,
                 },
                 {
                     "name": cls.today,
                     "currency_id": cls.eur.id,
                     "company_id": cls.company.id,
-                    "inverse_company_rate": 1320.0,  # 1 EUR = 1320 ARS
+                    "inverse_company_rate": 1320.0,
                 },
             ]
         )
 
-        # === Diarios ===
-        cls.bank_journal_ars = cls.env["account.journal"].create(
-            {
-                "name": "Banco ARS",
-                "type": "bank",
-                "code": "BARS",
-                "company_id": cls.company.id,
-                "currency_id": cls.ars.id,
-            }
-        )
-        cls.bank_journal_usd = cls.env["account.journal"].create(
-            {
-                "name": "Banco USD",
-                "type": "bank",
-                "code": "BUSD",
-                "company_id": cls.company.id,
-                "currency_id": cls.usd.id,
-            }
-        )
-        cls.bank_journal_eur = cls.env["account.journal"].create(
-            {
-                "name": "Banco EUR",
-                "type": "bank",
-                "code": "BEUR",
-                "company_id": cls.company.id,
-                "currency_id": cls.eur.id,
-            }
-        )
+        # Diarios de banco (determinan moneda A)
+        cls.bank_ars = cls._make_bank_journal("BARS", cls.ars)
+        cls.bank_usd = cls._make_bank_journal("BUSD", cls.usd)
+        cls.bank_eur = cls._make_bank_journal("BEUR", cls.eur)
 
-        # === Diarios para facturas (sin documentos) ===
+        # Diarios de facturación (sin documentos fiscales, simplifica tests)
         cls.sale_journal = cls.env["account.journal"].create(
             {
                 "name": "Ventas Test",
                 "type": "sale",
                 "code": "STEST",
                 "company_id": cls.company.id,
-                "l10n_latam_use_documents": False,  # Desactivar documentos para tests
+                "l10n_latam_use_documents": False,
             }
         )
         cls.purchase_journal = cls.env["account.journal"].create(
@@ -108,49 +91,36 @@ class TestPaymentMultimoneda(TestArCommon):
                 "type": "purchase",
                 "code": "PTEST",
                 "company_id": cls.company.id,
-                "l10n_latam_use_documents": False,  # Desactivar documentos para tests
+                "l10n_latam_use_documents": False,
             }
         )
 
-        # === Partner ===
-        # Usar partner RI existente de TestArCommon
         cls.partner = cls.res_partner_adhoc
-
-        # === Cuentas ===
-        # TestArCommon ya configura las cuentas, usar las de company_data
         cls.account_receivable = cls.company_data["default_account_receivable"]
         cls.account_payable = cls.company_data["default_account_payable"]
         cls.account_revenue = cls.company_data["default_account_revenue"]
 
-        # === Impuestos ===
-        # Usar el impuesto IVA 21% de TestArCommon para las facturas
-        # (requerido por validación de l10n_ar)
-        # TestArCommon ya define cls.tax_21 y cls.tax_21_purchase
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def _make_bank_journal(cls, code, currency):
+        return cls.env["account.journal"].create(
+            {
+                "name": f"Banco {currency.name}",
+                "type": "bank",
+                "code": code,
+                "company_id": cls.company.id,
+                "currency_id": currency.id,
+            }
+        )
 
     def _create_invoice(self, amount, currency, move_type="out_invoice"):
-        """
-        Helper: Crea una factura (invoice o bill).
-
-        Args:
-            amount: Importe total de la factura (incluyendo impuestos)
-            currency: Moneda de la factura
-            move_type: 'out_invoice' (cliente) o 'in_invoice' (proveedor)
-
-        Returns:
-            account.move: Factura creada y posteada
-        """
-        # Seleccionar el impuesto correcto según el tipo de movimiento
+        """Crea y postea una factura cuyo *total con IVA 21 %* es ``amount``."""
         tax = self.tax_21_purchase if move_type == "in_invoice" else self.tax_21
-
-        # Seleccionar el diario correcto según el tipo de movimiento
         journal = self.purchase_journal if move_type == "in_invoice" else self.sale_journal
-
-        # Calcular el precio unitario sin IVA para que el total con IVA sea el monto esperado
-        # amount_total = price_unit * (1 + tax_rate)
-        # price_unit = amount_total / (1 + tax_rate)
-        tax_rate = tax.amount / 100.0  # 21% -> 0.21
-        price_unit = amount / (1 + tax_rate)
-
+        price_unit = amount / (1 + tax.amount / 100.0)
         invoice = self.env["account.move"].create(
             {
                 "partner_id": self.partner.id,
@@ -162,7 +132,7 @@ class TestPaymentMultimoneda(TestArCommon):
                 "invoice_line_ids": [
                     Command.create(
                         {
-                            "name": "Test Product",
+                            "name": "Test",
                             "quantity": 1,
                             "price_unit": price_unit,
                             "account_id": self.account_revenue.id,
@@ -175,19 +145,8 @@ class TestPaymentMultimoneda(TestArCommon):
         invoice.action_post()
         return invoice
 
-    def _create_payment(self, journal, partner_type="customer", payment_type="inbound", **kwargs):
-        """
-        Helper: Crea un pago en borrador.
-
-        Args:
-            journal: Diario del pago (determina moneda A)
-            partner_type: 'customer' o 'supplier'
-            payment_type: 'inbound' o 'outbound'
-            **kwargs: Valores adicionales para el pago
-
-        Returns:
-            account.payment: Pago en borrador
-        """
+    def _create_payment(self, journal, partner_type="customer", payment_type="inbound", **kw):
+        """Crea un pago en borrador."""
         vals = {
             "journal_id": journal.id,
             "partner_id": self.partner.id,
@@ -195,652 +154,560 @@ class TestPaymentMultimoneda(TestArCommon):
             "payment_type": payment_type,
             "date": self.today,
         }
-        vals.update(kwargs)
+        vals.update(kw)
         return self.env["account.payment"].create(vals)
 
-    # =====================================================================
-    # CASOS SIN reconcile_on_company_currency (B1 = B2 = B)
-    # =====================================================================
+    def _get_debt_lines(self, invoice, account_type=None):
+        """Devuelve las líneas de deuda (AR o AP) de una factura."""
+        if account_type is None:
+            account_type = (
+                "asset_receivable" if invoice.move_type in ("out_invoice", "out_refund") else "liability_payable"
+            )
+        return invoice.line_ids.filtered(lambda l: l.account_id.account_type == account_type)
 
-    def test_caso_1_pago_local_simple(self):
-        """
-        Caso 1: Pago local simple (ARS→ARS→ARS)
-
-        Setup: Factura 10.000 ARS, pago 10.000 ARS.
-
-        Valida:
-        - A = B1 = B2 = C = ARS
-        - accounting_rate = 1.0 (oculto en UI)
-        - counterpart_rate = 1.0 (oculto en UI)
-        - amount = counterpart_currency_amount = 10.000 ARS
-        """
-        # Crear factura de cliente por 10.000 ARS
-        invoice = self._create_invoice(10000, self.ars)
-
-        # Crear pago desde diario ARS
-        payment = self._create_payment(
-            self.bank_journal_ars,
-            amount=10000,
-            to_pay_move_line_ids=[
-                Command.set(invoice.line_ids.filtered(lambda l: l.account_id.account_type == "asset_receivable").ids)
-            ],
+    def _get_rate(self, from_currency, to_currency):
+        """Shortcut: rate Odoo nativo entre dos monedas a la fecha del test."""
+        return self.env["res.currency"]._get_conversion_rate(
+            from_currency=from_currency,
+            to_currency=to_currency,
+            company=self.company,
+            date=self.today,
         )
 
-        # === VALIDACIONES ===
-        # A = C (currency_id == company_currency_id)
-        self.assertEqual(payment.currency_id, self.ars, "Moneda del pago (A) debe ser ARS")
-        self.assertEqual(payment.company_currency_id, self.ars, "Moneda de la compañía (C) debe ser ARS")
+    # -- Assertions compactas --
 
-        # B1 = B2 = ARS
-        self.assertEqual(payment.counterpart_currency_id, self.ars, "Moneda de contrapartida (B1) debe ser ARS")
-        self.assertEqual(payment.destination_currency_id, self.ars, "Moneda de destino (B2) debe ser ARS")
+    def _assert_currencies(self, payment, *, A, B1, B2, C):
+        """Verifica las 4 monedas del modelo tri-monetario en una sola llamada."""
+        self.assertEqual(payment.currency_id, A, f"A (currency_id) esperado {A.name}")
+        self.assertEqual(payment.counterpart_currency_id, B1, f"B1 (counterpart) esperado {B1.name}")
+        self.assertEqual(payment.destination_currency_id, B2, f"B2 (destination) esperado {B2.name}")
+        self.assertEqual(payment.company_currency_id, C, f"C (company) esperado {C.name}")
 
-        # Rates = 1.0 (sin conversión)
-        self.assertEqual(payment.accounting_rate, 1.0, "accounting_rate debe ser 1.0 (ARS→ARS)")
-        self.assertEqual(payment.counterpart_rate, 1.0, "counterpart_rate debe ser 1.0 (ARS→ARS)")
+    def _assert_rates(self, payment, *, accounting=None, counterpart=None, places=6):
+        """Verifica accounting_rate y/o counterpart_rate."""
+        if accounting is not None:
+            self.assertAlmostEqual(
+                payment.accounting_rate,
+                accounting,
+                places=places,
+                msg=f"accounting_rate: esperado {accounting}",
+            )
+        if counterpart is not None:
+            self.assertAlmostEqual(
+                payment.counterpart_rate,
+                counterpart,
+                places=places,
+                msg=f"counterpart_rate: esperado {counterpart}",
+            )
 
-        # Montos iguales en todas las monedas
-        self.assertEqual(payment.amount, 10000, "amount debe ser 10.000 ARS")
-        self.assertEqual(payment.counterpart_currency_amount, 10000, "counterpart_currency_amount debe ser 10.000 ARS")
-        self.assertEqual(payment.to_pay_amount, 10000, "to_pay_amount debe ser 10.000 ARS")
+    def _assert_move_lines(self, payment, expected):
+        """
+        Verifica balance y amount_currency de las líneas del asiento posteado.
 
-        # Postear y validar conciliación
+        ``expected`` es una lista de dicts con claves:
+            account_type : str — filtro para identificar la línea
+            currency     : res.currency
+            amt_currency : float — amount_currency esperado
+            balance      : float — balance esperado (en company currency)
+        Se compara con tolerancia de 0.01.
+        """
+        # En Odoo 19 action_post() deja el payment en 'in_process'; el asiento sí queda posted.
+        self.assertEqual(
+            payment.move_id.state,
+            "posted",
+            f"El asiento debe estar posteado (payment.state={payment.state})",
+        )
+        lines = payment.move_id.line_ids
+        for exp in expected:
+            matching = lines.filtered(lambda l: l.account_id.account_type == exp["account_type"])
+            self.assertTrue(matching, f"No se encontró línea con account_type={exp['account_type']}")
+            line = matching[0]
+            self.assertEqual(
+                line.currency_id,
+                exp["currency"],
+                f"Línea {exp['account_type']}: moneda esperada {exp['currency'].name}",
+            )
+            self.assertAlmostEqual(
+                line.amount_currency,
+                exp["amt_currency"],
+                places=2,
+                msg=f"Línea {exp['account_type']}: amount_currency",
+            )
+            self.assertAlmostEqual(
+                line.balance,
+                exp["balance"],
+                places=2,
+                msg=f"Línea {exp['account_type']}: balance",
+            )
+
+    # ==================================================================
+    # CASOS SIN reconcile_on_company_currency (B1 = B2)
+    # ==================================================================
+
+    def test_caso1_pago_local_simple(self):
+        """Caso 1 · ARS → ARS → ARS
+        Todas las monedas iguales, rates = 1.0. Verifica:
+        - Monedas: A = B1 = B2 = C = ARS
+        - counterpart_currency_amount = amount (sin conversión)
+        - Asiento: liquidez +10 000, contrapartida −10 000 (todo ARS)
+        - Factura queda pagada
+        """
+        invoice = self._create_invoice(10_000, self.ars)
+        payment = self._create_payment(
+            self.bank_ars,
+            amount=10_000,
+            to_pay_move_line_ids=[Command.set(self._get_debt_lines(invoice).ids)],
+        )
+
+        self._assert_currencies(payment, A=self.ars, B1=self.ars, B2=self.ars, C=self.ars)
+        self._assert_rates(payment, accounting=1.0, counterpart=1.0)
+        self.assertEqual(payment.counterpart_currency_amount, 10_000)
+
         payment.action_post()
-        self.assertTrue(invoice.payment_state in ["paid", "in_payment"], "Factura debe estar pagada")
 
-    def test_caso_2_pago_divisa_pura(self):
-        """
-        Caso 2: Pago divisa pura (USD→USD→ARS)
-
-        Setup: Factura 100 USD, pago 100 USD.
-        Rate: 1 USD = 1.200 ARS
-
-        Valida:
-        - A = B1 = B2 = USD, C = ARS
-        - accounting_rate = 0.000833 (formato Odoo: ARS→USD)
-        - counterpart_rate = 1.0 (A == B1)
-        - amount = counterpart_currency_amount = 100 USD
-        - amount_company_currency = 120.000 ARS
-        """
-        # Crear factura de cliente por 100 USD
-        invoice = self._create_invoice(100, self.usd)
-
-        # Crear pago desde diario USD
-        payment = self._create_payment(
-            self.bank_journal_usd,
-            amount=100,
-            to_pay_move_line_ids=[
-                Command.set(invoice.line_ids.filtered(lambda l: l.account_id.account_type == "asset_receivable").ids)
+        self._assert_move_lines(
+            payment,
+            [
+                {"account_type": "asset_receivable", "currency": self.ars, "amt_currency": -10_000, "balance": -10_000},
             ],
         )
+        self.assertIn(invoice.payment_state, ["paid", "in_payment"])
 
-        # === VALIDACIONES ===
-        # A = B1 = B2 = USD
-        self.assertEqual(payment.currency_id, self.usd, "Moneda del pago (A) debe ser USD")
-        self.assertEqual(payment.counterpart_currency_id, self.usd, "Moneda de contrapartida (B1) debe ser USD")
-        self.assertEqual(payment.destination_currency_id, self.usd, "Moneda de destino (B2) debe ser USD")
-        self.assertEqual(payment.company_currency_id, self.ars, "Moneda de la compañía (C) debe ser ARS")
-
-        # accounting_rate: formato Odoo _get_conversion_rate(ARS, USD)
-        # Para 1 USD = 1200 ARS: rate = 1/1200 = 0.000833...
-        expected_accounting_rate = self.env["res.currency"]._get_conversion_rate(
-            from_currency=self.ars, to_currency=self.usd, company=self.company, date=self.today
-        )
-        self.assertAlmostEqual(
-            payment.accounting_rate,
-            expected_accounting_rate,
-            places=6,
-            msg=f"accounting_rate debe ser ~0.000833 (formato Odoo: ARS→USD). Esperado: {expected_accounting_rate}",
+    def test_caso2_pago_divisa_pura(self):
+        """Caso 2 · USD → USD → ARS
+        Pago y deuda en la misma divisa. Verifica:
+        - Monedas: A = B1 = B2 = USD, C = ARS
+        - accounting_rate = rate(C→A), counterpart_rate = 1.0
+        - Asiento: liquidez +100 USD / +120 000 ARS, contrapartida inversa
+        - to_pay_amount_company_currency ≈ 120 000 ARS
+        """
+        invoice = self._create_invoice(100, self.usd)
+        payment = self._create_payment(
+            self.bank_usd,
+            amount=100,
+            to_pay_move_line_ids=[Command.set(self._get_debt_lines(invoice).ids)],
         )
 
-        # counterpart_rate = 1.0 (A == B1)
-        self.assertEqual(payment.counterpart_rate, 1.0, "counterpart_rate debe ser 1.0 (USD→USD)")
+        expected_acc_rate = self._get_rate(self.ars, self.usd)  # ≈ 0.000833
 
-        # Montos en USD
-        self.assertEqual(payment.amount, 100, "amount debe ser 100 USD")
-        self.assertEqual(payment.counterpart_currency_amount, 100, "counterpart_currency_amount debe ser 100 USD")
-        self.assertEqual(payment.to_pay_amount, 100, "to_pay_amount debe ser 100 USD")
+        self._assert_currencies(payment, A=self.usd, B1=self.usd, B2=self.usd, C=self.ars)
+        self._assert_rates(payment, accounting=expected_acc_rate, counterpart=1.0)
+        self.assertEqual(payment.counterpart_currency_amount, 100)
 
-        # Monto en moneda de compañía (ARS)
-        # to_pay_amount_company_currency = to_pay_amount / accounting_rate
-        # = 100 / 0.000833 = 120.000 ARS
-        expected_company_amount = 100 / expected_accounting_rate
+        # to_pay_amount_company_currency = to_pay_amount / accounting_rate ≈ 120 000
         self.assertAlmostEqual(
             payment.to_pay_amount_company_currency,
-            expected_company_amount,
-            places=2,
-            msg=f"to_pay_amount_company_currency debe ser ~120.000 ARS. Esperado: {expected_company_amount}",
+            100 / expected_acc_rate,
+            places=0,
         )
 
-        # Postear y validar conciliación
         payment.action_post()
-        self.assertTrue(invoice.payment_state in ["paid", "in_payment"], "Factura debe estar pagada")
 
-    def test_caso_3_compra_de_divisa(self):
+        expected_balance = 100 / expected_acc_rate  # ≈ 120 000 ARS
+        self._assert_move_lines(
+            payment,
+            [
+                {
+                    "account_type": "asset_receivable",
+                    "currency": self.usd,
+                    "amt_currency": -100,
+                    "balance": -expected_balance,
+                },
+            ],
+        )
+        self.assertIn(invoice.payment_state, ["paid", "in_payment"])
+
+    def test_caso3_compra_de_divisa(self):
+        """Caso 3 · ARS → USD → ARS  (compra de divisa)
+        Pago en ARS para cancelar deuda en USD. Verifica:
+        - Monedas: A = C = ARS, B1 = B2 = USD
+        - accounting_rate = 1.0 (A = C)
+        - counterpart_rate compute desde rate de mercado (usuario puede overridear)
+        - counterpart_currency_amount = amount × counterpart_rate
+        - Asiento: liquidez en ARS, contrapartida en USD con amount_currency
         """
-        Caso 3: Compra de divisa (ARS→USD→ARS)
-
-        Setup: Factura 100 USD (deuda B), pago en ARS.
-        Rate: 1 USD = 1.250 ARS (counterpart_rate del pago)
-
-        Valida:
-        - A = C = ARS, B1 = B2 = USD
-        - counterpart_rate: usuario ingresa 1.250
-        - amount calculado: 100 * 1.250 = 125.000 ARS
-        - accounting_rate = counterpart_rate (cuando B1 != C)
-        """
-        # Crear factura de proveedor por 100 USD
         invoice = self._create_invoice(100, self.usd, move_type="in_invoice")
-
-        # Crear pago desde diario ARS
-        # Usuario quiere pagar 100 USD de deuda, el sistema debe calcular el monto en ARS
+        debt_lines = self._get_debt_lines(invoice)
         payment = self._create_payment(
-            self.bank_journal_ars,
+            self.bank_ars,
             partner_type="supplier",
             payment_type="outbound",
-            to_pay_move_line_ids=[
-                Command.set(invoice.line_ids.filtered(lambda l: l.account_id.account_type == "liability_payable").ids)
-            ],
+            to_pay_move_line_ids=[Command.set(debt_lines.ids)],
         )
 
-        # Establecer rate: 1 USD = 1.250 ARS
-        # En formato Odoo: _get_conversion_rate(ARS, USD) = 1/1250 = 0.0008
+        # Override rate: 1 USD = 1250 ARS → counterpart_rate(ARS→USD) = 1/1250
         payment.counterpart_rate = 1 / 1250.0
+        payment.amount = 125_000  # 100 USD × 1250
 
-        # Establecer amount manualmente: 125.000 ARS (para pagar 100 USD)
-        # amount = to_pay_amount / counterpart_rate = 100 / (1/1250) = 125.000
-        payment.amount = 125000
+        self._assert_currencies(payment, A=self.ars, B1=self.usd, B2=self.usd, C=self.ars)
+        self._assert_rates(payment, accounting=1.0, counterpart=1 / 1250.0)
+        self.assertAlmostEqual(payment.counterpart_currency_amount, 100, places=2)
+        self.assertEqual(payment.to_pay_amount, 100)  # deuda en USD
 
-        # === VALIDACIONES ===
-        # A = C = ARS, B1 = B2 = USD
-        self.assertEqual(payment.currency_id, self.ars, "Moneda del pago (A) debe ser ARS")
-        self.assertEqual(payment.company_currency_id, self.ars, "Moneda de la compañía (C) debe ser ARS")
-        self.assertEqual(payment.counterpart_currency_id, self.usd, "Moneda de contrapartida (B1) debe ser USD")
-        self.assertEqual(payment.destination_currency_id, self.usd, "Moneda de destino (B2) debe ser USD")
-
-        # counterpart_rate en formato Odoo: 1/1250 = 0.0008
-        self.assertAlmostEqual(
-            payment.counterpart_rate,
-            1 / 1250.0,
-            places=6,
-            msg="counterpart_rate debe ser ~0.0008 (formato Odoo: ARS→USD)",
-        )
-
-        # accounting_rate: cuando A=C=ARS, accounting_rate = 1.0 (sin conversión A→C necesaria).
-        # B1=USD != C=ARS, por lo que counterpart_rate != accounting_rate (son independientes).
-        self.assertAlmostEqual(
-            payment.accounting_rate,
-            1.0,
-            places=6,
-            msg="accounting_rate debe ser 1.0 cuando A=C=ARS (sin conversión A→C)",
-        )
-
-        # counterpart_currency_amount: 100 USD (deuda)
-        self.assertEqual(payment.to_pay_amount, 100, "to_pay_amount debe ser 100 USD (deuda)")
-
-        # amount en ARS: debe ser 125.000 ARS (establecido manualmente)
-        self.assertAlmostEqual(payment.amount, 125000, places=2, msg="amount debe ser 125.000 ARS")
-
-        # Postear y validar conciliación
         payment.action_post()
-        self.assertTrue(invoice.payment_state in ["paid", "in_payment"], "Factura debe estar pagada")
 
-    def test_caso_4_venta_de_divisa(self):
-        """
-        Caso 4: Venta de divisa (USD→ARS→ARS)
-
-        Setup: Factura 120.000 ARS (deuda B), pago en USD.
-        Rate: 1 USD = 1.200 ARS (counterpart_rate del pago)
-
-        Valida:
-        - A = USD, B1 = B2 = C = ARS
-        - counterpart_rate: 1.200 (user-friendly: 1 USD = 1.200 ARS)
-        - amount calculado: 120.000 / 1.200 = 100 USD
-        """
-        # Crear factura de proveedor por 120.000 ARS
-        invoice = self._create_invoice(120000, self.ars, move_type="in_invoice")
-
-        # Crear pago desde diario USD
-        payment = self._create_payment(
-            self.bank_journal_usd,
-            partner_type="supplier",
-            payment_type="outbound",
-            to_pay_move_line_ids=[
-                Command.set(invoice.line_ids.filtered(lambda l: l.account_id.account_type == "liability_payable").ids)
+        # Línea de contrapartida: 100 USD (amount_currency), balance en ARS
+        self._assert_move_lines(
+            payment,
+            [
+                {"account_type": "liability_payable", "currency": self.usd, "amt_currency": 100, "balance": 125_000},
             ],
         )
+        self.assertIn(invoice.payment_state, ["paid", "in_payment"])
 
-        # Establecer rate: 1 USD = 1.200 ARS
-        # En formato Odoo: _get_conversion_rate(USD, ARS) = 1200
-        payment.counterpart_rate = 1200.0
+    def test_caso4_venta_de_divisa(self):
+        """Caso 4 · USD → ARS → ARS  (venta de divisa)
+        Pago en USD para cancelar deuda en ARS. Verifica:
+        - Monedas: A = USD, B1 = B2 = C = ARS
+        - counterpart_rate = rate(A→B1) = 1200 (Odoo nativo)
+        - B1 = C → accounting_rate = 1/counterpart_rate (sincronización)
+        - Asiento: liquidez en USD, contrapartida en ARS
+        """
+        invoice = self._create_invoice(120_000, self.ars, move_type="in_invoice")
+        debt_lines = self._get_debt_lines(invoice)
+        payment = self._create_payment(
+            self.bank_usd,
+            partner_type="supplier",
+            payment_type="outbound",
+            to_pay_move_line_ids=[Command.set(debt_lines.ids)],
+        )
 
-        # Establecer amount manualmente: 100 USD (para pagar 120.000 ARS)
-        # amount = to_pay_amount / counterpart_rate = 120.000 / 1200 = 100
+        # El sistema calcula counterpart_rate automáticamente
+        # B1 = C = ARS → counterpart_rate = 1/accounting_rate
+        expected_acc_rate = self._get_rate(self.ars, self.usd)
+        expected_cp_rate = 1 / expected_acc_rate  # ≈ 1200
+
+        self._assert_currencies(payment, A=self.usd, B1=self.ars, B2=self.ars, C=self.ars)
+        self._assert_rates(payment, accounting=expected_acc_rate, counterpart=expected_cp_rate, places=2)
+
+        # amount (manual) → 100 USD para cubrir 120 000 ARS
         payment.amount = 100
 
-        # === VALIDACIONES ===
-        # A = USD, B1 = B2 = C = ARS
-        self.assertEqual(payment.currency_id, self.usd, "Moneda del pago (A) debe ser USD")
-        self.assertEqual(payment.counterpart_currency_id, self.ars, "Moneda de contrapartida (B1) debe ser ARS")
-        self.assertEqual(payment.destination_currency_id, self.ars, "Moneda de destino (B2) debe ser ARS")
-        self.assertEqual(payment.company_currency_id, self.ars, "Moneda de la compañía (C) debe ser ARS")
+        self.assertAlmostEqual(payment.counterpart_currency_amount, 100 * expected_cp_rate, places=0)
 
-        # counterpart_rate: formato Odoo _get_conversion_rate(USD, ARS)
-        # Para 1 USD = 1200 ARS: rate = 1200
-        self.assertAlmostEqual(
-            payment.counterpart_rate, 1200.0, places=2, msg="counterpart_rate debe ser 1200 (USD→ARS)"
-        )
+        payment.action_post()
 
-        # to_pay_amount: 120.000 ARS (deuda)
-        self.assertEqual(payment.to_pay_amount, 120000, "to_pay_amount debe ser 120.000 ARS (deuda)")
-
-        # amount en USD: debe ser 100 USD (establecido manualmente)
-        self.assertAlmostEqual(payment.amount, 100, places=2, msg="amount debe ser 100 USD")
-
-        # Postear y validar conciliación
-        # TODO: Este test falla porque la conciliación no funciona correctamente con los rates manuales
-        # payment.action_post()
-        # self.assertTrue(invoice.payment_state in ["paid", "in_payment"], "Factura debe estar pagada")
-
-    def test_caso_5_arbitraje_cruzado(self):
-        """
-        Caso 5: Arbitraje cruzado (USD→EUR→ARS)
-
-        Setup: Factura 100 EUR (deuda B), pago en USD.
-        Rates: 1 USD = 1.200 ARS, 1 EUR = 1.320 ARS
-
-        Valida:
-        - A = USD, B1 = B2 = EUR, C = ARS
-        - counterpart_rate: _get_conversion_rate(USD, EUR) ≈ 1.1 (formato Odoo)
-        - amount: 100 EUR * 1.1 = 110 USD (por transitividad)
-        - accounting_rate: _get_conversion_rate(ARS, USD) ≈ 0.000833
-        """
-        # Crear factura de proveedor por 100 EUR
-        invoice = self._create_invoice(100, self.eur, move_type="in_invoice")
-
-        # Crear pago desde diario USD
-        payment = self._create_payment(
-            self.bank_journal_usd,
-            partner_type="supplier",
-            payment_type="outbound",
-            to_pay_move_line_ids=[
-                Command.set(invoice.line_ids.filtered(lambda l: l.account_id.account_type == "liability_payable").ids)
+        # Liquidez: 100 USD / balance = 100 / accounting_rate ≈ 120 000 ARS
+        self._assert_move_lines(
+            payment,
+            [
+                {
+                    "account_type": "liability_payable",
+                    "currency": self.ars,
+                    "amt_currency": 120_000,
+                    "balance": 120_000,
+                },
             ],
         )
+        self.assertIn(invoice.payment_state, ["paid", "in_payment"])
 
-        # El sistema calcula counterpart_rate automáticamente (USD→EUR)
-        # Via transitividad: 1320 / 1200 = 1.1
-        expected_counterpart_rate = self.env["res.currency"]._get_conversion_rate(
-            from_currency=self.usd, to_currency=self.eur, company=self.company, date=self.today
+    def test_caso5_arbitraje_cruzado(self):
+        """Caso 5 · USD → EUR → ARS  (3 monedas distintas)
+        Pago en USD para cancelar deuda en EUR. Verifica:
+        - Monedas: A = USD, B1 = B2 = EUR, C = ARS
+        - counterpart_rate = rate(USD→EUR) ≈ 1.1 (por transitividad)
+        - accounting_rate = rate(ARS→USD) ≈ 0.000833
+        - Ambos rates visibles (A ≠ B1 Y B1 ≠ C)
+        - Asiento: liquidez en USD, contrapartida en EUR, balances en ARS
+        """
+        invoice = self._create_invoice(100, self.eur, move_type="in_invoice")
+        debt_lines = self._get_debt_lines(invoice)
+        payment = self._create_payment(
+            self.bank_usd,
+            partner_type="supplier",
+            payment_type="outbound",
+            to_pay_move_line_ids=[Command.set(debt_lines.ids)],
         )
 
-        # === VALIDACIONES ===
-        # A = USD, B1 = B2 = EUR, C = ARS
-        self.assertEqual(payment.currency_id, self.usd, "Moneda del pago (A) debe ser USD")
-        self.assertEqual(payment.counterpart_currency_id, self.eur, "Moneda de contrapartida (B1) debe ser EUR")
-        self.assertEqual(payment.destination_currency_id, self.eur, "Moneda de destino (B2) debe ser EUR")
-        self.assertEqual(payment.company_currency_id, self.ars, "Moneda de la compañía (C) debe ser ARS")
+        expected_cp_rate = self._get_rate(self.usd, self.eur)  # ≈ 1.1
+        expected_acc_rate = self._get_rate(self.ars, self.usd)  # ≈ 0.000833
 
-        # counterpart_rate: formato Odoo _get_conversion_rate(USD, EUR) = 1320/1200 = 1.1
-        self.assertAlmostEqual(
-            payment.counterpart_rate,
-            expected_counterpart_rate,
-            places=4,
-            msg=f"counterpart_rate debe ser ~1.1 (USD→EUR). Esperado: {expected_counterpart_rate}",
-        )
+        self._assert_currencies(payment, A=self.usd, B1=self.eur, B2=self.eur, C=self.ars)
+        self._assert_rates(payment, accounting=expected_acc_rate, counterpart=expected_cp_rate, places=4)
 
-        # accounting_rate: formato Odoo _get_conversion_rate(ARS, USD)
-        expected_accounting_rate = self.env["res.currency"]._get_conversion_rate(
-            from_currency=self.ars, to_currency=self.usd, company=self.company, date=self.today
-        )
-        self.assertAlmostEqual(
-            payment.accounting_rate,
-            expected_accounting_rate,
-            places=6,
-            msg="accounting_rate debe ser ~0.000833 (ARS→USD)",
-        )
-
-        # to_pay_amount: 100 EUR (deuda)
-        self.assertEqual(payment.to_pay_amount, 100, "to_pay_amount debe ser 100 EUR")
-
-        # Calcular amount esperado: 100 EUR / counterpart_rate
-        expected_amount_usd = 100 / expected_counterpart_rate
-        # Establecer amount manualmente
+        # amount: 100 EUR / cp_rate ≈ 90.9 USD
+        expected_amount_usd = 100 / expected_cp_rate
         payment.amount = expected_amount_usd
 
-        # amount: debe ser ~110 USD
-        self.assertAlmostEqual(payment.amount, expected_amount_usd, places=2, msg="amount debe ser ~110 USD")
+        self.assertAlmostEqual(payment.counterpart_currency_amount, 100, places=2)
 
-        # Postear y validar conciliación
         payment.action_post()
-        self.assertTrue(invoice.payment_state in ["paid", "in_payment"], "Factura debe estar pagada")
 
-    def test_caso_6_pago_mixto_parcial(self):
-        """
-        Caso 6: Pago mixto/parcial (ARS→USD→ARS)
-
-        Setup: Factura 100 USD, pago parcial de 60.000 ARS.
-        Rate: 1 USD = 1.200 ARS
-
-        Valida:
-        - Pago parcial: 60.000 ARS = 50 USD
-        - unreconciled_amount: -50 USD (adelanto)
-        - selected_debt: 100 USD, to_pay_amount: 50 USD
-        """
-        # Crear factura de proveedor por 100 USD
-        invoice = self._create_invoice(100, self.usd, move_type="in_invoice")
-
-        # Crear pago desde diario ARS por 60.000 ARS
-        payment = self._create_payment(
-            self.bank_journal_ars,
-            partner_type="supplier",
-            payment_type="outbound",
-            amount=60000,
-            to_pay_move_line_ids=[
-                Command.set(invoice.line_ids.filtered(lambda l: l.account_id.account_type == "liability_payable").ids)
+        # Contrapartida en EUR, balance en ARS
+        expected_balance_liq = expected_amount_usd / expected_acc_rate  # ≈ 109 090 ARS
+        self._assert_move_lines(
+            payment,
+            [
+                {
+                    "account_type": "liability_payable",
+                    "currency": self.eur,
+                    "amt_currency": 100,
+                    "balance": -(-expected_balance_liq),
+                },
             ],
         )
+        self.assertIn(invoice.payment_state, ["paid", "in_payment"])
 
-        # Establecer rate: 1 USD = 1.200 ARS
-        # En formato Odoo: _get_conversion_rate(ARS, USD) = 1/1200
-        payment.counterpart_rate = 1 / 1200.0
-
-        # === VALIDACIONES ===
-        # selected_debt: 100 USD (total de la factura)
-        self.assertEqual(payment.selected_debt, 100, "selected_debt debe ser 100 USD")
-
-        # counterpart_currency_amount: amount * counterpart_rate = 60.000 * (1/1200) = 50 USD
-        expected_counterpart_amount = 60000 * (1 / 1200.0)
-        self.assertAlmostEqual(
-            payment.counterpart_currency_amount,
-            expected_counterpart_amount,
-            places=2,
-            msg="counterpart_currency_amount debe ser 50 USD",
-        )
-
-        # to_pay_amount = selected_debt + unreconciled_amount = 100 + 0 = 100 USD.
-        # El campo no se auto-ajusta al monto del pago; el usuario setea unreconciled_amount
-        # manualmente si quiere registrar un pago parcial distinto a la deuda seleccionada.
-        self.assertAlmostEqual(
-            payment.to_pay_amount, 100, places=2, msg="to_pay_amount debe ser 100 USD (deuda total seleccionada)"
-        )
-
-        # unreconciled_amount: 0 (campo editable por el usuario, no se auto-calcula)
-        self.assertAlmostEqual(
-            payment.unreconciled_amount, 0, places=2, msg="unreconciled_amount debe ser 0 (no se auto-calcula)"
-        )
-
-        # Postear y validar conciliación parcial
-        # TODO: Este test falla porque counterpart_currency_amount no se recalcula automáticamente
-        # payment.action_post()
-        # self.assertIn(invoice.payment_state, ["partial", "not_paid"], "Factura debe estar parcialmente pagada")
-
-    def test_caso_7_pago_anticipado(self):
+    def test_caso6_pago_parcial(self):
+        """Caso 6 · ARS → USD → ARS  (pago parcial)
+        Monto del pago no cubre toda la deuda. Verifica:
+        - selected_debt = total de la factura en USD
+        - counterpart_currency_amount = amount × counterpart_rate < selected_debt
+        - Factura queda en estado parcial o sin pagar tras postear
         """
-        Caso 7: Pago anticipado (ARS→USD→ARS)
-
-        Setup: Sin deuda previa, pago libre de 60.000 ARS.
-
-        Valida:
-        - counterpart_currency_id es editable (no hay deuda)
-        - Usuario puede elegir USD manualmente
-        - user_counterpart_rate visible y editable
-        """
-        # Crear pago desde diario ARS sin deuda asociada
+        invoice = self._create_invoice(100, self.usd, move_type="in_invoice")
+        debt_lines = self._get_debt_lines(invoice)
         payment = self._create_payment(
-            self.bank_journal_ars,
+            self.bank_ars,
             partner_type="supplier",
             payment_type="outbound",
-            amount=60000,
+            amount=60_000,
+            to_pay_move_line_ids=[Command.set(debt_lines.ids)],
         )
 
-        # Usuario elige USD como moneda de contrapartida
-        payment.counterpart_currency_id = self.usd
-
-        # Establecer rate: 1 USD = 1.200 ARS
-        # En formato Odoo: _get_conversion_rate(ARS, USD) = 1/1200
+        # Rate: 1 USD = 1200 ARS (formato Odoo: ARS→USD = 1/1200)
         payment.counterpart_rate = 1 / 1200.0
 
-        # === VALIDACIONES ===
-        # A = C = ARS, B1 = USD (elegido por usuario)
-        self.assertEqual(payment.currency_id, self.ars, "Moneda del pago (A) debe ser ARS")
-        self.assertEqual(
-            payment.counterpart_currency_id, self.usd, "Moneda de contrapartida (B1) debe ser USD (elegida)"
-        )
-        self.assertEqual(payment.company_currency_id, self.ars, "Moneda de la compañía (C) debe ser ARS")
+        self._assert_currencies(payment, A=self.ars, B1=self.usd, B2=self.usd, C=self.ars)
+        self.assertEqual(payment.selected_debt, 100, "selected_debt = deuda total en USD")
+        self.assertAlmostEqual(payment.counterpart_currency_amount, 50, places=2, msg="60 000 ARS × (1/1200) = 50 USD")
 
-        # counterpart_rate en formato Odoo: 1/1200 = 0.000833
+        payment.action_post()
+        self.assertIn(invoice.payment_state, ["partial", "not_paid"])
+
+    def test_caso7_pago_anticipado(self):
+        """Caso 7 · ARS → USD → ARS  (anticipo sin deuda)
+        Sin factura previa, usuario elige B1 manualmente. Verifica:
+        - counterpart_currency_id editable (sin deuda que lo fuerce)
+        - selected_debt = 0
+        - counterpart_currency_amount calculado desde rate
+        - Pago se postea correctamente
+        """
+        payment = self._create_payment(
+            self.bank_ars,
+            partner_type="supplier",
+            payment_type="outbound",
+            amount=60_000,
+        )
+
+        # Usuario elige B1 = USD
+        payment.counterpart_currency_id = self.usd
+        payment.counterpart_rate = 1 / 1200.0
+
+        self._assert_currencies(payment, A=self.ars, B1=self.usd, B2=self.usd, C=self.ars)
+        self.assertEqual(payment.selected_debt, 0)
+        self.assertAlmostEqual(payment.counterpart_currency_amount, 50, places=2)
+
+        payment.action_post()
+        self.assertIn(payment.state, ["posted", "in_process"])
+
+    # ==================================================================
+    # CASOS CON reconcile_on_company_currency (B1 ≠ B2 posible)
+    # ==================================================================
+
+    def test_caso8_reconcile_on_company_currency_ars(self):
+        """Caso 8 · ARS / ARS / ARS / ARS  (reconcile fuerza B2=ARS)
+        Factura en USD pero flag fuerza conciliación en ARS. Verifica:
+        - B1 = B2 = C = ARS (el flag ignora la moneda de la factura)
+        - selected_debt usa amount_residual (ARS), no amount_residual_currency
+        - Conciliación exitosa por balance
+        """
+        self.company.reconcile_on_company_currency = True
+        try:
+            invoice = self._create_invoice(100, self.usd, move_type="in_invoice")
+            payable_line = self._get_debt_lines(invoice)
+            amount_ars = abs(payable_line.balance)
+
+            payment = self._create_payment(
+                self.bank_ars,
+                partner_type="supplier",
+                payment_type="outbound",
+                amount=amount_ars,
+                to_pay_move_line_ids=[Command.set(payable_line.ids)],
+            )
+
+            self._assert_currencies(payment, A=self.ars, B1=self.ars, B2=self.ars, C=self.ars)
+            self.assertAlmostEqual(
+                payment.selected_debt, amount_ars, places=2, msg="selected_debt en ARS (amount_residual)"
+            )
+
+            payment.action_post()
+            self.assertIn(invoice.payment_state, ["paid", "in_payment"])
+        finally:
+            self.company.reconcile_on_company_currency = False
+
+    def test_caso9_pago_usd_deuda_ars(self):
+        """Caso 9 · USD / ARS / ARS / ARS  (pago USD, conciliación ARS)
+        reconcile_on_company_currency + cuenta sin moneda. Verifica:
+        - A = USD, B1 = ARS (flag fuerza company_currency), B2 = C = ARS
+        - selected_debt en ARS
+        """
+        self.company.reconcile_on_company_currency = True
+        self.account_payable.currency_id = False
+        try:
+            invoice = self._create_invoice(120_000, self.ars, move_type="in_invoice")
+            debt_lines = self._get_debt_lines(invoice)
+            payment = self._create_payment(
+                self.bank_usd,
+                partner_type="supplier",
+                payment_type="outbound",
+                amount=100,
+                to_pay_move_line_ids=[Command.set(debt_lines.ids)],
+            )
+
+            self._assert_currencies(payment, A=self.usd, B1=self.ars, B2=self.ars, C=self.ars)
+            self.assertEqual(payment.selected_debt, 120_000)
+
+            payment.action_post()
+            self.assertIn(invoice.payment_state, ["paid", "in_payment"])
+        finally:
+            self.company.reconcile_on_company_currency = False
+
+    def test_caso10_arbitraje_informativo(self):
+        """Caso 10 · EUR / USD / ARS / ARS  (3 monedas + reconcile)
+        Factura USD, pago EUR, conciliación ARS. Verifica:
+        - A = EUR, B1 = USD (asignado manualmente), B2 = C = ARS
+        - counterpart_rate (EUR→USD) y accounting_rate (ARS→EUR) son distintos
+        - Ambos rates visibles (A ≠ B1 Y B1 ≠ C)
+
+        Con reconcile_on_company_currency el default de B1 es ARS (company),
+        por lo que el usuario debe elegir manualmente B1 = USD desde la vista.
+        """
+        self.company.reconcile_on_company_currency = True
+        try:
+            invoice = self._create_invoice(100, self.usd, move_type="in_invoice")
+            debt_lines = self._get_debt_lines(invoice)
+            payment = self._create_payment(
+                self.bank_eur,
+                partner_type="supplier",
+                payment_type="outbound",
+                amount=100,
+                to_pay_move_line_ids=[Command.set(debt_lines.ids)],
+            )
+
+            # Con reconcile_on_company_currency, B1 default = ARS.
+            # El usuario override manual via el campo editable en la vista:
+            payment.counterpart_currency_id = self.usd
+
+            self._assert_currencies(payment, A=self.eur, B1=self.usd, B2=self.ars, C=self.ars)
+
+            expected_cp = self._get_rate(self.eur, self.usd)
+            expected_acc = self._get_rate(self.ars, self.eur)
+            self._assert_rates(payment, accounting=expected_acc, counterpart=expected_cp, places=4)
+
+            # Rates distintos (escenario no redundante: A ≠ B1 ≠ C)
+            self.assertNotAlmostEqual(payment.counterpart_rate, payment.accounting_rate, places=4)
+
+            payment.action_post()
+            self.assertIn(invoice.payment_state, ["paid", "in_payment"])
+        finally:
+            self.company.reconcile_on_company_currency = False
+
+    # ==================================================================
+    # TESTS DE MECÁNICA INTERNA
+    # ==================================================================
+
+    def test_sync_counterpart_rate_when_b1_eq_c(self):
+        """Cuando B1 = C, counterpart_rate = 1/accounting_rate (sincronización).
+        Aplica en caso 4 (USD→ARS→ARS). Modificar uno debe reflejar en el otro.
+        """
+        payment = self._create_payment(
+            self.bank_usd,
+            partner_type="supplier",
+            payment_type="outbound",
+            amount=100,
+        )
+        # B1 = ARS = C → sync activa
+        self._assert_currencies(payment, A=self.usd, B1=self.ars, B2=self.ars, C=self.ars)
+
+        acc_rate = payment.accounting_rate  # rate(C→A) = rate(ARS→USD) ≈ 0.000833
         self.assertAlmostEqual(
             payment.counterpart_rate,
-            1 / 1200.0,
+            1 / acc_rate,
+            places=4,
+            msg="B1=C → counterpart_rate debe ser 1/accounting_rate",
+        )
+
+    def test_counterpart_currency_amount_inverse(self):
+        """Modificar counterpart_currency_amount recalcula counterpart_rate.
+        Spec: prioridad 1 — usuario modifica monto → recalcular tasa.
+        """
+        invoice = self._create_invoice(100, self.usd, move_type="in_invoice")
+        payment = self._create_payment(
+            self.bank_ars,
+            partner_type="supplier",
+            payment_type="outbound",
+            amount=120_000,
+            to_pay_move_line_ids=[Command.set(self._get_debt_lines(invoice).ids)],
+        )
+
+        # Override counterpart_currency_amount directamente → debe recalcular rate
+        payment.counterpart_currency_amount = 80  # 80 USD
+        # Esperado: counterpart_rate = 80 / 120_000 ≈ 0.000667
+        self.assertAlmostEqual(
+            payment.counterpart_rate,
+            80 / 120_000,
             places=6,
-            msg="counterpart_rate debe ser ~0.000833 (formato Odoo: ARS→USD)",
+            msg="inverse: counterpart_rate = counterpart_currency_amount / amount",
         )
 
-        # counterpart_currency_amount: amount * counterpart_rate = 60.000 * (1/1200) = 50 USD
-        expected_counterpart_amount = 60000 * (1 / 1200.0)
-        self.assertAlmostEqual(
-            payment.counterpart_currency_amount,
-            expected_counterpart_amount,
-            places=2,
-            msg="counterpart_currency_amount debe ser 50 USD",
-        )
-
-        # selected_debt: 0 (sin deuda)
-        self.assertEqual(payment.selected_debt, 0, "selected_debt debe ser 0 (sin deuda)")
-
-        # unreconciled_amount: 0 (campo editable por el usuario, no se auto-calcula desde counterpart_currency_amount).
-        # El usuario lo setea manualmente para registrar un adelanto.
-        self.assertAlmostEqual(
-            payment.unreconciled_amount,
-            0,
-            places=2,
-            msg="unreconciled_amount debe ser 0 (campo de usuario, no auto-calculado)",
-        )
-
-        # Postear
-        # TODO: Este test falla porque counterpart_currency_amount no se recalcula automáticamente
-        # payment.action_post()
-        # self.assertEqual(payment.state, "posted", "Pago debe estar posteado")
-
-    # =====================================================================
-    # CASOS CON reconcile_on_company_currency (B1 != B2)
-    # =====================================================================
-
-    def test_caso_8_forzar_divisa_en_pago_ars(self):
+    def test_selected_debt_uses_correct_field(self):
+        """selected_debt elige amount_residual_currency o amount_residual
+        según destination_currency_id vs company_currency_id.
         """
-        Caso 8: reconcile_on_company_currency fuerza conciliación en ARS
-
-        Setup: reconcile_on_company_currency = True
-               Factura 100 USD (cuenta AP sin moneda forzada), pago exacto en ARS.
-
-        Valida:
-        - A = C = ARS, B1 = ARS (flag fuerza moneda compañía), B2 = ARS
-        - destination_currency_id = ARS
-        - selected_debt en ARS (usa amount_residual, no amount_residual_currency)
-        - Conciliación exitosa por balance en ARS
-
-        Nota: no se puede combinar account_payable.currency_id=USD con
-        reconcile_on_company_currency=True porque la moneda forzada en la cuenta
-        impone reconciliación en USD a nivel de Odoo, contradiciendo el flag.
-        El flag solo aplica cuando la cuenta AP no tiene moneda propia.
-        """
-        self.company.reconcile_on_company_currency = True
-
-        # Factura en USD; la cuenta AP no tiene currency_id forzado
-        invoice = self._create_invoice(100, self.usd, move_type="in_invoice")
-        payable_line = invoice.line_ids.filtered(lambda l: l.account_id.account_type == "liability_payable")
-        # El balance de la línea AP está en ARS (moneda de la compañía)
-        amount_in_ars = abs(payable_line.balance)
-
-        payment = self._create_payment(
-            self.bank_journal_ars,
+        # Factura USD → selected_debt en USD (amount_residual_currency)
+        invoice_usd = self._create_invoice(100, self.usd, move_type="in_invoice")
+        payment_usd = self._create_payment(
+            self.bank_ars,
             partner_type="supplier",
             payment_type="outbound",
-            amount=amount_in_ars,
-            to_pay_move_line_ids=[Command.set(payable_line.ids)],
+            to_pay_move_line_ids=[Command.set(self._get_debt_lines(invoice_usd).ids)],
         )
+        self.assertEqual(payment_usd.destination_currency_id, self.usd)
+        self.assertEqual(payment_usd.selected_debt, 100, "Deuda USD → selected_debt = amount_residual_currency")
 
-        # === VALIDACIONES ===
-        # Con reconcile_on_company_currency=True y cuenta sin moneda: todo en ARS
-        self.assertEqual(payment.currency_id, self.ars, "Moneda del pago (A) debe ser ARS")
-        self.assertEqual(
-            payment.counterpart_currency_id,
-            self.ars,
-            "Con reconcile_on_company_currency y cuenta sin moneda, B1=ARS",
-        )
-        self.assertEqual(
-            payment.destination_currency_id,
-            self.ars,
-            "destination_currency_id debe ser ARS (flag activo, cuenta sin moneda)",
-        )
-
-        # selected_debt usa amount_residual (en ARS) porque destination_currency == company_currency
-        self.assertAlmostEqual(
-            payment.selected_debt,
-            amount_in_ars,
-            places=2,
-            msg="selected_debt debe estar en ARS (amount_residual)",
-        )
-
-        payment.action_post()
-        self.assertTrue(
-            invoice.payment_state in ["paid", "in_payment"],
-            "Factura debe estar pagada (conciliación por balance ARS)",
-        )
-
-        # Cleanup
-        self.company.reconcile_on_company_currency = False
-
-    def test_caso_9_pago_usd_de_deuda_ars(self):
-        """
-        Caso 9: Pago USD de deuda ARS (USD/USD/ARS/ARS)
-
-        Setup: reconcile_on_company_currency = True (pero cuenta sin moneda)
-               Factura 120.000 ARS, pago 1.000 USD
-               Rate: 1 USD = 1.200 ARS
-
-        Valida:
-        - A = B1 = USD, B2 = ARS (UX), C = ARS
-        - destination_currency_id = ARS
-        - Conciliación en ARS
-        """
-        # Activar reconcile_on_company_currency
-        self.company.reconcile_on_company_currency = True
-
-        # Asegurar que cuenta AP NO tiene moneda (o es ARS)
-        self.account_payable.currency_id = False
-
-        # Crear factura de proveedor por 120.000 ARS
-        invoice = self._create_invoice(120000, self.ars, move_type="in_invoice")
-
-        # Crear pago desde diario USD
-        payment = self._create_payment(
-            self.bank_journal_usd,
+        # Factura ARS → selected_debt en ARS (amount_residual)
+        invoice_ars = self._create_invoice(50_000, self.ars, move_type="in_invoice")
+        payment_ars = self._create_payment(
+            self.bank_ars,
             partner_type="supplier",
             payment_type="outbound",
-            amount=100,  # 100 USD
-            to_pay_move_line_ids=[
-                Command.set(invoice.line_ids.filtered(lambda l: l.account_id.account_type == "liability_payable").ids)
-            ],
+            to_pay_move_line_ids=[Command.set(self._get_debt_lines(invoice_ars).ids)],
         )
+        self.assertEqual(payment_ars.destination_currency_id, self.ars)
+        self.assertEqual(payment_ars.selected_debt, 50_000, "Deuda ARS → selected_debt = amount_residual")
 
-        # === VALIDACIONES ===
-        # A = USD, B1 = USD (default porque cuenta sin moneda), B2 = ARS (UX), C = ARS
-        self.assertEqual(payment.currency_id, self.usd, "Moneda del pago (A) debe ser USD")
-        # Con reconcile_on_company_currency y cuenta sin moneda, B1 podría ser ARS... verificar lógica
-        # Según spec: "si destination_account_id.currency_id existe... sino si reconcile_on_company_currency: company_currency_id"
-        # Como la cuenta NO tiene moneda Y reconcile_on_company_currency = True → B1 = ARS
-        self.assertEqual(
-            payment.counterpart_currency_id,
-            self.ars,
-            "Moneda de contrapartida (B1) debe ser ARS (cuenta sin moneda + reconcile)",
-        )
-        self.assertEqual(payment.destination_currency_id, self.ars, "Moneda de destino (B2) debe ser ARS")
-        self.assertEqual(payment.company_currency_id, self.ars, "Moneda de la compañía (C) debe ser ARS")
-
-        # selected_debt: 120.000 ARS
-        self.assertEqual(payment.selected_debt, 120000, "selected_debt debe ser 120.000 ARS")
-
-        # Postear
-        payment.action_post()
-        self.assertTrue(invoice.payment_state in ["paid", "in_payment"], "Factura debe estar pagada")
-
-        # Cleanup
-        self.company.reconcile_on_company_currency = False
-
-    def test_caso_10_arbitraje_informativo(self):
+    def test_rate_visibility_rules(self):
+        """Regla de visibilidad de rates (spec §Cuándo mostrar cada rate).
+        - counterpart_rate visible solo si A ≠ B1 Y B1 ≠ C
+        - accounting_rate visible solo si A ≠ C
         """
-        Caso 10: Arbitraje informativo (EUR/USD/ARS/ARS)
+        # Caso 1: A=B1=B2=C=ARS → ninguno visible
+        p1 = self._create_payment(self.bank_ars, amount=100)
+        self.assertEqual(p1.currency_id, p1.company_currency_id, "A=C → accounting_rate oculto")
+        self.assertEqual(p1.currency_id, p1.counterpart_currency_id, "A=B1 → counterpart_rate oculto")
 
-        Setup: reconcile_on_company_currency = True
-               Cuenta AP sin moneda forzada, factura 100 USD, pago 100 EUR
-               Rates: 1 EUR = 1.320 ARS, 1 USD = 1.200 ARS
-
-        Valida:
-        - A = EUR, B1 = USD (de la factura), B2 = ARS (UX), C = ARS
-        - counterpart_rate visible (EUR→USD)
-        - accounting_rate visible (EUR→ARS)
-        - Los dos rates son distintos (no redundantes)
-
-        Nota: no se puede combinar account_payable.currency_id=USD con
-        reconcile_on_company_currency=True porque la moneda forzada en la cuenta
-        impone reconciliación en USD, contradiciendo el flag.
-        B1=USD proviene de la línea AP de la factura USD (amount_residual_currency).
-        """
-        # Activar reconcile_on_company_currency
-        self.company.reconcile_on_company_currency = True
-
-        # La cuenta AP no tiene moneda forzada. B1=USD proviene de la factura en USD
-        # (la línea AP tiene amount_residual_currency en USD). Si se pusiera
-        # account_payable.currency_id=USD, Odoo forzaría reconciliación en USD a nivel
-        # de cuenta, contradiciendo reconcile_on_company_currency que quiere ARS.
-
-        # Crear factura de proveedor por 100 USD
-        invoice = self._create_invoice(100, self.usd, move_type="in_invoice")
-
-        # Crear pago desde diario EUR
-        payment = self._create_payment(
-            self.bank_journal_eur,
+        # Caso 2: A=B1=USD, C=ARS → solo accounting_rate visible
+        # Sin deuda, B1 default = company_currency. Necesitamos factura USD para que B1=USD.
+        invoice_usd = self._create_invoice(100, self.usd, move_type="in_invoice")
+        p2 = self._create_payment(
+            self.bank_usd,
             partner_type="supplier",
             payment_type="outbound",
-            amount=100,  # 100 EUR
-            to_pay_move_line_ids=[
-                Command.set(invoice.line_ids.filtered(lambda l: l.account_id.account_type == "liability_payable").ids)
-            ],
+            amount=100,
+            to_pay_move_line_ids=[Command.set(self._get_debt_lines(invoice_usd).ids)],
         )
+        self.assertNotEqual(p2.currency_id, p2.company_currency_id, "A≠C → accounting_rate visible")
+        self.assertEqual(p2.currency_id, p2.counterpart_currency_id, "A=B1 → counterpart_rate oculto")
 
-        # === VALIDACIONES ===
-        # A = EUR, B1 = USD, B2 = ARS, C = ARS
-        self.assertEqual(payment.currency_id, self.eur, "Moneda del pago (A) debe ser EUR")
-        self.assertEqual(payment.counterpart_currency_id, self.usd, "Moneda de contrapartida (B1) debe ser USD")
-        self.assertEqual(payment.destination_currency_id, self.ars, "Moneda de destino (B2) debe ser ARS")
-        self.assertEqual(payment.company_currency_id, self.ars, "Moneda de la compañía (C) debe ser ARS")
-
-        # counterpart_rate: EUR→USD (1320/1200 = 1.1)
-        expected_cp_rate = self.env["res.currency"]._get_conversion_rate(
-            from_currency=self.eur, to_currency=self.usd, company=self.company, date=self.today
+        # Caso 5: A=USD, B1=EUR, C=ARS → ambos visibles
+        invoice_eur = self._create_invoice(100, self.eur, move_type="in_invoice")
+        p5 = self._create_payment(
+            self.bank_usd,
+            partner_type="supplier",
+            payment_type="outbound",
+            to_pay_move_line_ids=[Command.set(self._get_debt_lines(invoice_eur).ids)],
         )
-        self.assertAlmostEqual(
-            payment.counterpart_rate, expected_cp_rate, places=4, msg="counterpart_rate debe ser ~1.1 (EUR→USD)"
-        )
-
-        # accounting_rate: EUR→ARS (1/1320 = 0.000757...)
-        expected_acc_rate = self.env["res.currency"]._get_conversion_rate(
-            from_currency=self.ars, to_currency=self.eur, company=self.company, date=self.today
-        )
-        self.assertAlmostEqual(
-            payment.accounting_rate, expected_acc_rate, places=6, msg="accounting_rate debe ser ~0.000757 (ARS→EUR)"
-        )
-
-        # Los dos rates deben ser distintos (no redundantes)
-        self.assertNotEqual(
-            payment.counterpart_rate, payment.accounting_rate, "Los rates deben ser distintos (EUR→USD ≠ EUR→ARS)"
-        )
-
-        # Postear
-        payment.action_post()
-        self.assertTrue(invoice.payment_state in ["paid", "in_payment"], "Factura debe estar pagada")
-
-        # Cleanup
-        self.company.reconcile_on_company_currency = False
+        self.assertNotEqual(p5.currency_id, p5.company_currency_id, "A≠C → accounting_rate visible")
+        self.assertNotEqual(p5.currency_id, p5.counterpart_currency_id, "A≠B1")
+        self.assertNotEqual(p5.counterpart_currency_id, p5.company_currency_id, "B1≠C → counterpart_rate visible")

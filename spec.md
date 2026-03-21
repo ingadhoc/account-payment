@@ -646,6 +646,22 @@ def migrate(cr, version):
     <field name="counterpart_rate_inverted" invisible="True"/>
     <field name="accounting_rate_inverted" invisible="True"/>
 
+    <!-- Moneda de contrapartida: visible solo cuando la cuenta destino no fuerza
+         una moneda específica (counterpart_currency_editable = True).
+         Útil en escenarios de arbitraje (ej. caso 10: pago EUR, deuda USD, conciliación ARS)
+         donde B1 no coincide con el default automático. -->
+    <field name="counterpart_currency_editable" invisible="True"/>
+    <label for="counterpart_currency_id" string="Counterpart Currency"
+        invisible="not counterpart_currency_editable
+                   or not use_payment_pro
+                   or is_internal_transfer"/>
+    <field name="counterpart_currency_id"
+        invisible="not counterpart_currency_editable
+                   or not use_payment_pro
+                   or is_internal_transfer"
+        readonly="state != 'draft'"
+        options="{'no_create': True, 'no_open': True}"/>
+
     <!-- Rate de contrapartida: visible solo si A != B1 AND B1 != C -->
     <label for="user_counterpart_rate" string="Rate"
         invisible="currency_id == counterpart_currency_id
