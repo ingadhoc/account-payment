@@ -99,6 +99,15 @@ class TestPaymentMultimoneda(TestArCommon):
         cls.account_receivable = cls.company_data["default_account_receivable"]
         cls.account_payable = cls.company_data["default_account_payable"]
         cls.account_revenue = cls.company_data["default_account_revenue"]
+        cls.account_expense = cls.company_data["default_account_expense"]
+
+        # Write-off type para tests de descuento/bonificación
+        cls.write_off_type = cls.env["account.write_off.type"].create(
+            {
+                "name": "Descuento Test",
+                "account_id": cls.account_expense.id,
+            }
+        )
 
     # ------------------------------------------------------------------
     # Helpers
@@ -781,3 +790,93 @@ class TestPaymentMultimoneda(TestArCommon):
         self.assertNotEqual(p5.currency_id, p5.company_currency_id, "A≠C → accounting_rate visible")
         self.assertNotEqual(p5.currency_id, p5.counterpart_currency_id, "A≠B1")
         self.assertNotEqual(p5.counterpart_currency_id, p5.company_currency_id, "B1≠C → counterpart_rate visible")
+
+    # ==================================================================
+    # WRITE-OFF TESTS
+    # ==================================================================
+
+    def test_write_off_company_currency(self):
+        """Write-off en moneda de la compañía (A = B = C = ARS).
+
+        Factura de 10 000 ARS. El usuario paga 9 000 ARS y genera un
+        write-off de 1 000 ARS como descuento. Verifica:
+        - Asiento tiene 3 líneas: liquidez, contrapartida, write-off
+        - Partida doble: sum(balance) == 0
+        - La factura queda pagada
+        """
+        invoice = self._create_invoice(10_000, self.ars)
+        debt_lines = self._get_debt_lines(invoice)
+        payment = self._create_payment(
+            self.bank_ars,
+            amount=9_000,
+            to_pay_move_line_ids=[Command.set(debt_lines.ids)],
+            write_off_type_id=self.write_off_type.id,
+            write_off_amount=1_000,
+        )
+
+        self._assert_currencies(payment, A=self.ars, B1=self.ars, B2=self.ars, C=self.ars)
+        self.assertEqual(payment.payment_total, 10_000, "payment_total = amount + write_off")
+        self.assertAlmostEqual(payment.payment_difference, 0, places=2)
+
+        payment.action_post()
+
+        self._assert_move_lines(
+            payment,
+            {
+                "liquidity": {"currency": self.ars, "amt_currency": 9_000, "balance": 9_000},
+                "counterpart": {"currency": self.ars, "amt_currency": -10_000, "balance": -10_000},
+                "write_off": {"currency": self.ars, "amt_currency": 1_000, "balance": 1_000},
+            },
+        )
+        self.assertIn(invoice.payment_state, ["paid", "in_payment"])
+
+    def test_write_off_foreign_currency(self):
+        """Write-off con deuda en moneda extranjera (A = ARS, B = USD).
+
+        Factura de 100 USD. A rate 1200, la deuda en ARS = 120 000.
+        El usuario paga 90 000 ARS (~75 USD) y genera un write-off de 25 USD
+        (equivalente a 30 000 ARS). Verifica:
+        - Write-off en destination_currency (USD)
+        - Balance del write-off convertido a ARS vía _convert
+        - Partida doble: sum(balance) == 0
+        - La factura queda pagada
+        """
+        invoice = self._create_invoice(100, self.usd, move_type="in_invoice")
+        debt_lines = self._get_debt_lines(invoice)
+        payment = self._create_payment(
+            self.bank_ars,
+            partner_type="supplier",
+            payment_type="outbound",
+            to_pay_move_line_ids=[Command.set(debt_lines.ids)],
+        )
+
+        # Override rate: 1 USD = 1200 ARS
+        payment.counterpart_rate = 1 / 1200.0
+        payment.amount = 90_000  # paga parcialmente en ARS
+        payment.write_off_type_id = self.write_off_type.id
+        payment.write_off_amount = 25  # 25 USD de descuento
+
+        self._assert_currencies(payment, A=self.ars, B1=self.usd, B2=self.usd, C=self.ars)
+        # payment_total = counterpart_currency_amount + write_off_amount
+        # counterpart_currency_amount = 90_000 * (1/1200) = 75 USD
+        self.assertAlmostEqual(payment.counterpart_currency_amount, 75, places=2)
+        self.assertAlmostEqual(payment.payment_total, 100, places=2)  # 75 + 25
+
+        payment.action_post()
+
+        # El write-off va en USD (destination_currency), balance convertido a ARS
+        wo_balance_expected = self.usd._convert(25, self.ars, self.company, self.today)
+        lines = payment.move_id.line_ids
+        total_balance = sum(lines.mapped("balance"))
+        self.assertAlmostEqual(total_balance, 0, places=2, msg="Partida doble: sum(balance) debe ser 0")
+
+        # Verificar que existe la línea de write-off
+        wo_lines = lines.filtered(lambda l: l.account_id == self.write_off_type.account_id)
+        self.assertTrue(wo_lines, "Debe existir línea de write-off en el asiento")
+        # El write-off es en USD con balance en ARS
+        self.assertEqual(wo_lines[0].currency_id, self.usd)
+        # sign: outbound → wo_sign = -1, entonces wo_amount = -25 USD
+        self.assertAlmostEqual(wo_lines[0].amount_currency, -25, places=2)
+        self.assertAlmostEqual(wo_lines[0].balance, -wo_balance_expected, places=2)
+
+        self.assertIn(invoice.payment_state, ["paid", "in_payment"])

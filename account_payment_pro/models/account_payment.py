@@ -517,6 +517,14 @@ class AccountPayment(models.Model):
 
         res = super()._prepare_move_lines_per_type(write_off_line_vals=write_off_line_vals, force_balance=force_balance)
 
+        # ── Re-inyectar write-off si base Odoo lo descartó ────────────────────────
+        # Base Odoo (L342-345) descarta write_off_lines cuando hay withholding_lines
+        # porque asume que las retenciones se pasan como write-off en _synchronize_to_moves.
+        # En payment_pro las retenciones y el write-off son conceptos separados, así que
+        # re-inyectamos las write-off lines que nosotros construimos.
+        if write_off_line_vals and not res.get("write_off_lines"):
+            res["write_off_lines"] = write_off_line_vals
+
         liquidity_lines = res.get("liquidity_lines", [])
         counterpart_lines = res.get("counterpart_lines", [])
 
@@ -540,10 +548,16 @@ class AccountPayment(models.Model):
         # Si A != B1: la contrapartida va en moneda B1 (counterpart_currency_id)
         if self.counterpart_currency_id and self.counterpart_currency_id != self.currency_id:
             cp_sign = 1 if counterpart_lines[0].get("amount_currency", 0) >= 0 else -1
+            # La contrapartida AP/AR cubre el TOTAL de la deuda cancelada: cash + write-off.
+            # counterpart_currency_amount = porción cash en B1, write_off_amount está en B2.
+            # Cuando B1 == B2 (caso estándar sin reconcile_on_company_currency) sumamos directo.
+            counterpart_amt = abs(self.counterpart_currency_amount)
+            if self.write_off_amount and self.destination_currency_id == self.counterpart_currency_id:
+                counterpart_amt += abs(self.write_off_amount)
             counterpart_lines[0].update(
                 {
                     "currency_id": self.counterpart_currency_id.id,
-                    "amount_currency": cp_sign * abs(self.counterpart_currency_amount),
+                    "amount_currency": cp_sign * counterpart_amt,
                 }
             )
         # Si A == B1: la moneda ya es correcta (A), solo el balance se actualizó arriba
