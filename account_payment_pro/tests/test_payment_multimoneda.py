@@ -202,42 +202,62 @@ class TestPaymentMultimoneda(TestArCommon):
 
     def _assert_move_lines(self, payment, expected):
         """
-        Verifica balance y amount_currency de las líneas del asiento posteado.
+        Verifica los apuntes contables del asiento de pago.
 
-        ``expected`` es una lista de dicts con claves:
-            account_type : str — filtro para identificar la línea
-            currency     : res.currency
-            amt_currency : float — amount_currency esperado
-            balance      : float — balance esperado (en company currency)
-        Se compara con tolerancia de 0.01.
+        ``expected`` es un dict con claves por rol de línea::
+
+            {
+                'liquidity':   {'currency': res.currency, 'amt_currency': float, 'balance': float},
+                'counterpart': {'currency': res.currency, 'amt_currency': float, 'balance': float},
+                'write_off':   {...},  # opcional
+            }
+
+        Verificaciones adicionales:
+        - move_id.state == 'posted'
+        - Partida doble: sum(balance) == 0
         """
-        # En Odoo 19 action_post() deja el payment en 'in_process'; el asiento sí queda posted.
         self.assertEqual(
             payment.move_id.state,
             "posted",
             f"El asiento debe estar posteado (payment.state={payment.state})",
         )
         lines = payment.move_id.line_ids
-        for exp in expected:
-            matching = lines.filtered(lambda l: l.account_id.account_type == exp["account_type"])
-            self.assertTrue(matching, f"No se encontró línea con account_type={exp['account_type']}")
+
+        # Partida doble
+        total_balance = sum(lines.mapped("balance"))
+        self.assertAlmostEqual(total_balance, 0, places=2, msg="Partida doble: sum(balance) debe ser 0")
+
+        # Mapeo rol → account
+        role_account = {
+            "liquidity": payment.outstanding_account_id,
+            "counterpart": payment.destination_account_id,
+        }
+
+        for role, exp in expected.items():
+            if role == "write_off":
+                account = payment.write_off_type_id.account_id
+            else:
+                account = role_account.get(role)
+            self.assertTrue(account, f"No se pudo determinar la cuenta para rol '{role}'")
+            matching = lines.filtered(lambda l, acc=account: l.account_id == acc)
+            self.assertTrue(matching, f"No se encontró línea para {role} (cuenta {account.display_name})")
             line = matching[0]
             self.assertEqual(
                 line.currency_id,
                 exp["currency"],
-                f"Línea {exp['account_type']}: moneda esperada {exp['currency'].name}",
+                f"{role}: moneda esperada {exp['currency'].name}, obtenida {line.currency_id.name}",
             )
             self.assertAlmostEqual(
                 line.amount_currency,
                 exp["amt_currency"],
                 places=2,
-                msg=f"Línea {exp['account_type']}: amount_currency",
+                msg=f"{role}: amount_currency",
             )
             self.assertAlmostEqual(
                 line.balance,
                 exp["balance"],
                 places=2,
-                msg=f"Línea {exp['account_type']}: balance",
+                msg=f"{role}: balance",
             )
 
     # ==================================================================
@@ -267,9 +287,10 @@ class TestPaymentMultimoneda(TestArCommon):
 
         self._assert_move_lines(
             payment,
-            [
-                {"account_type": "asset_receivable", "currency": self.ars, "amt_currency": -10_000, "balance": -10_000},
-            ],
+            {
+                "liquidity": {"currency": self.ars, "amt_currency": 10_000, "balance": 10_000},
+                "counterpart": {"currency": self.ars, "amt_currency": -10_000, "balance": -10_000},
+            },
         )
         self.assertIn(invoice.payment_state, ["paid", "in_payment"])
 
@@ -306,14 +327,10 @@ class TestPaymentMultimoneda(TestArCommon):
         expected_balance = 100 / expected_acc_rate  # ≈ 120 000 ARS
         self._assert_move_lines(
             payment,
-            [
-                {
-                    "account_type": "asset_receivable",
-                    "currency": self.usd,
-                    "amt_currency": -100,
-                    "balance": -expected_balance,
-                },
-            ],
+            {
+                "liquidity": {"currency": self.usd, "amt_currency": 100, "balance": expected_balance},
+                "counterpart": {"currency": self.usd, "amt_currency": -100, "balance": -expected_balance},
+            },
         )
         self.assertIn(invoice.payment_state, ["paid", "in_payment"])
 
@@ -346,12 +363,12 @@ class TestPaymentMultimoneda(TestArCommon):
 
         payment.action_post()
 
-        # Línea de contrapartida: 100 USD (amount_currency), balance en ARS
         self._assert_move_lines(
             payment,
-            [
-                {"account_type": "liability_payable", "currency": self.usd, "amt_currency": 100, "balance": 125_000},
-            ],
+            {
+                "liquidity": {"currency": self.ars, "amt_currency": -125_000, "balance": -125_000},
+                "counterpart": {"currency": self.usd, "amt_currency": 100, "balance": 125_000},
+            },
         )
         self.assertIn(invoice.payment_state, ["paid", "in_payment"])
 
@@ -387,17 +404,17 @@ class TestPaymentMultimoneda(TestArCommon):
 
         payment.action_post()
 
-        # Liquidez: 100 USD / balance = 100 / accounting_rate ≈ 120 000 ARS
+        expected_liq_balance = 100 / expected_acc_rate  # ≈ 120 000 ARS
         self._assert_move_lines(
             payment,
-            [
-                {
-                    "account_type": "liability_payable",
+            {
+                "liquidity": {"currency": self.usd, "amt_currency": -100, "balance": -expected_liq_balance},
+                "counterpart": {
                     "currency": self.ars,
-                    "amt_currency": 120_000,
-                    "balance": 120_000,
+                    "amt_currency": expected_liq_balance,
+                    "balance": expected_liq_balance,
                 },
-            ],
+            },
         )
         self.assertIn(invoice.payment_state, ["paid", "in_payment"])
 
@@ -433,18 +450,18 @@ class TestPaymentMultimoneda(TestArCommon):
 
         payment.action_post()
 
-        # Contrapartida en EUR, balance en ARS
-        expected_balance_liq = expected_amount_usd / expected_acc_rate  # ≈ 109 090 ARS
+        # Balance en ARS determinado por A→C (USD→ARS), no por B1→C (EUR→ARS)
+        expected_liq_balance = expected_amount_usd / expected_acc_rate  # ≈ 109 090 ARS
         self._assert_move_lines(
             payment,
-            [
-                {
-                    "account_type": "liability_payable",
-                    "currency": self.eur,
-                    "amt_currency": 100,
-                    "balance": -(-expected_balance_liq),
+            {
+                "liquidity": {
+                    "currency": self.usd,
+                    "amt_currency": -expected_amount_usd,
+                    "balance": -expected_liq_balance,
                 },
-            ],
+                "counterpart": {"currency": self.eur, "amt_currency": 100, "balance": expected_liq_balance},
+            },
         )
         self.assertIn(invoice.payment_state, ["paid", "in_payment"])
 
@@ -473,6 +490,14 @@ class TestPaymentMultimoneda(TestArCommon):
         self.assertAlmostEqual(payment.counterpart_currency_amount, 50, places=2, msg="60 000 ARS × (1/1200) = 50 USD")
 
         payment.action_post()
+
+        self._assert_move_lines(
+            payment,
+            {
+                "liquidity": {"currency": self.ars, "amt_currency": -60_000, "balance": -60_000},
+                "counterpart": {"currency": self.usd, "amt_currency": 50, "balance": 60_000},
+            },
+        )
         self.assertIn(invoice.payment_state, ["partial", "not_paid"])
 
     def test_caso7_pago_anticipado(self):
@@ -499,6 +524,14 @@ class TestPaymentMultimoneda(TestArCommon):
         self.assertAlmostEqual(payment.counterpart_currency_amount, 50, places=2)
 
         payment.action_post()
+
+        self._assert_move_lines(
+            payment,
+            {
+                "liquidity": {"currency": self.ars, "amt_currency": -60_000, "balance": -60_000},
+                "counterpart": {"currency": self.usd, "amt_currency": 50, "balance": 60_000},
+            },
+        )
         self.assertIn(payment.state, ["posted", "in_process"])
 
     # ==================================================================
@@ -532,6 +565,14 @@ class TestPaymentMultimoneda(TestArCommon):
             )
 
             payment.action_post()
+
+            self._assert_move_lines(
+                payment,
+                {
+                    "liquidity": {"currency": self.ars, "amt_currency": -amount_ars, "balance": -amount_ars},
+                    "counterpart": {"currency": self.ars, "amt_currency": amount_ars, "balance": amount_ars},
+                },
+            )
             self.assertIn(invoice.payment_state, ["paid", "in_payment"])
         finally:
             self.company.reconcile_on_company_currency = False
@@ -558,7 +599,21 @@ class TestPaymentMultimoneda(TestArCommon):
             self._assert_currencies(payment, A=self.usd, B1=self.ars, B2=self.ars, C=self.ars)
             self.assertEqual(payment.selected_debt, 120_000)
 
+            expected_liq_balance = 100 / self._get_rate(self.ars, self.usd)  # ≈ 120 000
+
             payment.action_post()
+
+            self._assert_move_lines(
+                payment,
+                {
+                    "liquidity": {"currency": self.usd, "amt_currency": -100, "balance": -expected_liq_balance},
+                    "counterpart": {
+                        "currency": self.ars,
+                        "amt_currency": expected_liq_balance,
+                        "balance": expected_liq_balance,
+                    },
+                },
+            )
             self.assertIn(invoice.payment_state, ["paid", "in_payment"])
         finally:
             self.company.reconcile_on_company_currency = False
@@ -598,7 +653,22 @@ class TestPaymentMultimoneda(TestArCommon):
             # Rates distintos (escenario no redundante: A ≠ B1 ≠ C)
             self.assertNotAlmostEqual(payment.counterpart_rate, payment.accounting_rate, places=4)
 
+            expected_liq_balance = 100 / expected_acc  # ≈ 132 000 ARS
+            expected_cp_amount = 100 * expected_cp  # ≈ 110 USD
+
             payment.action_post()
+
+            self._assert_move_lines(
+                payment,
+                {
+                    "liquidity": {"currency": self.eur, "amt_currency": -100, "balance": -expected_liq_balance},
+                    "counterpart": {
+                        "currency": self.usd,
+                        "amt_currency": expected_cp_amount,
+                        "balance": expected_liq_balance,
+                    },
+                },
+            )
             self.assertIn(invoice.payment_state, ["paid", "in_payment"])
         finally:
             self.company.reconcile_on_company_currency = False
