@@ -156,11 +156,25 @@ class AccountPayment(models.Model):
 
     open_move_line_ids = fields.One2many(related="move_id.open_move_line_ids")
 
-    @api.depends("destination_account_id", "destination_account_id.currency_id", "company_currency_id")
+    @api.depends(
+        "destination_account_id",
+        "destination_account_id.currency_id",
+        "company_currency_id",
+        "company_id.reconcile_on_company_currency",
+        "to_pay_move_line_ids",
+    )
     def _compute_counterpart_currency_editable(self):
         for rec in self:
             account_currency = rec.destination_account_id.currency_id
-            rec.counterpart_currency_editable = not account_currency or account_currency == rec.company_currency_id
+            # Cuenta fuerza moneda extranjera → nunca editable
+            if account_currency and account_currency != rec.company_currency_id:
+                rec.counterpart_currency_editable = False
+                continue
+            # Cuenta sin moneda forzada: editable si el flag de reconcile
+            # está activo (caso 10) o si no hay deuda seleccionada (caso 7)
+            rec.counterpart_currency_editable = (
+                rec.company_id.reconcile_on_company_currency or not rec.to_pay_move_line_ids
+            )
 
     @api.depends(
         "destination_account_id",
