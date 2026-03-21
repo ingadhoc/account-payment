@@ -497,6 +497,11 @@ parcialmente los casos del modelo tri-monetario:
 3. La línea de liquidez usa `currency_id` (A) con `amount_currency` en A y `balance` = `amount_A / accounting_rate`
 4. La línea de contrapartida usa `counterpart_currency_id` (B1) con `amount_currency` en B1 y `balance` cuadrado por diferencia
 5. Write-off en `destination_currency_id` con conversión a C vía `_convert()`
+6. **Fix exclusión mutua write-off + retenciones:** Base Odoo (L342-345 de `account_payment.py`)
+   descarta silenciosamente las `write_off_lines` cuando hay `withholding_lines` no vacías.
+   El override de `account_payment_pro` re-inyecta las write-off lines construidas a partir
+   de `write_off_amount`/`write_off_type_id` después del `super()` si fueron descartadas,
+   y recalcula el balance de la contrapartida para que el asiento cuadre.
 
 ---
 
@@ -755,6 +760,8 @@ El campo monetary ya muestra el símbolo de la moneda.
 - [x] Post-migración: cero pagos posted con `accounting_rate` o `counterpart_rate` en NULL (verificado por `post_migrate.py`)
 - [x] `counterpart_rate` almacena en formato Odoo nativo (< 1 para ARS/USD)
 - [x] `write_off_amount` migrado a `destination_currency_id`
+- [ ] Write-off genera línea contable correcta (test en ARS y en moneda extranjera)
+- [ ] Write-off funciona en combinación con retenciones (fix exclusión mutua base Odoo)
 - [x] `_get_trigger_fields_to_synchronize` actualizado con los campos renombrados
 - [x] `_create_paired_internal_transfer_payment` propaga `accounting_rate` en vez de `force_amount_company_currency`
 
