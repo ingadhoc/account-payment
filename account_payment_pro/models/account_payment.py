@@ -59,6 +59,11 @@ class AccountPayment(models.Model):
         digits=0,
         min_display_digits=2,
     )
+    counterpart_currency_editable = fields.Boolean(
+        compute="_compute_counterpart_currency_editable",
+        help="True when the destination account does not force a specific currency, "
+        "allowing the user to choose counterpart_currency_id from the form view.",
+    )
     counterpart_rate_inverted = fields.Boolean(
         compute="_compute_counterpart_rate_inverted",
         store=False,
@@ -150,6 +155,12 @@ class AccountPayment(models.Model):
     use_payment_pro = fields.Boolean(compute="_compute_use_payment_pro")
 
     open_move_line_ids = fields.One2many(related="move_id.open_move_line_ids")
+
+    @api.depends("destination_account_id", "destination_account_id.currency_id", "company_currency_id")
+    def _compute_counterpart_currency_editable(self):
+        for rec in self:
+            account_currency = rec.destination_account_id.currency_id
+            rec.counterpart_currency_editable = not account_currency or account_currency == rec.company_currency_id
 
     @api.depends(
         "destination_account_id",

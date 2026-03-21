@@ -47,6 +47,14 @@
         </xpath>
 
         <div name="amount_div" position="after">
+            <!-- Moneda de contrapartida: editable solo cuando la cuenta no fuerza moneda -->
+            <field name="counterpart_currency_id"
+                string="Secondary currency"
+                invisible="not counterpart_currency_editable
+                           or not use_payment_pro
+                           or is_internal_transfer"
+                readonly="state != 'draft'"
+                options="{'no_create': True, 'no_open': True}"/>
             <!-- Rate de contrapartida: visible solo si A != B1 AND B1 != C -->
             <label for="user_counterpart_rate" string="Rate"
                 invisible="currency_id == counterpart_currency_id
