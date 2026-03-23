@@ -33,6 +33,7 @@ from odoo import Command
 from odoo.addons.l10n_ar_tax.tests.test_payment_withholding_multimoneda import (
     TestPaymentWithholdingMultimoneda,
 )
+from odoo.exceptions import ValidationError
 from odoo.tests import tagged
 
 
@@ -117,7 +118,7 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         """Agrega un pago vinculado al bundle.
 
         Simula el flujo de la UI: el linked hereda counterpart_currency_id
-        del main vía default, y computa su propio counterpart_rate.
+        del main vía default de contexto, y computa su propio counterpart_rate.
         """
         vals = {
             "journal_id": journal.id,
@@ -127,11 +128,14 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
             "date": self.today,
             "amount": amount,
             "main_payment_id": main_payment.id,
-            "counterpart_currency_id": main_payment.counterpart_currency_id.id,
             "company_id": main_payment.company_id.id,
         }
         vals.update(kw)
-        return self.env["account.payment"].create(vals)
+        return (
+            self.env["account.payment"]
+            .with_context(default_counterpart_currency_id=main_payment.counterpart_currency_id.id)
+            .create(vals)
+        )
 
     def _add_linked_check_payment(self, main_payment, journal, checks, **kw):
         """Agrega un pago vinculado con cheques propios."""
@@ -144,7 +148,6 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
             "payment_method_line_id": own_checks_pml.id,
             "date": self.today,
             "main_payment_id": main_payment.id,
-            "counterpart_currency_id": main_payment.counterpart_currency_id.id,
             "company_id": main_payment.company_id.id,
             "l10n_latam_new_check_ids": [
                 Command.create(
@@ -158,7 +161,11 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
             ],
         }
         vals.update(kw)
-        return self.env["account.payment"].create(vals)
+        return (
+            self.env["account.payment"]
+            .with_context(default_counterpart_currency_id=main_payment.counterpart_currency_id.id)
+            .create(vals)
+        )
 
     # ==================================================================
     # B.1 — Bundle local simple (A=B=C=ARS)
@@ -359,9 +366,8 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         wth_ml = self._wth_move_lines(main)
         self.assertAlmostEqual(abs(wth_ml.balance), 36_000, places=0)
 
-    # ==================================================================
-    # B.4 — Bundle deuda USD: cheques propios ARS + transferencia USD
-    # ==================================================================
+        # Pago intencional parcial: 500+500+30 = 1030 USD de 1210 USD total
+        self.assertEqual(invoice.payment_state, "partial", "1030 USD pagados de 1210 USD → debe quedar parcial")
 
     def test_b4_bundle_deuda_usd_cheques_ars_y_transfer_usd(self):
         """B.4 · Factura 1 210 USD (1 000 neto, 1 USD = 1 200 ARS).
@@ -544,3 +550,27 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         # Main: retención en ARS
         wth_ml = self._wth_move_lines(main)
         self.assertAlmostEqual(abs(wth_ml.balance), wth_amount_ars, places=0)
+
+    # ==================================================================
+    # B.6 — Constraint integridad de moneda en linked payments
+    # ==================================================================
+
+    def test_b6_constrains_currency_consistency(self):
+        """B.6 · Verifica que no se pueda guardar un linked payment con
+        counterpart_currency_id distinto al del main payment.
+
+        Protege contra corrupción silenciosa de payment_total y
+        payment_difference cuando B del linked ≠ B del main.
+        """
+        invoice = self._create_invoice(1_000, self.usd)
+        main = self._create_main_payment(invoice, fiscal_position=False, l10n_ar_fiscal_position_id=False)
+        self.assertEqual(main.counterpart_currency_id, self.usd)
+
+        with self.assertRaisesRegex(ValidationError, "The counterpart currency of a linked payment must match"):
+            # Forzamos counterpart_currency_id=ARS en un bundle con B=USD
+            self._add_linked_payment(
+                main,
+                self.bank_ars,
+                amount=1_000,
+                counterpart_currency_id=self.ars.id,
+            )

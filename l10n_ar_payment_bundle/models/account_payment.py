@@ -130,6 +130,17 @@ class AccountPayment(models.Model):
             if rec.link_payment_ids.filtered(lambda p: p.company_id != rec.company_id):
                 raise ValidationError(_("The main payment and linked payments must belong to the same company."))
 
+    @api.constrains("counterpart_currency_id", "main_payment_id")
+    def _check_bundle_currency_consistency(self):
+        for rec in self.filtered("main_payment_id"):
+            if rec.counterpart_currency_id != rec.main_payment_id.counterpart_currency_id:
+                raise ValidationError(
+                    _(
+                        "The counterpart currency of a linked payment must match "
+                        "the main payment's counterpart currency."
+                    )
+                )
+
     @api.onchange("withholdings_amount")
     def _onchange_withholdings(self):
         main_payments = self.filtered("is_main_payment")
