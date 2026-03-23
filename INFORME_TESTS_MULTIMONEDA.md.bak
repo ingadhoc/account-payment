@@ -1,7 +1,7 @@
 # Informe: Tests Multimoneda - Payment Pro & l10n_ar_tax
 
-**Fecha:** 20 de marzo de 2026 - 18:47  
-**Módulos:** `account_payment_pro`, `l10n_ar_tax`  
+**Fecha:** 20 de marzo de 2026 - 18:47
+**Módulos:** `account_payment_pro`, `l10n_ar_tax`
 **Estado:** ⚠️ **10 FAILS + 3 ERRORS** de 19 tests totales
 
 ---
@@ -21,7 +21,7 @@ Los tests de ambos módulos validan el modelo tri-monetario (A/B/C) en pagos mul
 ### Bugs Críticos Identificados
 
 1. **`counterpart_currency_amount` no reactivo** - No se recalcula cuando se setea `counterpart_rate` manualmente
-2. **`accounting_rate` y `counterpart_rate` incorrectos** - Cálculos usando formato invertido o valores erróneos  
+2. **`accounting_rate` y `counterpart_rate` incorrectos** - Cálculos usando formato invertido o valores erróneos
 3. **`compute_withholdings()` no existe** - Tests de l10n_ar_tax llaman a método inexistente
 4. **Conciliación fallando** - Casos con `reconcile_on_company_currency=True` no concilian
 5. **Estados de pago incorrectos** - Pagos quedan en estado `'paid'` en vez de `'posted'`
@@ -52,7 +52,7 @@ def _onchange_withholdings(self):
 
 **Archivo:** `odoo-argentina/l10n_ar_tax/tests/test_payment_withholding_multimoneda.py`
 
-**Problema:**  
+**Problema:**
 Los tests intentaban crear fiscal positions con dos impuestos del mismo `tax_group_id`, lo cual violaba la constraint que verifica solapamiento de tax groups.
 
 **Solución aplicada:**
@@ -62,7 +62,7 @@ Los tests intentaban crear fiscal positions con dos impuestos del mismo `tax_gro
 
 ### 3. Creación de Fiscal Positions ✅ CORREGIDO
 
-**Problema:**  
+**Problema:**
 Tests usaban `Command.set([tax_id])` para asignar taxes a fiscal positions, lo cual causaba `MissingError` durante la validación de constraints.
 
 **Solución aplicada:**
@@ -78,20 +78,20 @@ Tests usaban `Command.set([tax_id])` para asignar taxes a fiscal positions, lo c
 
 ### 4. Secuencias de Retención ✅ AGREGADAS
 
-**Problema:**  
+**Problema:**
 Tests fallaban al postear pagos porque los impuestos de retención no tenían secuencias configuradas.
 
-**Solución aplicada:**  
+**Solución aplicada:**
 Agregadas secuencias en `setUpClass`:
 - `sequence_ret_iva`: para numeración de retenciones IVA
 - `sequence_ret_ganancias`: para numeración de retenciones Ganancias
 
 ### 5. `accounting_rate` - Formato Odoo Nativo ✅ CORREGIDO
 
-**Problema:**  
+**Problema:**
 Test T2 esperaba `accounting_rate = 1/1200 = 0.000833` (formato user-friendly invertido).
 
-**Causa raíz:**  
+**Causa raíz:**
 Según spec.md y spec_l10n_ar_tax.md:
 ```
 accounting_rate = _get_conversion_rate(A, C)
@@ -103,7 +103,7 @@ Para A=USD, C=ARS con rate de mercado 1 USD = 1200 ARS:
 accounting_rate = _get_conversion_rate(USD, ARS) = ARS/USD = 1200
 ```
 
-**Solución aplicada:**  
+**Solución aplicada:**
 Corregido test T2 para esperar `accounting_rate = 1200` en vez de `0.000833`.
 
 ---
@@ -124,7 +124,7 @@ El modelo tri-monetario implementado en `account_payment_pro` se alinea correcta
 | Campo | Fórmula | Ejemplo (A=USD, C=ARS, 1 USD=1200 ARS) | Spec |
 |-------|---------|----------------------------------------|------|
 | `accounting_rate` | `_get_conversion_rate(A, C)` | 1200 | ✅ Stored editable |
-| `counterpart_rate` | `_get_conversion_rate(A, B1)` | Depende de B1 | ✅ Stored editable |  
+| `counterpart_rate` | `_get_conversion_rate(A, B1)` | Depende de B1 | ✅ Stored editable |
 | `_get_withholding_rate()` | `accounting_rate / counterpart_rate` | Calculado | ✅ Según spec_l10n_ar_tax.md |
 
 ---
@@ -282,7 +282,7 @@ def _get_withholding_rate(self):
     return accounting / counterpart if counterpart else 1.0
 ```
 
-**Diferencia:**  
+**Diferencia:**
 - Implementación actual: Recalcula conversión B→C en cada llamada
 - Alternativa: Reutiliza campos `stored` (`accounting_rate / counterpart_rate`)
 
@@ -353,7 +353,7 @@ payment.compute_withholdings()
 ```
 
 **Causa raíz:**
-Los tests de `l10n_ar_tax` están llamando a un método que no existe en el modelo. 
+Los tests de `l10n_ar_tax` están llamando a un método que no existe en el modelo.
 
 **Métodos disponibles relacionados con retenciones:**
 ```python
@@ -546,7 +546,7 @@ def _create_payment_with_withholding(self, journal, invoice, fiscal_position=Non
 ```python
 def _create_payment_with_withholding(self, journal, invoice, fiscal_position=None):
     fiscal_position = fiscal_position or self.fiscal_position
-    
+
     # Crear pago usando el wizard de registro (simula UI)
     wizard = self.env["account.payment.register"].with_context(
         active_model="account.move",
@@ -555,7 +555,7 @@ def _create_payment_with_withholding(self, journal, invoice, fiscal_position=Non
         "journal_id": journal.id,
         "l10n_ar_fiscal_position_id": fiscal_position.id,
     })
-    
+
     # El wizard calcula retenciones automáticamente
     action = wizard.action_create_payments()
     payment = self.env["account.payment"].browse(action["res_id"])
@@ -574,7 +574,7 @@ def _create_payment_with_withholding(self, journal, invoice, fiscal_position=Non
         "l10n_ar_fiscal_position_id": fiscal_position.id,
         "to_pay_move_line_ids": [Command.set(invoice.line_ids.filtered(...).ids)],
     })
-    
+
     # Forzar cálculo de retenciones
     payment._compute_l10n_ar_withholding_line_ids()  # Método que SÍ existe
     return payment
@@ -694,7 +694,7 @@ grep -r "fiscal.*position.*tax" odoo-argentina/l10n_ar_tax/models/
 
 ### Objetivo Completo
 - ✅ 11/11 tests de `account_payment_pro` pasando
-- ✅ 7/7 tests de `l10n_ar_tax` pasando  
+- ✅ 7/7 tests de `l10n_ar_tax` pasando
 - ✅ Todos los casos de uso del spec validados
 
 ---

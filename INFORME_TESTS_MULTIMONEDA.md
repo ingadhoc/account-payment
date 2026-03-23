@@ -1,7 +1,7 @@
 # Informe: Tests Multimoneda - Payment Pro & l10n_ar_tax
 
-**Fecha:** 20 de marzo de 2026 - 18:47  
-**Módulos:** `account_payment_pro`, `l10n_ar_tax`  
+**Fecha:** 20 de marzo de 2026 - 18:47
+**Módulos:** `account_payment_pro`, `l10n_ar_tax`
 **Estado:** ⚠️ **10 FAILS + 3 ERRORS** de 19 tests totales
 
 ---
@@ -21,7 +21,7 @@ Los tests de ambos módulos validan el modelo tri-monetario (A/B/C) en pagos mul
 ### Bugs Críticos Identificados
 
 1. **`counterpart_currency_amount` no reactivo** - No se recalcula cuando se setea `counterpart_rate` manualmente
-2. **`accounting_rate` y `counterpart_rate` incorrectos** - Cálculos usando formato invertido o valores erróneos  
+2. **`accounting_rate` y `counterpart_rate` incorrectos** - Cálculos usando formato invertido o valores erróneos
 3. **`compute_withholdings()` no existe** en modelo - Tests de l10n_ar_tax llaman a método inexistente
 4. **Conciliación fallando** - Casos con `reconcile_on_company_currency=True` no concilian
 5. **Estados de pago incorrectos** - Pagos quedan en estado `'paid'` en vez de `'posted'`
@@ -81,7 +81,7 @@ Los tests de ambos módulos validan el modelo tri-monetario (A/B/C) en pagos mul
 
 - **T4, T5, T7:** Tests llaman a `payment.compute_withholdings()` que **NO EXISTE**. Métodos reales disponibles:
   - `_compute_withholdings_amount()` (compute method)
-  - `_compute_l10n_ar_withholding_line_ids()` (compute method)  
+  - `_compute_l10n_ar_withholding_line_ids()` (compute method)
   - `_onchange_withholdings()` (onchange method)
 
 - **T6:** Campo `amount_currency` en move line de retención tiene `39600 ARS` cuando debería ser `33 USD`. La creación de move lines de retención no está usando `currency_id` y `amount_currency` correctos.
@@ -104,7 +104,7 @@ El modelo tri-monetario implementado en `account_payment_pro` se alinea correcta
 | Campo | Fórmula spec | Formato Odoo | Ejemplo (1 USD = 1200 ARS) |
 |-------|--------------|--------------|----------------------------|
 | `accounting_rate` | `_get_conversion_rate(A, C)` | Multiplicador | `1200.0` (USD→ARS) |
-| `counterpart_rate` | `_get_conversion_rate(A, B1)` | Multiplicador | Depende de B1 |  
+| `counterpart_rate` | `_get_conversion_rate(A, B1)` | Multiplicador | Depende de B1 |
 | `_get_withholding_rate()` | `accounting_rate / counterpart_rate` | B→C | Calculado on-the-fly |
 
 **⚠️ Problema detectado:** Cuando se setea `counterpart_rate` manualmente, `counterpart_currency_amount` no se recalcula (casos 6 y 7 de payment_pro).
@@ -185,7 +185,7 @@ Los computes de `_compute_accounting_rate()` y `_compute_counterpart_rate()` pro
 **Análisis:**
 ```python
 # Según spec, _get_conversion_rate(from, to) devuelve: to/from
-rate_usd_ars = _get_conversion_rate(USD, ARS)  
+rate_usd_ars = _get_conversion_rate(USD, ARS)
 # = ARS/USD = 1200/1 = 1200.0  ✅ Correcto formato Odoo
 
 # Para ARS→USD:
@@ -197,7 +197,7 @@ rate_ars_usd = _get_conversion_rate(ARS, USD)
 # T3: espera counterpart_rate = 0.000667 ❌ (debería esperar 1500.0)
 ```
 
-**Decisión:** 
+**Decisión:**
 - **T2 (l10n_ar_tax):** Corregir `_compute_accounting_rate()` para calcular correctamente cuando `A != C`
 - **T3 (l10n_ar_tax):** Corregir expectativa del test (esperar `1500.0` en vez de `0.000667`)
 - **Caso 10 (payment_pro):** Revisar `_compute_counterpart_rate()` para caso `A != B != C`
@@ -229,7 +229,7 @@ _prepare_move_withholding_lines(self, ...)        # Helper para move lines
 ```python
 def _create_payment_with_withholding(self, journal, invoice, fiscal_position=None):
     fiscal_position = fiscal_position or self.fiscal_position
-    
+
     # Crear pago usando el wizard de registro (simula UI)
     wizard = self.env["account.payment.register"].with_context(
         active_model="account.move",
@@ -238,7 +238,7 @@ def _create_payment_with_withholding(self, journal, invoice, fiscal_position=Non
         "journal_id": journal.id,
         "l10n_ar_fiscal_position_id": fiscal_position.id,
     })
-    
+
     # El wizard calcula retenciones automáticamente
     action = wizard.action_create_payments()
     payment = self.env["account.payment"].browse(action["res_id"])
@@ -257,7 +257,7 @@ def _create_payment_with_withholding(self, journal, invoice, fiscal_position=Non
         "l10n_ar_fiscal_position_id": fiscal_position.id,
         "to_pay_move_line_ids": [Command.set(invoice.line_ids.filtered(...).ids)],
     })
-    
+
     # Forzar cálculo de retenciones (triggers compute)
     payment.invalidate_recordset(['l10n_ar_withholding_line_ids'])
     payment._compute_l10n_ar_withholding_line_ids()
@@ -372,6 +372,6 @@ Revisar si el test debe esperar `'paid'` en vez de `'posted'`, o si hay lógica 
 
 ---
 
-**Última actualización:** 20 de marzo de 2026 - 18:48  
-**Ejecutado por:** Agente Odoo  
+**Última actualización:** 20 de marzo de 2026 - 18:48
+**Ejecutado por:** Agente Odoo
 **Comando:** `odoo --test-enable --test-tags /account_payment_pro,/l10n_ar_tax`

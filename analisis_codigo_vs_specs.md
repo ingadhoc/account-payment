@@ -33,7 +33,7 @@ El código implementado en `account_payment_pro` y `l10n_ar_tax` **está correct
 
 4. ✅ **_tax_compute_all_helper**: Usa `self.base_amount` directamente (ya en C) para `compute_all`. No hay conversión adicional. Correcto.
 
-5. ✅ **_prepare_move_withholding_lines**: 
+5. ✅ **_prepare_move_withholding_lines**:
    - Usa `self.accounting_rate` (línea 165) en lugar de `exchange_rate` deprecado ✅
    - Implementa correctamente `use_company_currency` para caso A≠C
    - Las líneas van siempre en ARS cuando A≠C
@@ -153,6 +153,6 @@ def _compute_base_amount(self):
 
 ---
 
-**Autor:** GitHub Copilot (Claude Sonnet 4.5)  
-**Fecha:** 2026-03-19  
+**Autor:** GitHub Copilot (Claude Sonnet 4.5)
+**Fecha:** 2026-03-19
 **Modo:** odoo-test-from-commit (adaptado para revisión de specs)
