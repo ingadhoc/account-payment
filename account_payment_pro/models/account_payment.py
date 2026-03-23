@@ -529,18 +529,19 @@ class AccountPayment(models.Model):
         if not liquidity_lines or not counterpart_lines:
             return res
 
-        # ── Ajuste de la línea de LIQUIDEZ ────────────────────────────────────────
+        # ── Ajuste de las líneas de LIQUIDEZ ──────────────────────────────────────
         # accounting_rate = A/C (formato Odoo nativo, ej: 0.000667 p/USD→ARS)
         # balance_en_C = amount_en_A / accounting_rate
+        # Se itera sobre TODAS las líneas (puede haber N cuando se usan cheques)
         if self.accounting_rate and self.currency_id != self.company_currency_id:
-            liq_amount_currency = liquidity_lines[0]["amount_currency"]
-            liquidity_lines[0]["balance"] = liq_amount_currency / self.accounting_rate
+            for liq_line in liquidity_lines:
+                liq_line["balance"] = liq_line["amount_currency"] / self.accounting_rate
 
         # ── Recalcular balance de CONTRAPARTIDA para cerrar el asiento ────────────
         write_off_balance = sum(line["balance"] for line in res.get("write_off_lines", []))
         withholding_balance = sum(line["balance"] for line in res.get("withholding_lines", []))
-        new_liq_balance = liquidity_lines[0]["balance"]
-        counterpart_lines[0]["balance"] = -new_liq_balance - write_off_balance - withholding_balance
+        total_liq_balance = sum(line["balance"] for line in liquidity_lines)
+        counterpart_lines[0]["balance"] = -total_liq_balance - write_off_balance - withholding_balance
 
         # ── Ajuste de MONEDA en la línea de CONTRAPARTIDA ─────────────────────────
         # Si A != B1: la contrapartida va en moneda B1 (counterpart_currency_id)
