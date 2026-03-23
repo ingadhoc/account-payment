@@ -880,3 +880,311 @@ class TestPaymentMultimoneda(TestArCommon):
         self.assertAlmostEqual(wo_lines[0].balance, -wo_balance_expected, places=2)
 
         self.assertIn(invoice.payment_state, ["paid", "in_payment"])
+
+
+# ==============================================================================
+# Tests de cheques (TC.1 – TC.5)
+# ==============================================================================
+
+
+@tagged("post_install", "-at_install")
+class TestPaymentChecks(TestPaymentMultimoneda):
+    """Pruebas de pagos con cheques propios (l10n_latam_check + account_payment_pro).
+
+    Valida que F.2 (soporte de N líneas de liquidez en _prepare_move_lines_per_type)
+    funciona correctamente con 1, 2 y 3 cheques, en moneda local e internacional.
+
+    Convención:
+        "liq lines" = líneas de liquidez (cuenta outstanding) — una por cheque.
+        "cp line"   = contrapartida (AP/AR) — siempre una sola.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # Agregar método de pago "Cheques propios" a los diarios de banco (si no existe ya)
+        own_checks_method = cls.env.ref("l10n_latam_check.account_payment_method_own_checks")
+        for journal in (cls.bank_ars, cls.bank_usd):
+            already = journal.outbound_payment_method_line_ids.filtered(lambda l: l.code == "own_checks")
+            if not already:
+                journal.write(
+                    {"outbound_payment_method_line_ids": [Command.create({"payment_method_id": own_checks_method.id})]}
+                )
+
+    def _own_checks_pml(self, journal):
+        """Devuelve la payment method line 'own_checks' del diario dado."""
+        return journal.outbound_payment_method_line_ids.filtered(lambda l: l.code == "own_checks")
+
+    def _create_check_payment(self, journal, invoice, checks, **kw):
+        """Crea pago proveedor con cheques propios en borrador.
+
+        ``checks``: lista de dicts con claves ``name``, ``amount``, y
+        opcionalmente ``payment_date`` (default: today).
+        """
+        debt_lines = invoice.line_ids.filtered(lambda l: l.account_id.account_type == "liability_payable")
+        vals = {
+            "payment_type": "outbound",
+            "partner_type": "supplier",
+            "partner_id": self.partner.id,
+            "journal_id": journal.id,
+            "payment_method_line_id": self._own_checks_pml(journal).id,
+            "date": self.today,
+            "to_pay_move_line_ids": [Command.set(debt_lines.ids)],
+            "l10n_latam_new_check_ids": [
+                Command.create(
+                    {
+                        "name": c["name"],
+                        "payment_date": c.get("payment_date", self.today),
+                        "amount": c["amount"],
+                    }
+                )
+                for c in checks
+            ],
+        }
+        vals.update(kw)
+        return self.env["account.payment"].create(vals)
+
+    # ------------------------------------------------------------------
+    # TC.1 — 2 cheques propios, moneda local (A=B=C=ARS)
+    # ------------------------------------------------------------------
+
+    def test_tc1_dos_cheques_moneda_local(self):
+        """TC.1 · 2 cheques propios en ARS (A=B=C=ARS).
+
+        Factura 10 000 ARS; 2 cheques de 6 000 y 4 000 ARS.
+        Verifica:
+        - 3 líneas: 2 liquidez + 1 contrapartida
+        - balance de cada liquidez = amount_currency (rate = 1.0)
+        - sum(balances) == 0
+        - outstanding_line_id de cada cheque apunta a su línea
+        """
+        invoice = self._create_invoice(10_000, self.ars, move_type="in_invoice")
+        payment = self._create_check_payment(
+            self.bank_ars,
+            invoice,
+            [
+                {"name": "00000001", "amount": 6_000},
+                {"name": "00000002", "amount": 4_000},
+            ],
+        )
+
+        self.assertAlmostEqual(payment.amount, 10_000)
+        self.assertAlmostEqual(payment.accounting_rate, 1.0, places=6)
+
+        payment.action_post()
+
+        lines = payment.move_id.line_ids
+        liq_lines = lines.filtered(lambda l: l.account_id == payment.outstanding_account_id)
+        self.assertEqual(len(liq_lines), 2, "2 líneas de liquidez (una por cheque)")
+        self.assertEqual(len(lines), 3, "Asiento: 2 liquidez + 1 contrapartida")
+
+        self.assertAlmostEqual(sum(liq_lines.mapped("balance")), -10_000, places=2)
+        self.assertAlmostEqual(sum(liq_lines.mapped("amount_currency")), -10_000, places=2)
+
+        cp = lines - liq_lines
+        self.assertEqual(len(cp), 1)
+        self.assertAlmostEqual(cp.balance, 10_000, places=2)
+        self.assertAlmostEqual(sum(lines.mapped("balance")), 0, places=2)
+
+        # outstanding_line_id apunta a su línea de liquidez
+        for check in payment.l10n_latam_new_check_ids:
+            self.assertTrue(check.outstanding_line_id, f"Cheque {check.name} sin outstanding_line_id")
+            self.assertIn(check.outstanding_line_id, liq_lines)
+
+    # ------------------------------------------------------------------
+    # TC.2 — 3 cheques en USD (A=B=USD, C=ARS)
+    # ------------------------------------------------------------------
+
+    def test_tc2_tres_cheques_divisa_pura(self):
+        """TC.2 · 3 cheques propios en USD (A=B=USD, C=ARS, 1 USD = 1200 ARS).
+
+        Factura 300 USD; 3 cheques de 100, 80 y 120 USD.
+        Verifica:
+        - 4 líneas: 3 liquidez + 1 contrapartida
+        - balance de cada liquidez = amount_currency / accounting_rate
+          (usa rate del pago, NO _convert() con la fecha individual del cheque)
+        - sum(balances) == 0
+        """
+        invoice = self._create_invoice(300, self.usd, move_type="in_invoice")
+        payment = self._create_check_payment(
+            self.bank_usd,
+            invoice,
+            [
+                {"name": "00000010", "amount": 100},
+                {"name": "00000011", "amount": 80},
+                {"name": "00000012", "amount": 120},
+            ],
+        )
+
+        self.assertAlmostEqual(payment.amount, 300)
+        expected_acc_rate = self._get_rate(self.ars, self.usd)  # ≈ 0.000833
+        self.assertAlmostEqual(payment.accounting_rate, expected_acc_rate, places=6)
+
+        payment.action_post()
+
+        lines = payment.move_id.line_ids
+        liq_lines = lines.filtered(lambda l: l.account_id == payment.outstanding_account_id)
+        self.assertEqual(len(liq_lines), 3, "3 líneas de liquidez (una por cheque)")
+        self.assertEqual(len(lines), 4, "4 líneas: 3 liquidez + 1 contrapartida")
+
+        for liq in liq_lines:
+            expected_balance = liq.amount_currency / payment.accounting_rate
+            self.assertAlmostEqual(
+                liq.balance,
+                expected_balance,
+                places=2,
+                msg=f"balance debe usar accounting_rate del pago. "
+                f"amount_currency={liq.amount_currency}, rate={payment.accounting_rate}",
+            )
+
+        cp = lines - liq_lines
+        self.assertEqual(len(cp), 1)
+        self.assertAlmostEqual(cp.balance, -sum(liq_lines.mapped("balance")), places=2)
+        self.assertAlmostEqual(sum(lines.mapped("balance")), 0, places=2)
+
+    # ------------------------------------------------------------------
+    # TC.3 — 2 cheques ARS para deuda USD (A=C=ARS, B=USD)
+    # ------------------------------------------------------------------
+
+    def test_tc3_dos_cheques_compra_divisa(self):
+        """TC.3 · 2 cheques en ARS para deuda en USD (A=C=ARS, B=USD).
+
+        Factura 200 USD; 2 cheques de 140 000 y 100 000 ARS.
+        Verifica:
+        - Liquidez en ARS (balance = amount_currency, accounting_rate = 1.0)
+        - Contrapartida en USD
+        - sum(balances) == 0
+        """
+        invoice = self._create_invoice(200, self.usd, move_type="in_invoice")
+        payment = self._create_check_payment(
+            self.bank_ars,
+            invoice,
+            [
+                {"name": "00000020", "amount": 140_000},
+                {"name": "00000021", "amount": 100_000},
+            ],
+        )
+
+        self.assertAlmostEqual(payment.accounting_rate, 1.0, places=6)
+        expected_cp_rate = self._get_rate(self.ars, self.usd)
+        self.assertAlmostEqual(payment.counterpart_rate, expected_cp_rate, places=6)
+
+        payment.action_post()
+
+        lines = payment.move_id.line_ids
+        liq_lines = lines.filtered(lambda l: l.account_id == payment.outstanding_account_id)
+        self.assertEqual(len(liq_lines), 2)
+        self.assertEqual(len(lines), 3)
+
+        for liq in liq_lines:
+            self.assertEqual(liq.currency_id, self.ars)
+            self.assertAlmostEqual(liq.balance, liq.amount_currency, places=2)
+
+        cp = lines - liq_lines
+        self.assertEqual(cp.currency_id, self.usd, "Contrapartida en USD (B)")
+        self.assertAlmostEqual(abs(cp.amount_currency), 200, places=2, msg="200 USD = deuda total")
+        self.assertAlmostEqual(sum(lines.mapped("balance")), 0, places=2)
+
+    # ------------------------------------------------------------------
+    # TC.4 — 2 cheques + write-off (A=B=C=ARS)
+    # ------------------------------------------------------------------
+
+    def test_tc4_dos_cheques_con_write_off(self):
+        """TC.4 · 2 cheques + write-off en ARS.
+
+        Factura 10 000 ARS; 2 cheques (4 000 + 4 000) + write-off 2 000 ARS.
+        Verifica:
+        - 4 líneas: 2 liquidez + 1 write-off + 1 contrapartida
+        - payment_total == 10 000
+        - sum(balances) == 0
+        """
+        invoice = self._create_invoice(10_000, self.ars, move_type="in_invoice")
+        debt_lines = invoice.line_ids.filtered(lambda l: l.account_id.account_type == "liability_payable")
+        payment = self.env["account.payment"].create(
+            {
+                "payment_type": "outbound",
+                "partner_type": "supplier",
+                "partner_id": self.partner.id,
+                "journal_id": self.bank_ars.id,
+                "payment_method_line_id": self._own_checks_pml(self.bank_ars).id,
+                "date": self.today,
+                "to_pay_move_line_ids": [Command.set(debt_lines.ids)],
+                "write_off_type_id": self.write_off_type.id,
+                "write_off_amount": 2_000,
+                "l10n_latam_new_check_ids": [
+                    Command.create({"name": "00000030", "payment_date": self.today, "amount": 4_000}),
+                    Command.create({"name": "00000031", "payment_date": self.today, "amount": 4_000}),
+                ],
+            }
+        )
+
+        self.assertAlmostEqual(
+            payment.payment_total,
+            10_000,
+            places=2,
+            msg="payment_total = 8000 cheques + 2000 write-off",
+        )
+
+        payment.action_post()
+
+        lines = payment.move_id.line_ids
+        liq_lines = lines.filtered(lambda l: l.account_id == payment.outstanding_account_id)
+        wo_lines = lines.filtered(lambda l: l.account_id == self.write_off_type.account_id)
+        cp = lines.filtered(lambda l: l.account_id == payment.destination_account_id)
+
+        self.assertEqual(len(liq_lines), 2, "2 líneas de liquidez")
+        self.assertEqual(len(wo_lines), 1, "1 línea de write-off")
+        self.assertEqual(len(cp), 1, "1 contrapartida")
+        self.assertEqual(len(lines), 4, "4 líneas total")
+
+        self.assertAlmostEqual(sum(liq_lines.mapped("balance")), -8_000, places=2)
+        self.assertAlmostEqual(wo_lines.balance, -2_000, places=2)
+        self.assertAlmostEqual(cp.balance, 10_000, places=2)
+        self.assertAlmostEqual(sum(lines.mapped("balance")), 0, places=2)
+
+    # ------------------------------------------------------------------
+    # TC.5 — 1 cheque + write-off, compra divisa (A=C=ARS, B=USD)
+    # ------------------------------------------------------------------
+
+    def test_tc5_cheque_con_write_off_compra_divisa(self):
+        """TC.5 · 1 cheque ARS + write-off para deuda USD (A=C=ARS, B=USD).
+
+        Factura 100 USD; 1 cheque 90 000 ARS + write-off 25 USD.
+        Verifica:
+        - 3 líneas: 1 liquidez + 1 write-off + 1 contrapartida
+        - Write-off en USD (destination_currency)
+        - sum(balances) == 0
+        """
+        invoice = self._create_invoice(100, self.usd, move_type="in_invoice")
+        debt_lines = invoice.line_ids.filtered(lambda l: l.account_id.account_type == "liability_payable")
+        payment = self.env["account.payment"].create(
+            {
+                "payment_type": "outbound",
+                "partner_type": "supplier",
+                "partner_id": self.partner.id,
+                "journal_id": self.bank_ars.id,
+                "payment_method_line_id": self._own_checks_pml(self.bank_ars).id,
+                "date": self.today,
+                "to_pay_move_line_ids": [Command.set(debt_lines.ids)],
+                "write_off_type_id": self.write_off_type.id,
+                "write_off_amount": 25,
+                "l10n_latam_new_check_ids": [
+                    Command.create({"name": "00000040", "payment_date": self.today, "amount": 90_000}),
+                ],
+            }
+        )
+
+        self.assertEqual(payment.destination_currency_id, self.usd, "B = USD")
+        expected_cp_rate = self._get_rate(self.ars, self.usd)
+        self.assertAlmostEqual(payment.counterpart_rate, expected_cp_rate, places=6)
+
+        payment.action_post()
+
+        lines = payment.move_id.line_ids
+        self.assertAlmostEqual(sum(lines.mapped("balance")), 0, places=2, msg="Partida doble")
+        self.assertEqual(len(lines), 3, "3 líneas: liquidez + write-off + contrapartida")
+
+        wo_line = lines.filtered(lambda l: l.account_id == self.write_off_type.account_id)
+        self.assertEqual(len(wo_line), 1)
+        self.assertEqual(wo_line.currency_id, self.usd, "Write-off en USD (destination_currency)")
+        self.assertAlmostEqual(wo_line.amount_currency, -25, places=2)
