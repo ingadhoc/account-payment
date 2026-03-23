@@ -42,7 +42,7 @@ clarificar la UX y eliminar campos deprecated que ya no tienen sentido.
 - Tests para los 10 casos de uso documentados
 
 **No entra (scope futuro / anexo separado):**
-- Lógica de cálculo de retenciones en `l10n_ar_tax` (será spec aparte). **NOTA:** `l10n_ar_tax._prepare_move_withholding_lines` actualmente usa `self.exchange_rate` que cambia de semántica (formato user-friendly → Odoo nativo). Esa adaptación se hará en la iteración de retenciones.
+- ~~Lógica de cálculo de retenciones en `l10n_ar_tax`.~~ **Implementado** — ver `spec_l10n_ar_tax.md`.
 - Deprecación completa de `reconcile_on_company_currency` (evaluación futura)
 
 ---
@@ -80,7 +80,7 @@ sino:
             → company_currency_id  (editable por usuario)
 ```
 
-**Editable solo cuando:** la cuenta no tiene moneda definida (o es igual a la de la compañía) Y (no hay reconcile O no hay deuda seleccionada).
+**Editable solo cuando:** la cuenta no tiene moneda definida (o es igual a la de la compañía) Y (`reconcile_on_company_currency` está activo O no hay deuda seleccionada).
 
 ### `destination_currency_id` (B2) — Calculado, NO almacenado
 
@@ -96,8 +96,8 @@ sino:
 
 ### `accounting_rate` (renombrado desde `exchange_rate`) — Stored, editable
 
-`exchange_rate` era non-stored y computaba `amount_company_currency / amount` (formato user-friendly, ej: 1500).
-Al pasarlo a stored, adoptamos **formato Odoo nativo** (ej: `0.000667`), consistente con el resto del sistema.
+`exchange_rate` era non-stored y computaba `amount_company_currency / amount` (formato user-friendly, ej: 1500 para 1 USD = 1500 ARS).
+Al pasarlo a stored, adoptamos **formato Odoo nativo** (`_get_conversion_rate(C, A)` = `A/C`, ej: ≈0.000833 para 1 USD = 1200 ARS), consistente con el resto del sistema.
 
 El migration script puebla `accounting_rate` desde los datos existentes de `amount` y `amount_company_currency`
 (ver sección Migration Scripts).
@@ -118,22 +118,22 @@ accounting_rate_inverted = fields.Boolean(
 
 @api.depends("currency_id", "counterpart_currency_id", "company_id", "date")
 def _compute_counterpart_rate_inverted(self):
-    # True si rate teórico A→B1 < 1.0 (B1 es la fuerte)
+    # True si rate teórico _get_conversion_rate(A, B1) = B1/A < 1.0 (B1 es la fuerte)
     for rec in self:
         if not rec.currency_id or rec.currency_id == rec.counterpart_currency_id:
             rec.counterpart_rate_inverted = False
             continue
-        theoretical = res.currency._get_conversion_rate(A→B1, ...)
+        theoretical = self.env["res.currency"]._get_conversion_rate(A, B1, ...)
         rec.counterpart_rate_inverted = theoretical < 1.0
 
 @api.depends("currency_id", "company_currency_id", "company_id", "date")
 def _compute_accounting_rate_inverted(self):
-    # True si rate teórico A→C < 1.0 (C es la fuerte)
+    # True si rate teórico _get_conversion_rate(C, A) = A/C < 1.0 (A es la fuerte)
     for rec in self:
         if not rec.currency_id or rec.currency_id == rec.company_currency_id:
             rec.accounting_rate_inverted = False
             continue
-        theoretical = res.currency._get_conversion_rate(A→C, ...)
+        theoretical = self.env["res.currency"]._get_conversion_rate(C, A, ...)
         rec.accounting_rate_inverted = theoretical < 1.0
 ```
 
@@ -591,8 +591,8 @@ def migrate(cr, version):
     cr.execute("""
         UPDATE account_payment
         SET accounting_rate = CASE
-            WHEN amount IS NOT NULL AND amount != 0
-                THEN amount_company_currency / amount
+            WHEN amount_company_currency IS NOT NULL AND amount_company_currency != 0
+                THEN amount / amount_company_currency
             ELSE 1.0
         END
         WHERE accounting_rate IS NULL;
@@ -772,7 +772,7 @@ El campo monetary ya muestra el símbolo de la moneda.
 | Módulo | Equipo | Tipo | Acción requerida |
 |--------|--------|------|-----------------|
 | `l10n_ar_tax` | Equipo Contable | Breaking: campos de moneda cambian a `destination_currency_id` | Review + adaptar campos `withholdable_advanced_amount`, `withholdings_amount`, `matched_amount_untaxed` |
-| `l10n_ar_tax` | Equipo Contable | Breaking: `exchange_rate` cambia semántica → `accounting_rate` en formato Odoo nativo | `_prepare_move_withholding_lines` usa `self.exchange_rate or 1.0` → adaptar fórmula. **Scope: iteración siguiente.** |
+| `l10n_ar_tax` | Equipo Contable | Breaking: `exchange_rate` cambia semántica → `accounting_rate` en formato Odoo nativo | ~~`_prepare_move_withholding_lines` usa `self.exchange_rate or 1.0` → adaptar fórmula.~~ **Implementado** (ver `spec_l10n_ar_tax.md`). |
 | `account_ux` | ADHOC | Dependencia nueva: provee `reconcile_on_company_currency` en `res.company` | Agregar al `__manifest__.py` de `account_payment_pro` |
 | `account` (Odoo SA) | — | Sin modificaciones directas | Verificar que la herencia no rompa nada en v19 |
 
@@ -794,11 +794,11 @@ El campo monetary ya muestra el símbolo de la moneda.
 | `currency_id` | Many2one | — | Moneda A. Sin cambios. |
 | `counterpart_currency_id` | Many2one stored | — | Moneda B1. Nuevo. Editable condicionalmente. |
 | `destination_currency_id` | Many2one non-stored | — | Moneda B2. Nuevo. No almacenado. |
-| `accounting_rate` | Float stored | Odoo nativo (`to/from`) | Reemplaza `exchange_rate`. `pre_migrate` lo puebla desde `amount_company_currency / amount`. |
+| `accounting_rate` | Float stored | Odoo nativo (`to/from`) | Reemplaza `exchange_rate`. `pre_migrate` lo puebla desde `amount / amount_company_currency`. |
 | `counterpart_rate` | Float stored | Odoo nativo (`to/from`) | Reemplaza `counterpart_exchange_rate`. valores invertidos en `pre_migrate`. |
 | `user_accounting_rate` | Float non-stored | UX (invertido condicionalmente) | Expone `accounting_rate` en dirección estable. |
 | `user_counterpart_rate` | Float non-stored | UX (invertido condicionalmente) | Expone `counterpart_rate` en dirección estable. |
-| `accounting_rate_inverted` | Boolean non-stored | — | `True` si rate teórico A→C < 1.0. Determina dirección de UI. |
+| `accounting_rate_inverted` | Boolean non-stored | — | `True` si `_get_conversion_rate(C, A)` < 1.0. Determina dirección de UI. |
 | `counterpart_rate_inverted` | Boolean non-stored | — | `True` si rate teórico A→B1 < 1.0. Determina dirección de UI. |
 | `counterpart_currency_amount` | Monetary stored | `destination_currency_id` | Antes tenía `currency_field` implícito. |
 | `write_off_amount` | Monetary | `destination_currency_id` | Antes en `company_currency_id`. |
@@ -829,7 +829,7 @@ Cualquier módulo que referencie estos campos debe adaptarse:
 `amount_currency`. Tras el refactor **esa fórmula produce resultados incorrectos** por dos razones:
 
 1. El campo se llama `accounting_rate` (no `exchange_rate`).
-2. El formato cambió: antes `exchange_rate = 1500` (user-friendly), ahora `accounting_rate = 0.000667` (Odoo nativo).
+2. El formato cambió: antes `exchange_rate = 1500` (user-friendly, C/A), ahora `accounting_rate ≈ 0.000667` (Odoo nativo, A/C = 1/1500).
 
 **Adaptación requerida en `l10n_ar_tax`:**
 ```python
@@ -842,7 +842,7 @@ amount_currency = amount_company * (self.exchange_rate or 1.0)
 amount_currency = amount_company * (self.accounting_rate or 1.0)
 ```
 
-Esta adaptación está fuera del scope de este refactor (ADR-005). Se hará en la iteración de retenciones.
+Esta adaptación fue implementada en `l10n_ar_tax` (ver `spec_l10n_ar_tax.md`, ADR-005 resuelto).
 
 ### Convención de tasas — resumen para desarrolladores
 
@@ -863,7 +863,7 @@ estable (basándose en el rate **teórico**, no en el editado) si la UI muestra
 `"1 A = X B"` o `"1 B = X A"`. Esto evita que la pantalla cambie de layout mientras
 el usuario edita el número.
 
-- `accounting_rate_inverted = True` → mostrar `1 C = X A` (C es la fuerte, ej: ARS/USD donde C=ARS, A=USD)
-- `accounting_rate_inverted = False` → mostrar `1 A = X C` (A es la fuerte)
+- `accounting_rate_inverted = True` → mostrar `1 C = X A` (A es la fuerte, ej: A=USD, C=ARS → `1 ARS = 1200 USD`)
+- `accounting_rate_inverted = False` → mostrar `1 A = X C` (A es la débil o A/C ≥ 1)
 - `counterpart_rate_inverted = True` → mostrar `1 B1 = X A`
 - `counterpart_rate_inverted = False` → mostrar `1 A = X B1`

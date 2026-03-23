@@ -30,9 +30,9 @@ en la cuenta contable o en las líneas de deuda.
 **Contexto:** Se evaluó hacerlo siempre editable para mayor flexibilidad.
 
 **Decisión:** Solo editable cuando la cuenta no tiene moneda definida (o es igual a la
-de la compañía) Y (no hay reconcile O no hay deuda seleccionada). Si la cuenta tiene
-moneda definida (distinta a la de la compañía), el campo es informativo; si hay deuda
-seleccionada sin reconcile, la moneda la dictan las líneas.
+de la compañía) Y (`reconcile_on_company_currency` está activo O no hay deuda seleccionada).
+Si la cuenta tiene moneda definida (distinta a la de la compañía), el campo es informativo;
+si hay deuda seleccionada sin `reconcile_on_company_currency`, la moneda la dictan las líneas.
 
 ---
 
@@ -41,14 +41,14 @@ seleccionada sin reconcile, la moneda la dictan las líneas.
 
 **Contexto:** `force_amount_company_currency` era un boolean + monto acoplado.
 
-**Decisión:** Separar en `accounting_rate` (Float, tasa A→C en formato Odoo nativo).
-Es más explícito, consistente con como Odoo maneja otras tasas, y permite edición
-directa de la tasa.
+**Decisión:** Separar en `accounting_rate` (Float, `_get_conversion_rate(C, A)` = `A/C`,
+formato Odoo nativo). Es más explícito, consistente con como Odoo maneja otras tasas,
+y permite edición directa de la tasa.
 
 ---
 
 ## ADR-005 — Lógica de retenciones NO entra en este refactor
-**Fecha:** 2025-03-17 | **Estado:** Aceptado
+**Fecha:** 2025-03-17 | **Estado:** Aceptado → Resuelto
 
 **Contexto:** `l10n_ar_tax` depende de varios campos que cambian su moneda de referencia.
 
@@ -63,6 +63,11 @@ anexo separado para `l10n_ar_tax`.
 `self.exchange_rate or 1.0` para calcular `amount_currency`. Con el renombre a
 `accounting_rate` y el cambio de formato (user-friendly → Odoo nativo), esa fórmula
 produce resultados incorrectos. La adaptación se hace en la iteración de retenciones.
+
+**Resolución:** Adaptado en `l10n_ar_tax` (ver `spec_l10n_ar_tax.md`). La fórmula
+cambió de `balance / exchange_rate` (donde `exchange_rate` = `C/A`, ej: 1200) a
+`balance * accounting_rate` (donde `accounting_rate` = `A/C`, ej: ≈0.000833).
+Resultado numérico idéntico.
 
 ---
 
@@ -177,8 +182,8 @@ El approach anterior de ADR-007 (inversión condicional basada en `rate < 1.0`) 
 exactamente este problema.
 
 **Decisión:** Se crean dos campos Boolean non-stored:
-- `accounting_rate_inverted`: `True` si rate teórico A→C < 1.0 (C es la moneda fuerte)
-- `counterpart_rate_inverted`: `True` si rate teórico A→B1 < 1.0 (B1 es la moneda fuerte)
+- `accounting_rate_inverted`: `True` si rate teórico `_get_conversion_rate(C, A)` < 1.0 (A es la moneda fuerte, ej: A=USD, C=ARS)
+- `counterpart_rate_inverted`: `True` si rate teórico `_get_conversion_rate(A, B1)` < 1.0 (B1 es la moneda fuerte)
 
 El rate teórico se calcula con `_get_conversion_rate` a la fecha del pago, sin considerar
 el valor que el usuario haya podido editar manualmente.

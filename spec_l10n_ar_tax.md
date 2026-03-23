@@ -73,8 +73,8 @@ Para compañía argentina (C=ARS):
 | ARS -> ARS | 1.0 | trivial |
 
 Los campos stored del pago usan este formato:
-- `accounting_rate` = `_get_conversion_rate(A, C)` — si A=USD, C=ARS: **1200**
-- `counterpart_rate` = `_get_conversion_rate(A, B1)` — si A=ARS, B1=USD: **0.000667** (a rate 1500)
+- `accounting_rate` = `_get_conversion_rate(C, A)` = `A/C` — si A=USD, C=ARS: **≈0.000833** (= 1/1200)
+- `counterpart_rate` = `_get_conversion_rate(A, B1)` = `B1/A` — si A=ARS, B1=USD: **0.000667** (a rate 1500)
 
 ---
 
@@ -83,7 +83,7 @@ Los campos stored del pago usan este formato:
 ### `_get_withholding_rate()` — nuevo método
 
 Devuelve **multiplicador directo** `base_B * rate = amount_C`.
-Fórmula general: `accounting_rate / counterpart_rate`.
+Fórmula general: `(1 / accounting_rate) / counterpart_rate` = `(C/A) / (B1/A)` = `C/B1`.
 
 ```python
 def _get_withholding_rate(self):
@@ -91,17 +91,22 @@ def _get_withholding_rate(self):
     Devuelve multiplicador directo: base_in_B * rate = base_in_C.
     Ejemplo: B=USD, C=ARS, rate=1200 -> 100 USD * 1200 = 120.000 ARS.
 
-    Fórmula general: accounting_rate / counterpart_rate
+    Fórmula general: (1 / accounting_rate) / counterpart_rate
+    Donde: accounting_rate = A/C, counterpart_rate = B1/A.
+    Resultado = (C/A) * (A/B1) = C/B1.
+
     Esto funciona para todos los casos:
-      B==C: accounting/counterpart = X/X = 1.0
-      B==A: accounting/1.0 = accounting_rate (A->C)
-      A==C: 1.0/counterpart = 1/counterpart_rate (invierte A->B para obtener B->C)
-      Arbitraje: accounting/counterpart (transitividad)
+      B==C: (C/A)*(A/C) = 1.0
+      B==A: (C/A)*(A/A) = C/A = 1/accounting_rate
+      A==C: (C/C)*(C/B) = 1/counterpart_rate (invierte A->B para obtener B->C)
+      Arbitraje: (C/A)*(A/B) = C/B (transitividad)
     """
     self.ensure_one()
-    counterpart = self.counterpart_rate or 1.0
-    accounting = self.accounting_rate or 1.0
-    return accounting / counterpart if counterpart else 1.0
+    if not self.destination_currency_id or self.destination_currency_id == self.company_currency_id:
+        return 1.0
+    accounting = self.accounting_rate or 1.0  # A/C
+    counterpart = self.counterpart_rate or 1.0  # B1/A
+    return (1.0 / accounting) / counterpart
 ```
 
 ### `_compute_withholdings_amount` — conversión C->B para UX
@@ -112,7 +117,13 @@ withholdings_amount = fields.Monetary(
     currency_field="destination_currency_id",
 )
 
-@api.depends("l10n_ar_withholding_line_ids.amount")
+@api.depends(
+    "l10n_ar_withholding_line_ids.amount",
+    "accounting_rate",
+    "counterpart_rate",
+    "destination_currency_id",
+    "company_currency_id",
+)
 def _compute_withholdings_amount(self):
     for rec in self:
         total_ars = sum(rec.l10n_ar_withholding_line_ids.mapped("amount"))
@@ -128,7 +139,7 @@ def _compute_withholdings_amount(self):
 está convertido a B. Reemplazar la suma de `line.amount` (C) por `withholdings_amount` (B):
 
 ```python
-@api.depends("l10n_ar_withholding_line_ids.amount")
+@api.depends("withholdings_amount")
 def _compute_payment_total(self):
     super()._compute_payment_total()
     for rec in self.filtered("l10n_ar_withholding_line_ids"):
@@ -350,12 +361,13 @@ conversion_rate = self.exchange_rate or 1.0
 conversion_rate = self.accounting_rate or 1.0
 ```
 
-La fórmula `amount_currency = balance / conversion_rate` sigue funcionando igual
-porque `accounting_rate` tiene el mismo valor numérico que tenía `exchange_rate`
-(`_get_conversion_rate(A, C)` = multiplicador A->C).
+La fórmula cambió de `balance / exchange_rate` a `balance * accounting_rate` porque
+el formato del rate se invirtió: antes `exchange_rate = C/A` (ej: 1200), ahora
+`accounting_rate = A/C` (ej: ≈0.000833). El resultado numérico es idéntico:
 
 Ejemplo: A=USD, C=ARS, rate=1200. Balance=36.000 ARS.
-`amount_currency = 36.000 / 1200 = 30 USD` (en moneda A para el journal entry) ✓
+- Antes: `amount_currency = 36.000 / 1200 = 30 USD` ✓
+- Ahora: `amount_currency = 36.000 × 0.000833 = 30 USD` ✓
 
 #### Nuevo caso: `counterpart_is_foreign` (A=C=ARS, B=USD)
 
@@ -378,12 +390,12 @@ Tabla final de ramas (en `_prepare_move_withholding_lines`):
 | Condición | `currency_id` | `amount_currency` |
 |-----------|--------------|-------------------|
 | `use_company_currency` (A≠C, ej: A=USD) | ARS (C) | `balance` |
-| `counterpart_is_foreign` (A=C=ARS, B=USD) | ARS (C) | `balance` (= balance / 1.0) |
-| else (A=B=C=ARS u otros) | A | `balance / conversion_rate` |
+| `counterpart_is_foreign` (A=C=ARS, B=USD) | ARS (C) | `balance` (= balance × 1.0) |
+| else (A=B=C=ARS u otros) | A | `balance × conversion_rate` |
 
 #### Bug 1: `@api.depends` incompleto en `_compute_base_amount`
 
-`_compute_base_amount` llama a `_get_withholding_rate()` que usa `accounting_rate / counterpart_rate`.
+`_compute_base_amount` llama a `_get_withholding_rate()` que usa `(1/accounting_rate) / counterpart_rate`.
 Si el usuario cambia la tasa en el wizard, el cómputo no se re-dispara porque estas
 campos no estaban en el `@api.depends`. Fix:
 
@@ -443,13 +455,13 @@ withholdings_amount   = 30 / 1.0 = 30 ARS (UX en B=C)
 ### T.2 — Pago divisa pura (A=B=USD, C=ARS, 1 USD = 1.200 ARS)
 
 **Setup:** Factura 1.210 USD (1.000 neto + 210 IVA). Pago 1.210 USD.
-- accounting_rate = 1200 (= `_get_conversion_rate(USD, ARS)`)
+- accounting_rate ≈ 0.000833 (= `_get_conversion_rate(C=ARS, A=USD)` = A/C)
 - counterpart_rate = 1.0 (A=B)
 
 **Cálculo:**
 ```
 selected_debt_untaxed = 1.210 * (1/1.21) = 1.000 USD  (usa amount_residual_currency)
-_get_withholding_rate = 1200/1.0 = 1200
+_get_withholding_rate = (1/0.000833) / 1.0 = 1200
 base_amount           = 1.000 * 1200 = 1.200.000 ARS  ← C (stored)
 withholding amount    = 1.200.000 * 3% = 36.000 ARS (stored)
 withholdings_amount   = 36.000 / 1200 = 30 USD (UX)
@@ -534,13 +546,13 @@ UX             = 18.595 / 1500 ~ 12,40 USD
 
 **Setup:** Factura 1.210 EUR (1.000 neto). Pago en USD.
 - 1 USD = 1.200 ARS, 1 EUR = 1.320 ARS
-- accounting_rate = 1200 (`_get_conversion_rate(USD, ARS)`)
-- counterpart_rate = 0.909 (`_get_conversion_rate(USD, EUR)` = 1200/1320)
+- accounting_rate ≈ 0.000833 (= `_get_conversion_rate(C=ARS, A=USD)` = A/C)
+- counterpart_rate = 0.909 (`_get_conversion_rate(A=USD, B=EUR)` = B/A = 1200/1320)
 
 **Cálculo:**
 ```
 selected_debt_untaxed = 1.000 EUR
-_get_withholding_rate = 1200 / 0.909 = 1320  (EUR->ARS, correcto!)
+_get_withholding_rate = (1/0.000833) / 0.909 = 1200 / 0.909 = 1320  (EUR->ARS, correcto!)
 base_amount           = 1.000 * 1320 = 1.320.000 ARS  ← C (stored)
 withholding amount    = 1.320.000 * 3% = 39.600 ARS
 withholdings_amount   = 39.600 / 1320 = 30 EUR
@@ -642,13 +654,15 @@ withholdings_amount = 118.000 / 1500 ~ 78,67 USD
 
 ---
 
-## Nota: corrección en spec_final.md de payment_pro
+## Nota: convención de rates entre specs
 
-Los ejemplos de formato Odoo nativo en la spec de payment_pro usan "ej: 0.000667" para
-`accounting_rate`. Esto es engañoso: 0.000667 aplica cuando A es la moneda débil (ARS->USD).
-Cuando A=USD y C=ARS, `accounting_rate = 1200`.
+Ambas specs (`spec.md` y `spec_l10n_ar_tax.md`) usan la misma convención:
+- `accounting_rate` = `_get_conversion_rate(C, A)` = `A/C` — ej: ≈0.000833 para A=USD, C=ARS a 1200
+- `counterpart_rate` = `_get_conversion_rate(A, B1)` = `B1/A` — ej: ≈0.000667 para A=ARS, B1=USD a 1500
 
-Corregir el ejemplo a: "formato Odoo nativo (ej: 1200 para USD->ARS, o 1.0 cuando A=C)".
+El ejemplo "ej: 0.000667" en `spec.md` para `accounting_rate` usa un rate de 1500 ARS/USD
+(no 1200 como en los test cases). No es incorrecto, solo usa un rate diferente para ilustrar
+el formato.
 
 ---
 
