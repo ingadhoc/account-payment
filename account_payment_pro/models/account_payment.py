@@ -193,13 +193,9 @@ class AccountPayment(models.Model):
                 rec.counterpart_currency_id = account_currency
                 continue
 
-            # Caso 2: la cuenta no tiene moneda definida (o es la de la compañía)
-            # → editable por el usuario; solo asignamos default si no hay valor previo
-            if rec.counterpart_currency_id:
-                # El usuario ya tiene un valor: respetarlo
-                continue
-
-            if rec.company_id.reconcile_on_company_currency:
+            # Caso 2: la cuenta no tiene moneda definida (o es la de la compañía), en reconcile si ya eligió una
+            # la mantenemos. Sin reconcile se recomputa porque pudo elegir deuda en otra moneda
+            if rec.company_id.reconcile_on_company_currency and not rec.counterpart_currency_id:
                 # Default: moneda de la compañía
                 rec.counterpart_currency_id = company_currency
             elif rec.to_pay_move_line_ids:
