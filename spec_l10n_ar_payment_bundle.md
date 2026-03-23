@@ -1,11 +1,11 @@
-# Spec: l10n_ar_payment_bundle — Adaptación al modelo tri-monetario
+# Spec: l10n_ar_payment_bundle — Adaptación al modelo tri-monetario + soporte multimoneda
 
 **Módulo:** `l10n_ar_payment_bundle` (ADHOC)
 **Depende de:** `account_payment_pro` refactor (T-62550) + `l10n_ar_tax` refactor
 **Issue:** T-XXXXX
 **Autor:** Juan
 **Fecha:** 2025-03-18 (rev. final)
-**Estado:** Aprobado
+**Estado:** Borrador
 
 ---
 
@@ -16,69 +16,156 @@ El módulo `l10n_ar_payment_bundle` permite crear "recibos bundle": un pago prin
 de distintos diarios/métodos. El pago principal concentra la deuda, retenciones y
 write-off; los pagos vinculados son los medios de pago reales.
 
-El refactor de `account_payment_pro` introduce cambios que rompen este módulo:
-- Campos renombrados: `counterpart_exchange_rate` → `counterpart_rate`
-- Campos eliminados: `amount_company_currency_signed_pro`, `exchange_rate`
-- Campos con moneda cambiada: `payment_total`, `selected_debt`, `withholdings_amount`,
-  `write_off_amount`, `payment_difference` pasan de `company_currency_id` a `destination_currency_id`
-- `counterpart_currency_amount` pasa de `counterpart_currency_id` a `destination_currency_id`
+### Problemas actuales
+
+1. **Restricción ARS-only:** Los pagos vinculados solo pueden usar diarios sin moneda
+   (línea 87: `not j.currency_id`), lo que impide pagar con diarios en USD, EUR, etc.
+
+2. **Breaking changes del refactor:** Campos renombrados (`counterpart_exchange_rate` →
+   `counterpart_rate`), eliminados (`amount_company_currency_signed_pro`, `exchange_rate`)
+   y con moneda cambiada (`payment_total`, `selected_debt`, `withholdings_amount`,
+   `write_off_amount`, `payment_difference` → todos ahora en `destination_currency_id`).
+
+3. **Mezcla de monedas en `_compute_payment_difference`:** Usa
+   `amount_company_currency_signed` (C) pero lo resta de `selected_debt` (B) — produce
+   resultados incorrectos cuando B ≠ C.
+
+4. **Conversión innecesaria en `_compute_counterpart_currency_amount`:** Divide por
+   `counterpart_exchange_rate` cuando `withholdings_amount` y `write_off_amount` ya
+   están en B tras el refactor.
+
+---
+
+## Principios de diseño
+
+> **P1 — El pago principal define la moneda de cancelación (B).**
+> `counterpart_currency_id` y `destination_currency_id` del main determinan en qué
+> moneda se expresa la deuda, los totales y las diferencias.
+
+> **P2 — Los pagos vinculados heredan B del principal; no lo pueden editar.**
+> `counterpart_currency_id` se propaga via default en el contexto y es readonly en la
+> vista de linked. Cada linked computa su propio `counterpart_rate` (A→B) según su
+> diario, no lo hereda del main.
+
+> **P3 — Cualquier diario es válido para pagos vinculados.**
+> Se elimina la restricción `not j.currency_id`. Un bundle puede mezclar pagos en
+> ARS, USD, EUR, etc. Todos se expresan en B vía `counterpart_currency_amount`.
 
 ---
 
 ## Alcance
 
 **Entra:**
+- Eliminar restricción de diarios sin moneda para pagos vinculados
 - Adaptar todas las referencias a campos renombrados/eliminados
 - Reescribir `_compute_counterpart_currency_amount` para main_payment
-- Reescribir `_compute_payment_difference` para linked payments
+- Reescribir `_compute_payment_difference` para linked payments (operar en B)
+- Adaptar `_onchange_withholdings` para convertir B→A en linked payments
+- No propagar `counterpart_rate` como default — dejar que cada linked lo compute
 - Adaptar `bundle_counterpart_currency_amount` al nuevo currency_field
 - Adaptar vistas (XML) a campos renombrados
+- Corregir report template (monedas de display)
 - Limpiar código comentado obsoleto
+- Fix bug en `_get_bundle_journal` para outbound
 
 **No entra:**
-- Cambios funcionales nuevos (solo adaptación al nuevo modelo)
+- Cambios funcionales nuevos más allá de la adaptación y el desbloqueo multimoneda
+- Soporte para linked payments con distinto `destination_currency_id` entre sí
+  (todos comparten el B del main)
 
 ---
 
-## Mapa de cambios por breaking change
+## Convención de monedas (referencia rápida)
 
-### 1. `counterpart_exchange_rate` → `counterpart_rate`
+Mismo modelo tri-monetario de `account_payment_pro`:
 
-| Ubicación | Cambio |
-|-----------|--------|
-| Línea 13: `counterpart_exchange_rate = fields.Float(recursive=True)` | Renombrar a `counterpart_rate` |
-| Línea 68-71: `_compute_counterpart_currency_amount` usa `rec.counterpart_exchange_rate` | Ver punto 3 abajo |
-| Líneas 108-113: bloque comentado `_compute_counterpart_exchange_rate` | Eliminar (dead code) |
-| Vista XML línea 136: contexto `default_counterpart_exchange_rate` | Renombrar a `default_counterpart_rate` |
-| Vista XML línea 204: `counterpart_exchange_rate` en list view | Cambiar a `user_counterpart_rate` (UX helper) |
+| Símbolo | Campo | En el bundle |
+|---------|-------|-------------|
+| **A** | `currency_id` | Moneda del diario de cada pago. Puede diferir entre main y linked. |
+| **B** | `destination_currency_id` | Moneda de cancelación. Definida por el main, heredada por todos. |
+| **C** | `company_currency_id` | ARS. Siempre la misma para todos. |
 
-### 2. `bundle_counterpart_currency_amount` — currency_field
+**Rates por pago vinculado:**
+- `counterpart_rate` = `_get_conversion_rate(A_linked, B)` — cada linked tiene el suyo
+- `accounting_rate` = `_get_conversion_rate(C, A_linked)` — cada linked tiene el suyo
+- `counterpart_currency_amount` = `amount × counterpart_rate` — monto del linked en B
+
+---
+
+## Cambios detallados
+
+### 1. Eliminar restricción de diarios para linked payments
+
+```python
+# Antes (account_payment.py, _compute_available_journal_ids):
+if rec.main_payment_id:
+    journals = journals.filtered(
+        lambda j: j._origin.id != bundle_journal_id and not j.currency_id
+    )
+
+# Después:
+if rec.main_payment_id:
+    journals = journals.filtered(
+        lambda j: j._origin.id != bundle_journal_id
+    )
+```
+
+Solo se excluye el diario bundle; se permiten todos los demás, con o sin moneda.
+
+### 2. No propagar `counterpart_rate` como default
+
+```xml
+<!-- Antes (context de link_payment_ids en vista XML): -->
+'default_counterpart_exchange_rate': counterpart_exchange_rate,
+
+<!-- Después: ELIMINAR esta línea -->
+<!-- counterpart_rate se computa automáticamente por _compute_counterpart_rate
+     en payment_pro, basándose en currency_id (A del linked) y
+     counterpart_currency_id (B, heredado del main). -->
+```
+
+**Justificación:** Si propagamos un default, el rate del main (A_main→B) se aplica al
+linked que puede tener una A diferente. Al no propagar, `_compute_counterpart_rate`
+calcula el rate correcto para cada linked según su propio diario.
+
+**Se mantiene la propagación de:**
+- `default_counterpart_currency_id`: B del main → cada linked hereda B
+- `default_company_id`, `default_partner_id`, `default_payment_type`, etc.
+
+### 3. Eliminar `counterpart_exchange_rate = fields.Float(recursive=True)`
+
+```python
+# Eliminar esta línea:
+counterpart_exchange_rate = fields.Float(recursive=True)
+
+# Y el bloque comentado:
+# @api.depends("main_payment_id.counterpart_exchange_rate")
+# def _compute_counterpart_exchange_rate(self):
+#     ...
+```
+
+Ya no es necesario. `counterpart_rate` se computa en `account_payment_pro` para cada
+pago independientemente.
+
+### 4. `bundle_counterpart_currency_amount` — cambiar currency_field
 
 ```python
 # Antes:
 bundle_counterpart_currency_amount = fields.Monetary(
     currency_field="counterpart_currency_id",
-    ...
+    compute="_compute_bundle_counterpart_currency_amount",
 )
+
 # Después:
 bundle_counterpart_currency_amount = fields.Monetary(
     currency_field="destination_currency_id",
-    ...
+    compute="_compute_bundle_counterpart_currency_amount",
 )
 ```
 
-### 3. `_compute_counterpart_currency_amount` — reescribir para main_payment
+El compute no cambia — ya suma `counterpart_currency_amount` que está en B.
 
-El código actual para main_payment:
-```python
-rec.counterpart_currency_amount = (
-    rec.withholdings_amount + rec.write_off_amount
-) / rec.counterpart_exchange_rate
-```
-
-El pago principal tiene amount=0, su `counterpart_currency_amount` representa cuánta
-deuda cancela por retenciones y write-off. Ahora `withholdings_amount` y `write_off_amount`
-ya están en B (`destination_currency_id`), así que no necesitan conversión:
+### 5. `_compute_counterpart_currency_amount` — simplificar para main_payment
 
 ```python
 @api.depends()
@@ -86,31 +173,27 @@ def _compute_counterpart_currency_amount(self):
     main_payment_ids = self.filtered("is_main_payment")
     super(AccountPayment, self - main_payment_ids)._compute_counterpart_currency_amount()
     for rec in main_payment_ids:
-        # withholdings_amount y write_off_amount ya están en B (destination_currency_id)
-        # counterpart_currency_amount también está en B, no hay conversión
+        # El main_payment tiene amount=0. Su counterpart_currency_amount
+        # representa lo que cancela por retenciones + write-off.
+        # withholdings_amount y write_off_amount ya están en B (destination_currency_id).
+        # counterpart_currency_amount también está en B. No hay conversión.
         rec.counterpart_currency_amount = rec.withholdings_amount + rec.write_off_amount
 ```
 
-### 4. `_compute_payment_difference` — reescribir para linked payments
+**Antes:** Dividía `(withholdings + write_off) / counterpart_exchange_rate` para
+convertir de C a B. Tras el refactor los campos ya están en B.
 
-El código actual mezcla monedas incorrectamente después del refactor:
-```python
-# Usa amount_company_currency_signed (C) pero selected_debt, withholdings_amount,
-# write_off_amount ahora están en B
-amount_payments = abs(amount_inbound + amount_outbound)  # en C
-rec.payment_difference = rec.main_payment_id.selected_debt - amount_payments - ...  # B - C = ¡error!
-```
-
-Necesita operar enteramente en B. Los importes de los linked payments deben convertirse
-a B usando `counterpart_currency_amount` (que ya está en B):
+### 6. `_compute_payment_difference` — operar enteramente en B
 
 ```python
 def _compute_payment_difference(self):
     linked = self.filtered("main_payment_id")
     for rec in linked:
         main = rec.main_payment_id
-        # Total pagado por linked payments en moneda B
-        # counterpart_currency_amount ya está en destination_currency_id (B)
+        # Sumar aportes de todos los linked payments en moneda B.
+        # counterpart_currency_amount = amount_A × counterpart_rate = monto en B.
+        # Funciona para cualquier A (ARS, USD, EUR) porque cada linked
+        # tiene su propio counterpart_rate.
         total_payments_in_b = sum(
             main.link_payment_ids.mapped("counterpart_currency_amount")
         )
@@ -123,94 +206,151 @@ def _compute_payment_difference(self):
     super(AccountPayment, self - linked)._compute_payment_difference()
 ```
 
-**Nota:** Si A=B para todos los linked payments (caso frecuente sin divisa),
-`counterpart_currency_amount = amount`, así que el cálculo es equivalente al actual.
-Cuando A!=B, usar `counterpart_currency_amount` es correcto porque expresa el pago
-en moneda de deuda.
+**Antes:** Usaba `amount_company_currency_signed` (C) y restaba de campos en B.
+**Ahora:** Todo en B. `counterpart_currency_amount` de cada linked ya está en B.
 
-**Alternativa si `counterpart_currency_amount` no está disponible durante el draft:**
-Los linked payments en draft podrían no tener `counterpart_currency_amount` computado.
-Evaluar si conviene usar `amount * counterpart_rate` como fallback, o si el compute
-chain ya lo resuelve.
-
-### 5. `_compute_payment_total` — sin cambios funcionales
+### 7. `_onchange_withholdings` — convertir B→A para linked payments
 
 ```python
-@api.depends("link_payment_ids")
-def _compute_payment_total(self):
-    super()._compute_payment_total()
-    for rec in self:
-        rec.payment_total += sum(rec.link_payment_ids.mapped("payment_total"))
+@api.onchange("withholdings_amount")
+def _onchange_withholdings(self):
+    main_payments = self.filtered("is_main_payment")
+    main_payments.amount = 0
+    for rec in self.filtered(lambda x: x.main_payment_id):
+        # payment_difference está en B, amount está en A.
+        # Convertir B→A: dividir por counterpart_rate (= B/A).
+        counterpart = rec.counterpart_rate or 1.0
+        diff_in_a = rec.payment_difference / counterpart if counterpart else rec.payment_difference
+        amount = rec.amount + diff_in_a
+        rec.amount = amount if amount > 0 else 0
+    super(AccountPayment, self - main_payments)._onchange_withholdings()
 ```
 
-`payment_total` ahora está en B tanto en el main como en los linked. La suma es
-correcta si todos comparten la misma `destination_currency_id`. El constraint
-existente ya asegura misma company — verificar que los linked payments hereden
-el mismo `counterpart_currency_id` del main (lo hace `_onchange_counterpart_currency_id`).
+**Antes:** Sumaba `rec.payment_difference` (B) directamente a `rec.amount` (A) —
+incorrecto cuando A ≠ B.
 
-### 6. `_compute_matched_amounts` — revisar
+### 8. Fix `_get_bundle_journal` para outbound
 
-El código actual:
 ```python
-rec.matched_amount += sum(linked_payments.mapped("matched_amount"))
-rec.unmatched_amount = abs(rec.payment_total) - rec.matched_amount
+# Antes (res_company.py) — bug: outbound usa inbound_payment_method_line_ids:
+@tools.ormcache("payment_type")
+def _get_bundle_journal(self, payment_type: str) -> int:
+    if payment_type == "inbound":
+        return self.env["account.journal"].search([
+            ("inbound_payment_method_line_ids.payment_method_id.code", "=", "payment_bundle"),
+            ("company_id", "=", self.id),
+        ]).id
+    else:
+        return self.env["account.journal"].search([
+            ("inbound_payment_method_line_ids...",  # ← BUG: debería ser outbound
+            ...
+
+# Después:
+@tools.ormcache("payment_type")
+def _get_bundle_journal(self, payment_type: str) -> int:
+    field = (
+        "inbound_payment_method_line_ids"
+        if payment_type == "inbound"
+        else "outbound_payment_method_line_ids"
+    )
+    return self.env["account.journal"].search([
+        (f"{field}.payment_method_id.code", "=", "payment_bundle"),
+        ("company_id", "=", self.id),
+    ], limit=1).id
 ```
 
-`matched_amount` ahora está en B. Si todos los linked y el main tienen la misma
-`destination_currency_id`, la suma es correcta. Sin cambios funcionales necesarios,
-pero verificar en testing.
-
-### 7. Vista XML `view_account_payment_custom_list` — actualizar
+### 9. Vista XML — actualizar context de `link_payment_ids`
 
 ```xml
-<!-- Antes -->
-<field name="amount_company_currency_signed" widget="monetary" string="Amount" sum="Total"/>
+<!-- Antes: -->
+<field name="link_payment_ids"
+    context="{
+        ...
+        'default_counterpart_currency_id': counterpart_currency_id,
+        'default_counterpart_exchange_rate': counterpart_exchange_rate,
+        ...
+    }" .../>
+
+<!-- Después: -->
+<field name="link_payment_ids"
+    context="{
+        ...
+        'default_counterpart_currency_id': counterpart_currency_id,
+        ...
+    }" .../>
+```
+
+Se elimina `default_counterpart_exchange_rate` (renombrado y ya no se propaga).
+
+### 10. Vista XML — list view de linked payments
+
+```xml
+<!-- Antes: -->
 <field name="counterpart_exchange_rate" string="Rate" optional="hide"/>
-<field name="counterpart_currency_amount" string="Amount in SC" optional="hide" sum="Total" widget="monetary"/>
 
-<!-- Después -->
-<field name="amount_company_currency_signed" widget="monetary" string="Amount" sum="Total"/>
+<!-- Después: -->
 <field name="user_counterpart_rate" string="Rate" optional="hide"/>
-<field name="counterpart_currency_amount" string="Amount in SC" optional="hide" sum="Total" widget="monetary"/>
 ```
 
-Nota: `amount_company_currency_signed` es campo de Odoo base (no el `_pro` eliminado),
-se mantiene.
+`user_counterpart_rate` es el UX helper que muestra el rate en dirección legible.
 
-### 8. Vista XML contexto de `link_payment_ids` — actualizar
+### 11. Vista XML — visibilidad de campos counterpart en linked form
 
 ```xml
-<!-- Antes -->
-'default_counterpart_exchange_rate': counterpart_exchange_rate,
+<!-- Antes: -->
+<xpath expr="//label[@for='counterpart_currency_amount']" position="attributes">
+    <attribute name="invisible">not counterpart_currency_id</attribute>
+</xpath>
 
-<!-- Después -->
-'default_counterpart_rate': counterpart_rate,
+<!-- Después (consistente con payment_pro): -->
+<xpath expr="//label[@for='counterpart_currency_amount']" position="attributes">
+    <attribute name="invisible">currency_id == counterpart_currency_id</attribute>
+</xpath>
 ```
 
-### 9. Vista XML — referencias a counterpart
+Mostrar el monto en moneda de contrapartida solo cuando A ≠ B (no cuando B está vacío,
+que ya no ocurre — `counterpart_currency_id` siempre tiene valor).
+
+Misma lógica para los otros divs/fields de counterpart en la vista de linked.
+
+### 12. Report template — corregir monedas de display
 
 ```xml
-<!-- Antes (línea 62-65) en view_account_payment_from_bundle_form -->
-<field name="counterpart_currency_id" position="attributes">
-    <attribute name="readonly">1</attribute>
-    <attribute name="force_save">1</attribute>
-</field>
+<!-- Antes: payment_total con display_currency = company_currency_id (C) -->
+<span t-out="o.payment_total"
+    t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/>
 
-<!-- Mantener sin cambios — counterpart_currency_id sigue existiendo -->
+<!-- Después: payment_total está en B (destination_currency_id) -->
+<span t-out="o.payment_total"
+    t-options="{'widget': 'monetary', 'display_currency': o.destination_currency_id}"/>
 ```
 
-Las referencias a `counterpart_currency_amount` en la vista (líneas 68-76) con
-`invisible="not counterpart_currency_id"` pueden cambiar a
-`invisible="currency_id == counterpart_currency_id"` para ser consistentes con
-la nueva lógica (solo mostrar cuando A != B1), pero no es estrictamente breaking.
+Misma corrección para `matched_amount + unmatched_amount` en el matching_table footer.
 
-### 10. Limpiar dead code
+---
 
-Eliminar el bloque comentado (líneas 108-113):
-```python
-# @api.depends("main_payment_id.counterpart_exchange_rate")
-# def _compute_counterpart_exchange_rate(self):
-#     ...
+## Ejemplo: bundle multimoneda
+
+**Escenario:** Factura 1.000 USD. Compañía argentina (C=ARS).
+Pago con bundle: 500 USD en efectivo + 600.000 ARS en transferencia + retención IIBB.
+
+| Pago | A (diario) | B (cancelación) | amount (A) | counterpart_rate (A→B) | counterpart_currency_amount (B) |
+|------|-----------|----------------|-----------|----------------------|-------------------------------|
+| Main | ARS (bundle) | USD | 0 | — | = withholdings_amount (B) |
+| Linked 1 | USD | USD | 500 | 1.0 | 500 USD |
+| Linked 2 | ARS | USD | 600.000 | 0.000833 | 500 USD |
+
+```
+selected_debt       = 1.000 USD
+total_linked_in_b   = 500 + 500 = 1.000 USD
+withholdings_amount = 30 USD (≈ 36.000 ARS en C)
+write_off_amount    = 0
+payment_difference  = 1.000 - 1.000 - 30 - 0 = -30 USD
+→ _onchange_withholdings ajusta Linked 2:
+  diff_in_a = -30 / 0.000833 = -36.000 ARS
+  Linked 2 amount = 600.000 + (-36.000) = 564.000 ARS
+  Linked 2 counterpart_currency_amount = 564.000 × 0.000833 ≈ 470 USD
+→ payment_difference recalcula: 1.000 - (500 + 470) - 30 = 0 ✓
 ```
 
 ---
@@ -219,54 +359,92 @@ Eliminar el bloque comentado (líneas 108-113):
 
 ### `models/account_payment.py`
 
-| Línea(s) | Cambio | Tipo |
-|----------|--------|------|
-| 13 | `counterpart_exchange_rate` → `counterpart_rate` (recursive field) | Rename |
-| 14-16 | `bundle_counterpart_currency_amount` currency_field → `destination_currency_id` | Fix |
-| 63-73 | `_compute_counterpart_currency_amount` → simplificar para main_payment | Rewrite |
-| 108-113 | Eliminar bloque comentado | Cleanup |
-| 315-334 | `_compute_payment_difference` → operar en B | Rewrite |
+| Cambio | Tipo |
+|--------|------|
+| Eliminar `counterpart_exchange_rate = fields.Float(recursive=True)` | Breaking |
+| `bundle_counterpart_currency_amount` currency_field → `destination_currency_id` | Fix |
+| `_compute_counterpart_currency_amount` → simplificar para main_payment | Rewrite |
+| Eliminar bloque comentado `_compute_counterpart_exchange_rate` | Cleanup |
+| `_compute_payment_difference` → operar en B con `counterpart_currency_amount` | Rewrite |
+| `_onchange_withholdings` → convertir B→A para linked payments | Fix |
+| `_compute_available_journal_ids` → eliminar `not j.currency_id` | Feature |
+
+### `models/res_company.py`
+
+| Cambio | Tipo |
+|--------|------|
+| `_get_bundle_journal` → fix outbound (usa `inbound_` en ambos casos) | Bugfix |
 
 ### `views/account_payment_view.xml`
 
-| Línea(s) | Cambio | Tipo |
-|----------|--------|------|
-| 136 | `default_counterpart_exchange_rate` → `default_counterpart_rate` | Rename |
-| 203 | `amount_company_currency_signed` → mantener (es campo Odoo base) | Verificar |
-| 204 | `counterpart_exchange_rate` → `user_counterpart_rate` | Rename |
+| Cambio | Tipo |
+|--------|------|
+| Context: eliminar `default_counterpart_exchange_rate` | Breaking |
+| List view: `counterpart_exchange_rate` → `user_counterpart_rate` | Rename |
+| Linked form: `invisible` de counterpart → `currency_id == counterpart_currency_id` | Fix |
+
+### `views/report_payment_receipt_templates.xml`
+
+| Cambio | Tipo |
+|--------|------|
+| `display_currency` de totals → `destination_currency_id` (no `company_currency_id`) | Fix |
 
 ---
 
 ## Criterios de aceptación
 
-- [ ] El módulo instala y carga sin errores tras el refactor de payment_pro y l10n_ar_tax
-- [ ] No hay referencias a `counterpart_exchange_rate` (renombrado a `counterpart_rate`)
+- [ ] El módulo instala sin errores tras los refactors de payment_pro y l10n_ar_tax
+- [ ] No hay referencias a `counterpart_exchange_rate` en el código
 - [ ] No hay referencias a `amount_company_currency_signed_pro` ni `exchange_rate`
+- [ ] Linked payments pueden usar diarios en cualquier moneda (ARS, USD, EUR)
+- [ ] `counterpart_currency_id` de linked payments viene del main y es readonly
+- [ ] Cada linked payment computa su propio `counterpart_rate` según su diario
 - [ ] `_compute_payment_difference` opera enteramente en moneda B
-- [ ] `_compute_counterpart_currency_amount` para main_payment no divide por rate (ya está en B)
-- [ ] Bundle con pagos en ARS puro funciona (caso base, regresión)
-- [ ] Bundle con pagos en USD (A=B=USD, C=ARS) funciona
-- [ ] Bundle con pagos mixtos (linked en ARS pagando deuda USD) funciona
-- [ ] Los montos en la list view de linked payments se muestran correctamente
+- [ ] `_compute_counterpart_currency_amount` para main_payment no hace conversión
+- [ ] `_onchange_withholdings` convierte payment_difference (B) a moneda del diario (A)
+- [ ] Bundle ARS puro funciona (caso base, regresión)
+- [ ] Bundle USD puro (A=B=USD, C=ARS) funciona
+- [ ] Bundle mixto (linked en ARS + linked en USD pagando deuda USD) funciona
+- [ ] Los montos en list view y report se muestran en la moneda correcta
+- [ ] `_get_bundle_journal` funciona para outbound
 
 ---
 
-## Casos de test sugeridos
+## Casos de test
 
 ### B.1 — Bundle local (A=B=C=ARS)
 
-Pago de factura 10.000 ARS con bundle de dos pagos de 4.500 ARS + retención 1.000 ARS.
-Verificar payment_total, payment_difference, matched_amounts.
+Factura 10.000 ARS. Bundle: linked 4.500 ARS + linked 4.500 ARS + retención 1.000 ARS.
+- `selected_debt` = 10.000 ARS
+- `total_linked_in_b` = 4.500 + 4.500 = 9.000 ARS
+- `withholdings_amount` = 1.000 ARS
+- `payment_difference` = 10.000 - 9.000 - 1.000 = 0 ✓
 
-### B.2 — Bundle divisa (A=B=USD, C=ARS)
+### B.2 — Bundle divisa pura (A=B=USD, C=ARS)
 
-Factura 1.000 USD. Bundle con un linked payment de 970 USD + retención 30 USD (en B=USD).
-Verificar que counterpart_currency_amount y payment_total sumen correctamente en USD.
+Factura 1.000 USD. Bundle: linked 970 USD + retención ≈ 30 USD.
+- Todos los rates = 1.0 (A=B) excepto accounting_rate (para C)
+- `counterpart_currency_amount` de linked = 970 USD
+- `withholdings_amount` = 30 USD (≈ 36.000 ARS stored)
+- `payment_difference` = 1.000 - 970 - 30 = 0 ✓
 
-### B.3 — Bundle con linked en ARS pagando deuda USD (A=C=ARS, B=USD)
+### B.3 — Bundle mixto: linked ARS + linked USD pagando deuda USD
 
-Factura 100 USD. Bundle con linked payment de 145.000 ARS (counterpart_rate da ~100 USD).
-Retención 1.500 ARS (= 1 USD en B). Verificar payment_difference en USD.
+Factura 1.000 USD. Bundle: linked 500 USD + linked 600.000 ARS + retención.
+- Linked 1: A=USD, B=USD, `counterpart_rate`=1.0, `counterpart_currency_amount`=500 USD
+- Linked 2: A=ARS, B=USD, `counterpart_rate`≈0.000833, `counterpart_currency_amount`≈500 USD
+- `payment_difference` = 1.000 - (500+500) - withholdings = ...
+- Verificar que `_onchange_withholdings` ajusta el amount de linked 2 en ARS, no en USD
+
+### B.4 — Bundle ARS pagando deuda USD (A=C=ARS, B=USD)
+
+Factura 100 USD. Bundle: linked 150.000 ARS (counterpart_rate da ~125 USD).
+Retención = 1.500 ARS (≈ 1 USD en B).
+- Linked: A=ARS, B=USD, `counterpart_currency_amount` = 150.000 × 0.000833 ≈ 125 USD
+- `selected_debt` = 100 USD
+- `withholdings_amount` ≈ 1 USD
+- `payment_difference` = 100 - 125 - 1 = -26 USD → hay excedente, normal
+- Verificar que el report muestra totals en USD (B), no en ARS (C)
 
 ---
 

@@ -1,0 +1,553 @@
+"""
+Tests para l10n_ar_payment_bundle — modelo tri-monetario
+=========================================================
+
+Validan que el bundle funciona correctamente con el modelo tri-monetario
+de account_payment_pro, incluyendo pagos multimoneda y retenciones.
+
+Principios de diseño del bundle (spec_l10n_ar_payment_bundle.md):
+    P1 — El pago principal define B (moneda de cancelación).
+    P2 — Los linked heredan B del principal; no lo pueden editar.
+         Cada linked computa su propio counterpart_rate según su diario.
+    P3 — Cualquier diario es válido para pagos vinculados (no solo ARS).
+
+Estructura de un bundle:
+    Main payment: is_main_payment=True, amount=0, journal=bundle_journal.
+    Linked payments: main_payment_id=main, journal=cualquiera, amount>0.
+
+    Main concentra: deuda, retenciones, write-off.
+    Linked aportan: efectivo/cheques/transferencias expresados en B vía
+                    counterpart_currency_amount.
+
+Convención de monedas (heredada de spec.md):
+    A  = currency_id              — moneda del diario (varía por linked)
+    B  = destination_currency_id  — moneda de cancelación (fijada por main)
+    C  = company_currency_id      — ARS
+
+Rates de referencia:
+    1 USD = 1 200 ARS
+    1 EUR = 1 320 ARS
+"""
+
+from odoo import Command
+from odoo.addons.l10n_ar_tax.tests.test_payment_withholding_multimoneda import (
+    TestPaymentWithholdingMultimoneda,
+)
+from odoo.tests import tagged
+
+
+@tagged("post_install", "-at_install")
+class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
+    """Tests de bundles multimoneda con retenciones."""
+
+    # ------------------------------------------------------------------
+    # Setup
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+        # Diario caja ARS (tipo cash, para diferenciar de bank_ars)
+        cls.cash_ars = cls.env["account.journal"].create(
+            {
+                "name": "Caja ARS",
+                "type": "cash",
+                "code": "CARS",
+                "company_id": cls.company.id,
+                "currency_id": cls.ars.id,
+            }
+        )
+
+        # Diario bundle (sin moneda, usa payment_bundle method)
+        bundle_method_out = cls.env.ref("l10n_ar_payment_bundle.account_payment_out_payment_bundle")
+        bundle_method_in = cls.env.ref("l10n_ar_payment_bundle.account_payment_in_payment_bundle")
+        cls.bundle_journal = cls.env["account.journal"].create(
+            {
+                "name": "Bundle Journal",
+                "type": "bank",
+                "code": "BNDL",
+                "company_id": cls.company.id,
+                "outbound_payment_method_line_ids": [
+                    Command.create({"payment_method_id": bundle_method_out.id}),
+                ],
+                "inbound_payment_method_line_ids": [
+                    Command.create({"payment_method_id": bundle_method_in.id}),
+                ],
+            }
+        )
+
+        # Payment method line del bundle para outbound
+        cls.bundle_pml_out = cls.bundle_journal.outbound_payment_method_line_ids.filtered(
+            lambda l: l.code == "payment_bundle"
+        )
+
+        # Agregar método cheques propios a banco ARS (para B.4)
+        own_checks_method = cls.env.ref("l10n_latam_check.account_payment_method_own_checks")
+        for journal in (cls.bank_ars, cls.bank_usd):
+            already = journal.outbound_payment_method_line_ids.filtered(lambda l: l.code == "own_checks")
+            if not already:
+                journal.write(
+                    {
+                        "outbound_payment_method_line_ids": [
+                            Command.create({"payment_method_id": own_checks_method.id})
+                        ],
+                    }
+                )
+
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
+
+    def _create_main_payment(self, invoice, fiscal_position=None, **kw):
+        """Crea el pago principal del bundle (amount=0, is_main_payment=True).
+
+        Retorna el pago en borrador con deuda seleccionada y retenciones computadas.
+        """
+        fp = fiscal_position or self.fp_iibb
+        debt = invoice.line_ids.filtered(lambda l: l.account_id.account_type == "liability_payable")
+        vals = {
+            "journal_id": self.bundle_journal.id,
+            "partner_id": self.partner.id,
+            "partner_type": "supplier",
+            "payment_type": "outbound",
+            "payment_method_line_id": self.bundle_pml_out.id,
+            "date": self.today,
+            "amount": 0,
+            "l10n_ar_fiscal_position_id": fp.id,
+            "to_pay_move_line_ids": [Command.set(debt.ids)],
+        }
+        vals.update(kw)
+        return self.env["account.payment"].create(vals)
+
+    def _add_linked_payment(self, main_payment, journal, amount, **kw):
+        """Agrega un pago vinculado al bundle.
+
+        Simula el flujo de la UI: el linked hereda counterpart_currency_id
+        del main vía default, y computa su propio counterpart_rate.
+        """
+        vals = {
+            "journal_id": journal.id,
+            "partner_id": main_payment.partner_id.id,
+            "partner_type": main_payment.partner_type,
+            "payment_type": main_payment.payment_type,
+            "date": self.today,
+            "amount": amount,
+            "main_payment_id": main_payment.id,
+            "counterpart_currency_id": main_payment.counterpart_currency_id.id,
+            "company_id": main_payment.company_id.id,
+        }
+        vals.update(kw)
+        return self.env["account.payment"].create(vals)
+
+    def _add_linked_check_payment(self, main_payment, journal, checks, **kw):
+        """Agrega un pago vinculado con cheques propios."""
+        own_checks_pml = journal.outbound_payment_method_line_ids.filtered(lambda l: l.code == "own_checks")
+        vals = {
+            "journal_id": journal.id,
+            "partner_id": main_payment.partner_id.id,
+            "partner_type": main_payment.partner_type,
+            "payment_type": main_payment.payment_type,
+            "payment_method_line_id": own_checks_pml.id,
+            "date": self.today,
+            "main_payment_id": main_payment.id,
+            "counterpart_currency_id": main_payment.counterpart_currency_id.id,
+            "company_id": main_payment.company_id.id,
+            "l10n_latam_new_check_ids": [
+                Command.create(
+                    {
+                        "name": c["name"],
+                        "payment_date": c.get("payment_date", self.today),
+                        "amount": c["amount"],
+                    }
+                )
+                for c in checks
+            ],
+        }
+        vals.update(kw)
+        return self.env["account.payment"].create(vals)
+
+    # ==================================================================
+    # B.1 — Bundle local simple (A=B=C=ARS)
+    # ==================================================================
+
+    def test_b1_bundle_ars_simple(self):
+        """B.1 · Factura 12 100 ARS (10 000 neto). Bundle: caja 5 000 + banco 7 100.
+        Sin retenciones (sin fiscal position).
+
+        Verifica:
+        - Main: is_main_payment, amount=0, B=ARS
+        - Linked: counterpart_currency_id=ARS (heredado del main)
+        - payment_total del main = suma linked = 12 100
+        - payment_difference = 0 (deuda totalmente cubierta)
+        - Post: asientos de linked balancean, main sin asiento (bypass)
+        """
+        invoice = self._create_invoice(10_000, self.ars)
+        self.assertAlmostEqual(invoice.amount_total, 12_100, places=2)
+
+        main = self._create_main_payment(
+            invoice,
+            fiscal_position=False,
+            l10n_ar_fiscal_position_id=False,
+        )
+        self.assertTrue(main.is_main_payment)
+        self.assertEqual(main.amount, 0)
+        self.assertEqual(main.destination_currency_id, self.ars, "B = ARS")
+
+        linked1 = self._add_linked_payment(main, self.cash_ars, 5_000)
+        linked2 = self._add_linked_payment(main, self.bank_ars, 7_100)
+
+        # Linked heredan B del main
+        self.assertEqual(linked1.counterpart_currency_id, self.ars)
+        self.assertEqual(linked2.counterpart_currency_id, self.ars)
+
+        # counterpart_currency_amount = amount (A=B=ARS)
+        self.assertAlmostEqual(linked1.counterpart_currency_amount, 5_000, places=2)
+        self.assertAlmostEqual(linked2.counterpart_currency_amount, 7_100, places=2)
+
+        # payment_total del main incluye linked payments
+        self.assertAlmostEqual(main.payment_total, 12_100, places=2)
+
+        # payment_difference de cada linked = 0 (deuda cubierta)
+        self.assertAlmostEqual(
+            linked1.payment_difference,
+            0,
+            places=2,
+            msg="12100 - (5000+7100) - 0 - 0 = 0",
+        )
+
+        # Post
+        main.action_post()
+        for linked in (linked1, linked2):
+            self.assertEqual(linked.state, "posted")
+            self.assertAlmostEqual(
+                sum(linked.move_id.line_ids.mapped("balance")),
+                0,
+                places=2,
+                msg="Partida doble en linked",
+            )
+
+    # ==================================================================
+    # B.2 — Bundle ARS con retención IIBB (A=B=C=ARS)
+    # ==================================================================
+
+    def test_b2_bundle_ars_con_retencion(self):
+        """B.2 · Factura 12 100 ARS (10 000 neto). Bundle: caja 5 000 +
+        banco 6 800 + retención IIBB 3% = 300 ARS.
+
+        Verifica:
+        - Retención: base=10 000, amount=300 ARS
+        - withholdings_amount = 300 ARS (en B=ARS)
+        - payment_total = 5000 + 6800 + 300 = 12 100
+        - payment_difference = 0
+        - Post: todos los asientos balancean
+        """
+        invoice = self._create_invoice(10_000, self.ars)
+        main = self._create_main_payment(invoice)
+
+        # Verificar retención
+        wth = self._wth_line(main)
+        self.assertAlmostEqual(wth.base_amount, 10_000, places=2)
+        self.assertAlmostEqual(wth.amount, 300, places=2)
+        self.assertAlmostEqual(main.withholdings_amount, 300, places=2)
+
+        # Main counterpart_currency_amount = withholdings (no write-off)
+        self.assertAlmostEqual(
+            main.counterpart_currency_amount,
+            300,
+            places=2,
+            msg="Main cca = withholdings_amount (en B, sin conversión)",
+        )
+
+        # Linked: caja + banco que cubran deuda - retención
+        linked1 = self._add_linked_payment(main, self.cash_ars, 5_000)
+        linked2 = self._add_linked_payment(main, self.bank_ars, 6_800)
+
+        # payment_total = linked_totals + main wth+wo
+        self.assertAlmostEqual(main.payment_total, 12_100, places=2)
+        self.assertAlmostEqual(linked1.payment_difference, 0, places=2)
+
+        # Post
+        main.action_post()
+        for linked in (linked1, linked2):
+            self.assertEqual(linked.state, "posted")
+
+        # Main genera asiento (tiene withholdings)
+        self.assertTrue(main.move_id, "Main con retenciones genera asiento")
+        wth_ml = self._wth_move_lines(main)
+        self.assertAlmostEqual(abs(wth_ml.balance), 300, places=2)
+
+    # ==================================================================
+    # B.3 — Bundle deuda USD, linked mixtos ARS + USD (A≠B para ARS linked)
+    # ==================================================================
+
+    def test_b3_bundle_deuda_usd_linked_mixtos(self):
+        """B.3 · Factura 1 210 USD (1 000 neto, 1 USD = 1 200 ARS).
+        Bundle: linked banco USD 500 + linked banco ARS 600 000 + retención IIBB.
+
+        Verifica:
+        - Main: B = USD
+        - Linked USD: A=B=USD, counterpart_rate=1.0, cca=500 USD
+        - Linked ARS: A=ARS, B=USD, counterpart_rate≈0.000833, cca=500 USD
+        - Retención: base=1 200 000 ARS, amount=36 000 ARS, en B≈30 USD
+        - payment_total en USD
+        - Todos los asientos balancean
+        """
+        invoice = self._create_invoice(1_000, self.usd)
+        main = self._create_main_payment(invoice)
+
+        self.assertEqual(main.destination_currency_id, self.usd, "B = USD")
+
+        # Retención: base_amount en C(ARS), withholdings_amount en B(USD)
+        wth = self._wth_line(main)
+        self.assertAlmostEqual(wth.base_amount, 1_200_000, places=0)
+        self.assertAlmostEqual(wth.amount, 36_000, places=0)
+        self.assertAlmostEqual(main.withholdings_amount, 30, places=2)
+
+        # Linked 1: banco USD (A=B=USD)
+        linked_usd = self._add_linked_payment(main, self.bank_usd, 500)
+        self.assertEqual(linked_usd.currency_id, self.usd, "Linked USD: A=USD")
+        self.assertEqual(linked_usd.counterpart_currency_id, self.usd, "Linked USD: B=USD")
+        self.assertAlmostEqual(
+            linked_usd.counterpart_rate,
+            1.0,
+            places=6,
+            msg="A=B → counterpart_rate=1.0",
+        )
+        self.assertAlmostEqual(
+            linked_usd.counterpart_currency_amount,
+            500,
+            places=2,
+        )
+
+        # Linked 2: banco ARS (A=ARS, B=USD)
+        linked_ars = self._add_linked_payment(main, self.bank_ars, 600_000)
+        self.assertEqual(linked_ars.currency_id, self.ars, "Linked ARS: A=ARS")
+        self.assertEqual(linked_ars.counterpart_currency_id, self.usd, "Linked ARS: B=USD")
+        expected_cp_rate = self._get_rate(self.ars, self.usd)  # ≈ 0.000833
+        self.assertAlmostEqual(
+            linked_ars.counterpart_rate,
+            expected_cp_rate,
+            places=6,
+            msg="Linked ARS computa su propio counterpart_rate (ARS→USD)",
+        )
+        expected_cca = 600_000 * expected_cp_rate  # ≈ 500 USD
+        self.assertAlmostEqual(
+            linked_ars.counterpart_currency_amount,
+            expected_cca,
+            places=2,
+        )
+
+        # payment_total del main en USD
+        expected_total = (
+            linked_usd.counterpart_currency_amount + linked_ars.counterpart_currency_amount + main.withholdings_amount
+        )
+        self.assertAlmostEqual(
+            main.payment_total,
+            expected_total,
+            places=2,
+            msg="payment_total = sum(linked cca) + withholdings, todo en B(USD)",
+        )
+
+        # Post
+        main.action_post()
+        for linked in (linked_usd, linked_ars):
+            self.assertEqual(linked.state, "posted")
+            lines = linked.move_id.line_ids
+            self.assertAlmostEqual(
+                sum(lines.mapped("balance")),
+                0,
+                places=2,
+                msg=f"Partida doble en linked {linked.journal_id.code}",
+            )
+
+        # Main genera asiento (tiene retenciones)
+        self.assertTrue(main.move_id)
+        wth_ml = self._wth_move_lines(main)
+        self.assertAlmostEqual(abs(wth_ml.balance), 36_000, places=0)
+
+    # ==================================================================
+    # B.4 — Bundle deuda USD: cheques propios ARS + transferencia USD
+    # ==================================================================
+
+    def test_b4_bundle_deuda_usd_cheques_ars_y_transfer_usd(self):
+        """B.4 · Factura 1 210 USD (1 000 neto, 1 USD = 1 200 ARS).
+        Bundle: 2 cheques propios ARS + 1 transferencia USD + retención IIBB.
+
+        Verifica:
+        - Linked cheques ARS: A=ARS, B=USD, 2 cheques generan 2 liq lines
+        - Linked USD: A=B=USD, transferencia normal
+        - Retención: 36 000 ARS = 30 USD
+        - Todos los asientos balancean
+        """
+        invoice = self._create_invoice(1_000, self.usd)
+        main = self._create_main_payment(invoice)
+
+        self.assertAlmostEqual(main.withholdings_amount, 30, places=2)
+
+        # Linked 1: 2 cheques propios ARS (sumando ~580 USD ≈ 696 000 ARS)
+        linked_checks = self._add_linked_check_payment(
+            main,
+            self.bank_ars,
+            [
+                {"name": "B0000100", "amount": 400_000},
+                {"name": "B0000101", "amount": 296_000},
+            ],
+        )
+        self.assertEqual(linked_checks.currency_id, self.ars, "Cheques en ARS")
+        self.assertEqual(
+            linked_checks.counterpart_currency_id,
+            self.usd,
+            "B=USD heredado del main",
+        )
+        self.assertAlmostEqual(linked_checks.amount, 696_000, places=2)
+
+        # counterpart_currency_amount en USD
+        expected_cp_rate = self._get_rate(self.ars, self.usd)
+        expected_checks_in_b = 696_000 * expected_cp_rate  # ≈ 580 USD
+        self.assertAlmostEqual(
+            linked_checks.counterpart_currency_amount,
+            expected_checks_in_b,
+            places=2,
+        )
+
+        # Linked 2: transferencia USD (cubre el resto ≈ 600 USD)
+        remaining_usd = 1_210 - expected_checks_in_b - 30  # ≈ 600 USD
+        linked_usd = self._add_linked_payment(
+            main,
+            self.bank_usd,
+            self.usd.round(remaining_usd),
+        )
+        self.assertEqual(linked_usd.currency_id, self.usd)
+        self.assertAlmostEqual(
+            linked_usd.counterpart_rate,
+            1.0,
+            places=6,
+        )
+
+        # Post
+        main.action_post()
+
+        # Linked cheques: 2 cheques → 2 líneas de liquidez
+        check_lines = linked_checks.move_id.line_ids
+        liq_lines = check_lines.filtered(lambda l: l.account_id == linked_checks.outstanding_account_id)
+        self.assertEqual(len(liq_lines), 2, "2 cheques → 2 líneas de liquidez")
+
+        # Contrapartida del linked cheques en USD (B)
+        cp_check = check_lines.filtered(lambda l: l.account_id == linked_checks.destination_account_id)
+        self.assertEqual(cp_check.currency_id, self.usd, "Contrapartida en USD")
+        self.assertAlmostEqual(
+            sum(check_lines.mapped("balance")),
+            0,
+            places=2,
+            msg="Partida doble linked cheques",
+        )
+
+        # Linked USD: asiento normal
+        usd_lines = linked_usd.move_id.line_ids
+        self.assertAlmostEqual(
+            sum(usd_lines.mapped("balance")),
+            0,
+            places=2,
+            msg="Partida doble linked USD",
+        )
+
+        # Main: retención
+        self.assertTrue(main.move_id)
+        wth_ml = self._wth_move_lines(main)
+        self.assertAlmostEqual(abs(wth_ml.balance), 36_000, places=0)
+
+    # ==================================================================
+    # B.5 — Bundle deuda EUR: linked ARS + linked USD (arbitraje)
+    # ==================================================================
+
+    def test_b5_bundle_deuda_eur_arbitraje(self):
+        """B.5 · Factura 1 320 EUR (≈ 1 000 neto, 1 EUR = 1 320 ARS).
+        Bundle: linked ARS + linked USD + retención IIBB.
+
+        Verifica:
+        - Main: B = EUR
+        - Linked ARS: A=ARS, B=EUR, counterpart_rate = _get_rate(ARS, EUR)
+        - Linked USD: A=USD, B=EUR, counterpart_rate = _get_rate(USD, EUR)
+        - Retención: base = neto_EUR × withholding_rate → en ARS
+        - Cada linked computa su propio counterpart_rate
+        - Todos los asientos balancean
+        """
+        invoice = self._create_invoice(1_000, self.eur)
+        main = self._create_main_payment(invoice)
+
+        self.assertEqual(main.destination_currency_id, self.eur, "B = EUR")
+
+        # Retención en C=ARS: base = 1000 EUR × (C/B rate)
+        wth_rate = main._get_withholding_rate()
+        # C/B = ARS/EUR = 1320
+        self.assertAlmostEqual(wth_rate, 1_320, places=0)
+
+        wth = self._wth_line(main)
+        self.assertAlmostEqual(wth.base_amount, 1_000 * 1_320, places=0)
+        wth_amount_ars = wth.amount  # ≈ 39 600 ARS
+        wth_amount_eur = main.withholdings_amount  # ≈ 30 EUR
+
+        # Linked ARS: ~800 000 ARS
+        linked_ars = self._add_linked_payment(main, self.bank_ars, 800_000)
+        self.assertEqual(linked_ars.counterpart_currency_id, self.eur)
+        cp_rate_ars_eur = self._get_rate(self.ars, self.eur)
+        self.assertAlmostEqual(
+            linked_ars.counterpart_rate,
+            cp_rate_ars_eur,
+            places=6,
+            msg="Linked ARS: propio rate ARS→EUR",
+        )
+        linked_ars_in_eur = 800_000 * cp_rate_ars_eur  # ≈ 606.06 EUR
+        self.assertAlmostEqual(
+            linked_ars.counterpart_currency_amount,
+            linked_ars_in_eur,
+            places=2,
+        )
+
+        # Linked USD: lo que falte en EUR, expresado en USD
+        remaining_eur = self.eur.round(
+            1_210 * 1.21 / 1.21  # invoice.amount_total in EUR  ← simplificamos
+        )
+        # Mejor: calculamos cuánto falta en EUR
+        total_needed_eur = main.selected_debt  # = 1210 EUR (total con IVA)
+        remaining_eur = total_needed_eur - linked_ars_in_eur - wth_amount_eur
+        cp_rate_usd_eur = self._get_rate(self.usd, self.eur)  # ≈ 1.1
+
+        amount_usd = self.usd.round(remaining_eur / cp_rate_usd_eur)
+        linked_usd = self._add_linked_payment(main, self.bank_usd, amount_usd)
+
+        self.assertEqual(linked_usd.counterpart_currency_id, self.eur)
+        self.assertAlmostEqual(
+            linked_usd.counterpart_rate,
+            cp_rate_usd_eur,
+            places=6,
+            msg="Linked USD: propio rate USD→EUR (≈1.1)",
+        )
+
+        # payment_total en EUR
+        expected_total = (
+            linked_ars.counterpart_currency_amount + linked_usd.counterpart_currency_amount + wth_amount_eur
+        )
+        self.assertAlmostEqual(
+            main.payment_total,
+            expected_total,
+            places=2,
+            msg="payment_total = todo en EUR (B)",
+        )
+
+        # Post
+        main.action_post()
+        for linked in (linked_ars, linked_usd):
+            self.assertEqual(linked.state, "posted")
+            lines = linked.move_id.line_ids
+            self.assertAlmostEqual(
+                sum(lines.mapped("balance")),
+                0,
+                places=2,
+                msg=f"Partida doble linked {linked.journal_id.code}",
+            )
+
+        # Main: retención en ARS
+        wth_ml = self._wth_move_lines(main)
+        self.assertAlmostEqual(abs(wth_ml.balance), wth_amount_ars, places=0)
