@@ -44,15 +44,6 @@
             <!-- hacemos invisible, no guardamos compatibilidad hacia atras ya en 19. Ademas agregamos el nuevo nuestro de countepart -->
             <attribute name="invisible">True</attribute>
         </xpath>
-        <xpath expr="//div[@name='amount_div']//field[@name='currency_id']" position="after">
-            <!-- Moneda de contrapartida: editable solo cuando la cuenta no fuerza moneda -->
-            <field name="counterpart_currency_id"
-                string="Secondary currency"
-                readonly="state != 'draft' or not counterpart_currency_editable
-                           or not use_payment_pro
-                           or is_internal_transfer"
-                options="{'no_create': True, 'no_open': True}"/>
-        </xpath>
 
         <div name="amount_div" position="after">
             <!-- Rate de contrapartida: visible solo si A != B1 AND B1 != C -->
@@ -144,6 +135,13 @@
             <page string="Debts" name="debts" invisible="state != 'draft' or is_internal_transfer or not use_payment_pro">
                 <group >
                     <group>
+                        <!-- Moneda de contrapartida: editable solo cuando la cuenta no fuerza moneda -->
+                        <field name="counterpart_currency_id"
+                            string="Debt Currency"
+                            readonly="state != 'draft' or not counterpart_currency_editable
+                                    or not use_payment_pro
+                                    or is_internal_transfer"
+                            options="{'no_create': True, 'no_open': True}"/>
                         <field name="selected_debt" invisible="state not in ('draft')"/>
                     </group>
                     <group name="name">
