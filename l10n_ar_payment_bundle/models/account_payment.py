@@ -10,9 +10,8 @@ class AccountPayment(models.Model):
     main_payment_id = fields.Many2one("account.payment")
     link_payment_ids = fields.One2many(comodel_name="account.payment", inverse_name="main_payment_id")
     to_pay_move_line_ids = fields.Many2many(recursive=True)
-    counterpart_exchange_rate = fields.Float(recursive=True)
     bundle_counterpart_currency_amount = fields.Monetary(
-        currency_field="counterpart_currency_id",
+        currency_field="destination_currency_id",
         compute="_compute_bundle_counterpart_currency_amount",
     )
     partner_id = fields.Many2one(recursive=True)
@@ -41,10 +40,27 @@ class AccountPayment(models.Model):
         if self.link_payment_ids:
             self.link_payment_ids = [Command.clear()]
 
-    @api.depends("link_payment_ids")
+    @api.depends(
+        "link_payment_ids.payment_total", "withholdings_amount", "write_off_amount", "payment_type", "partner_type"
+    )
     def _compute_payment_total(self):
-        super()._compute_payment_total()
-        for rec in self:
+        main_payment_ids = self.filtered("is_main_payment")
+        super(AccountPayment, self - main_payment_ids)._compute_payment_total()
+        for rec in main_payment_ids:
+            # Para el main, evitamos llamar a super() porque causaría doble conteo:
+            # account_payment_pro usaría counterpart_currency_amount (= withholdings + write_off)
+            # y luego l10n_ar_tax sumaría withholdings de nuevo.
+            # Calculamos directamente: contribución propia (B) + totales de linked.
+            if (
+                rec.payment_type == "outbound"
+                and rec.partner_type == "customer"
+                or rec.payment_type == "inbound"
+                and rec.partner_type == "supplier"
+            ):
+                sign = -1
+            else:
+                sign = 1
+            rec.payment_total = sign * rec.withholdings_amount + rec.write_off_amount
             rec.payment_total += sum(rec.link_payment_ids.mapped("payment_total"))
 
     @api.depends("counterpart_currency_amount", "link_payment_ids.counterpart_currency_amount")
@@ -60,17 +76,12 @@ class AccountPayment(models.Model):
                 sum(rec.link_payment_ids.mapped("counterpart_currency_amount"))
             )
 
-    @api.depends()
+    @api.depends("withholdings_amount", "write_off_amount")
     def _compute_counterpart_currency_amount(self):
         main_payment_ids = self.filtered("is_main_payment")
         super(AccountPayment, self - main_payment_ids)._compute_counterpart_currency_amount()
         for rec in main_payment_ids:
-            if rec.counterpart_currency_id and rec.counterpart_exchange_rate:
-                rec.counterpart_currency_amount = (
-                    rec.withholdings_amount + rec.write_off_amount
-                ) / rec.counterpart_exchange_rate
-            else:
-                rec.counterpart_currency_amount = False
+            rec.counterpart_currency_amount = rec.withholdings_amount + rec.write_off_amount
 
     @api.depends("use_payment_pro", "main_payment_id")
     def _compute_available_journal_ids(self):
@@ -82,9 +93,9 @@ class AccountPayment(models.Model):
             bundle_journal_id = rec.company_id._get_bundle_journal(rec.payment_type)
             journals = rec.available_journal_ids
 
-            # If it's a linked payment remove bundle journal and journals with currency
+            # If it's a linked payment remove only the bundle journal (any currency allowed)
             if rec.main_payment_id:
-                journals = journals.filtered(lambda j: j._origin.id != bundle_journal_id and not j.currency_id)
+                journals = journals.filtered(lambda j: j._origin.id != bundle_journal_id)
             # If company doesn't use Payment Pro just remove bundle journal
             elif not rec.use_payment_pro:
                 journals = journals.filtered(lambda j: j._origin.id != bundle_journal_id)
@@ -105,13 +116,6 @@ class AccountPayment(models.Model):
             rec.l10n_ar_withholding_line_ids = False
         super(AccountPayment, self - with_main_payments)._compute_l10n_ar_withholding_line_ids()
 
-    # @api.depends("main_payment_id.counterpart_exchange_rate")
-    # def _compute_counterpart_exchange_rate(self):
-    #     with_main_payments = self.filtered(lambda x: x.main_payment_id and not x.counterpart_exchange_rate)
-    #     for rec in with_main_payments:
-    #         rec.counterpart_exchange_rate = rec.main_payment_id.counterpart_exchange_rate
-    #     super(AccountPayment, self - with_main_payments)._compute_counterpart_exchange_rate()
-
     @api.constrains("amount", "is_main_payment")
     def _check_amount_in_main_payment(self):
         if self.filtered(lambda x: x.is_main_payment and x.amount != 0):
@@ -131,7 +135,11 @@ class AccountPayment(models.Model):
         main_payments = self.filtered("is_main_payment")
         main_payments.amount = 0
         for rec in self.filtered(lambda x: x.main_payment_id):
-            amount = rec.amount + rec.payment_difference
+            # payment_difference está en B; convertir a A para sumar al amount (en A)
+            diff_in_b = rec.payment_difference
+            cp_rate = rec.counterpart_rate or 1.0
+            diff_in_a = diff_in_b / cp_rate if cp_rate else diff_in_b
+            amount = rec.amount + diff_in_a
             rec.amount = amount if amount > 0 else 0
         super(AccountPayment, self - main_payments)._onchange_withholdings()
 
@@ -313,25 +321,19 @@ class AccountPayment(models.Model):
             rec.partner_id = rec.main_payment_id.partner_id
 
     def _compute_payment_difference(self):
-        for rec in self.filtered("main_payment_id"):
+        linked = self.filtered("main_payment_id")
+        for rec in linked:
+            # Todo en B (destination_currency_id): selected_debt, counterpart_currency_amount,
+            # withholdings_amount y write_off_amount ya están en B tras el refactor.
             payments = rec.main_payment_id.link_payment_ids
-            amount_outbound = sum(
-                payments.filtered(lambda p: p.payment_type == "outbound").mapped("amount_company_currency_signed")
-            )
-            amount_inbound = sum(
-                payments.filtered(lambda p: p.payment_type == "inbound").mapped("amount_company_currency_signed")
-            )
-            amount_payments = abs(amount_inbound + amount_outbound)
-
+            total_linked_in_b = sum(payments.mapped("counterpart_currency_amount"))
             rec.payment_difference = (
                 rec.main_payment_id.selected_debt
-                - amount_payments
+                - total_linked_in_b
                 - rec.main_payment_id.withholdings_amount
                 - rec.main_payment_id.write_off_amount
             )
-
-        for rec in self - self.filtered("main_payment_id"):
-            return super()._compute_payment_difference()
+        super(AccountPayment, self - linked)._compute_payment_difference()
 
     @api.depends("payment_type", "link_payment_ids.payment_type")
     def _compute_warnings(self):

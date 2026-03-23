@@ -16,7 +16,7 @@
                             <strong><span class="text-nowrap" t-out="secondary_currency.round(o.bundle_counterpart_currency_amount)" t-options="{'widget': 'monetary', 'display_currency': secondary_currency}"/></strong>
                         </td>
                         <td  class="text-right">
-                            <strong><span class="text-nowrap" t-out="o.payment_total" t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/></strong>
+                            <strong><span class="text-nowrap" t-out="o.payment_total" t-options="{'widget': 'monetary', 'display_currency': o.destination_currency_id}"/></strong>
                         </td>
                     </tr>
                 </tfoot>
@@ -30,7 +30,7 @@
                     <tr>
                         <td colspan="3"><strong><span>Total Imputed</span></strong></td>
                         <td class="text-right">
-                            <strong><span class="text-nowrap" t-out="o.matched_amount + o.unmatched_amount" t-options='{"widget": "monetary", "display_currency": o.company_currency_id}'/></strong>
+                            <strong><span class="text-nowrap" t-out="o.matched_amount + o.unmatched_amount" t-options='{"widget": "monetary", "display_currency": o.destination_currency_id}'/></strong>
                             <!-- <strong><span class="text-nowrap" t-out="o.matched_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></strong> -->
                         </td>
                     </tr>

@@ -86,6 +86,7 @@ class AccountPayment(models.Model):
         compute="_compute_payment_total",
         tracking=True,
         currency_field="destination_currency_id",
+        recursive=True,
     )
     to_pay_amount_company_currency = fields.Monetary(
         compute="_compute_to_pay_amount_company_currency",

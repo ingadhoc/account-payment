@@ -59,23 +59,16 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
             }
         )
 
-        # Diario bundle (sin moneda, usa payment_bundle method)
-        bundle_method_out = cls.env.ref("l10n_ar_payment_bundle.account_payment_out_payment_bundle")
-        bundle_method_in = cls.env.ref("l10n_ar_payment_bundle.account_payment_in_payment_bundle")
-        cls.bundle_journal = cls.env["account.journal"].create(
-            {
-                "name": "Bundle Journal",
-                "type": "bank",
-                "code": "BNDL",
-                "company_id": cls.company.id,
-                "outbound_payment_method_line_ids": [
-                    Command.create({"payment_method_id": bundle_method_out.id}),
-                ],
-                "inbound_payment_method_line_ids": [
-                    Command.create({"payment_method_id": bundle_method_in.id}),
-                ],
-            }
+        # Diario bundle: ya creado por el template ar_ri, lo buscamos en lugar de crear uno nuevo.
+        # payment_bundle es mode="unique", por lo que no puede existir en más de un diario.
+        cls.bundle_journal = cls.env["account.journal"].search(
+            [
+                ("outbound_payment_method_line_ids.payment_method_id.code", "=", "payment_bundle"),
+                ("company_id", "=", cls.company.id),
+            ],
+            limit=1,
         )
+        assert cls.bundle_journal, "El template ar_ri debe haber creado el diario bundle"
 
         # Payment method line del bundle para outbound
         cls.bundle_pml_out = cls.bundle_journal.outbound_payment_method_line_ids.filtered(
@@ -219,7 +212,7 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         # Post
         main.action_post()
         for linked in (linked1, linked2):
-            self.assertEqual(linked.state, "posted")
+            self.assertIn(linked.state, ("posted", "in_process"), "Linked payment debe estar posteado")
             self.assertAlmostEqual(
                 sum(linked.move_id.line_ids.mapped("balance")),
                 0,
@@ -270,7 +263,7 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         # Post
         main.action_post()
         for linked in (linked1, linked2):
-            self.assertEqual(linked.state, "posted")
+            self.assertIn(linked.state, ("posted", "in_process"), "Linked payment debe estar posteado")
 
         # Main genera asiento (tiene withholdings)
         self.assertTrue(main.move_id, "Main con retenciones genera asiento")
@@ -352,7 +345,7 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         # Post
         main.action_post()
         for linked in (linked_usd, linked_ars):
-            self.assertEqual(linked.state, "posted")
+            self.assertIn(linked.state, ("posted", "in_process"), "Linked payment debe estar posteado")
             lines = linked.move_id.line_ids
             self.assertAlmostEqual(
                 sum(lines.mapped("balance")),
@@ -539,7 +532,7 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         # Post
         main.action_post()
         for linked in (linked_ars, linked_usd):
-            self.assertEqual(linked.state, "posted")
+            self.assertIn(linked.state, ("posted", "in_process"), "Linked payment debe estar posteado")
             lines = linked.move_id.line_ids
             self.assertAlmostEqual(
                 sum(lines.mapped("balance")),

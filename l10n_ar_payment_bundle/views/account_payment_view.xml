@@ -64,15 +64,12 @@
                 <attribute name="force_save">1</attribute>
             </field>
 
-            <!--Ocultar campos de counterpart en linked cuando main no tiene sc-->
+            <!--Ocultar campos de counterpart en linked cuando A == B-->
             <xpath expr="//label[@for='counterpart_currency_amount']" position="attributes">
-                <attribute name="invisible">not counterpart_currency_id</attribute>
-            </xpath>
-            <xpath expr="//div[@name='counterpart_currency_amount']" position="attributes">
-                <attribute name="invisible">not counterpart_currency_id</attribute>
+                <attribute name="invisible">currency_id == counterpart_currency_id</attribute>
             </xpath>
             <xpath expr="//field[@name='counterpart_currency_amount']" position="attributes">
-                <attribute name="invisible">not counterpart_currency_id</attribute>
+                <attribute name="invisible">currency_id == counterpart_currency_id</attribute>
             </xpath>
             <button name="action_draft" position="attributes">
                 <attribute name="groups">base.group_no_one</attribute>
@@ -133,7 +130,6 @@
                                 'list_view_ref': 'l10n_ar_payment_bundle.view_account_payment_custom_list',
                                 'default_move_journal_types': ('bank', 'cash'),
                                 'default_counterpart_currency_id': counterpart_currency_id,
-                                'default_counterpart_exchange_rate': counterpart_exchange_rate,
                                 'default_company_id': company_id,
                                 'default_main_payment_id': id,
                                 'default_partner_id': partner_id,
@@ -201,7 +197,7 @@
                 <field name="payment_method_id"/>
                 <field name="payment_type" optional="hide"/>
                 <field name="amount_company_currency_signed" widget="monetary" string="Amount" sum="Total"/>
-                <field name="counterpart_exchange_rate" string="Rate" optional="hide"/>
+                <field name="user_counterpart_rate" string="Rate" optional="hide"/>
                 <field name="counterpart_currency_amount" string="Amount in SC" optional="hide" sum="Total" widget="monetary"/>
                 <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'in_process'" decoration-success="state == 'paid'"/>
             </list>
