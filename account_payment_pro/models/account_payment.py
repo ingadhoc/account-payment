@@ -427,6 +427,7 @@ class AccountPayment(models.Model):
                 # A == B1, son la misma moneda
                 rec.counterpart_currency_amount = rec.amount
 
+    @api.onchange("counterpart_currency_amount")
     def _inverse_counterpart_currency_amount(self):
         for rec in self:
             if rec.counterpart_currency_amount and rec.amount:
@@ -460,6 +461,7 @@ class AccountPayment(models.Model):
                 date=rec.date or fields.Date.context_today(rec),
             )
 
+    @api.onchange("counterpart_rate")
     def _inverse_counterpart_rate(self):
         for rec in self:
             if rec.counterpart_currency_id == rec.company_currency_id:
