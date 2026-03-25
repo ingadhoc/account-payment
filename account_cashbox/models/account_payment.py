@@ -54,7 +54,7 @@ class AccountPayment(models.Model):
         super(AccountPayment, self.with_context(paired_transfer=True))._create_paired_internal_transfer_payment()
 
     def action_post(self):
-        for rec in self:
+        for rec in self.filtered(lambda x: x.state == "draft"):
             if not rec.cashbox_session_id and rec.requiere_account_cashbox_session:
                 rec._compute_cashbox_session_id()
             elif rec.cashbox_session_id and rec.cashbox_session_id.state != "opened":
