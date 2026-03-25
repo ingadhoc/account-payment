@@ -13,7 +13,9 @@ class AccountPaymentRegister(models.TransientModel):
     use_payment_pro = fields.Boolean(compute="_compute_use_payment_pro")
 
     def _compute_use_payment_pro(self):
-        payment_with_pro = self.filtered(lambda x: x.company_id.use_payment_pro and x.outstanding_account_id)
+        payment_with_pro = self.filtered(
+            lambda x: x.company_id.use_payment_pro and x.payment_method_line_id.payment_account_id
+        )
         payment_with_pro.use_payment_pro = True
         (self - payment_with_pro).use_payment_pro = False
 
