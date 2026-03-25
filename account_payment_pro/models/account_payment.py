@@ -258,49 +258,28 @@ class AccountPayment(models.Model):
             )
             rec.accounting_rate_inverted = theoretical_rate < 1.0
 
-    @api.depends("accounting_rate", "accounting_rate_inverted")
+    @api.depends("accounting_rate")
     def _compute_user_accounting_rate(self):
         for rec in self:
-            rate = rec.accounting_rate
-            if not rate:
-                rec.user_accounting_rate = 0.0
-            elif rec.accounting_rate_inverted:
-                rec.user_accounting_rate = 1.0 / rate
-            else:
-                rec.user_accounting_rate = rate
+            rec.user_accounting_rate = 1.0 / rec.accounting_rate if rec.accounting_rate else 0.0
 
     @api.onchange("user_accounting_rate")
     def _inverse_user_accounting_rate(self):
         for rec in self:
-            rate = rec.user_accounting_rate
-            if rate:
-                if rec.accounting_rate_inverted:
-                    rec.accounting_rate = 1.0 / rate
-                else:
-                    rec.accounting_rate = rate
+            rec.accounting_rate = 1.0 / rec.user_accounting_rate if rec.user_accounting_rate else 0.0
 
-    @api.depends("counterpart_rate", "counterpart_rate_inverted")
+    @api.depends("counterpart_rate")
     def _compute_user_counterpart_rate(self):
         for rec in self:
-            rate = rec.counterpart_rate
-            if not rate:
-                rec.user_counterpart_rate = 0.0
-            elif rec.counterpart_rate_inverted:
-                rec.user_counterpart_rate = 1.0 / rate
-            else:
-                rec.user_counterpart_rate = rate
+            rec.user_counterpart_rate = 1.0 / rec.counterpart_rate if rec.counterpart_rate else 0.0
 
     @api.onchange("user_counterpart_rate")
     def _inverse_user_counterpart_rate(self):
         for rec in self:
-            rate = rec.user_counterpart_rate
-            if not rate:
+            if not rec.user_counterpart_rate:
                 continue
-            if rec.counterpart_rate_inverted:
-                rec.counterpart_rate = 1.0 / rate
-            else:
-                rec.counterpart_rate = rate
-            # Propagar a accounting_rate si B1 == C: accounting_rate = 1/counterpart_rate
+            rec.counterpart_rate = 1.0 / rec.user_counterpart_rate
+            # Propagar a accounting_rate si B1 == C
             if rec.counterpart_currency_id == rec.company_currency_id:
                 rec.accounting_rate = (1.0 / rec.counterpart_rate) if rec.counterpart_rate else 1.0
 
