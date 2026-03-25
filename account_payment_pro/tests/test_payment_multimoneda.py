@@ -749,9 +749,10 @@ class TestPaymentMultimoneda(TestArCommon):
         self.assertEqual(payment_ars.selected_debt, 50_000, "Deuda ARS → selected_debt = amount_residual")
 
     def test_rate_visibility_rules(self):
-        """Regla de visibilidad de rates (spec §Cuándo mostrar cada rate).
-        - counterpart_rate visible solo si A ≠ B1 Y B1 ≠ C
-        - accounting_rate visible solo si A ≠ C
+        """Verifica las condiciones de moneda que determinan la visibilidad de los rates en la vista.
+        - accounting_rate visible (A ≠ C): currency_id ≠ company_currency_id
+        - counterpart_rate visible (A ≠ B1 y B1 ≠ C): currency_id ≠ counterpart_currency_id y counterpart_currency_id ≠ company_currency_id
+        No verifica los campos accounting_rate_inverted / counterpart_rate_inverted (solo hints de UI).
         """
         # Caso 1: A=B1=B2=C=ARS → ninguno visible
         p1 = self._create_payment(self.bank_ars, amount=100)
