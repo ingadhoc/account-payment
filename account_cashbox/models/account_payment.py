@@ -89,7 +89,7 @@ class AccountPayment(models.Model):
                 payment.paired_internal_transfer_payment_id.destination_cashbox_session_id = False
 
     def action_post(self):
-        for rec in self:
+        for rec in self.filtered(lambda x: x.state == "draft"):
             if not rec.cashbox_session_id and rec.requiere_account_cashbox_session:
                 rec._compute_cashbox_session_id()
             elif rec.cashbox_session_id and rec.cashbox_session_id.state != "opened":
