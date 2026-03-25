@@ -36,7 +36,6 @@ class AccountPayment(models.Model):
     )
     accounting_rate = fields.Float(
         compute="_compute_accounting_rate",
-        inverse="_inverse_accounting_rate",
         store=True,
         readonly=False,
         precompute=True,
@@ -48,14 +47,12 @@ class AccountPayment(models.Model):
     user_accounting_rate = fields.Float(
         compute="_compute_user_accounting_rate",
         inverse="_inverse_user_accounting_rate",
-        store=False,
         digits=0,
         min_display_digits=2,
     )
     user_counterpart_rate = fields.Float(
         compute="_compute_user_counterpart_rate",
         inverse="_inverse_user_counterpart_rate",
-        store=False,
         digits=0,
         min_display_digits=2,
     )
@@ -66,13 +63,11 @@ class AccountPayment(models.Model):
     )
     counterpart_rate_inverted = fields.Boolean(
         compute="_compute_counterpart_rate_inverted",
-        store=False,
         help="True si el rate teórico A→B1 < 1.0 (B1 es la moneda fuerte). "
         "Determina la dirección de visualización de user_counterpart_rate.",
     )
     accounting_rate_inverted = fields.Boolean(
         compute="_compute_accounting_rate_inverted",
-        store=False,
         help="True si el rate teórico A→C < 1.0 (C es la moneda fuerte). "
         "Determina la dirección de visualización de user_accounting_rate.",
     )
@@ -87,10 +82,6 @@ class AccountPayment(models.Model):
         tracking=True,
         currency_field="destination_currency_id",
         recursive=True,
-    )
-    to_pay_amount_company_currency = fields.Monetary(
-        compute="_compute_to_pay_amount_company_currency",
-        currency_field="company_currency_id",
     )
     available_journal_ids = fields.Many2many(comodel_name="account.journal", compute="_compute_available_journal_ids")
     # desde account_payment_group, modelo account.payment.group
@@ -159,9 +150,9 @@ class AccountPayment(models.Model):
 
     @api.depends(
         "destination_account_id",
-        "destination_account_id.currency_id",
+        "destination_account_id",
         "company_currency_id",
-        "company_id.reconcile_on_company_currency",
+        "company_id",
         "to_pay_move_line_ids",
     )
     def _compute_counterpart_currency_editable(self):
@@ -179,7 +170,7 @@ class AccountPayment(models.Model):
 
     @api.depends(
         "destination_account_id",
-        "destination_account_id.currency_id",
+        "destination_account_id",
         "to_pay_move_line_ids",
         "company_id",
         "company_currency_id",
@@ -232,9 +223,9 @@ class AccountPayment(models.Model):
                     date=rec.date or fields.Date.context_today(rec),
                 )
 
-    def _inverse_accounting_rate(self):
-        # El valor se setea directamente por el usuario o por user_accounting_rate inverse
-        pass
+    ####
+    # CODIGO para UX de rate según la moneda mas fuerte. TODO evaluar si mantenemos o simplificamos
+    ####
 
     @api.depends("currency_id", "counterpart_currency_id", "company_id", "date")
     def _compute_counterpart_rate_inverted(self):
@@ -312,13 +303,9 @@ class AccountPayment(models.Model):
             if rec.counterpart_currency_id == rec.company_currency_id:
                 rec.accounting_rate = (1.0 / rec.counterpart_rate) if rec.counterpart_rate else 1.0
 
-    @api.depends("to_pay_amount", "accounting_rate")
-    def _compute_to_pay_amount_company_currency(self):
-        for rec in self:
-            if rec.accounting_rate:
-                rec.to_pay_amount_company_currency = rec.to_pay_amount / rec.accounting_rate
-            else:
-                rec.to_pay_amount_company_currency = rec.to_pay_amount
+    ####
+    # FIN CODIGO para UX de rate según la moneda mas fuerte. TODO evaluar si mantenemos o simplificamos
+    ####
 
     @api.depends("company_id", "outstanding_account_id")
     def _compute_use_payment_pro(self):
@@ -430,8 +417,10 @@ class AccountPayment(models.Model):
     @api.onchange("counterpart_currency_amount")
     def _inverse_counterpart_currency_amount(self):
         for rec in self:
-            if rec.counterpart_currency_amount and rec.amount:
-                rec.counterpart_rate = rec.counterpart_currency_amount / rec.amount
+            if not rec.counterpart_currency_id.is_zero(
+                rec.amount * rec.counterpart_rate - rec.counterpart_currency_amount
+            ):
+                rec.amount = rec.counterpart_currency_amount / rec.counterpart_rate if rec.counterpart_rate else 0
 
     @api.depends(
         "accounting_rate", "counterpart_currency_id", "currency_id", "company_currency_id", "company_id", "date"
@@ -467,11 +456,6 @@ class AccountPayment(models.Model):
             if rec.counterpart_currency_id == rec.company_currency_id:
                 # counterpart_rate = B1/A = C/A = 1/accounting_rate → accounting_rate = 1/counterpart_rate
                 rec.accounting_rate = (1.0 / rec.counterpart_rate) if rec.counterpart_rate else 1.0
-
-    @api.onchange("company_id")
-    def _onchange_company_id(self):
-        if self._origin.company_id and self.company_id != self._origin.company_id and self.state == "draft":
-            self.remove_all()
 
     @api.depends("to_pay_move_line_ids")
     def _compute_destination_account_id(self):
@@ -660,30 +644,12 @@ class AccountPayment(models.Model):
                 rec.has_outstanding = True
 
     @api.depends(
-        "amount",
         "counterpart_currency_amount",
         "write_off_amount",
-        "currency_id",
-        "destination_currency_id",
-        "payment_type",
-        "partner_type",
     )
     def _compute_payment_total(self):
         for rec in self:
-            if rec.currency_id == rec.destination_currency_id:
-                base_amount = rec.amount
-            else:
-                base_amount = rec.counterpart_currency_amount
-
-            if (
-                rec.payment_type == "outbound"
-                and rec.partner_type == "customer"
-                or rec.payment_type == "inbound"
-                and rec.partner_type == "supplier"
-            ):
-                base_amount = -base_amount
-
-            rec.payment_total = base_amount + rec.write_off_amount
+            rec.payment_total = rec.counterpart_currency_amount + rec.write_off_amount
 
     # TODO revisar depends
     @api.depends("payment_total", "to_pay_amount")

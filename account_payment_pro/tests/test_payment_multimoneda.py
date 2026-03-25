@@ -309,7 +309,6 @@ class TestPaymentMultimoneda(TestArCommon):
         - Monedas: A = B1 = B2 = USD, C = ARS
         - accounting_rate = rate(C→A), counterpart_rate = 1.0
         - Asiento: liquidez +100 USD / +120 000 ARS, contrapartida inversa
-        - to_pay_amount_company_currency ≈ 120 000 ARS
         """
         invoice = self._create_invoice(100, self.usd)
         payment = self._create_payment(
@@ -323,13 +322,6 @@ class TestPaymentMultimoneda(TestArCommon):
         self._assert_currencies(payment, A=self.usd, B1=self.usd, B2=self.usd, C=self.ars)
         self._assert_rates(payment, accounting=expected_acc_rate, counterpart=1.0)
         self.assertEqual(payment.counterpart_currency_amount, 100)
-
-        # to_pay_amount_company_currency = to_pay_amount / accounting_rate ≈ 120 000
-        self.assertAlmostEqual(
-            payment.to_pay_amount_company_currency,
-            100 / expected_acc_rate,
-            places=0,
-        )
 
         payment.action_post()
 
@@ -708,8 +700,8 @@ class TestPaymentMultimoneda(TestArCommon):
         )
 
     def test_counterpart_currency_amount_inverse(self):
-        """Modificar counterpart_currency_amount recalcula counterpart_rate.
-        Spec: prioridad 1 — usuario modifica monto → recalcular tasa.
+        """Modificar counterpart_currency_amount recalcula amount.
+        Spec: prioridad 1 — usuario modifica monto en moneda → recalcular monto.
         """
         invoice = self._create_invoice(100, self.usd, move_type="in_invoice")
         payment = self._create_payment(
@@ -724,10 +716,10 @@ class TestPaymentMultimoneda(TestArCommon):
         payment.counterpart_currency_amount = 80  # 80 USD
         # Esperado: counterpart_rate = 80 / 120_000 ≈ 0.000667
         self.assertAlmostEqual(
-            payment.counterpart_rate,
-            80 / 120_000,
+            payment.amount,
+            80 / payment.counterpart_rate,
             places=6,
-            msg="inverse: counterpart_rate = counterpart_currency_amount / amount",
+            msg="inverse: amount = counterpart_currency_amount / counterpart_rate",
         )
 
     def test_selected_debt_uses_correct_field(self):
