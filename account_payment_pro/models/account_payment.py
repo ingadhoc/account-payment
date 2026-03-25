@@ -77,11 +77,10 @@ class AccountPayment(models.Model):
         string="Destination Journal Currency",
     )
     commercial_partner_id = fields.Many2one(related="partner_id.commercial_partner_id")
+    # MUY IMPORTANTE; NO agregar tracking porque rompe como se calcula (ver commit)
     payment_total = fields.Monetary(
         compute="_compute_payment_total",
-        tracking=True,
         currency_field="destination_currency_id",
-        recursive=True,
     )
     available_journal_ids = fields.Many2many(comodel_name="account.journal", compute="_compute_available_journal_ids")
     # desde account_payment_group, modelo account.payment.group
@@ -229,6 +228,7 @@ class AccountPayment(models.Model):
 
     @api.depends("currency_id", "counterpart_currency_id", "company_id", "date")
     def _compute_counterpart_rate_inverted(self):
+        """Se fija en el rate teórico A→B1 para determinar si B1 es moneda fuerte (rate < 1.0) y por lo tanto mostrar el rate invertido al usuario (B1→A)"""
         for rec in self:
             if not rec.currency_id or rec.currency_id == rec.counterpart_currency_id:
                 rec.counterpart_rate_inverted = False
@@ -243,6 +243,7 @@ class AccountPayment(models.Model):
 
     @api.depends("currency_id", "company_currency_id", "company_id", "date")
     def _compute_accounting_rate_inverted(self):
+        """Se fija en el rate teórico A→C para determinar si C es moneda fuerte (rate < 1.0) y por lo tanto mostrar el rate invertido al usuario (C→A)"""
         for rec in self:
             if not rec.currency_id or rec.currency_id == rec.company_currency_id:
                 rec.accounting_rate_inverted = False
