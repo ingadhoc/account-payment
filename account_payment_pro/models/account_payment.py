@@ -215,7 +215,9 @@ class AccountPayment(models.Model):
     # agreamos depends de company para que re calcule los diarios disponibles
     @api.depends("company_id")
     def _compute_available_journal_ids(self):
-        super()._compute_available_journal_ids()
+        if self.company_id:
+            self = self.with_company(self.company_id.id)
+        super(AccountPayment, self)._compute_available_journal_ids()
 
     @api.depends(
         "currency_id",
