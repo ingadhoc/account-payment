@@ -41,8 +41,26 @@ class AccountJournal(models.Model):
         return res
 
     @api.constrains("inbound_payment_method_line_ids", "outbound_payment_method_line_ids")
-    def _check_payment_pro_enabled(self):
+    def _check_payment_bundle_constraints(self):
         for journal in self:
+            # Check only one payment_bundle per direction
+            inbound_bundles = journal.inbound_payment_method_line_ids.filtered(
+                lambda l: l.payment_method_id.code == "payment_bundle"
+            )
+            if len(inbound_bundles) > 1:
+                raise ValidationError(
+                    _("You can only have one Payment Bundle method for inbound payments per journal.")
+                )
+
+            outbound_bundles = journal.outbound_payment_method_line_ids.filtered(
+                lambda l: l.payment_method_id.code == "payment_bundle"
+            )
+            if len(outbound_bundles) > 1:
+                raise ValidationError(
+                    _("You can only have one Payment Bundle method for outbound payments per journal.")
+                )
+
+            # Check Payment PRO is enabled
             payment_methods = (
                 journal.inbound_payment_method_line_ids + journal.outbound_payment_method_line_ids
             ).mapped("payment_method_id")
