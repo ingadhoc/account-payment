@@ -347,7 +347,7 @@ La vista muestra `user_counterpart_rate` con dirección estable basada en `count
 | `user_accounting_rate` | Nuevo, UX helper (inverso de `accounting_rate`) | — | Computed non-stored + inverse |
 | `counterpart_rate` | Renombrado desde `counterpart_exchange_rate` (stored, formato invertido → Odoo nativo) | — | Stored editable |
 | `user_counterpart_rate` | Nuevo, UX helper (inverso condicional de `counterpart_rate`) | — | Computed non-stored + inverse |
-| `counterpart_currency_amount` | Adaptar lógica, moneda a `destination_currency_id` | `destination_currency_id` | Computed stored + inverse |
+| `counterpart_currency_amount` | Adaptar lógica, moneda a `counterpart_currency_id` | `counterpart_currency_id` | Computed stored + inverse |
 | `selected_debt` | Adaptar moneda y lógica compute (ver sección dedicada) | `destination_currency_id` | Computed |
 | `unreconciled_amount` | Adaptar moneda | `destination_currency_id` | Normal |
 | `to_pay_amount` | Adaptar moneda | `destination_currency_id` | Computed + inverse |
@@ -406,6 +406,42 @@ def _compute_selected_debt(self):
 La misma lógica aplica para `matched_amount` y `unmatched_amount`: cuando
 `destination_currency_id != company_currency_id`, los importes deben expresarse
 en moneda B (divisa) y no en moneda C (compañía).
+
+---
+
+## Lógica de `payment_total` con rama B1 ≠ B2
+
+`payment_total` está en `destination_currency_id` (B2). Cuando B1 = B2 (caso normal sin
+`reconcile_on_company_currency`) `counterpart_currency_amount` ya está en B2 y se puede
+sumar directamente al write-off. Cuando B1 ≠ B2 (casos 8, 9, 10), B2 = C = ARS siempre,
+por lo que hay que convertir el monto de liquidez A → C via `accounting_rate`:
+
+```python
+@api.depends(
+    "counterpart_currency_amount",
+    "write_off_amount",
+    "amount",
+    "accounting_rate",
+    "counterpart_currency_id",
+    "destination_currency_id",
+)
+def _compute_payment_total(self):
+    for rec in self:
+        if rec.counterpart_currency_id == rec.destination_currency_id:
+            # B1 == B2 (caso normal sin reconcile): cca ya está en B2
+            base_amount = rec.counterpart_currency_amount
+        else:
+            # B1 != B2 (reconcile_on_company_currency): B2 = C siempre
+            # Convertir A → C = amount / accounting_rate
+            base_amount = rec.amount / rec.accounting_rate if rec.accounting_rate else rec.amount
+        rec.payment_total = base_amount + rec.write_off_amount
+```
+
+| Caso | A   | B2  | Rama   | Cálculo                          |
+|------|-----|-----|--------|----------------------------------|
+| 8    | ARS | ARS | B1≠B2  | 60.000 ARS / 1.0 = 60.000 ARS   |
+| 9    | USD | ARS | B1≠B2  | 1.000 USD / 0.000833 ≈ 1.200.000 ARS |
+| 10   | EUR | ARS | B1≠B2  | 100 EUR / 0.000758 ≈ 132.000 ARS |
 
 ---
 
@@ -800,7 +836,7 @@ El campo monetary ya muestra el símbolo de la moneda.
 | `user_counterpart_rate` | Float non-stored | UX (invertido condicionalmente) | Expone `counterpart_rate` en dirección estable. |
 | `accounting_rate_inverted` | Boolean non-stored | — | `True` si `_get_conversion_rate(C, A)` < 1.0. Determina dirección de UI. |
 | `counterpart_rate_inverted` | Boolean non-stored | — | `True` si rate teórico A→B1 < 1.0. Determina dirección de UI. |
-| `counterpart_currency_amount` | Monetary stored | `destination_currency_id` | Antes tenía `currency_field` implícito. |
+| `counterpart_currency_amount` | Monetary stored | `counterpart_currency_id` | Monto en B1. Antes tenía `currency_field` implícito. |
 | `write_off_amount` | Monetary | `destination_currency_id` | Antes en `company_currency_id`. |
 | `payment_total` | Monetary computed | `destination_currency_id` | Antes en `company_currency_id`. |
 | `selected_debt` | Monetary computed | `destination_currency_id` | Antes en `company_currency_id`. |

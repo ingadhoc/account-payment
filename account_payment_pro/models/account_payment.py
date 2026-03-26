@@ -8,7 +8,7 @@ class AccountPayment(models.Model):
     # Modelo tri-monetario: A (currency_id), B1 (counterpart_currency_id), B2 (destination_currency_id), C (company_currency_id)
     # desde account_payment_group, modelo account.payment
     counterpart_currency_amount = fields.Monetary(
-        currency_field="destination_currency_id",
+        currency_field="counterpart_currency_id",
         compute="_compute_counterpart_currency_amount",
         inverse="_inverse_counterpart_currency_amount",
         store=True,
@@ -626,10 +626,21 @@ class AccountPayment(models.Model):
     @api.depends(
         "counterpart_currency_amount",
         "write_off_amount",
+        "amount",
+        "accounting_rate",
+        "counterpart_currency_id",
+        "destination_currency_id",
     )
     def _compute_payment_total(self):
         for rec in self:
-            rec.payment_total = rec.counterpart_currency_amount + rec.write_off_amount
+            if rec.counterpart_currency_id == rec.destination_currency_id:
+                # B1 == B2 (caso normal sin reconcile): cca ya está en B2
+                base_amount = rec.counterpart_currency_amount
+            else:
+                # B1 != B2 (reconcile_on_company_currency): B2 = C siempre
+                # Convertir A → C = amount / accounting_rate
+                base_amount = rec.amount / rec.accounting_rate if rec.accounting_rate else rec.amount
+            rec.payment_total = base_amount + rec.write_off_amount
 
     # TODO revisar depends
     @api.depends("payment_total", "to_pay_amount")

@@ -565,6 +565,21 @@ class TestPaymentMultimoneda(TestArCommon):
                 payment.selected_debt, amount_ars, places=2, msg="selected_debt en ARS (amount_residual)"
             )
 
+            # B1=ARS, B2=ARS → para este caso 8 el test usa B1=B2=ARS, así que
+            # la rama B1≠B2 no aplica; se verifica que cca=amount y payment_total=amount
+            self.assertAlmostEqual(
+                payment.counterpart_currency_amount,
+                payment.amount,
+                places=2,
+                msg="cca en B1 (ARS): A=B1=ARS, counterpart_rate=1.0",
+            )
+            self.assertAlmostEqual(
+                payment.payment_total,
+                payment.amount,
+                places=2,
+                msg="payment_total en B2 (ARS): B1=B2=ARS",
+            )
+
             payment.action_post()
 
             self._assert_move_lines(
@@ -599,6 +614,24 @@ class TestPaymentMultimoneda(TestArCommon):
 
             self._assert_currencies(payment, A=self.usd, B1=self.ars, B2=self.ars, C=self.ars)
             self.assertEqual(payment.selected_debt, 120_000)
+
+            # counterpart_currency_amount en B1 (ARS): A=USD, B1=ARS, rate≈1200
+            # B1=C=ARS → counterpart_rate sincronizado con accounting_rate (1/rate)
+            # cca = amount / accounting_rate
+            self.assertAlmostEqual(
+                payment.counterpart_currency_amount,
+                payment.amount / payment.accounting_rate if payment.accounting_rate else payment.amount,
+                places=2,
+                msg="cca en B1 (ARS): amount_USD / accounting_rate",
+            )
+            # payment_total en B2 (ARS): B1≠B2 → amount / accounting_rate
+            expected_total_ars = payment.amount / payment.accounting_rate if payment.accounting_rate else payment.amount
+            self.assertAlmostEqual(
+                payment.payment_total,
+                expected_total_ars,
+                places=2,
+                msg="payment_total en B2 (ARS): amount / accounting_rate",
+            )
 
             expected_liq_balance = 100 / self._get_rate(self.ars, self.usd)  # ≈ 120 000
 
@@ -656,6 +689,21 @@ class TestPaymentMultimoneda(TestArCommon):
 
             expected_liq_balance = 100 / expected_acc  # ≈ 132 000 ARS
             expected_cp_amount = 100 * expected_cp  # ≈ 110 USD
+
+            # counterpart_currency_amount en B1 (USD): amount_EUR × counterpart_rate
+            self.assertAlmostEqual(
+                payment.counterpart_currency_amount,
+                expected_cp_amount,
+                places=2,
+                msg="cca en B1 (USD): amount_EUR × counterpart_rate",
+            )
+            # payment_total en B2 (ARS): B1≠B2 → amount_EUR / accounting_rate
+            self.assertAlmostEqual(
+                payment.payment_total,
+                expected_liq_balance,
+                places=2,
+                msg="payment_total en B2 (ARS): amount_EUR / accounting_rate",
+            )
 
             payment.action_post()
 
