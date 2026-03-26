@@ -218,8 +218,8 @@ class AccountPayment(models.Model):
         # Le agregamos el onchange de company para asegurarnos de que los available journals se computen siempre
         # que se produce un cambio de compañia
         if self.company_id:
-            self.env.company = self.company_id
-        super()._compute_available_journal_ids()
+            self = self.with_company(self.company_id.id)
+        super(AccountPayment, self)._compute_available_journal_ids()
 
     @api.depends(
         "currency_id",
