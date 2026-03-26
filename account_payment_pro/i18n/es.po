@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-04 14:51+0000\n"
+"POT-Creation-Date: 2026-03-26 13:59+0000\n"
 "PO-Revision-Date: 2025-12-26 17:10+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
@@ -572,6 +572,12 @@ msgstr "Impuestos"
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__journal_currency_id
 msgid "The currency used to enter statement"
 msgstr "La moneda utilizada para ingresar el estado"
+
+#. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/account_payment.py:0
+msgid "The payment journal must match the journal of its journal entry."
+msgstr ""
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment_invoice_wizard__currency_id
