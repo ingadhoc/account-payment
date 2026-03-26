@@ -251,13 +251,9 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         self.assertAlmostEqual(wth.amount, 300, places=2)
         self.assertAlmostEqual(main.withholdings_amount, 300, places=2)
 
-        # Main counterpart_currency_amount = withholdings (no write-off)
-        self.assertAlmostEqual(
-            main.counterpart_currency_amount,
-            300,
-            places=2,
-            msg="Main cca = withholdings_amount (en B, sin conversión)",
-        )
+        # El main tiene amount=0, por lo tanto counterpart_currency_amount=0.
+        # Las retenciones fluyen a payment_total vía withholdings_amount (override l10n_ar_tax).
+        self.assertAlmostEqual(main.counterpart_currency_amount, 0, places=2)
 
         # Linked: caja + banco que cubran deuda - retención
         linked1 = self._add_linked_payment(main, self.cash_ars, 5_000)

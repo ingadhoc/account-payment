@@ -23,7 +23,6 @@
         "views/payment_rename_wizard_view.xml",
         "data/account_payment_method_data.xml",
         "views/account_payment_view.xml",
-        "views/report_payment_receipt_templates.xml",
     ],
     "installable": True,
     "auto_install": False,
