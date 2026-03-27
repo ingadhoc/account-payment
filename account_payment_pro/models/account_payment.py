@@ -150,7 +150,7 @@ class AccountPayment(models.Model):
                 rec.env["account.write_off.type"].search([("company_ids", "=", rec.company_id.id)], limit=1)
             )
 
-    @api.constrains("to_pay_move_line_ids", "state")
+    @api.constrains("to_pay_move_line_ids")
     def _check_to_pay_lines_account(self):
         """TODO ver si esto tmb lo llevamos a la UI y lo mostramos como un warning.
         tmb podemos dar mas info al usuario en el error"""
@@ -662,6 +662,7 @@ class AccountPayment(models.Model):
 
     def action_post(self):
         res = super().action_post()
+        self._check_to_pay_lines_account()
         self._reconcile_after_post()
         return res
 
