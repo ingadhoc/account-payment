@@ -71,6 +71,13 @@ class AccountPayment(models.Model):
         help="True si el rate teórico A→C < 1.0 (C es la moneda fuerte). "
         "Determina la dirección de visualización de user_accounting_rate.",
     )
+    # Campo técnico para round-trip del onchange: el cliente lo devuelve en cada llamada,
+    # evitando depender de _origin (que no se actualiza entre onchanges y no existe en registros nuevos).
+    previous_currency_id = fields.Many2one(
+        "res.currency",
+        store=False,
+        copy=False,
+    )
     journal_currency_id = fields.Many2one(related="journal_id.currency_id", string="Journal Currency")
     destination_journal_currency_id = fields.Many2one(
         related="destination_journal_id.currency_id",
@@ -337,6 +344,30 @@ class AccountPayment(models.Model):
         for rec in self:
             rec.write_off_available = bool(
                 rec.env["account.write_off.type"].search([("company_ids", "=", rec.company_id.id)], limit=1)
+            )
+
+    @api.onchange("currency_id")
+    def _onchange_currency_recompute_amount(self):
+        """Al cambiar la moneda del diario, reconvertir amount a la nueva moneda A."""
+        for rec in self:
+            new_currency = rec.currency_id
+            # previous_currency_id se round-tripea desde el cliente en cada onchange,
+            # por eso refleja la moneda real anterior (funciona en registros nuevos y
+            # en cambios consecutivos A→B→C sin guardar, donde _origin no sirve).
+            old_currency = rec.previous_currency_id
+            # Actualizar para el próximo onchange antes de cualquier continue
+            rec.previous_currency_id = new_currency
+            if rec.state != "draft" or not rec.amount:
+                continue
+            if not old_currency or old_currency == new_currency:
+                continue
+            rec.amount = abs(
+                old_currency._convert(
+                    rec.amount,
+                    new_currency,
+                    rec.company_id,
+                    rec.date or fields.Date.context_today(rec),
+                )
             )
 
     @api.constrains("to_pay_move_line_ids")
