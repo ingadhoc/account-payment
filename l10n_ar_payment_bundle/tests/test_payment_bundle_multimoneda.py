@@ -219,7 +219,7 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         # Post
         main.action_post()
         for linked in (linked1, linked2):
-            self.assertIn(linked.state, ("posted", "in_process"), "Linked payment debe estar posteado")
+            self.assertIn(linked.state, ("paid", "in_process"), "Linked payment debe estar posteado")
             self.assertAlmostEqual(
                 sum(linked.move_id.line_ids.mapped("balance")),
                 0,
@@ -266,7 +266,7 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         # Post
         main.action_post()
         for linked in (linked1, linked2):
-            self.assertIn(linked.state, ("posted", "in_process"), "Linked payment debe estar posteado")
+            self.assertIn(linked.state, ("paid", "in_process"), "Linked payment debe estar posteado")
 
         # Main genera asiento (tiene withholdings)
         self.assertTrue(main.move_id, "Main con retenciones genera asiento")
@@ -348,7 +348,7 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         # Post
         main.action_post()
         for linked in (linked_usd, linked_ars):
-            self.assertIn(linked.state, ("posted", "in_process"), "Linked payment debe estar posteado")
+            self.assertIn(linked.state, ("paid", "in_process"), "Linked payment debe estar posteado")
             lines = linked.move_id.line_ids
             self.assertAlmostEqual(
                 sum(lines.mapped("balance")),
@@ -534,7 +534,7 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         # Post
         main.action_post()
         for linked in (linked_ars, linked_usd):
-            self.assertIn(linked.state, ("posted", "in_process"), "Linked payment debe estar posteado")
+            self.assertIn(linked.state, ("paid", "in_process"), "Linked payment debe estar posteado")
             lines = linked.move_id.line_ids
             self.assertAlmostEqual(
                 sum(lines.mapped("balance")),
