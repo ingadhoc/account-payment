@@ -570,3 +570,91 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
                 amount=1_000,
                 counterpart_currency_id=self.ars.id,
             )
+
+    # ==================================================================
+    # B.7 — Bundle reconcile (A=C=ARS, B1=USD, B2=ARS) + IIBB
+    # ==================================================================
+
+    def test_b7_bundle_reconcile_ars_journal_usd_invoice(self):
+        """B.7 · caso 8 (reconcile_on_company_currency=True): A=C=ARS, B1=USD, B2=ARS.
+        Factura 1 000 USD neto (= 1 200 000 ARS neto, rate 1 200 ARS/USD).
+        Bundle: linked banco ARS + retención IIBB 3%.
+
+        En modo reconcile:
+            destination_currency_id (B2) = ARS (company currency)
+            counterpart_currency_id (B1) = USD (moneda de la deuda)
+            B1 ≠ B2 → _compute_payment_difference mezclaría monedas
+                       si usa counterpart_currency_amount (B1) vs selected_debt (B2).
+
+        Verifica:
+            - selected_debt en ARS (B2=C): 1 452 000 ARS
+            - wth base = 1 200 000 ARS, wth amount = 36 000 ARS
+            - withholdings_amount = 36 000 ARS (en B2=ARS)
+            - Linked ARS: amount 1 416 000, cca 1 416 000 ARS
+            - payment_difference = 0 (sin mezcla de monedas)
+            - Todos los asientos balancean
+        """
+        self.company.reconcile_on_company_currency = True
+        self.addCleanup(setattr, self.company, "reconcile_on_company_currency", False)
+
+        invoice = self._create_invoice(1_000, self.usd)
+        self.assertAlmostEqual(invoice.amount_total, 1_210, places=2)
+
+        main = self._create_main_payment(invoice)
+
+        # En reconcile el main toma B2=ARS como destination_currency_id
+        self.assertEqual(main.destination_currency_id, self.ars, "B2=ARS en reconcile mode")
+
+        # El main puede tener B1=USD si el usuario lo seleccionó (editable en modo reconcile)
+        main.counterpart_currency_id = self.usd
+
+        # selected_debt en ARS (B2=C → amount_residual)
+        # Factura 1210 USD × 1200 = 1 452 000 ARS
+        self.assertAlmostEqual(main.selected_debt, 1_452_000, places=0)
+
+        # Retención: B2=ARS → _get_withholding_rate=1.0, base y amount en ARS
+        wth = self._wth_line(main)
+        self.assertAlmostEqual(wth.base_amount, 1_200_000, places=0)
+        self.assertAlmostEqual(wth.amount, 36_000, places=0)
+        self.assertAlmostEqual(main.withholdings_amount, 36_000, places=0, msg="withholdings_amount en ARS (B2=C)")
+
+        # Linked banco ARS: paga la deuda neta = 1 452 000 - 36 000 = 1 416 000 ARS
+        linked = self._add_linked_payment(main, self.bank_ars, 1_416_000)
+
+        # El linked hereda counterpart_currency_id=USD (B1) del main, así que
+        # counterpart_currency_amount está en B1=USD (≈ 1180 USD), no en ARS.
+        # Lo relevante para la partida doble es payment_total, que usa el branch
+        # B1≠B2 y convierte A→C: amount_ARS / accounting_rate(1.0) = 1 416 000 ARS.
+        self.assertAlmostEqual(linked.payment_total, 1_416_000, places=0)
+
+        # payment_total del main = sum(linked.payment_total) + withholdings = 1416000 + 36000 = 1452000 ARS
+        self.assertAlmostEqual(main.payment_total, 1_452_000, places=0)
+
+        # payment_difference = selected_debt - payment_total = 0
+        # Si B1≠B2 se mezclan monedas, el resultado sería incorrecto (≠ 0)
+        self.assertAlmostEqual(
+            linked.payment_difference, 0, places=0, msg="payment_difference debe ser 0 (sin mezcla B1 vs B2)"
+        )
+
+        # Post
+        main.action_post()
+        self.assertIn(linked.state, ("paid", "in_process"), "Linked debe estar posteado")
+
+        # Asiento del linked balancear
+        self.assertAlmostEqual(
+            sum(linked.move_id.line_ids.mapped("balance")),
+            0,
+            places=2,
+            msg="Partida doble en linked",
+        )
+
+        # Asiento del main (retención) balancear
+        self.assertTrue(main.move_id, "Main con retenciones debe generar asiento")
+        self.assertAlmostEqual(
+            sum(main.move_id.line_ids.mapped("balance")),
+            0,
+            places=2,
+            msg="Partida doble en main",
+        )
+        wth_ml = self._wth_move_lines(main)
+        self.assertAlmostEqual(abs(wth_ml.balance), 36_000, places=0)

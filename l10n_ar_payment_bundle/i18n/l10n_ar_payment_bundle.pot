@@ -41,8 +41,8 @@ msgid "Amount in SC"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
-#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__bundle_counterpart_currency_amount
-msgid "Bundle Counterpart Currency Amount"
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__link_payments_total
+msgid "Link Payments Total"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle

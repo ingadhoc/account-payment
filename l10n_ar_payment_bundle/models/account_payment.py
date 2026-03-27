@@ -10,9 +10,9 @@ class AccountPayment(models.Model):
     main_payment_id = fields.Many2one("account.payment")
     link_payment_ids = fields.One2many(comodel_name="account.payment", inverse_name="main_payment_id")
     to_pay_move_line_ids = fields.Many2many(recursive=True)
-    bundle_counterpart_currency_amount = fields.Monetary(
+    link_payments_total = fields.Monetary(
         currency_field="destination_currency_id",
-        compute="_compute_bundle_counterpart_currency_amount",
+        compute="_compute_link_payments_total",
     )
     partner_id = fields.Many2one(recursive=True)
 
@@ -78,18 +78,16 @@ class AccountPayment(models.Model):
             rec.to_pay_amount = rec.main_payment_id.payment_difference
         super(AccountPayment, self - self.filtered("main_payment_id"))._compute_to_pay_amount()
 
-    @api.depends("counterpart_currency_amount", "link_payment_ids.counterpart_currency_amount")
-    def _compute_bundle_counterpart_currency_amount(self):
+    @api.depends("link_payment_ids.payment_total")
+    def _compute_link_payments_total(self):
         """
         We added this computed field because we cannot modify counterpart_currency_amount,
         since as it is used into the journal entry.
         """
         main_payment_ids = self.filtered("is_main_payment")
-        (self - main_payment_ids).bundle_counterpart_currency_amount = False
+        (self - main_payment_ids).link_payments_total = False
         for rec in main_payment_ids:
-            rec.bundle_counterpart_currency_amount = float(rec.counterpart_currency_amount) + float(
-                sum(rec.link_payment_ids.mapped("counterpart_currency_amount"))
-            )
+            rec.link_payments_total = sum(rec.link_payment_ids.mapped("payment_total"))
 
     @api.depends("use_payment_pro", "main_payment_id")
     def _compute_available_journal_ids(self):
@@ -154,10 +152,14 @@ class AccountPayment(models.Model):
     def _compute_payment_difference(self):
         linked = self.filtered("main_payment_id")
         for rec in linked:
-            # Todo en B (destination_currency_id): selected_debt, counterpart_currency_amount,
-            # withholdings_amount y write_off_amount ya están en B tras el refactor.
+            # Usamos payment_total de cada linked (en B2/destination_currency_id) para que la
+            # comparación con selected_debt y withholdings_amount —que también están en B2— sea
+            # siempre en la misma moneda.  Cuando B1==B2 (caso normal), payment_total ==
+            # counterpart_currency_amount, por lo que no hay regresión.  Cuando B1≠B2
+            # (reconcile_on_company_currency), counterpart_currency_amount está en B1 y mezclaría
+            # monedas; payment_total ya convierte A→C correctamente en ese branch.
             payments = rec.main_payment_id.link_payment_ids
-            total_linked_in_b = sum(payments.mapped("counterpart_currency_amount"))
+            total_linked_in_b = sum(payments.mapped("payment_total"))
             rec.payment_difference = (
                 rec.main_payment_id.selected_debt
                 - total_linked_in_b

@@ -150,7 +150,7 @@
                 <attribute name="invisible" separator=" or " add="is_main_payment"></attribute>
             </field>
             <field name="counterpart_currency_amount" position="after">
-                <field name="bundle_counterpart_currency_amount" string="Payments Amount" invisible="not counterpart_currency_id or is_internal_transfer or not use_payment_pro or not is_main_payment"/>
+                <field name="link_payments_total" string="Payments Amount" invisible="not counterpart_currency_id or is_internal_transfer or not use_payment_pro or not is_main_payment"/>
             </field>
             <field name="receiptbook_id" position="after">
                 <field name="main_payment_id" readonly="True" invisible="is_main_payment or state == 'draft'"/>
@@ -192,13 +192,15 @@
                 <field name="company_currency_id" column_invisible="True"/>
                 <field name="currency_id" column_invisible="True"/>
                 <field name="destination_currency_id" column_invisible="True"/>
+                <field name="counterpart_currency_id" column_invisible="True"/>
                 <field name="date"/>
                 <field name="name"/>
                 <field name="journal_id"/>
                 <field name="payment_method_id"/>
                 <field name="payment_type" optional="hide"/>
-                <field name="amount" string="Amount"/>
-                <field name="counterpart_currency_amount" string="Amount in SC" sum="Total"/>
+                <field name="amount" string="Amount (JC)" help="Amount on journal currency" optional="hide"/>
+                <field name="payment_total" string="Amount" sum="Total"/>
+                <field name="counterpart_currency_amount" string="Amount (DC)" sum="Total" help="Amount in Debt Currency" optional="hide" column_invisible="parent.destination_currency_id == parent.counterpart_currency_id"/>
                 <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'in_process'" decoration-success="state == 'paid'"/>
             </list>
         </field>

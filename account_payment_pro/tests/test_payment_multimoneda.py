@@ -335,6 +335,12 @@ class TestPaymentMultimoneda(TestArCommon):
         )
         self.assertIn(invoice.payment_state, ["paid", "in_payment"])
 
+        # payment_matched_amount: AR (debit side, inbound) → positivo en B2=USD
+        inv_line = self._get_debt_lines(invoice)
+        matched = inv_line.with_context(matched_payment_ids=payment.ids)
+        self.assertEqual(matched.payment_matched_currency_id, self.usd, "target B2=USD")
+        self.assertAlmostEqual(matched.payment_matched_amount, 100, places=2, msg="AR debit → positivo")
+
     def test_caso3_compra_de_divisa(self):
         """Caso 3 · ARS → USD → ARS  (compra de divisa)
         Pago en ARS para cancelar deuda en USD. Verifica:
@@ -590,6 +596,19 @@ class TestPaymentMultimoneda(TestArCommon):
                 },
             )
             self.assertIn(invoice.payment_state, ["paid", "in_payment"])
+
+            # payment_matched_amount: AP (credit side, outbound) → negativo en C=ARS.
+            # La factura es USD pero en reconcile el partial.amount está en ARS.
+            # Con el código anterior (buggy) devolvía -100 (USD tratados como ARS).
+            inv_line = self._get_debt_lines(invoice)
+            matched = inv_line.with_context(matched_payment_ids=payment.ids)
+            self.assertEqual(matched.payment_matched_currency_id, self.ars, "target C=ARS en reconcile")
+            self.assertAlmostEqual(
+                matched.payment_matched_amount,
+                -amount_ars,
+                places=2,
+                msg="AP credit → negativo; usa partial.amount (ARS), no amount_currency (USD)",
+            )
         finally:
             self.company.reconcile_on_company_currency = False
 
@@ -649,6 +668,15 @@ class TestPaymentMultimoneda(TestArCommon):
                 },
             )
             self.assertIn(invoice.payment_state, ["paid", "in_payment"])
+
+            # payment_matched_amount: AP (credit side, outbound) → negativo en C=ARS.
+            # Factura en ARS → rec.currency_id=ARS=target, código actual ya funciona.
+            inv_line = self._get_debt_lines(invoice)
+            matched = inv_line.with_context(matched_payment_ids=payment.ids)
+            self.assertEqual(matched.payment_matched_currency_id, self.ars, "target C=ARS en reconcile")
+            self.assertAlmostEqual(
+                matched.payment_matched_amount, -120_000, places=2, msg="AP credit → negativo en ARS"
+            )
         finally:
             self.company.reconcile_on_company_currency = False
 
@@ -719,6 +747,22 @@ class TestPaymentMultimoneda(TestArCommon):
                 },
             )
             self.assertIn(invoice.payment_state, ["paid", "in_payment"])
+
+            # payment_matched_amount: AP (credit side, outbound) → negativo en C=ARS.
+            # Caso 10 es el más crítico: rec.currency_id=USD (B1), target=ARS (C).
+            # Con el código anterior (buggy) devolvía 100*cp_rate EUR (importe en B1
+            # multiplicado por counterpart_rate, resultando en EUR, no ARS).
+            # Con el fix usa partial.amount → ARS correcto.
+            expected_invoice_ars = abs(self._get_debt_lines(invoice).balance)  # 100 USD * 1200 = 120 000 ARS
+            inv_line = self._get_debt_lines(invoice)
+            matched = inv_line.with_context(matched_payment_ids=payment.ids)
+            self.assertEqual(matched.payment_matched_currency_id, self.ars, "target C=ARS en reconcile")
+            self.assertAlmostEqual(
+                matched.payment_matched_amount,
+                -expected_invoice_ars,
+                places=2,
+                msg="AP credit → negativo en ARS; usa partial.amount, no amount_currency en B1 (USD)",
+            )
         finally:
             self.company.reconcile_on_company_currency = False
 
