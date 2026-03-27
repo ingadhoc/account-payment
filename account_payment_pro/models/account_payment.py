@@ -129,6 +129,14 @@ class AccountPayment(models.Model):
         compute="_compute_matched_move_line_ids",
         help="Lines that has been matched to payments, only available after payment validation",
     )
+    exchange_diff_move_ids = fields.Many2many(
+        "account.move",
+        compute="_compute_exchange_diff_move_ids",
+        help="Exchange difference journal entries generated when reconciling this payment in foreign currency.",
+    )
+    exchange_diff_move_count = fields.Integer(
+        compute="_compute_exchange_diff_move_ids",
+    )
     write_off_type_id = fields.Many2one(
         "account.write_off.type",
         check_company=True,
@@ -612,6 +620,29 @@ class AccountPayment(models.Model):
             )
             debit_moves = payment_lines.mapped("matched_debit_ids.debit_move_id")
             credit_moves = payment_lines.mapped("matched_credit_ids.credit_move_id")
+
+            # Excluimos los apuntes que pertenecen a asientos de diferencia de cambio
+            # (generados automáticamente por Odoo al conciliar en moneda extranjera).
+            # Razones:
+            #   1. Son inconsistentes: si la cotización baja se generan con signo opuesto
+            #      y algunos aparecen mientras otros no, según la dirección del movimiento.
+            #   2. No aportan información al informe que se entrega al cliente; el cliente
+            #      quiere ver los comprobantes reales que se cancelaron, no los ajustes internos.
+            #
+            # Usamos account.partial.reconcile.exchange_move_id, que es el vínculo directo
+            # entre cada conciliación parcial y el asiento de diferencia que generó. Es más
+            # preciso que filtrar por diario de diferencias: no depende de configuración y no
+            # excluye por azar asientos legítimos contabilizados en ese diario.
+            #
+            # Los asientos excluidos se exponen en `exchange_diff_move_ids` para uso
+            # contable/backend (ver campo y botón inteligente en la vista).
+            exchange_move_ids = payment_lines.mapped("matched_debit_ids.exchange_move_id") | payment_lines.mapped(
+                "matched_credit_ids.exchange_move_id"
+            )
+            if exchange_move_ids:
+                debit_moves = debit_moves.filtered(lambda x: x.move_id not in exchange_move_ids)
+                credit_moves = credit_moves.filtered(lambda x: x.move_id not in exchange_move_ids)
+
             debit_lines_sorted = debit_moves.filtered(lambda x: x.date_maturity != False).sorted(
                 key=lambda x: (x.date_maturity, x.move_id.name)
             )
@@ -626,6 +657,38 @@ class AccountPayment(models.Model):
             ) - payment_lines
 
         (self - stored_payments).matched_move_line_ids = False
+
+    @api.depends("move_id.line_ids")
+    def _compute_exchange_diff_move_ids(self):
+        """Recolecta todos los asientos de diferencia de cambio vinculados a este pago
+        via account.partial.reconcile.exchange_move_id.
+
+        A diferencia de matched_move_line_ids (que los excluye), este campo los expone
+        todos — tanto los de cotización al alza como a la baja — para uso contable.
+        """
+        stored_payments = self.filtered("id")
+        for rec in stored_payments:
+            payment_lines = rec.move_id.line_ids.filtered(
+                lambda x: x.account_type in self._get_valid_payment_account_types()
+            )
+            moves = payment_lines.mapped("matched_debit_ids.exchange_move_id") | payment_lines.mapped(
+                "matched_credit_ids.exchange_move_id"
+            )
+            rec.exchange_diff_move_ids = moves
+            rec.exchange_diff_move_count = len(moves)
+        (self - stored_payments).exchange_diff_move_ids = False
+        (self - stored_payments).exchange_diff_move_count = 0
+
+    def action_open_exchange_diff_moves(self):
+        """Abre los asientos de diferencia de cambio relacionados con este pago."""
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Exchange Differences"),
+            "res_model": "account.move",
+            "view_mode": "list,form",
+            "domain": [("id", "in", self.exchange_diff_move_ids.ids)],
+        }
 
     @api.depends("state", "matched_move_line_ids", "payment_total")
     def _compute_matched_amounts(self):

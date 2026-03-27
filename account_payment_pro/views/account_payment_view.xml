@@ -21,6 +21,22 @@
     <field name="inherit_id" ref="account.view_account_payment_form"/>
     <field name="arch" type="xml">
 
+        <xpath expr="//div[@name='button_box']" position="inside">
+            <button name="action_open_exchange_diff_moves"
+                    type="object"
+                    class="oe_stat_button"
+                    icon="fa-exchange"
+                    invisible="exchange_diff_move_count == 0"
+                    groups="account.group_account_user">
+                <div class="o_form_field o_stat_info">
+                    <span class="o_stat_text">
+                        <field name="exchange_diff_move_count"/>
+                        <span> Exch. Diff</span>
+                    </span>
+                </div>
+            </button>
+        </xpath>
+
         <xpath expr="//field[@name='partner_id'][1]" position="attributes">
             <attribute name="readonly">state != 'draft' or context.get('default_company_id')</attribute>
         </xpath>
