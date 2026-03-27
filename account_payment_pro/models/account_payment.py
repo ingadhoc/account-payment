@@ -565,6 +565,13 @@ class AccountPayment(models.Model):
             ):
                 rec.unreconciled_amount = rec.to_pay_amount - rec.selected_debt
 
+    @api.onchange("to_pay_move_line_ids")
+    def _onchange_to_pay_move_line_ids(self):
+        """Evitar que se recompute automáticamente cuando el usuario edita manualmente
+        el campo many2many desde la UI"""
+        for rec in self.filtered(lambda x: x.partner_id and x.state == "draft"):
+            rec.to_pay_move_line_ids = rec.to_pay_move_line_ids.filtered("partner_id")
+
     # We dont set 'is_internal_transfer' as a dependencies as it could leed to recompute to_pay_move_line_ids
     @api.depends("partner_id", "partner_type", "company_id")
     def _compute_to_pay_move_lines(self):
@@ -598,6 +605,7 @@ class AccountPayment(models.Model):
 
     def _get_to_pay_move_lines_domain(self):
         self.ensure_one()
+
         domain = [
             ("partner_id", "=", self.partner_id.commercial_partner_id.id),
             ("company_id", "=", self.company_id.id),
@@ -611,7 +619,7 @@ class AccountPayment(models.Model):
                 "asset_receivable" if self.partner_type == "customer" else "liability_payable",
             ),
         ]
-        # TODO revisar bien estos, no debería ser necesario, ver el blame porque se agrego lo del active_ids
+        # Solo agregar active_ids si estamos en contexto de seleccionar líneas específicas
         if self.env.context.get("active_ids") and self.env.context.get("active_model") == "account.move.line":
             domain.append(("move_id.line_ids", "in", self.env.context.get("active_ids")))
         return domain
@@ -628,6 +636,7 @@ class AccountPayment(models.Model):
 
     def remove_all(self):
         self.to_pay_move_line_ids = False
+        self.to_pay_amount = 0.0
 
     @api.constrains("partner_id", "to_pay_move_line_ids")
     def check_to_pay_lines(self):
