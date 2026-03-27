@@ -144,28 +144,34 @@ class AccountPayment(models.Model):
     )
     write_off_available = fields.Boolean(compute="_compute_write_off_available")
     use_payment_pro = fields.Boolean(compute="_compute_use_payment_pro")
-
     open_move_line_ids = fields.One2many(related="move_id.open_move_line_ids")
+    multi_currency_debt = fields.Boolean(
+        compute="_compute_multi_currency_debt",
+    )
+
+    @api.depends("to_pay_move_line_ids", "company_id.reconcile_on_company_currency")
+    def _compute_multi_currency_debt(self):
+        for rec in self:
+            if rec.company_id.reconcile_on_company_currency:
+                rec.multi_currency_debt = False
+                continue
+            currencies = rec.to_pay_move_line_ids.mapped("currency_id")
+            rec.multi_currency_debt = len(currencies) > 1
 
     @api.depends(
-        "destination_account_id",
         "destination_account_id",
         "company_currency_id",
         "company_id",
         "to_pay_move_line_ids",
+        "multi_currency_debt",
     )
     def _compute_counterpart_currency_editable(self):
         for rec in self:
             account_currency = rec.destination_account_id.currency_id
-            # Cuenta fuerza moneda extranjera → nunca editable
             if account_currency and account_currency != rec.company_currency_id:
                 rec.counterpart_currency_editable = False
                 continue
-            # Cuenta sin moneda forzada: editable si el flag de reconcile
-            # está activo (caso 10) o si no hay deuda seleccionada (caso 7)
-            rec.counterpart_currency_editable = (
-                rec.company_id.reconcile_on_company_currency or not rec.to_pay_move_line_ids
-            )
+            rec.counterpart_currency_editable = True
 
     @api.depends(
         "destination_account_id",
@@ -190,11 +196,35 @@ class AccountPayment(models.Model):
                 # Default: moneda de la compañía
                 rec.counterpart_currency_id = company_currency
             elif rec.to_pay_move_line_ids:
-                # Default: moneda de las líneas de deuda (todas iguales por constraint)
-                rec.counterpart_currency_id = rec.to_pay_move_line_ids[:1].currency_id
-            else:
+                currencies = rec.to_pay_move_line_ids.mapped("currency_id")
+                if len(currencies) == 1:
+                    rec.counterpart_currency_id = currencies
+                else:
+                    # Múltiples monedas: ask user to edit
+                    rec.counterpart_currency_id = False
+            elif not rec.counterpart_currency_id:
                 # Sin deuda seleccionada: default moneda de la compañía
                 rec.counterpart_currency_id = company_currency
+
+    @api.onchange("counterpart_currency_id")
+    def _onchange_counterpart_currency_id_filter_lines(self):
+        """Cuando el usuario cambia la moneda de cancelación manualmente,
+        filtrar las líneas de deuda para que solo queden las de esa moneda.
+        Solo aplica cuando hay líneas con múltiples monedas.
+        """
+        for rec in self:
+            if not rec.counterpart_currency_id:
+                continue
+            if rec.company_id.reconcile_on_company_currency:
+                continue  # con reconcile no filtramos, la moneda es informativa
+            # Si todas las líneas ya están en la moneda elegida, el cambio fue
+            # computado desde las propias líneas (ej: apertura del wizard desde
+            # facturas), no iniciado por el usuario → no hay nada que filtrar.
+            if rec.to_pay_move_line_ids:
+                line_currencies = rec.to_pay_move_line_ids.mapped("currency_id")
+                if len(line_currencies) == 1 and line_currencies == rec.counterpart_currency_id:
+                    continue
+            rec.with_context(force_currency_domain=rec.counterpart_currency_id.id)._add_all()
 
     @api.depends("counterpart_currency_id", "company_id", "destination_account_id", "company_currency_id")
     def _compute_destination_currency_id(self):
@@ -397,7 +427,7 @@ class AccountPayment(models.Model):
     @api.onchange("counterpart_currency_amount")
     def _inverse_counterpart_currency_amount(self):
         for rec in self:
-            if not rec.counterpart_currency_id.is_zero(
+            if rec.counterpart_currency_id and not rec.counterpart_currency_id.is_zero(
                 rec.amount * rec.counterpart_rate - rec.counterpart_currency_amount
             ):
                 rec.amount = rec.counterpart_currency_amount / rec.counterpart_rate if rec.counterpart_rate else 0
@@ -726,6 +756,8 @@ class AccountPayment(models.Model):
                 "asset_receivable" if self.partner_type == "customer" else "liability_payable",
             ),
         ]
+        if self.env.context.get("force_currency_domain"):
+            domain += [("currency_id", "=", self.env.context.get("force_currency_domain"))]
         return domain
 
     def _add_all(self):
@@ -736,7 +768,10 @@ class AccountPayment(models.Model):
             ]
 
     def action_add_all(self):
-        self.with_context(active_ids=False)._add_all()
+        ctx = {}
+        if self.counterpart_currency_id and not self.company_id.reconcile_on_company_currency:
+            ctx["force_currency_domain"] = self.counterpart_currency_id.id
+        self.with_context(active_ids=False, **ctx)._add_all()
 
     def remove_all(self):
         self.to_pay_move_line_ids = False
@@ -765,12 +800,6 @@ class AccountPayment(models.Model):
             )
             if counterpart_aml and debt_aml:
                 (counterpart_aml + (debt_aml)).reconcile()
-            # Lo sacamos ya que no es correcto de odoo cuando se deslinkea el pago
-            # o se linkea por otro lado el pago no lo suma. Decidimos dejarlo por si surge la necesidad
-            # Si surge la necesidad habria que tratar de que lo de odoo nativo funcione
-            # if rec.company_id.use_payment_pro:
-            #     for invoices in (rec.reconciled_invoice_ids + rec.reconciled_bill_ids):
-            #         invoices.matched_payment_ids += rec
 
     def action_post(self):
         res = super().action_post()

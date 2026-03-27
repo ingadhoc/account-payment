@@ -21,8 +21,6 @@
     <field name="inherit_id" ref="account.view_account_payment_form"/>
     <field name="arch" type="xml">
 
-
-
         <xpath expr="//field[@name='partner_id'][1]" position="attributes">
             <attribute name="readonly">state != 'draft' or context.get('default_company_id')</attribute>
         </xpath>
@@ -134,6 +132,11 @@
     <field name="arch" type="xml">
         <page name="latam_checks_page" position="before">
             <page string="Debts" name="debts" invisible="state != 'draft' or is_internal_transfer or not use_payment_pro">
+                <div class="alert alert-warning" role="alert"
+                    invisible="not multi_currency_debt or not use_payment_pro">
+                    La deuda seleccionada tiene múltiples monedas.
+                    Seleccione la moneda de cancelación para filtrar las líneas.
+                </div>
                 <group >
                     <group>
                         <!-- Moneda de contrapartida: editable solo cuando la cuenta no fuerza moneda -->
@@ -142,6 +145,7 @@
                             readonly="state != 'draft' or not counterpart_currency_editable
                                     or not use_payment_pro
                                     or is_internal_transfer"
+                            required="use_payment_pro"
                             options="{'no_create': True, 'no_open': True}"/>
                     </group>
                     <group name="name">
