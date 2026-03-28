@@ -206,7 +206,7 @@
         <list string="Journal Items" edit="0" create="0" editable="bottom">
             <field name="date" readonly="True"/>
             <field name="date_maturity" optional="hide" readonly="True"/>
-            <field name="move_id" required="0" readonly="True"/>
+            <field name="move_name" string="Journal Entry" widget="open_move_widget" readonly="True"/>
             <field name="journal_id" options='{"no_open":True}' readonly="True" optional="hide"/>
             <field name="name" readonly="True" optional="hide"/>
             <field name="ref" optional="show" readonly="True"/>
@@ -219,7 +219,6 @@
             <field name="currency_id" column_invisible="True" readonly="True"/>
             <field name="company_currency_id" column_invisible="True" readonly="True"/>
             <field name="company_id" column_invisible="True" readonly="True"/>
-            <!--button type="object" icon="fa-external-link" help="Open Related Document" name="action_open_related_document"/-->
         </list>
     </field>
 </record>
