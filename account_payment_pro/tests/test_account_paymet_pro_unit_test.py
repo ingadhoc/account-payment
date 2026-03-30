@@ -88,3 +88,74 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
         payment._compute_amount_company_currency()
         payment.action_post()
         self.assertEqual(payment.exchange_rate, eur_actual_rate_2, "no se tomo de forma correcta el tipo de cambio")
+
+    def test_action_draft_unreconciles_payment(self):
+        """Test that action_draft removes partial reconciliations when going back to draft"""
+        # Create invoice
+        invoice = self.env["account.move"].create(
+            {
+                "partner_id": self.partner_ri.id,
+                "invoice_date": self.today,
+                "move_type": "out_invoice",
+                "journal_id": self.company_journal.id,
+                "company_id": self.company.id,
+                "invoice_line_ids": [
+                    Command.create(
+                        {
+                            "product_id": self.env.ref("product.product_product_16").id,
+                            "quantity": 1,
+                            "price_unit": 100,
+                        }
+                    ),
+                ],
+            }
+        )
+        invoice.action_post()
+
+        # Create and post payment
+        vals = {
+            "journal_id": self.company_bank_journal.id,
+            "amount": invoice.amount_total,
+            "date": self.today,
+        }
+        action_context = invoice.action_register_payment()["context"]
+        payment = self.env["account.payment"].with_context(**action_context).create(vals)
+        payment.action_post()
+
+        # Get payment lines and verify there are partial reconciliations
+        payment_lines = payment.move_id.line_ids.filtered(
+            lambda l: l.account_id.account_type in payment._get_valid_payment_account_types()
+        )
+        partials_before = payment_lines.mapped("matched_debit_ids") | payment_lines.mapped("matched_credit_ids")
+
+        # Verify that partial reconciliations exist
+        self.assertTrue(partials_before, "There should be partial reconciliations after posting the payment")
+        self.assertTrue(payment.move_id.posted_before, "posted_before should be True after posting")
+
+        # Store the payment_total before going to draft (to verify it's not reset to 0)
+        payment_total_before = payment.payment_total
+
+        # Call action_draft
+        payment.action_draft()
+
+        # Verify that posted_before is False
+        self.assertFalse(payment.move_id.posted_before, "posted_before should be False after action_draft")
+
+        # Verify that payment_total is preserved after action_draft (regression check)
+        self.assertEqual(
+            payment.payment_total,
+            payment_total_before,
+            f"payment_total should remain {payment_total_before} after action_draft, not reset to 0",
+        )
+
+        # Verify that partial reconciliations were removed
+        payment_lines_after = payment.move_id.line_ids.filtered(
+            lambda l: l.account_id.account_type in payment._get_valid_payment_account_types()
+        )
+        partials_after = payment_lines_after.mapped("matched_debit_ids") | payment_lines_after.mapped(
+            "matched_credit_ids"
+        )
+        self.assertFalse(partials_after, "Partial reconciliations should be removed after action_draft")
+
+        # Verify payment is in draft state
+        self.assertEqual(payment.state, "draft", "Payment should be in draft state after action_draft")
