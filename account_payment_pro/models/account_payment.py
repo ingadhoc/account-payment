@@ -163,8 +163,17 @@ class AccountPayment(models.Model):
         # Seteamos posted_before en true para que nos permita pasar a borrador el pago y poder realizar cambio sobre el mismo
         # Nos salteamos la siguente validacion
         # https://github.com/odoo/odoo/blob/b6b90636938ae961c339807ea893cabdede9f549/addons/account/models/account_move.py#L2474
-        if self.company_id.use_payment_pro:
-            self.move_id.posted_before = False
+
+        for rec in self.filtered(lambda p: p.company_id.use_payment_pro):
+            rec.move_id.posted_before = False
+
+            # Al pasar a borrador un pago, eliminamos las conciliaciones parciales que tenga.
+            valid_account_types = rec._get_valid_payment_account_types()
+            payment_lines = rec.move_id.line_ids.filtered(lambda l: l.account_id.account_type in valid_account_types)
+            partials = payment_lines.mapped("matched_debit_ids") | payment_lines.mapped("matched_credit_ids")
+            if partials:
+                partials.unlink()
+
         super().action_draft()
 
     def write(self, vals):
