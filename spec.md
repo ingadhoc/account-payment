@@ -80,7 +80,21 @@ sino:
             → company_currency_id  (editable por usuario)
 ```
 
-**Editable solo cuando:** la cuenta no tiene moneda definida (o es igual a la de la compañía) Y (`reconcile_on_company_currency` está activo O no hay deuda seleccionada).
+**Caso especial — Transferencias internas:**
+
+Cuando `is_internal_transfer = True`, `counterpart_currency_id` se fija a la moneda del
+diario destino (`destination_journal_id.currency_id or company_currency_id`). Esto permite
+que la UI muestre automáticamente la cotización cruzada entre moneda origen y moneda
+destino vía `counterpart_rate` / `user_counterpart_rate`, sin necesidad de campos extra.
+
+| Transfer | A | counterpart_currency_id | Rate visible en UI |
+|---|---|---|---|
+| ARS→ARS | ARS | ARS | Ninguno (A=B1) |
+| ARS→USD | ARS | USD | ARS/USD vía counterpart_rate |
+| USD→ARS | USD | ARS (=C) | Solo accounting_rate (B1=C) |
+| USD→EUR | USD | EUR | USD/EUR vía counterpart_rate + accounting_rate |
+
+**Editable solo cuando:** la cuenta no tiene moneda definida (o es igual a la de la compañía) Y (`reconcile_on_company_currency` está activo O no hay deuda seleccionada). En transferencias internas **no es editable** (determinado por el diario destino).
 
 ### `destination_currency_id` (B2) — Calculado, NO almacenado
 
@@ -538,6 +552,14 @@ parcialmente los casos del modelo tri-monetario:
    El override de `account_payment_pro` re-inyecta las write-off lines construidas a partir
    de `write_off_amount`/`write_off_type_id` después del `super()` si fueron descartadas,
    y recalcula el balance de la contrapartida para que el asiento cuadre.
+7. **Transferencias internas:** la línea de cuenta puente (contrapartida) va siempre en
+   moneda de compañía (C), con `amount_currency = balance`. Esto garantiza que ambos
+   lados (original y paired) tengan la misma moneda en la cuenta puente y puedan
+   reconciliar tanto en `amount_currency` como en `balance`.
+8. **`force_balance` en paired payment:** cuando `force_balance` está definido (paired
+   payment de transferencia interna), el balance de liquidez **no** se recalcula desde
+   `accounting_rate`. Esto evita discrepancias por redondeo en conversiones transitivas
+   (ej: USD → ARS → EUR).
 
 ---
 
@@ -564,18 +586,84 @@ def _get_trigger_fields_to_synchronize(self):
     )
 ```
 
-### `_create_paired_internal_transfer_payment`
+### `_prepare_paired_payment_values` (en `account_payment_pro`)
 
-El código actual propaga `force_amount_company_currency` en contexto para la
-transferencia interna pareada. Con el refactor, propagar `accounting_rate`:
+El método `_prepare_paired_payment_values` de `account_internal_transfer` genera los
+valores base del paired payment (journal, currency, payment_type, etc.).
+`account_payment_pro` lo extiende para **convertir el amount** entre monedas y
+**fijar el `accounting_rate`** del paired.
+
+**Lógica de conversión del amount:**
+
+```
+si dest_currency == currency_id:
+    → no convertir (mismo journal currency)
+sino:
+    balance_in_c = amount / accounting_rate  (si A ≠ C, sino amount directo)
+
+    si dest_currency == counterpart_currency_id y counterpart_currency_amount existe:
+        → paired_amount = |counterpart_currency_amount|   (respeta tasa editada por el usuario)
+    si dest_currency == company_currency_id:
+        → paired_amount = balance_in_c
+    sino:
+        → paired_amount = balance_in_c × _get_conversion_rate(C, dest_currency)  (fallback)
+```
+
+**Fijado del `accounting_rate` del paired:**
+
+Cuando la moneda destino es divisa (≠ C), el `accounting_rate` del paired se calcula
+como la tasa implícita real de la operación (`paired_amount / balance_in_c`), en lugar
+de usar la tasa del día. Esto evita discrepancias de redondeo y refleja fielmente el
+costo de la transferencia.
+
+```python
+def _prepare_paired_payment_values(self):
+    vals = super()._prepare_paired_payment_values()
+    dest_currency = self.destination_journal_id.currency_id or self.company_currency_id
+    if dest_currency != self.currency_id:
+        balance_in_c = self.amount / self.accounting_rate if (...) else self.amount
+
+        if dest_currency == self.counterpart_currency_id and self.counterpart_currency_amount:
+            paired_amount = abs(self.counterpart_currency_amount)
+        elif dest_currency == self.company_currency_id:
+            paired_amount = balance_in_c
+        else:
+            # Fallback: convertir pasando por C
+            dest_rate = _get_conversion_rate(C, dest_currency, ...)
+            paired_amount = dest_currency.round(balance_in_c * dest_rate)
+
+        vals["amount"] = paired_amount
+
+        # Fijar accounting_rate del paired con la tasa implícita real
+        if dest_currency != self.company_currency_id and balance_in_c:
+            vals["accounting_rate"] = paired_amount / balance_in_c
+
+    return vals
+```
+
+### `_create_paired_internal_transfer_payment` (en `account_internal_transfer`)
+
+El método crea el paired payment, genera su asiento y reconcilia las líneas de la
+cuenta puente. Se pasa `force_balance` al generar el asiento del paired para forzar
+que el balance ARS de la cuenta puente coincida exactamente con el del pago original,
+evitando discrepancias de redondeo cuando los journals son de divisas distintas
+(ej: USD → EUR).
 
 ```python
 def _create_paired_internal_transfer_payment(self):
-    for rec in self:
-        super(
-            AccountPayment,
-            rec.with_context(default_accounting_rate=rec.accounting_rate),
-        )._create_paired_internal_transfer_payment()
+    for payment in self:
+        paired_payment = payment.copy(payment._prepare_paired_payment_values())
+        paired_payment._compute_payment_method_line_id()
+        paired_payment.filtered(lambda p: not p.move_id)._generate_journal_entry(
+            # Force the exact ARS balance from the original transfer line
+            force_balance=abs(sum(
+                payment.move_id.line_ids.filtered(
+                    lambda l: l.account_id == payment.destination_account_id
+                ).mapped("balance")
+            ))
+        )
+        paired_payment.move_id._post(soft=False)
+        # ... reconcile bridge lines
 ```
 
 ---
@@ -800,6 +888,49 @@ El campo monetary ya muestra el símbolo de la moneda.
 - [ ] Write-off funciona en combinación con retenciones (fix exclusión mutua base Odoo)
 - [x] `_get_trigger_fields_to_synchronize` actualizado con los campos renombrados
 - [x] `_create_paired_internal_transfer_payment` propaga `accounting_rate` en vez de `force_amount_company_currency`
+- [x] Transferencias internas multi-moneda: 6 tests cubriendo todos los casos (IT.1–IT.6)
+- [x] `counterpart_currency_id` en transferencias internas = moneda del diario destino (cotización cruzada en UI)
+- [x] Línea de cuenta puente siempre en moneda de compañía para reconciliación correcta
+- [x] `accounting_rate` del paired refleja tasa implícita real, no tasa del día
+
+---
+
+## Tests de transferencias internas multi-moneda
+
+> Archivo: `account_payment_pro/tests/test_internal_transfer_multimoneda.py`
+
+### Rates de referencia del test
+
+- 1 USD = 1.200 ARS
+- 1 EUR = 1.320 ARS
+- USD → EUR (transitividad) = 1320/1200 = 1.1
+
+### Casos cubiertos
+
+| Test | Transfer | Amount original | Expected paired | Verifica |
+|------|----------|----------------|-----------------|----------|
+| IT.1 | ARS → ARS | 100.000 ARS | 100.000 ARS | Caso trivial, sin conversión |
+| IT.2 | ARS → USD | 1.200.000 ARS | 1.000 USD | Compra de divisa. Paired `accounting_rate` = tasa mercado |
+| IT.3 | USD → ARS | 1.000 USD | 1.200.000 ARS | Venta de divisa (inverso de IT.2) |
+| IT.4 | USD → EUR | 1.000 USD | ~909.09 EUR | Arbitraje cruzado via C (ARS). Balances ARS de cuenta puente coinciden. Reconciliación **no** se verifica (monedas distintas en ambos lados) |
+| IT.5 | ARS → USD (custom) | 1.500.000 ARS | 1.250 USD | Tasa editada manualmente. Paired amount respeta tasa del mercado. `accounting_rate` del paired = tasa implícita |
+| IT.6 | EUR → ARS | 500 EUR | 660.000 ARS | Otra combinación de divisas |
+
+### Verificaciones del helper `_assert_transfer_ok`
+
+1. Ambos pagos posteados (`paid` o `in_process`)
+2. Ambos asientos balancean (`sum(balance) == 0`)
+3. Paired amount correcto en la moneda destino
+4. Paired currency correcta
+5. Balances ARS de la cuenta puente se cancelan (`sum = 0`)
+6. Reconciliación de líneas de cuenta puente (solo cuando ambos lados comparten moneda)
+
+### Nota sobre reconciliación USD → EUR (IT.4)
+
+Cuando ambos diarios son en divisas distintas (ej: USD → EUR), las líneas de la cuenta
+puente quedan con `currency_id` diferente (USD vs EUR). Odoo no puede reconciliar el
+`amount_currency` en esos casos, aunque los balances ARS cancelen perfectamente.
+El test verifica que los balances cancelen pero no aserta reconciliación.
 
 ---
 

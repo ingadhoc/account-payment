@@ -190,13 +190,20 @@ class AccountPayment(models.Model):
 
     @api.depends(
         "destination_account_id",
-        "destination_account_id",
         "to_pay_move_line_ids",
         "company_id",
         "company_currency_id",
+        "is_internal_transfer",
+        "destination_journal_id",
     )
     def _compute_counterpart_currency_id(self):
         for rec in self:
+            # Transferencias internas: usar moneda del diario destino para mostrar
+            # la cotización cruzada (ej. USD/EUR) en la UI via counterpart_rate
+            if rec.is_internal_transfer and rec.destination_journal_id:
+                rec.counterpart_currency_id = rec.destination_journal_id.currency_id or rec.company_currency_id
+                continue
+
             account_currency = rec.destination_account_id.currency_id
             company_currency = rec.company_currency_id
 
@@ -570,7 +577,9 @@ class AccountPayment(models.Model):
         # accounting_rate = A/C (formato Odoo nativo, ej: 0.000667 p/USD→ARS)
         # balance_en_C = amount_en_A / accounting_rate
         # Se itera sobre TODAS las líneas (puede haber N cuando se usan cheques)
-        if self.accounting_rate and self.currency_id != self.company_currency_id:
+        # Cuando force_balance está definido, el balance ya fue forzado por base Odoo
+        # (ej: paired payment de transferencia interna) y NO debe recalcularse.
+        if self.accounting_rate and self.currency_id != self.company_currency_id and force_balance is None:
             for liq_line in liquidity_lines:
                 liq_line["balance"] = liq_line["amount_currency"] / self.accounting_rate
 
@@ -581,8 +590,18 @@ class AccountPayment(models.Model):
         counterpart_lines[0]["balance"] = -total_liq_balance - write_off_balance - withholding_balance
 
         # ── Ajuste de MONEDA en la línea de CONTRAPARTIDA ─────────────────────────
-        # Si A != B1: la contrapartida va en moneda B1 (counterpart_currency_id)
-        if self.counterpart_currency_id and self.counterpart_currency_id != self.currency_id:
+        if self.is_internal_transfer:
+            # Transferencia interna: la línea de cuenta puente va siempre en moneda
+            # de compañía (C) para que ambos lados (original y paired) reconcilien
+            # correctamente en amount_currency y balance.
+            counterpart_lines[0].update(
+                {
+                    "currency_id": self.company_currency_id.id,
+                    "amount_currency": counterpart_lines[0]["balance"],
+                }
+            )
+        elif self.counterpart_currency_id and self.counterpart_currency_id != self.currency_id:
+            # Si A != B1: la contrapartida va en moneda B1 (counterpart_currency_id)
             cp_sign = 1 if counterpart_lines[0].get("amount_currency", 0) >= 0 else -1
             # La contrapartida AP/AR cubre el TOTAL de la deuda cancelada: cash + write-off.
             # counterpart_currency_amount = porción cash en B1, write_off_amount está en B2.
@@ -616,12 +635,41 @@ class AccountPayment(models.Model):
             "write_off_type_id",
         )
 
-    def _create_paired_internal_transfer_payment(self):
-        for rec in self:
-            super(
-                AccountPayment,
-                rec.with_context(default_accounting_rate=rec.accounting_rate),
-            )._create_paired_internal_transfer_payment()
+    def _prepare_paired_payment_values(self):
+        vals = super()._prepare_paired_payment_values()
+        dest_currency = self.destination_journal_id.currency_id or self.company_currency_id
+        if dest_currency != self.currency_id:
+            # balance_in_c: monto en moneda de compañía (ARS)
+            if self.accounting_rate and self.currency_id != self.company_currency_id:
+                balance_in_c = self.amount / self.accounting_rate
+            else:
+                balance_in_c = self.amount
+
+            if dest_currency == self.counterpart_currency_id and self.counterpart_currency_amount:
+                # counterpart_currency_id coincide con la moneda destino (caso habitual
+                # en transferencias internas). Usamos counterpart_currency_amount que
+                # respeta cualquier cotización cruzada editada por el usuario.
+                paired_amount = abs(self.counterpart_currency_amount)
+            elif dest_currency == self.company_currency_id:
+                paired_amount = balance_in_c
+            else:
+                # Fallback: convertir pasando por C (moneda contable)
+                dest_rate = self.env["res.currency"]._get_conversion_rate(
+                    self.company_currency_id,
+                    dest_currency,
+                    self.company_id,
+                    self.date or fields.Date.context_today(self),
+                )
+                paired_amount = dest_currency.round(balance_in_c * dest_rate)
+
+            vals["amount"] = paired_amount
+
+            # Fijar accounting_rate del paired para que refleje la tasa implícita
+            # real de la operación (balance_in_c / paired_amount), no la del día.
+            if dest_currency != self.company_currency_id and balance_in_c:
+                vals["accounting_rate"] = paired_amount / balance_in_c
+
+        return vals
 
     ####################################
     # desde modelo account.payment.group

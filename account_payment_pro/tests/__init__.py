@@ -1,1 +1,1 @@
-from . import test_account_paymet_pro_unit_test, test_payment_multimoneda
+from . import test_account_paymet_pro_unit_test, test_payment_multimoneda, test_internal_transfer_multimoneda

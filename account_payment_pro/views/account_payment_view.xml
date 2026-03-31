@@ -123,22 +123,22 @@
             <label for="user_accounting_rate" string="Rate"
                 invisible="currency_id == company_currency_id"/>
             <!-- Caso invertido (C fuerte): "1 C = X A" -->
-            <div name="accounting_rate_lt1" class="d-flex gap-1 text-muted"
+            <div name="accounting_rate_gte1" class="d-flex gap-1 text-muted"
                 invisible="currency_id == company_currency_id or not accounting_rate_inverted">
                 <span>1</span>
-                <field name="company_currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
+                <field name="currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
                 <span>=</span>
                 <field name="user_accounting_rate" readonly="state != 'draft'" style="max-width: 21ch;"/>
-                <field name="currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
+                <field name="company_currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
             </div>
             <!-- Caso directo (A fuerte): "1 A = X C" -->
-            <div name="accounting_rate_gte1" class="d-flex gap-1 text-muted"
+            <div name="accounting_rate_lt1" class="d-flex gap-1 text-muted"
                 invisible="currency_id == company_currency_id or accounting_rate_inverted">
                 <span>1</span>
-                <field name="currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
-                <span>=</span>
-                <field name="user_accounting_rate" readonly="state != 'draft'" style="max-width: 21ch;"/>
                 <field name="company_currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
+                <span>=</span>
+                <field name="accounting_rate" readonly="state != 'draft'" style="max-width: 21ch;"/>
+                <field name="currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
             </div>
         </div>
     </field>
