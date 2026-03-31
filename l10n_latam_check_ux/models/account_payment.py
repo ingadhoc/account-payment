@@ -85,12 +85,22 @@ class AccountPayment(models.Model):
                         ),
                     )._create_paired_internal_transfer_payment()
 
-                rec.write(
-                    {
-                        "l10n_latam_move_check_ids_operation_date": rec.l10n_latam_move_check_ids_operation_date
-                        - timedelta(seconds=1)
-                    }
-                )
+                # The outbound must have a greater operation_date than the inbound so it is
+                # identified as the latest operation. Subtract 1s from the inbound payment.
+                if rec.payment_type == "inbound":
+                    rec.write(
+                        {
+                            "l10n_latam_move_check_ids_operation_date": rec.l10n_latam_move_check_ids_operation_date
+                            + timedelta(minutes=1)
+                        }
+                    )
+                else:
+                    rec.write(
+                        {
+                            "l10n_latam_move_check_ids_operation_date": rec.l10n_latam_move_check_ids_operation_date
+                            - timedelta(minutes=1)
+                        }
+                    )
                 rec._get_latam_checks()._compute_current_journal()
                 rec._get_latam_checks()._compute_company_id()
 
