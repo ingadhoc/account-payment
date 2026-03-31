@@ -57,8 +57,10 @@ class AccountPayment(models.Model):
         # Who already create both payments at once in the _create_payments method.)
         if not self.env.context.get("check_deposit_transfer"):
             third_party_checks = self.filtered(
-                lambda x: x.payment_method_line_id.code
-                in ["in_third_party_checks", "out_third_party_checks", "return_third_party_checks"]
+                lambda x: (
+                    x.payment_method_line_id.code
+                    in ["in_third_party_checks", "out_third_party_checks", "return_third_party_checks"]
+                )
             )
             for rec in third_party_checks:
                 dest_payment_method_code = (
@@ -112,3 +114,21 @@ class AccountPayment(models.Model):
                     )
 
         super().action_draft()
+
+    @api.onchange("destination_journal_id")
+    def _onchange_destination_journal_clear_move_checks(self):
+        """When destination journal changes on an inbound internal transfer, remove checks
+        that are no longer in the (new) destination journal."""
+        for rec in self.filtered(
+            lambda x: (
+                x.is_internal_transfer
+                and x.payment_type == "inbound"
+                and x.payment_method_code == "in_third_party_checks"
+                and x.l10n_latam_move_check_ids
+            )
+        ):
+            invalid = rec.l10n_latam_move_check_ids.filtered(
+                lambda c: c.current_journal_id != rec.destination_journal_id
+            )
+            if invalid:
+                rec.l10n_latam_move_check_ids -= invalid

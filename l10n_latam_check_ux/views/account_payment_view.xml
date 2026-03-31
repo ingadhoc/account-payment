@@ -17,6 +17,7 @@
                 'search_default_last_90_days': payment_method_code in ['in_third_party_checks', 'out_third_party_checks', 'return_third_party_checks'],
             }
             </attribute>
+            <attribute name="domain">[('payment_method_code', '=', 'new_third_party_checks'), ('current_journal_id', '=', journal_id), ('company_id', '=', company_id)] if payment_type == 'outbound' else [('payment_method_code', '=', 'new_third_party_checks'), ('current_journal_id', '=', destination_journal_id), ('company_id', '=', company_id)] if (is_internal_transfer and payment_type == 'inbound' and destination_journal_id) else [('id', '=', False)] if (is_internal_transfer and payment_type == 'inbound') else [('payment_method_code', '=', 'new_third_party_checks'), ('current_journal_id', '=', False), ('company_id', '=', company_id)]</attribute>
         </xpath>
         <xpath expr="//field[@name='l10n_latam_move_check_ids']/list[@name='existing_checks']" position="attributes">
             <attribute name="create">false</attribute>

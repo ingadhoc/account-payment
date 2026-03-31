@@ -50,7 +50,7 @@ class l10nLatamAccountPaymentCheck(models.Model):
         return (
             (self.payment_id + self.operation_ids)
             .filtered(lambda x: x.state not in ["draft", "canceled"] and x.l10n_latam_move_check_ids_operation_date)
-            .sorted(key=lambda payment: (payment.l10n_latam_move_check_ids_operation_date))[-1:]
+            .sorted(key=lambda payment: payment.l10n_latam_move_check_ids_operation_date)[-1:]
         )
 
     @api.depends("payment_method_line_id.code", "payment_id.partner_id")
