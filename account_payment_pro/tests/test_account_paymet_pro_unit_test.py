@@ -86,3 +86,85 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
         payment.date = self.today
         payment.action_post()
         self.assertEqual(payment.exchange_rate, eur_actual_rate_2, "no se tomo de forma correcta el tipo de cambio")
+
+    def test_force_amount_company_currency_without_payment_pro(self):
+        """Test that force_amount_company_currency is used in liquidity lines when use_payment_pro is False"""
+        # Disable payment_pro for this test
+        self.company.use_payment_pro = False
+
+        # Use EUR currency (assumes company currency is USD or different from EUR)
+        # EUR is already configured in setUp()
+        payment_amount_eur = 100.0
+        expected_normal_conversion = 100000.0  # 100 * 1000 (rate from setUp)
+        forced_amount = 5000.0  # Different from normal conversion
+
+        payment = self.env["account.payment"].create(
+            {
+                "payment_type": "inbound",
+                "partner_type": "customer",
+                "partner_id": self.partner_ri.id,
+                "journal_id": self.company_bank_journal.id,
+                "amount": payment_amount_eur,
+                "currency_id": self.eur_currency.id,
+                "date": self.today,
+            }
+        )
+
+        # Verify normal conversion is calculated
+        self.assertAlmostEqual(
+            payment.amount_company_currency,
+            expected_normal_conversion,
+            places=2,
+            msg="Amount should be converted normally without force_amount_company_currency",
+        )
+
+        # Set forced amount
+        payment.force_amount_company_currency = forced_amount
+
+        # Verify force_amount_company_currency is used
+        self.assertEqual(
+            payment.amount_company_currency,
+            forced_amount,
+            "Amount should use force_amount_company_currency when set",
+        )
+
+        # Post payment and check liquidity lines
+        payment.action_post()
+
+        # Get liquidity lines
+        liquidity_lines = payment.move_id.line_ids.filtered(
+            lambda line: line.account_id == payment.outstanding_account_id
+        )
+
+        # Verify liquidity line balance uses forced amount
+        liquidity_balance = sum(liquidity_lines.mapped("balance"))
+        self.assertAlmostEqual(
+            liquidity_balance,
+            forced_amount,
+            places=2,
+            msg=f"Liquidity line balance should be {forced_amount} (forced), not {expected_normal_conversion} (normal conversion)",
+        )
+
+        # Verify amount_company_currency_signed_pro also uses forced amount
+        self.assertEqual(
+            payment.amount_company_currency_signed_pro,
+            forced_amount,
+            "amount_company_currency_signed_pro should use forced amount",
+        )
+
+        # Test that changes still preserve forced amount (synchronization)
+        payment.action_draft()
+        payment.memo = "Test synchronization"
+        payment.action_post()
+
+        # Verify liquidity lines still use forced amount after synchronization
+        liquidity_lines = payment.move_id.line_ids.filtered(
+            lambda line: line.account_id == payment.outstanding_account_id
+        )
+        liquidity_balance = sum(liquidity_lines.mapped("balance"))
+        self.assertAlmostEqual(
+            liquidity_balance,
+            forced_amount,
+            places=2,
+            msg="Liquidity line balance should still use forced amount after synchronization",
+        )
