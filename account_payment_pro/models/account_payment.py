@@ -400,7 +400,7 @@ class AccountPayment(models.Model):
             currencies = rec.to_pay_move_line_ids.mapped("currency_id")
             if len(currencies) > 1:
                 raise ValidationError(
-                    _("All selected debt lines must have the same currency. " "Found: %s")
+                    _("All selected debt lines must have the same currency. Found: %s")
                     % ", ".join(currencies.mapped("name"))
                 )
 
@@ -549,6 +549,10 @@ class AccountPayment(models.Model):
 
     def _prepare_move_lines_per_type(self, write_off_line_vals=None, force_balance=None):
         if not self.company_id.use_payment_pro:
+            # Para pagos sin ppro que tengan accounting rate, forzamos el balance
+            # para que no haya diferencias en el asiento
+            if self.accounting_rate and self.currency_id != self.company_currency_id and force_balance is None:
+                force_balance = self.amount / self.accounting_rate  # A/C → monto en C
             return super()._prepare_move_lines_per_type(
                 write_off_line_vals=write_off_line_vals, force_balance=force_balance
             )
