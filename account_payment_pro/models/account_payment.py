@@ -345,6 +345,10 @@ class AccountPayment(models.Model):
                         ),
                     }
                 )
+        else:
+            # Si hay force_amount_company_currency, usarlo como force_balance
+            if self.force_amount_company_currency and force_balance is None:
+                force_balance = self.force_amount_company_currency
 
         res = super()._prepare_move_lines_per_type(write_off_line_vals=write_off_line_vals, force_balance=force_balance)
 
