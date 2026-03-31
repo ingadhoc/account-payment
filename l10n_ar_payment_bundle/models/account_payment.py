@@ -1,3 +1,5 @@
+import re
+
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.fields import Command
@@ -161,10 +163,22 @@ class AccountPayment(models.Model):
 
         res = super(AccountPayment, self).action_post()
 
-        start_number = len(self.link_payment_ids.filtered(lambda x: x.name is not False))
-        for i, payment in enumerate(self.link_payment_ids, start=start_number):
-            if not payment.name:
-                payment.name = f"{self.name} ({i + 1})"
+        # Determine the starting suffix number based on the highest numeric
+        # suffix already present in linked payment names (e.g. "PAY00003 (2)").
+        existing_names = self.link_payment_ids.mapped("name")
+        pattern = re.compile(r"\((\d+)\)\s*$")
+        suffix_nums = [int(m.group(1)) for n in existing_names if n for m in [pattern.search(n)] if m]
+        if suffix_nums:
+            starting_suffix = max(suffix_nums)
+        else:
+            # Si no hay sufijos numéricos, arrancamos a partir de la cantidad de nombres no vacíos.
+            starting_suffix = len([n for n in existing_names if n])
+
+        next_num = starting_suffix + 1
+        unnamed_payments = self.link_payment_ids.filtered(lambda p: not p.name)
+        for payment in unnamed_payments:
+            payment.name = f"{self.name} ({next_num})"
+            next_num += 1
 
         draft_linked = self.link_payment_ids.filtered(lambda x: x.state == "draft")
         if draft_linked:
