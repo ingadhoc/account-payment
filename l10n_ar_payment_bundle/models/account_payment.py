@@ -2,7 +2,7 @@ import re
 
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.fields import Command
+from odoo.fields import Command, Domain
 
 
 class AccountPayment(models.Model):
@@ -90,7 +90,7 @@ class AccountPayment(models.Model):
         for rec in main_payment_ids:
             rec.link_payments_total = sum(rec.link_payment_ids.mapped("payment_total"))
 
-    @api.depends("use_payment_pro", "main_payment_id")
+    @api.depends("use_payment_pro", "main_payment_id", "is_internal_transfer")
     def _compute_available_journal_ids(self):
         super()._compute_available_journal_ids()
         for rec in self:
@@ -103,11 +103,28 @@ class AccountPayment(models.Model):
             # If it's a linked payment remove only the bundle journal (any currency allowed)
             if rec.main_payment_id:
                 journals = journals.filtered(lambda j: j._origin.id != bundle_journal_id)
+            # Internal transfers cannot use journals configured with payment bundle methods.
+            elif rec.is_internal_transfer:
+                journals = journals.filtered(lambda j: j._origin.id != bundle_journal_id)
             # If company doesn't use Payment Pro just remove bundle journal
             elif not rec.use_payment_pro:
                 journals = journals.filtered(lambda j: j._origin.id != bundle_journal_id)
 
             rec.available_journal_ids = journals
+
+    def _compute_destination_journal_domain(self):
+        parent = super(AccountPayment, self)
+        if hasattr(parent, "_compute_destination_journal_domain"):
+            parent._compute_destination_journal_domain()
+
+        for rec in self.filtered(lambda p: p.is_internal_transfer and p.destination_company_id):
+            bundle_journal_id = rec.company_id._get_bundle_journal(rec.payment_type)
+            if not bundle_journal_id:
+                continue
+
+            rec.destination_journal_domain = Domain(rec.destination_journal_domain or []) & Domain(
+                [("id", "!=", bundle_journal_id)]
+            )
 
     @api.depends("main_payment_id.to_pay_move_line_ids")
     def _compute_to_pay_move_lines(self):
