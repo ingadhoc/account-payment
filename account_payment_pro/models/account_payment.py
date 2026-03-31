@@ -637,6 +637,10 @@ class AccountPayment(models.Model):
 
     def _prepare_paired_payment_values(self):
         vals = super()._prepare_paired_payment_values()
+        # counterpart_currency_id del paired = moneda del journal original.
+        # Lo pasamos explícitamente porque copy() copia el valor del original
+        # y al ser store=True + readonly=False el compute no se re-dispara.
+        vals["counterpart_currency_id"] = self.currency_id.id
         dest_currency = self.destination_journal_id.currency_id or self.company_currency_id
         if dest_currency != self.currency_id:
             # balance_in_c: monto en moneda de compañía (ARS)
@@ -664,10 +668,22 @@ class AccountPayment(models.Model):
 
             vals["amount"] = paired_amount
 
+            # counterpart_currency_amount del paired = monto original (cuánto
+            # salió del journal original). Lo pasamos explícitamente porque copy()
+            # copia el valor del original y al tener inverse= el ORM ejecuta el
+            # inverse durante create, sobreescribiendo amount.
+            vals["counterpart_currency_amount"] = self.amount
+
             # Fijar accounting_rate del paired para que refleje la tasa implícita
             # real de la operación (balance_in_c / paired_amount), no la del día.
             if dest_currency != self.company_currency_id and balance_in_c:
                 vals["accounting_rate"] = paired_amount / balance_in_c
+
+            # Fijar counterpart_rate del paired: la contraparte del paired es la
+            # moneda del journal original (B1_paired = self.currency_id).
+            # rate = original_amount / paired_amount = B1/A del paired.
+            if paired_amount:
+                vals["counterpart_rate"] = self.amount / paired_amount
 
         return vals
 

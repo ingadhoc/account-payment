@@ -186,6 +186,10 @@ class TestInternalTransferMultimoneda(TestPaymentMultimoneda):
             msg="Balance en ARS debe coincidir con el original",
         )
 
+        # Paired counterpart: B1=ARS (dest_journal=ARS), amount_original=1.200.000
+        self.assertEqual(paired.counterpart_currency_id, self.ars)
+        self.assertAlmostEqual(paired.counterpart_currency_amount, 1_200_000, places=2)
+
     # ==================================================================
     # IT.3 — USD → ARS (venta de USD)
     # ==================================================================
@@ -207,6 +211,16 @@ class TestInternalTransferMultimoneda(TestPaymentMultimoneda):
         # Expected paired: 1.000 USD × 1200 = 1.200.000 ARS
         paired = self._assert_transfer_ok(payment, 1_200_000, self.ars)
         self.assertAlmostEqual(paired.accounting_rate, 1.0, places=6)
+
+        # Paired counterpart: B1=USD (dest_journal=USD), amount_original=1.000
+        self.assertEqual(paired.counterpart_currency_id, self.usd)
+        self.assertAlmostEqual(
+            paired.counterpart_rate,
+            1_000 / 1_200_000,
+            places=6,
+            msg="Counterpart rate del paired = original_amount / paired_amount",
+        )
+        self.assertAlmostEqual(paired.counterpart_currency_amount, 1_000, places=2)
 
     # ==================================================================
     # IT.4 — USD → EUR (exchange de moneda extranjera)
@@ -247,6 +261,21 @@ class TestInternalTransferMultimoneda(TestPaymentMultimoneda):
             abs(paired_transfer.balance),
             places=2,
             msg="Balance ARS en cuenta puente debe coincidir",
+        )
+
+        # Paired counterpart: B1=USD (dest_journal=USD), amount_original=1.000
+        self.assertEqual(paired.counterpart_currency_id, self.usd)
+        self.assertAlmostEqual(
+            paired.counterpart_rate,
+            1_000 / expected_paired,
+            places=6,
+            msg="Counterpart rate del paired = original_amount / paired_amount",
+        )
+        self.assertAlmostEqual(
+            paired.counterpart_currency_amount,
+            1_000,
+            places=2,
+            msg="Counterpart amount del paired = original amount en USD",
         )
 
     # ==================================================================
@@ -290,6 +319,10 @@ class TestInternalTransferMultimoneda(TestPaymentMultimoneda):
             places=2,
         )
 
+        # Paired counterpart: B1=ARS (dest_journal=ARS), amount_original=1.500.000
+        self.assertEqual(paired.counterpart_currency_id, self.ars)
+        self.assertAlmostEqual(paired.counterpart_currency_amount, 1_500_000, places=2)
+
     # ==================================================================
     # IT.6 — EUR → ARS (venta de EUR)
     # ==================================================================
@@ -312,3 +345,13 @@ class TestInternalTransferMultimoneda(TestPaymentMultimoneda):
 
         paired = self._assert_transfer_ok(payment, expected_paired, self.ars)
         self.assertAlmostEqual(paired.accounting_rate, 1.0, places=6)
+
+        # Paired counterpart: B1=EUR (dest_journal=EUR), amount_original=500
+        self.assertEqual(paired.counterpart_currency_id, self.eur)
+        self.assertAlmostEqual(
+            paired.counterpart_rate,
+            500 / expected_paired,
+            places=6,
+            msg="Counterpart rate del paired = original_amount / paired_amount",
+        )
+        self.assertAlmostEqual(paired.counterpart_currency_amount, 500, places=2)
