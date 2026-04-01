@@ -180,10 +180,15 @@ class AccountPayment(models.Model):
         "to_pay_move_line_ids",
         "multi_currency_debt",
     )
+    @api.depends_context("default_company_id")
     def _compute_counterpart_currency_editable(self):
         for rec in self:
             account_currency = rec.destination_account_id.currency_id
             if account_currency and account_currency != rec.company_currency_id:
+                rec.counterpart_currency_editable = False
+                continue
+            elif self._context.get("default_company_id") and not rec.company_id.reconcile_on_company_currency:
+                # sin reconcile, si venimos desde una factura NO queremos que editen la currency
                 rec.counterpart_currency_editable = False
                 continue
             rec.counterpart_currency_editable = True
