@@ -117,7 +117,18 @@
             <label for="payment_total" readonly="state != 'draft'" invisible="not use_payment_pro or is_internal_transfer"/>
             <div name="payment_total" invisible="not use_payment_pro or is_internal_transfer">
                 <field name="payment_total" class="oe_inline"/>
-                <span invisible="state != 'draft'" class="text-muted"> (difference <field name="payment_difference" class="oe_inline"/>)</span>
+                <span invisible="state != 'draft'" class="text-muted"> (difference <field name="payment_difference" class="oe_inline"/>
+                    <button name="action_adjust_amount_for_difference" type="object"
+                        class="btn btn-link btn-sm p-0 ms-1" title="Add the pending difference to the payment amount"
+                        invisible="not payment_difference or payment_method_code in ['in_third_party_checks', 'out_third_party_checks', 'new_third_party_checks', 'own_checks']">
+                        <i class="fa fa-arrow-left"/> Amount
+                    </button>
+                    <button name="action_adjust_writeoff_for_difference" type="object"
+                        class="btn btn-link btn-sm p-0 ms-1" title="Send the pending difference to write-off"
+                        invisible="not payment_difference or not write_off_available or payment_method_code in ['in_third_party_checks', 'out_third_party_checks', 'new_third_party_checks', 'own_checks']">
+                        <i class="fa fa-arrow-left"/> Write-off
+                    </button>
+                )</span>
             </div>
             <!-- Accounting rate: visible solo si A != C -->
             <label for="user_accounting_rate" string="Rate"
