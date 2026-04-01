@@ -883,6 +883,32 @@ class AccountPayment(models.Model):
             ):
                 rec.unreconciled_amount = rec.to_pay_amount - rec.selected_debt
 
+    @api.onchange("to_pay_move_line_ids")
+    def _onchange_to_pay_lines_adjust_amount(self):
+        """Ajustar amount para que payment_total cubra to_pay_amount a la tasa de hoy.
+        Cuando action_register_payment envía default_amount basado en amount_residual,
+        ese monto usa la tasa original de la factura, no la de hoy. Esto genera un
+        payment_difference que debe corregirse ajustando amount.
+        Aplica a todos los tipos de pago (clientes y proveedores).
+        """
+        for rec in self:
+            if not rec.use_payment_pro or rec.state != "draft":
+                continue
+            if not rec.to_pay_move_line_ids:
+                continue
+            if not rec.payment_difference or not rec.currency_id:
+                continue
+            # Convertir payment_difference (en B2) a moneda A (currency_id del pago)
+            if rec.counterpart_currency_id != rec.destination_currency_id:
+                # B1 ≠ B2 (reconcile): B2=C siempre → C→A = diff * accounting_rate
+                diff_in_a = rec.payment_difference * (rec.accounting_rate or 1.0)
+            else:
+                # B1 = B2: counterpart_rate = B1/A → A = diff / counterpart_rate
+                counterpart = rec.counterpart_rate or 1.0
+                diff_in_a = rec.payment_difference / counterpart if counterpart else rec.payment_difference
+            amount = rec.amount + diff_in_a
+            rec.amount = amount if amount > 0 else 0
+
     @api.onchange("company_id")
     def _onchange_company_id(self):
         if self._origin.company_id and self.company_id != self._origin.company_id and self.state == "draft":
