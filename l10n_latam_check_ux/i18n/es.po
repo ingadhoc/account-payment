@@ -300,3 +300,66 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_action_wizard_form_view
 msgid "or"
 msgstr "o"
+
+#. module: l10n_latam_check_ux
+#: model:ir.actions.act_window,name:l10n_latam_check_ux.action_reject_check_wizard
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_reject_wizard_form_view
+msgid "Reject Check"
+msgstr "Rechazar Cheque"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model,name:l10n_latam_check_ux.model_account_check_reject_wizard
+msgid "Reject Third Party Check Wizard"
+msgstr "Asistente de Rechazo de Cheque de Terceros"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_reject_wizard__rejected_journal_id
+msgid "Rejected Checks Journal"
+msgstr "Diario de Cheques Rechazados"
+
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_reject_wizard__case_description
+msgid "Action Summary"
+msgstr "Descripción de la Acción"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__can_reject
+msgid "Can Reject"
+msgstr "Puede Rechazar"
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid "No checks selected."
+msgstr "No se han seleccionado cheques."
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid "Check '%s' is not a third-party check and cannot be rejected with this wizard."
+msgstr "El cheque '%s' no es un cheque de terceros y no puede ser rechazado con este asistente."
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid "Check rejected. Payments generated: %s"
+msgstr "Cheque rechazado. Pagos generados: %s"
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid "Check rejection - recovery from supplier: %s"
+msgstr "Rechazo de cheque - recuperación del proveedor: %s"
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid "Check rejection - bank transfer: %s"
+msgstr "Rechazo de cheque - transferencia bancaria: %s"
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid "Check rejection - customer debit: %s"
+msgstr "Rechazo de cheque - débito al cliente: %s"
