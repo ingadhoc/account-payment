@@ -909,6 +909,24 @@ class AccountPayment(models.Model):
             amount = rec.amount + diff_in_a
             rec.amount = amount if amount > 0 else 0
 
+    @api.onchange("l10n_latam_new_check_ids")
+    def _onchange_new_check_default_amount(self):
+        """Al agregar un cheque nuevo, calcular su monto como la diferencia pendiente de pago."""
+        if not self.use_payment_pro or self.state != "draft":
+            return
+        if not self.to_pay_move_line_ids or not self.payment_difference:
+            return
+        for check in self.l10n_latam_new_check_ids:
+            if not check.amount:
+                # Convertir payment_difference (en B2) a moneda A
+                if self.counterpart_currency_id != self.destination_currency_id:
+                    diff_in_a = self.payment_difference * (self.accounting_rate or 1.0)
+                else:
+                    counterpart = self.counterpart_rate or 1.0
+                    diff_in_a = self.payment_difference / counterpart if counterpart else self.payment_difference
+                if diff_in_a > 0:
+                    check.amount = self.currency_id.round(diff_in_a)
+
     @api.onchange("company_id")
     def _onchange_company_id(self):
         if self._origin.company_id and self.company_id != self._origin.company_id and self.state == "draft":
