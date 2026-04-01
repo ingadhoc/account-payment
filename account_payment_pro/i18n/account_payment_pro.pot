@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-31 19:12+0000\n"
-"PO-Revision-Date: 2026-03-31 19:12+0000\n"
+"POT-Creation-Date: 2026-04-01 20:27+0000\n"
+"PO-Revision-Date: 2026-04-01 20:27+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -32,7 +32,17 @@ msgstr ""
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
-msgid "<span><strong>Rate = </strong></span>"
+msgid "<span> Exch. Diff</span>"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "<span>1</span>"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "<span>=</span>"
 msgstr ""
 
 #. module: account_payment_pro
@@ -43,6 +53,16 @@ msgstr ""
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__date
 msgid "Accounting Date"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__accounting_rate
+msgid "Accounting Rate"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__accounting_rate_inverted
+msgid "Accounting Rate Inverted"
 msgstr ""
 
 #. module: account_payment_pro
@@ -58,6 +78,12 @@ msgstr ""
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__unreconciled_amount
 msgid "Adjustment / Advance"
+msgstr ""
+
+#. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/account_payment.py:0
+msgid "All selected debt lines must have the same currency. Found: %s"
 msgstr ""
 
 #. module: account_payment_pro
@@ -111,13 +137,13 @@ msgid "Amount"
 msgstr ""
 
 #. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__amount_company_currency_signed_pro
-msgid "Amount Company Currency Signed Pro"
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
+msgid "Amount CC"
 msgstr ""
 
 #. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__amount_company_currency
-msgid "Amount on Company Currency"
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Amount in"
 msgstr ""
 
 #. module: account_payment_pro
@@ -153,6 +179,7 @@ msgid "Companies"
 msgstr ""
 
 #. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__company_id
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__company_id
 msgid "Company"
 msgstr ""
@@ -178,8 +205,18 @@ msgid "Counterpart Currency Amount"
 msgstr ""
 
 #. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_exchange_rate
-msgid "Counterpart Exchange Rate"
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_currency_editable
+msgid "Counterpart Currency Editable"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_rate
+msgid "Counterpart Rate"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_rate_inverted
+msgid "Counterpart Rate Inverted"
 msgstr ""
 
 #. module: account_payment_pro
@@ -216,7 +253,17 @@ msgstr ""
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid "Debt Currency"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid "Debts"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__destination_currency_id
+msgid "Destination Currency"
 msgstr ""
 
 #. module: account_payment_pro
@@ -259,13 +306,31 @@ msgid "Document Type"
 msgstr ""
 
 #. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__exchange_rate
-msgid "Exchange Rate"
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__exchange_diff_move_ids
+msgid "Exchange Diff Move"
 msgstr ""
 
 #. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__force_amount_company_currency
-msgid "Forced Amount on Company Currency"
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__exchange_diff_move_count
+msgid "Exchange Diff Move Count"
+msgstr ""
+
+#. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/account_payment.py:0
+msgid "Exchange Differences"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__exchange_diff_move_ids
+msgid ""
+"Exchange difference journal entries generated when reconciling this payment "
+"in foreign currency."
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__accounting_rate
+msgid "Exchange rate A→C in Odoo native format (e.g., 0.000667 for ARS/USD)"
 msgstr ""
 
 #. module: account_payment_pro
@@ -322,6 +387,7 @@ msgstr ""
 
 #. module: account_payment_pro
 #: model:ir.model,name:account_payment_pro.model_account_move
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
 msgid "Journal Entry"
 msgstr ""
 
@@ -339,6 +405,13 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_payment_pro/models/account_journal.py:0
 msgid "Journal must have manual method!"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid ""
+"La deuda seleccionada tiene múltiples monedas.\n"
+"                    Seleccione la moneda de cancelación para filtrar las líneas."
 msgstr ""
 
 #. module: account_payment_pro
@@ -388,6 +461,11 @@ msgid "Matched Move Line"
 msgstr ""
 
 #. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__multi_currency_debt
+msgid "Multi Currency Debt"
+msgstr ""
+
+#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__name
 msgid "Name"
 msgstr ""
@@ -403,11 +481,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_move__open_move_line_ids
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__open_move_line_ids
 msgid "Open Move Line"
-msgstr ""
-
-#. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__other_currency
-msgid "Other Currency"
 msgstr ""
 
 #. module: account_payment_pro
@@ -437,6 +510,11 @@ msgid "Payment Matched Amount"
 msgstr ""
 
 #. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_move_line__payment_matched_currency_id
+msgid "Payment Matched Currency"
+msgstr ""
+
+#. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
 msgid ""
 "Payment Pro incorpora funcionalidades que permiten llevar un flujo de cobros"
@@ -449,11 +527,6 @@ msgstr ""
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__payment_total
 msgid "Payment Total"
-msgstr ""
-
-#. module: account_payment_pro
-#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
-msgid "Payment Total (SC)"
 msgstr ""
 
 #. module: account_payment_pro
@@ -486,6 +559,11 @@ msgid "Payments Difference"
 msgstr ""
 
 #. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__previous_currency_id
+msgid "Previous Currency"
+msgstr ""
+
+#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__product_id
 msgid "Product"
 msgstr ""
@@ -497,7 +575,7 @@ msgstr ""
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
-msgid "Rate ="
+msgid "Rate"
 msgstr ""
 
 #. module: account_payment_pro
@@ -522,8 +600,18 @@ msgid "Remove All"
 msgstr ""
 
 #. module: account_payment_pro
-#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
-msgid "Secondary Currency"
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
+msgid "Residual"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
+msgid "Residual CC"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
+msgid "Residual amount in company currency"
 msgstr ""
 
 #. module: account_payment_pro
@@ -576,12 +664,44 @@ msgstr ""
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_tree
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_with_matched_tree
 msgid "Total"
 msgstr ""
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__amount_total
 msgid "Total Amount"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
+msgid "Total debt"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
+msgid "Total debt amount in company currency"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__counterpart_rate_inverted
+msgid ""
+"True si el rate teórico A→B1 < 1.0 (B1 es la moneda fuerte). Determina la "
+"dirección de visualización de user_counterpart_rate."
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__accounting_rate_inverted
+msgid ""
+"True si el rate teórico A→C < 1.0 (C es la moneda fuerte). Determina la "
+"dirección de visualización de user_accounting_rate."
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__counterpart_currency_editable
+msgid ""
+"True when the destination account does not force a specific currency, "
+"allowing the user to choose counterpart_currency_id from the form view."
 msgstr ""
 
 #. module: account_payment_pro
@@ -609,6 +729,16 @@ msgstr ""
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
 msgid "Use payment pro module"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__user_accounting_rate
+msgid "User Accounting Rate"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__user_counterpart_rate
+msgid "User Counterpart Rate"
 msgstr ""
 
 #. module: account_payment_pro
@@ -668,4 +798,10 @@ msgstr ""
 #. module: account_payment_pro
 #: model:ir.model,name:account_payment_pro.model_account_write_off_type
 msgid "account.write_off.type"
+msgstr ""
+
+#. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/account_payment.py:0
+msgid "id"
 msgstr ""
