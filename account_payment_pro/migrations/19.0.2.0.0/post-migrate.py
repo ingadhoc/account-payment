@@ -75,7 +75,7 @@ def migrate(cr, version):
               AND counterpart_rate != 0
               AND accounting_rate IS NOT NULL
               AND accounting_rate != 0
-              AND counterpart_rate != 1.0;
+              AND counterpart_rate * accounting_rate != 1.0;
         """)
         _logger.info(
             "account_payment_pro: migrated write_off_amount to destination_currency (%s rows)",
