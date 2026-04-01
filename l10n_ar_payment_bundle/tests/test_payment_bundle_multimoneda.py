@@ -573,7 +573,7 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         )
 
         with self.assertRaisesRegex(ValidationError, "The counterpart currency of a linked payment must match"):
-            linked.action_post()
+            linked._check_bundle_currency_consistency()
 
     # ==================================================================
     # B.7 — Bundle reconcile (A=C=ARS, B1=USD, B2=ARS) + IIBB
