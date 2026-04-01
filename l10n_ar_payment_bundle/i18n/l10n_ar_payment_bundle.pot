@@ -6,24 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-18 14:02+0000\n"
-"PO-Revision-Date: 2026-03-18 14:02+0000\n"
+"POT-Creation-Date: 2026-04-01 20:27+0000\n"
+"PO-Revision-Date: 2026-04-01 20:27+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
-
-#. module: l10n_ar_payment_bundle
-#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.report_payment_receipt_document
-msgid "<strong><span>Total Imputed</span></strong>"
-msgstr ""
-
-#. module: l10n_ar_payment_bundle
-#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.report_payment_receipt_document
-msgid "<strong><span>Total Paid</span></strong>"
-msgstr ""
 
 #. module: l10n_ar_payment_bundle
 #: model:ir.model,name:l10n_ar_payment_bundle.model_account_chart_template
@@ -37,12 +27,22 @@ msgstr ""
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
-msgid "Amount in SC"
+msgid "Amount (DC)"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
-#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__link_payments_total
-msgid "Link Payments Total"
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
+msgid "Amount (JC)"
+msgstr ""
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
+msgid "Amount in Debt Currency"
+msgstr ""
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
+msgid "Amount on journal currency"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
@@ -56,8 +56,8 @@ msgid "Companies"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
-#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__counterpart_exchange_rate
-msgid "Counterpart Exchange Rate"
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__counterpart_currency_id
+msgid "Counterpart Currency"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
@@ -157,6 +157,11 @@ msgid "Link Payment"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__link_payments_total
+msgid "Link Payments Total"
+msgstr ""
+
+#. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_search_bundle
 msgid "Linked Payments"
 msgstr ""
@@ -215,8 +220,8 @@ msgid "Payment Rename Wizard"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
-#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
-msgid "Payment Total (SC)"
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__payment_total
+msgid "Payment Total"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
@@ -247,14 +252,14 @@ msgid "Payments"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
-#. odoo-python
-#: code:addons/l10n_ar_payment_bundle/wizard/payment_rename.py:0
-msgid "Please enter a new name for the payment."
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
+msgid "Payments Amount"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
-#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
-msgid "Rate"
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/wizard/payment_rename.py:0
+msgid "Please enter a new name for the payment."
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
@@ -282,6 +287,14 @@ msgstr ""
 #. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__show_move_button
 msgid "Show Move Button"
+msgstr ""
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
+msgid ""
+"The counterpart currency of a linked payment must match the main payment's "
+"counterpart currency."
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
