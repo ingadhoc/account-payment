@@ -852,6 +852,33 @@ class AccountPayment(models.Model):
         for rec in self:
             rec.payment_difference = rec.to_pay_amount - rec.payment_total
 
+    def _get_payment_difference_in_currency_a(self):
+        """Convierte payment_difference (B2) a moneda A (currency_id del pago)."""
+        self.ensure_one()
+        if self.counterpart_currency_id != self.destination_currency_id:
+            # B1 ≠ B2 (reconcile): B2=C siempre → C→A = diff * accounting_rate
+            return self.payment_difference * (self.accounting_rate or 1.0)
+        else:
+            # B1 = B2: counterpart_rate = B1/A → A = diff / counterpart_rate
+            counterpart = self.counterpart_rate or 1.0
+            return self.payment_difference / counterpart if counterpart else self.payment_difference
+
+    def action_adjust_amount_for_difference(self):
+        """Ajusta amount para que payment_difference quede en cero."""
+        for rec in self:
+            if not rec.payment_difference:
+                continue
+            diff_in_a = rec._get_payment_difference_in_currency_a()
+            amount = rec.amount + diff_in_a
+            rec.amount = amount if amount > 0 else 0
+
+    def action_adjust_writeoff_for_difference(self):
+        """Ajusta write_off_amount para que payment_difference quede en cero."""
+        for rec in self:
+            if not rec.payment_difference:
+                continue
+            rec.write_off_amount += rec.payment_difference
+
     # En el pasado se contaba con to_pay_move_line_ids.amount_residual dentro de los depends,  y no deberiamos por cuestiones de performance, ya que ademas no era necesario
     @api.depends("to_pay_move_line_ids", "destination_currency_id", "payment_type")
     def _compute_selected_debt(self):
@@ -898,14 +925,7 @@ class AccountPayment(models.Model):
                 continue
             if not rec.payment_difference or not rec.currency_id:
                 continue
-            # Convertir payment_difference (en B2) a moneda A (currency_id del pago)
-            if rec.counterpart_currency_id != rec.destination_currency_id:
-                # B1 ≠ B2 (reconcile): B2=C siempre → C→A = diff * accounting_rate
-                diff_in_a = rec.payment_difference * (rec.accounting_rate or 1.0)
-            else:
-                # B1 = B2: counterpart_rate = B1/A → A = diff / counterpart_rate
-                counterpart = rec.counterpart_rate or 1.0
-                diff_in_a = rec.payment_difference / counterpart if counterpart else rec.payment_difference
+            diff_in_a = rec._get_payment_difference_in_currency_a()
             amount = rec.amount + diff_in_a
             rec.amount = amount if amount > 0 else 0
 
@@ -918,12 +938,7 @@ class AccountPayment(models.Model):
             return
         for check in self.l10n_latam_new_check_ids:
             if not check.amount:
-                # Convertir payment_difference (en B2) a moneda A
-                if self.counterpart_currency_id != self.destination_currency_id:
-                    diff_in_a = self.payment_difference * (self.accounting_rate or 1.0)
-                else:
-                    counterpart = self.counterpart_rate or 1.0
-                    diff_in_a = self.payment_difference / counterpart if counterpart else self.payment_difference
+                diff_in_a = self._get_payment_difference_in_currency_a()
                 if diff_in_a > 0:
                     check.amount = self.currency_id.round(diff_in_a)
 
