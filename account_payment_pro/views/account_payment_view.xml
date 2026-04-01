@@ -173,9 +173,7 @@
                         <!-- Moneda de contrapartida: editable solo cuando la cuenta no fuerza moneda -->
                         <field name="counterpart_currency_id"
                             string="Debt Currency"
-                            readonly="state != 'draft' or not counterpart_currency_editable
-                                    or not use_payment_pro
-                                    or is_internal_transfer"
+                            readonly="state != 'draft' or not counterpart_currency_editable"
                             required="use_payment_pro"
                             options="{'no_create': True, 'no_open': True}"/>
                     </group>
