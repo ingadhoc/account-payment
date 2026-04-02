@@ -16,6 +16,18 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
         cls.company_bank_journal = cls.env["account.journal"].search(
             [("company_id", "=", cls.company.id), ("type", "=", "bank")], limit=1
         )
+        # Configurar cuentas outstanding en el diario de banco para que al postear
+        # se genere asiento contable (sin esto Odoo no crea journal entry)
+        outstanding_account = cls.env["account.account"].search(
+            [("company_ids", "=", cls.company.id), ("account_type", "=", "asset_current")], limit=1
+        )
+        if outstanding_account:
+            for pml in cls.company_bank_journal.inbound_payment_method_line_ids:
+                if not pml.payment_account_id:
+                    pml.payment_account_id = outstanding_account
+            for pml in cls.company_bank_journal.outbound_payment_method_line_ids:
+                if not pml.payment_account_id:
+                    pml.payment_account_id = outstanding_account
         cls.company_journal = cls.env["account.journal"].search(
             [("company_id", "=", cls.company.id), ("type", "=", "sale")], limit=1
         )
@@ -178,3 +190,164 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
 
         # Verify payment is in draft state
         self.assertEqual(payment.state, "draft", "Payment should be in draft state after action_draft")
+
+    # ==================================================================
+    # Tests para payment_type invertido (outbound+customer, inbound+supplier)
+    # ==================================================================
+
+    def test_inbound_supplier_selected_debt_positive(self):
+        """Pago de tipo inbound + supplier (nota de crédito de proveedor / reembolso).
+        selected_debt, to_pay_amount y payment_difference deben calcularse
+        correctamente con valores positivos."""
+        purchase_journal = self.env["account.journal"].search(
+            [("company_id", "=", self.company.id), ("type", "=", "purchase")], limit=1
+        )
+        # Crear nota de crédito de proveedor (in_refund genera débito en AP → amount_residual > 0)
+        credit_note = self.env["account.move"].create(
+            {
+                "partner_id": self.partner_ri.id,
+                "invoice_date": self.today,
+                "move_type": "in_refund",
+                "journal_id": purchase_journal.id,
+                "company_id": self.company.id,
+                "invoice_line_ids": [
+                    Command.create(
+                        {
+                            "product_id": self.env.ref("product.product_product_16").id,
+                            "quantity": 1,
+                            "price_unit": 500,
+                        }
+                    ),
+                ],
+            }
+        )
+        credit_note.action_post()
+
+        # payment_type=inbound con partner_type=supplier (caso invertido)
+        debt_lines = credit_note.line_ids.filtered(lambda l: l.account_id.account_type == "liability_payable")
+        payment = self.env["account.payment"].create(
+            {
+                "journal_id": self.company_bank_journal.id,
+                "partner_id": self.partner_ri.id,
+                "partner_type": "supplier",
+                "payment_type": "inbound",
+                "date": self.today,
+                "amount": credit_note.amount_total,
+                "to_pay_move_line_ids": [Command.set(debt_lines.ids)],
+            }
+        )
+
+        # selected_debt debe ser positivo (amount_residual > 0 * sign(inbound)=+1)
+        self.assertGreater(payment.selected_debt, 0, "selected_debt debe ser positivo para inbound+supplier")
+        self.assertGreater(payment.to_pay_amount, 0, "to_pay_amount debe ser positivo para inbound+supplier")
+        self.assertAlmostEqual(
+            payment.payment_total,
+            payment.to_pay_amount,
+            places=2,
+            msg="payment_total debe cubrir to_pay_amount",
+        )
+        self.assertAlmostEqual(
+            payment.payment_difference,
+            0,
+            places=2,
+            msg="payment_difference debe ser ≈ 0 cuando amount cubre la deuda",
+        )
+
+    def test_outbound_customer_selected_debt_positive(self):
+        """Pago de tipo outbound + customer (nota de crédito a cliente / reembolso).
+        selected_debt, to_pay_amount y payment_difference deben calcularse
+        correctamente con valores positivos."""
+        # Crear nota de crédito de cliente (genera crédito en AR → amount_residual < 0)
+        credit_note = self.env["account.move"].create(
+            {
+                "partner_id": self.partner_ri.id,
+                "invoice_date": self.today,
+                "move_type": "out_refund",
+                "journal_id": self.company_journal.id,
+                "company_id": self.company.id,
+                "invoice_line_ids": [
+                    Command.create(
+                        {
+                            "product_id": self.env.ref("product.product_product_16").id,
+                            "quantity": 1,
+                            "price_unit": 300,
+                        }
+                    ),
+                ],
+            }
+        )
+        credit_note.action_post()
+
+        # payment_type=outbound con partner_type=customer (caso invertido)
+        debt_lines = credit_note.line_ids.filtered(lambda l: l.account_id.account_type == "asset_receivable")
+        payment = self.env["account.payment"].create(
+            {
+                "journal_id": self.company_bank_journal.id,
+                "partner_id": self.partner_ri.id,
+                "partner_type": "customer",
+                "payment_type": "outbound",
+                "date": self.today,
+                "amount": credit_note.amount_total,
+                "to_pay_move_line_ids": [Command.set(debt_lines.ids)],
+            }
+        )
+
+        # selected_debt debe ser positivo (amount_residual < 0 * sign(outbound)=-1 = positivo)
+        self.assertGreater(payment.selected_debt, 0, "selected_debt debe ser positivo para outbound+customer")
+        self.assertGreater(payment.to_pay_amount, 0, "to_pay_amount debe ser positivo para outbound+customer")
+        self.assertAlmostEqual(
+            payment.payment_total,
+            payment.to_pay_amount,
+            places=2,
+            msg="payment_total debe cubrir to_pay_amount",
+        )
+        self.assertAlmostEqual(
+            payment.payment_difference,
+            0,
+            places=2,
+            msg="payment_difference debe ser ≈ 0 cuando amount cubre la deuda",
+        )
+
+    def test_reversed_payment_type_post(self):
+        """Verificar que pagos con payment_type invertido se pueden postear
+        y concilian la deuda correctamente."""
+        purchase_journal = self.env["account.journal"].search(
+            [("company_id", "=", self.company.id), ("type", "=", "purchase")], limit=1
+        )
+        # Nota de crédito de proveedor (in_refund genera débito en AP → amount_residual > 0)
+        credit_note = self.env["account.move"].create(
+            {
+                "partner_id": self.partner_ri.id,
+                "invoice_date": self.today,
+                "move_type": "in_refund",
+                "journal_id": purchase_journal.id,
+                "company_id": self.company.id,
+                "invoice_line_ids": [
+                    Command.create(
+                        {
+                            "product_id": self.env.ref("product.product_product_16").id,
+                            "quantity": 1,
+                            "price_unit": 1000,
+                        }
+                    ),
+                ],
+            }
+        )
+        credit_note.action_post()
+
+        debt_lines = credit_note.line_ids.filtered(lambda l: l.account_id.account_type == "liability_payable")
+        payment = self.env["account.payment"].create(
+            {
+                "journal_id": self.company_bank_journal.id,
+                "partner_id": self.partner_ri.id,
+                "partner_type": "supplier",
+                "payment_type": "inbound",
+                "date": self.today,
+                "amount": credit_note.amount_total,
+                "to_pay_move_line_ids": [Command.set(debt_lines.ids)],
+            }
+        )
+        payment.action_post()
+
+        self.assertIn(payment.state, ["paid", "in_process"], "El pago invertido debe poder postearse")
+        self.assertIn(credit_note.payment_state, ["paid", "in_payment"], "La nota de crédito debe quedar pagada")

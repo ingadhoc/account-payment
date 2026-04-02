@@ -852,10 +852,14 @@ class AccountPayment(models.Model):
             rec.payment_difference = rec.to_pay_amount - rec.payment_total
 
     # En el pasado se contaba con to_pay_move_line_ids.amount_residual dentro de los depends,  y no deberiamos por cuestiones de performance, ya que ademas no era necesario
-    @api.depends("to_pay_move_line_ids", "destination_currency_id")
+    @api.depends("to_pay_move_line_ids", "destination_currency_id", "payment_type")
     def _compute_selected_debt(self):
         for rec in self:
-            sign = -1.0 if rec.partner_type == "supplier" else 1.0
+            # Usamos payment_type (no partner_type) porque cubre tanto los casos normales
+            # (outbound+supplier, inbound+customer) como los invertidos (outbound+customer,
+            # inbound+supplier). amount_residual es negativo para créditos y positivo para
+            # débitos; multiplicar por -1 en outbound normaliza ambos a positivo.
+            sign = -1.0 if rec.payment_type == "outbound" else 1.0
             if rec.destination_currency_id and rec.destination_currency_id != rec.company_currency_id:
                 amount = sum(rec.to_pay_move_line_ids._origin.mapped("amount_residual_currency"))
             else:
