@@ -137,8 +137,18 @@
                             readonly="state != 'draft'"/>
                 </page>
             </page>
-            <label for="amount" position="attributes">
-                <attribute name="invisible">is_main_payment</attribute>
+            <!-- Hide the 4 conditional amount labels added by account_payment_pro for bundle main payments -->
+            <label name="label_amount_receive" position="attributes">
+                <attribute name="invisible" separator=" or " add="is_main_payment"/>
+            </label>
+            <label name="label_amount_refund" position="attributes">
+                <attribute name="invisible" separator=" or " add="is_main_payment"/>
+            </label>
+            <label name="label_amount_pay" position="attributes">
+                <attribute name="invisible" separator=" or " add="is_main_payment"/>
+            </label>
+            <label name="label_amount_recover" position="attributes">
+                <attribute name="invisible" separator=" or " add="is_main_payment"/>
             </label>
             <div name="amount_div" position="attributes">
                 <attribute name="invisible">is_main_payment</attribute>
@@ -200,7 +210,7 @@
                 <field name="payment_type" optional="hide"/>
                 <field name="amount" string="Amount (JC)" help="Amount on journal currency" optional="hide"/>
                 <field name="payment_total" string="Amount" sum="Total"/>
-                <field name="counterpart_currency_amount" string="Amount (DC)" sum="Total" help="Amount in Debt Currency" optional="hide" column_invisible="parent.destination_currency_id == parent.counterpart_currency_id"/>
+                <field name="counterpart_currency_amount" string="Amount (RC)" sum="Total" help="Amount in Reconciliation Currency" optional="hide" column_invisible="parent.destination_currency_id == parent.counterpart_currency_id"/>
                 <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'in_process'" decoration-success="state == 'paid'"/>
             </list>
         </field>

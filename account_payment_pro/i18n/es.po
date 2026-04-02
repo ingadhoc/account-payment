@@ -84,6 +84,26 @@ msgid "Add All / Refresh"
 msgstr "Añadir Todo / Refrescar"
 
 #. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid "Amount to Pay"
+msgstr "Importe a Pagar"
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid "Amount to Receive"
+msgstr "Importe a Cobrar"
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid "Amount to Recover"
+msgstr "Importe a Recuperar"
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid "Amount to Refund"
+msgstr "Importe a Reembolsar"
+
+#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__unreconciled_amount
 msgid "Adjustment / Advance"
 msgstr "Ajuste / Adelanto"
@@ -211,8 +231,8 @@ msgstr "Confirmar"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_currency_id
-msgid "Counterpart Currency"
-msgstr "Moneda de Imputación"
+msgid "Reconciliation Currency"
+msgstr "Moneda de Conciliación"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_currency_amount
@@ -265,16 +285,6 @@ msgstr "Moneda"
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "Customer Bank Account"
 msgstr ""
-
-#. module: account_payment_pro
-#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
-msgid "Debt Currency"
-msgstr ""
-
-#. module: account_payment_pro
-#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
-msgid "Debts"
-msgstr "Deudas"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__destination_currency_id
@@ -479,8 +489,8 @@ msgstr "Número Manual"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__matched_amount
-msgid "Matched Amount"
-msgstr "Importe Conciliado"
+msgid "Allocated Amount"
+msgstr "Importe Imputado"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__matched_move_line_ids
@@ -653,8 +663,8 @@ msgstr ""
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__selected_debt
-msgid "Selected Debt"
-msgstr "Deuda Seleccionada"
+msgid "Amount to Reconcile"
+msgstr "Importe a Conciliar"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__tax_ids
@@ -743,8 +753,8 @@ msgstr ""
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__unmatched_amount
-msgid "Unmatched Amount"
-msgstr "Importe Desconciliado"
+msgid "Open Balance"
+msgstr "Saldo Abierto"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__amount_untaxed

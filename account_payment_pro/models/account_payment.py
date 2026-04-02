@@ -16,6 +16,7 @@ class AccountPayment(models.Model):
     )
     counterpart_currency_id = fields.Many2one(
         "res.currency",
+        string="Reconciliation Currency",
         compute="_compute_counterpart_currency_id",
         store=True,
         readonly=False,
@@ -92,14 +93,17 @@ class AccountPayment(models.Model):
     available_journal_ids = fields.Many2many(comodel_name="account.journal", compute="_compute_available_journal_ids")
     # desde account_payment_group, modelo account.payment.group
     matched_amount = fields.Monetary(
+        string="Allocated Amount",
         compute="_compute_matched_amounts",
         currency_field="destination_currency_id",
     )
     unmatched_amount = fields.Monetary(
+        string="Open Balance",
         compute="_compute_matched_amounts",
         currency_field="destination_currency_id",
     )
     selected_debt = fields.Monetary(
+        string="Amount to Reconcile",
         compute="_compute_selected_debt",
         currency_field="destination_currency_id",
     )

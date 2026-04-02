@@ -34,8 +34,8 @@ msgstr "Monto"
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
-msgid "Amount (DC)"
-msgstr ""
+msgid "Amount (RC)"
+msgstr "Importe (MC)"
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
@@ -44,8 +44,8 @@ msgstr ""
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
-msgid "Amount in Debt Currency"
-msgstr ""
+msgid "Amount in Reconciliation Currency"
+msgstr "Importe en Moneda de Conciliación"
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list

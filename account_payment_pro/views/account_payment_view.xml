@@ -63,8 +63,15 @@
 
 
         <!-- movemos amount a la columna 2 para que quede todo lo relativo al metodo de pago junto -->
+        <!-- ocultamos la label original y agregamos 4 variantes según partner_type + payment_type -->
+        <label for="amount" position="attributes">
+            <attribute name="invisible">True</attribute>
+        </label>
         <group name="group2">
-            <label for="amount" position="move"/>
+            <label for="amount" name="label_amount_receive" string="Amount to Receive" invisible="partner_type != 'customer' or payment_type != 'inbound'"/>
+            <label for="amount" name="label_amount_refund" string="Amount to Refund" invisible="partner_type != 'customer' or payment_type != 'outbound'"/>
+            <label for="amount" name="label_amount_pay" string="Amount to Pay" invisible="partner_type != 'supplier' or payment_type != 'outbound'"/>
+            <label for="amount" name="label_amount_recover" string="Amount to Recover" invisible="partner_type != 'supplier' or payment_type != 'inbound'"/>
             <div name="amount_div" position="move"/>
         </group>
 
@@ -172,7 +179,7 @@
                     <group>
                         <!-- Moneda de contrapartida: editable solo cuando la cuenta no fuerza moneda -->
                         <field name="counterpart_currency_id"
-                            string="Debt Currency"
+                            string="Currency"
                             readonly="state != 'draft' or not counterpart_currency_editable"
                             required="use_payment_pro"
                             options="{'no_create': True, 'no_open': True}"/>
@@ -197,10 +204,10 @@
             <page string="Paid" name="paid" invisible="state == 'draft' or is_internal_transfer or not use_payment_pro">
                 <group>
                     <group>
-                        <field name="matched_amount" invisible="not matched_amount"/>
+                        <field name="matched_amount" string="Allocated Amount" invisible="not matched_amount"/>
                     </group>
                     <group>
-                        <field name="unmatched_amount" invisible="not unmatched_amount"/>
+                        <field name="unmatched_amount" string="Open Balance" invisible="not unmatched_amount"/>
                     </group>
                 </group>
                 <field name="matched_move_line_ids" context="{'list_view_ref': 'account_payment_pro.view_move_line_with_matched_tree'}"/>
