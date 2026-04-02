@@ -179,7 +179,8 @@
                     </group>
                     <group name="name">
                         <field name="selected_debt" invisible="state not in ('draft')"/>
-                        <label for="to_pay_amount" invisible="state not in ['draft'] or partner_type != 'supplier'"/>
+                        <label for="to_pay_amount" string="To Pay Amount" invisible="state not in ['draft'] or partner_type != 'supplier' or payment_type == 'inbound'"/>
+                        <label for="to_pay_amount" string="To Receive Amount" invisible="state not in ['draft'] or partner_type != 'supplier' or payment_type == 'outbound'"/>
                         <div name="to_pay_amount" invisible="state not in ['draft'] or partner_type != 'supplier'">
                             <field name="to_pay_amount" readonly="state not in ['draft']" class="oe_inline"/>
                         </div>
