@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-01 20:27+0000\n"
-"PO-Revision-Date: 2026-04-01 20:27+0000\n"
+"POT-Creation-Date: 2026-04-02 14:06+0000\n"
+"PO-Revision-Date: 2026-04-02 14:06+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -93,6 +93,12 @@ msgid "All to pay lines must be of the same partner"
 msgstr ""
 
 #. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__matched_amount
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid "Allocated Amount"
+msgstr ""
+
+#. module: account_payment_pro
 #: model:res.groups,name:account_payment_pro.group_pay_now_customer_invoices
 msgid "Allow pay now on customer invoices"
 msgstr ""
@@ -147,6 +153,31 @@ msgid "Amount in"
 msgstr ""
 
 #. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Amount to Pay"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Amount to Receive"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__selected_debt
+msgid "Amount to Reconcile"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Amount to Recover"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Amount to Refund"
+msgstr ""
+
+#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__analytic_distribution
 msgid "Analytic Distribution"
 msgstr ""
@@ -195,11 +226,6 @@ msgid "Confirm"
 msgstr ""
 
 #. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_currency_id
-msgid "Counterpart Currency"
-msgstr ""
-
-#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_currency_amount
 msgid "Counterpart Currency Amount"
 msgstr ""
@@ -243,17 +269,13 @@ msgstr ""
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__currency_id
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid "Currency"
 msgstr ""
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "Customer Bank Account"
-msgstr ""
-
-#. module: account_payment_pro
-#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
-msgid "Debt Currency"
 msgstr ""
 
 #. module: account_payment_pro
@@ -451,11 +473,6 @@ msgid "Manual Number"
 msgstr ""
 
 #. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__matched_amount
-msgid "Matched Amount"
-msgstr ""
-
-#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__matched_move_line_ids
 msgid "Matched Move Line"
 msgstr ""
@@ -474,6 +491,12 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_payment_pro/models/account_move_line.py:0
 msgid "Nothing to be paid on selected entries"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__unmatched_amount
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid "Open Balance"
 msgstr ""
 
 #. module: account_payment_pro
@@ -584,6 +607,11 @@ msgid "Reason"
 msgstr ""
 
 #. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_currency_id
+msgid "Reconciliation Currency"
+msgstr ""
+
+#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__invoice_date
 msgid "Refund Date"
 msgstr ""
@@ -612,11 +640,6 @@ msgstr ""
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
 msgid "Residual amount in company currency"
-msgstr ""
-
-#. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__selected_debt
-msgid "Selected Debt"
 msgstr ""
 
 #. module: account_payment_pro
@@ -702,11 +725,6 @@ msgstr ""
 msgid ""
 "True when the destination account does not force a specific currency, "
 "allowing the user to choose counterpart_currency_id from the form view."
-msgstr ""
-
-#. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__unmatched_amount
-msgid "Unmatched Amount"
 msgstr ""
 
 #. module: account_payment_pro

@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-01 20:27+0000\n"
-"PO-Revision-Date: 2026-04-01 20:27+0000\n"
+"POT-Creation-Date: 2026-04-02 14:07+0000\n"
+"PO-Revision-Date: 2026-04-02 14:07+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -27,17 +27,17 @@ msgstr ""
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
-msgid "Amount (DC)"
-msgstr ""
-
-#. module: l10n_ar_payment_bundle
-#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
 msgid "Amount (JC)"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
-msgid "Amount in Debt Currency"
+msgid "Amount (RC)"
+msgstr ""
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
+msgid "Amount in Reconciliation Currency"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
@@ -53,11 +53,6 @@ msgstr ""
 #. module: l10n_ar_payment_bundle
 #: model:ir.model,name:l10n_ar_payment_bundle.model_res_company
 msgid "Companies"
-msgstr ""
-
-#. module: l10n_ar_payment_bundle
-#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__counterpart_currency_id
-msgid "Counterpart Currency"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
@@ -260,6 +255,11 @@ msgstr ""
 #. odoo-python
 #: code:addons/l10n_ar_payment_bundle/wizard/payment_rename.py:0
 msgid "Please enter a new name for the payment."
+msgstr ""
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__counterpart_currency_id
+msgid "Reconciliation Currency"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle

@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-01 20:27+0000\n"
-"PO-Revision-Date: 2025-12-26 17:10+0000\n"
+"POT-Creation-Date: 2026-04-02 14:07+0000\n"
+"PO-Revision-Date: 2026-04-02 14:07+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
 "payment-19-0/account-payment-19-0-account_payment_pro/es/>\n"
@@ -41,17 +41,17 @@ msgstr "+ Nota de Débito"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "<span> Exch. Diff</span>"
-msgstr ""
+msgstr "<span> Dif. Cambio</span>"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "<span>1</span>"
-msgstr ""
+msgstr "<span>1</span>"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "<span>=</span>"
-msgstr ""
+msgstr "<span>=</span>"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__account_id
@@ -66,12 +66,12 @@ msgstr "Fecha Contable"
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__accounting_rate
 msgid "Accounting Rate"
-msgstr ""
+msgstr "Tasa Contable"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__accounting_rate_inverted
 msgid "Accounting Rate Inverted"
-msgstr ""
+msgstr "Tasa Contable Invertida"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__active
@@ -84,26 +84,6 @@ msgid "Add All / Refresh"
 msgstr "Añadir Todo / Refrescar"
 
 #. module: account_payment_pro
-#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
-msgid "Amount to Pay"
-msgstr "Importe a Pagar"
-
-#. module: account_payment_pro
-#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
-msgid "Amount to Receive"
-msgstr "Importe a Cobrar"
-
-#. module: account_payment_pro
-#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
-msgid "Amount to Recover"
-msgstr "Importe a Recuperar"
-
-#. module: account_payment_pro
-#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
-msgid "Amount to Refund"
-msgstr "Importe a Reembolsar"
-
-#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__unreconciled_amount
 msgid "Adjustment / Advance"
 msgstr "Ajuste / Adelanto"
@@ -112,13 +92,19 @@ msgstr "Ajuste / Adelanto"
 #. odoo-python
 #: code:addons/account_payment_pro/models/account_payment.py:0
 msgid "All selected debt lines must have the same currency. Found: %s"
-msgstr ""
+msgstr "Todas las líneas de deuda seleccionadas deben tener la misma moneda. Se encontraron: %s"
 
 #. module: account_payment_pro
 #. odoo-python
 #: code:addons/account_payment_pro/models/account_payment.py:0
 msgid "All to pay lines must be of the same partner"
 msgstr "Todas las líneas a pagar deben ser del mismo contacto."
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__matched_amount
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid "Allocated Amount"
+msgstr "Importe Imputado"
 
 #. module: account_payment_pro
 #: model:res.groups,name:account_payment_pro.group_pay_now_customer_invoices
@@ -151,16 +137,16 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
 msgid "Allow to pay vendor invoices automatically on invoice validation."
 msgstr ""
-"Permitir pagar las facturas de los proveedores automáticamente al validar la "
-"factura."
+"Permitir pagar las facturas de los proveedores automáticamente al validar la"
+" factura."
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_res_config_settings__group_pay_now_vendor_invoices
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
 msgid ""
 "Allow users to choose a payment journal on invoices so that invoice is "
-"automatically paid after invoice validation. A payment will be created using "
-"choosen journal"
+"automatically paid after invoice validation. A payment will be created using"
+" choosen journal"
 msgstr ""
 "Permitir a los usuarios elegir un diario de pagos en las facturas para que "
 "la factura se pague automáticamente después de su validación. Se creará un "
@@ -174,12 +160,37 @@ msgstr "Monto"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
 msgid "Amount CC"
-msgstr ""
+msgstr "Importe MC"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "Amount in"
-msgstr ""
+msgstr "Importe en"
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Amount to Pay"
+msgstr "Importe a Pagar"
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Amount to Receive"
+msgstr "Importe a Cobrar"
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__selected_debt
+msgid "Amount to Reconcile"
+msgstr "Importe a Conciliar"
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Amount to Recover"
+msgstr "Importe a Recuperar"
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Amount to Refund"
+msgstr "Importe Reembolso"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__analytic_distribution
@@ -230,11 +241,6 @@ msgid "Confirm"
 msgstr "Confirmar"
 
 #. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_currency_id
-msgid "Reconciliation Currency"
-msgstr "Moneda de Conciliación"
-
-#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_currency_amount
 msgid "Counterpart Currency Amount"
 msgstr "Importe total a imputar"
@@ -242,17 +248,17 @@ msgstr "Importe total a imputar"
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_currency_editable
 msgid "Counterpart Currency Editable"
-msgstr ""
+msgstr "Moneda de Contrapartida Editable"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_rate
 msgid "Counterpart Rate"
-msgstr ""
+msgstr "Tasa de Contrapartida"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_rate_inverted
 msgid "Counterpart Rate Inverted"
-msgstr ""
+msgstr "Tasa de Contrapartida Invertida"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__create_uid
@@ -278,18 +284,24 @@ msgstr "Nota de Crédito"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__currency_id
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid "Currency"
 msgstr "Moneda"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "Customer Bank Account"
-msgstr ""
+msgstr "Cuenta Bancaria del Cliente"
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid "Debts"
+msgstr "Deudas"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__destination_currency_id
 msgid "Destination Currency"
-msgstr ""
+msgstr "Moneda de Destino"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__destination_journal_currency_id
@@ -300,7 +312,7 @@ msgstr "Moneda del diario de destino"
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__payment_difference
 msgid "Difference between 'To Pay Amount' and 'Payment Total'"
 msgstr ""
-"Diferencia entre Deuda Seleccionada (o Importe a Pagar) e Importe de Pago"
+"Diferencia entre el 'Importe a Pagar' y el 'Total Pago'"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_journal__display_name
@@ -313,7 +325,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_company__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__display_name
 msgid "Display Name"
-msgstr "Nombre a Mostrar"
+msgstr "Nombre en pantalla"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__distribution_analytic_account_ids
@@ -334,18 +346,18 @@ msgstr "Tipo de Documentos"
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__exchange_diff_move_ids
 msgid "Exchange Diff Move"
-msgstr ""
+msgstr "Asiento de Diferencia de Cambio"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__exchange_diff_move_count
 msgid "Exchange Diff Move Count"
-msgstr ""
+msgstr "Cantidad de Asientos de Diferencia de Cambio"
 
 #. module: account_payment_pro
 #. odoo-python
 #: code:addons/account_payment_pro/models/account_payment.py:0
 msgid "Exchange Differences"
-msgstr ""
+msgstr "Diferencias de Cambio"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__exchange_diff_move_ids
@@ -353,11 +365,13 @@ msgid ""
 "Exchange difference journal entries generated when reconciling this payment "
 "in foreign currency."
 msgstr ""
+"Asientos de diferencia de cambio generados al conciliar este pago en moneda "
+"extranjera."
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__accounting_rate
 msgid "Exchange rate A→C in Odoo native format (e.g., 0.000667 for ARS/USD)"
-msgstr ""
+msgstr "Tasa de cambio A→C en formato nativo de Odoo (ej.: 0,000667 para ARS/USD)"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__has_outstanding
@@ -380,8 +394,8 @@ msgstr "ID"
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment_invoice_wizard__use_documents
 msgid ""
-"If active: will be using for legal invoicing (invoices, debit/credit notes). "
-"If not set means that will be used to register accounting entries not "
+"If active: will be using for legal invoicing (invoices, debit/credit notes)."
+" If not set means that will be used to register accounting entries not "
 "related to invoicing legal documents. For Example: Receipts, Tax Payments, "
 "Register journal entries"
 msgstr ""
@@ -399,13 +413,13 @@ msgid ""
 "journals with manual method are shown."
 msgstr ""
 "Si configura un diario aquí, después de la validación de la factura, la "
-"factura se pagará automáticamente con este diario. Como se utiliza el método "
-"de pago manual, solo se muestran los diarios con método manual."
+"factura se pagará automáticamente con este diario. Como se utiliza el método"
+" de pago manual, solo se muestran los diarios con método manual."
 
 #. module: account_payment_pro
 #: model:ir.model,name:account_payment_pro.model_base_language_install
 msgid "Install Language"
-msgstr ""
+msgstr "Instalar idioma"
 
 #. module: account_payment_pro
 #: model:ir.model,name:account_payment_pro.model_account_journal
@@ -422,7 +436,7 @@ msgstr "Moneda del Diario"
 #: model:ir.model,name:account_payment_pro.model_account_move
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
 msgid "Journal Entry"
-msgstr "Asiento Contable"
+msgstr "Asiento contable"
 
 #. module: account_payment_pro
 #: model:ir.model,name:account_payment_pro.model_account_move_line
@@ -444,9 +458,10 @@ msgstr "Diario debe contener un método de pago \"Manual\""
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid ""
 "La deuda seleccionada tiene múltiples monedas.\n"
-"                    Seleccione la moneda de cancelación para filtrar las "
-"líneas."
+"                    Seleccione la moneda de cancelación para filtrar las líneas."
 msgstr ""
+"La deuda seleccionada tiene múltiples monedas.\n"
+"                    Seleccione la moneda de cancelación para filtrar las líneas."
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__label
@@ -456,7 +471,8 @@ msgstr "Etiqueta"
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_write_off_type__label
 msgid ""
-"Label to be used on journal items labels, if not configured name will be used"
+"Label to be used on journal items labels, if not configured name will be "
+"used"
 msgstr ""
 "Etiqueta que se utilizará en el detalle de los apuntes contables, si no se "
 "configura se utilizará el nombre por defecto."
@@ -488,11 +504,6 @@ msgid "Manual Number"
 msgstr "Número Manual"
 
 #. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__matched_amount
-msgid "Allocated Amount"
-msgstr "Importe Imputado"
-
-#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__matched_move_line_ids
 msgid "Matched Move Line"
 msgstr "Líneas conciliadas"
@@ -500,7 +511,7 @@ msgstr "Líneas conciliadas"
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__multi_currency_debt
 msgid "Multi Currency Debt"
-msgstr ""
+msgstr "Deuda Multimoneda"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__name
@@ -512,6 +523,12 @@ msgstr "Nombre"
 #: code:addons/account_payment_pro/models/account_move_line.py:0
 msgid "Nothing to be paid on selected entries"
 msgstr "Nada por pagar de los asientos seleccionados"
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__unmatched_amount
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid "Open Balance"
+msgstr "Saldo Abierto"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_bank_statement_line__open_move_line_ids
@@ -549,22 +566,22 @@ msgstr "Importe Conciliado del Pago"
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_move_line__payment_matched_currency_id
 msgid "Payment Matched Currency"
-msgstr ""
+msgstr "Moneda de Conciliación del Pago"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
 msgid ""
-"Payment Pro incorpora funcionalidades que permiten llevar un flujo de "
-"cobros                         y pagos con retenciones, especificamente "
-"utilizado en Argentina. Al activarlo a                         ​su ​vez, se "
-"pierden algunas funcionalidades nativas como descuento por pronto "
-"pago                         y sugerencias de diferencia de cambio"
+"Payment Pro incorpora funcionalidades que permiten llevar un flujo de cobros"
+"                         y pagos con retenciones, especificamente utilizado "
+"en Argentina. Al activarlo a                         ​su ​vez, se pierden "
+"algunas funcionalidades nativas como descuento por pronto pago"
+"                         y sugerencias de diferencia de cambio"
 msgstr ""
-"Payment Pro incorpora funcionalidades que permiten llevar un flujo de "
-"cobros                         y pagos con retenciones, especificamente "
-"utilizado en Argentina. Al activarlo a                         ​su ​vez, se "
-"pierden algunas funcionalidades nativas como descuento por pronto "
-"pago                         y sugerencias de diferencia de cambio"
+"Payment Pro incorpora funcionalidades que permiten llevar un flujo de cobros"
+"                         y pagos con retenciones, especificamente utilizado "
+"en Argentina. Al activarlo a                         ​su ​vez, se pierden "
+"algunas funcionalidades nativas como descuento por pronto pago"
+"                         y sugerencias de diferencia de cambio"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__payment_total
@@ -588,8 +605,8 @@ msgstr ""
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid ""
-"Payment will be automatically matched with the oldest lines of this list (by "
-"maturity date). You can remove any line you dont want to be matched."
+"Payment will be automatically matched with the oldest lines of this list (by"
+" maturity date). You can remove any line you dont want to be matched."
 msgstr ""
 "El pago se emparejará automáticamente con las líneas más antiguas de esta "
 "lista (por fecha de vencimiento). Puedes eliminar cualquier línea que no "
@@ -608,7 +625,7 @@ msgstr "Diferencia de Pago"
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__previous_currency_id
 msgid "Previous Currency"
-msgstr ""
+msgstr "Moneda Anterior"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__product_id
@@ -623,12 +640,17 @@ msgstr "Cuenta del producto"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "Rate"
-msgstr ""
+msgstr "Tasa"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__description
 msgid "Reason"
 msgstr "Razón"
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_currency_id
+msgid "Reconciliation Currency"
+msgstr "Moneda de Conciliación"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__invoice_date
@@ -649,22 +671,17 @@ msgstr "Eliminar Todo"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
 msgid "Residual"
-msgstr ""
+msgstr "Residual"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
 msgid "Residual CC"
-msgstr ""
+msgstr "Residual MC"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
 msgid "Residual amount in company currency"
-msgstr ""
-
-#. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__selected_debt
-msgid "Amount to Reconcile"
-msgstr "Importe a Conciliar"
+msgstr "Importe residual en moneda de la compañía"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__tax_ids
@@ -681,7 +698,7 @@ msgstr "La moneda utilizada para ingresar el estado"
 #. odoo-python
 #: code:addons/account_payment_pro/models/account_payment.py:0
 msgid "The payment journal must match the journal of its journal entry."
-msgstr ""
+msgstr "El diario de pago debe coincidir con el diario de su asiento contable."
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment_invoice_wizard__currency_id
@@ -723,12 +740,12 @@ msgstr "Importe Total"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
 msgid "Total debt"
-msgstr ""
+msgstr "Deuda total"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
 msgid "Total debt amount in company currency"
-msgstr ""
+msgstr "Importe de deuda total en moneda de la compañía"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__counterpart_rate_inverted
@@ -736,6 +753,8 @@ msgid ""
 "True si el rate teórico A→B1 < 1.0 (B1 es la moneda fuerte). Determina la "
 "dirección de visualización de user_counterpart_rate."
 msgstr ""
+"True si el rate teórico A→B1 < 1.0 (B1 es la moneda fuerte). Determina la "
+"dirección de visualización de user_counterpart_rate."
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__accounting_rate_inverted
@@ -743,6 +762,8 @@ msgid ""
 "True si el rate teórico A→C < 1.0 (C es la moneda fuerte). Determina la "
 "dirección de visualización de user_accounting_rate."
 msgstr ""
+"True si el rate teórico A→C < 1.0 (C es la moneda fuerte). Determina la "
+"dirección de visualización de user_accounting_rate."
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__counterpart_currency_editable
@@ -750,11 +771,8 @@ msgid ""
 "True when the destination account does not force a specific currency, "
 "allowing the user to choose counterpart_currency_id from the form view."
 msgstr ""
-
-#. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__unmatched_amount
-msgid "Open Balance"
-msgstr "Saldo Abierto"
+"Verdadero cuando la cuenta de destino no fuerza una moneda específica, "
+"permitiendo al usuario elegir la moneda de conciliación desde la vista de formulario."
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__amount_untaxed
@@ -781,17 +799,17 @@ msgstr "Uso del modulo de Payment Pro"
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__user_accounting_rate
 msgid "User Accounting Rate"
-msgstr ""
+msgstr "Tasa Contable del Usuario"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__user_counterpart_rate
 msgid "User Counterpart Rate"
-msgstr ""
+msgstr "Tasa de Contrapartida del Usuario"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "Vendor Bank Account"
-msgstr ""
+msgstr "Cuenta Bancaria del Proveedor"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
@@ -834,15 +852,16 @@ msgstr ""
 #. module: account_payment_pro
 #. odoo-python
 #: code:addons/account_payment_pro/models/account_payment.py:0
-msgid "You can't create payments for entries belonging to different companies."
+msgid ""
+"You can't create payments for entries belonging to different companies."
 msgstr ""
-"No se pueden crear pagos para asientos que pertenezcan a diferentes compañías"
+"No se pueden crear pagos para asientos que pertenezcan a diferentes "
+"compañías"
 
 #. module: account_payment_pro
 #: model:ir.model,name:account_payment_pro.model_account_payment_invoice_wizard
 msgid "account.payment.invoice.wizard"
-msgstr ""
-"account.payment.invoice.wizard\n"
+msgstr "account.payment.invoice.wizard"
 " "
 
 #. module: account_payment_pro
@@ -854,34 +873,4 @@ msgstr "Tipo de Write Off"
 #. odoo-python
 #: code:addons/account_payment_pro/models/account_payment.py:0
 msgid "id"
-msgstr ""
-
-#~ msgid "<span><strong>Rate = </strong></span>"
-#~ msgstr "<span><strong>Tasa de Cambio = </strong></span>"
-
-#~ msgid "Amount Company Currency Signed Pro"
-#~ msgstr "Importe"
-
-#~ msgid "Amount on Company Currency"
-#~ msgstr "Importe"
-
-#~ msgid "Counterpart Exchange Rate"
-#~ msgstr "Tasa de Imputación"
-
-#~ msgid "Exchange Rate"
-#~ msgstr "Tipo de Cambio"
-
-#~ msgid "Forced Amount on Company Currency"
-#~ msgstr "Forzar importe en moneda de la Compañía"
-
-#~ msgid "Other Currency"
-#~ msgstr "Otra Moneda"
-
-#~ msgid "Payment Total (SC)"
-#~ msgstr "Total del pago (Moneda Secundaria)"
-
-#~ msgid "Rate ="
-#~ msgstr "Cotización ="
-
-#~ msgid "Secondary Currency"
-#~ msgstr "Moneda de Imputación"
+msgstr "id"
