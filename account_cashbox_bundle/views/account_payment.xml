@@ -4,6 +4,7 @@
         <field name="name">account.payment.form</field>
         <field name="model">account.payment</field>
         <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="priority" eval="20"/>
         <field name="arch" type="xml">
                 <field name="cashbox_session_id" position="attributes">
                     <attribute name="invisible">is_main_payment</attribute>
