@@ -69,13 +69,19 @@ def migrate(cr, version):
     if not openupgrade.column_exists(cr, "account_payment", "accounting_rate"):
         cr.execute("ALTER TABLE account_payment ADD COLUMN accounting_rate float8")
 
-        # 3a) Pagos con cotización forzada → rate = amount / force
+        # 3a) Pagos con cotización forzada y A ≠ C → rate = amount / force
+        # Solo cuando A ≠ C: si A = C, accounting_rate es siempre 1.0.
+        # El force en pagos A=C existía como artefacto de other_currency=True
+        # en transferencias internas pero no afecta el rate A/C.
         if openupgrade.column_exists(cr, "account_payment", "force_amount_company_currency"):
             cr.execute("""
-                UPDATE account_payment
-                SET accounting_rate = amount / force_amount_company_currency
-                WHERE force_amount_company_currency IS NOT NULL
-                  AND force_amount_company_currency != 0;
+                UPDATE account_payment ap
+                SET accounting_rate = ap.amount / ap.force_amount_company_currency
+                FROM res_company rc
+                WHERE rc.id = ap.company_id
+                  AND ap.currency_id != rc.currency_id
+                  AND ap.force_amount_company_currency IS NOT NULL
+                  AND ap.force_amount_company_currency != 0;
             """)
             _logger.info(
                 "account_payment_pro: accounting_rate from force (%s rows)",

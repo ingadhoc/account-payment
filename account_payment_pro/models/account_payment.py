@@ -13,6 +13,7 @@ class AccountPayment(models.Model):
         inverse="_inverse_counterpart_currency_amount",
         store=True,
         readonly=False,
+        copy=False,
     )
     counterpart_currency_id = fields.Many2one(
         "res.currency",
