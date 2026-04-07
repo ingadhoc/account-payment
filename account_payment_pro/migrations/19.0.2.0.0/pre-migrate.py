@@ -6,13 +6,12 @@ Qué supone:
   - Existe la tabla account_payment con las columnas del modelo anterior.
 
 Qué garantiza al terminar:
-  - Las columnas que se eliminan o transforman tienen backup con prefijo x_bkp_.
-  - Los datos originales quedan preservados para que el post-migrate los use.
+  - Las columnas originales tienen backup con prefijo x_bkp_.
   - Las nuevas columnas almacenadas (accounting_rate, counterpart_rate,
-    counterpart_currency_amount) existen y están pre-pobladas para evitar
-    que el ORM encole un recompute masivo al cargar el módulo nuevo (ADR-009).
-  - No se hacen transformaciones finales aquí; el post-migrate ajusta
-    valores desde los backups.
+    counterpart_currency_amount) existen con defaults seguros para evitar
+    que el ORM encole un recompute masivo al cargar el módulo nuevo.
+  - No se hacen transformaciones de valores aquí; el post-migrate se
+    encarga de toda la lógica de conversión.
 """
 
 import logging
@@ -26,14 +25,24 @@ def migrate(cr, version):
     if not version:
         return
 
+    # ── 0. Sentinel de migración ──────────────────────────────────────────────
+    # Marca todas las filas existentes como "migradas". El post-migrate filtra
+    # cada UPDATE por esta columna para que pagos creados después de la
+    # migración nunca sean tocados, incluso si el post se re-ejecuta.
+    if not openupgrade.column_exists(cr, "account_payment", "x_bkp_migrated"):
+        cr.execute("ALTER TABLE account_payment ADD COLUMN x_bkp_migrated BOOLEAN")
+        cr.execute("UPDATE account_payment SET x_bkp_migrated = TRUE")
+        _logger.info("account_payment_pro: marked %s rows as x_bkp_migrated", cr.rowcount)
+
     # ── 1. Backup de columnas originales ──────────────────────────────────────
+    # Estos backups son inmutables: el post-migrate lee siempre de x_bkp_*
+    # para ser re-ejecutable de forma segura.
     columns_to_backup = []
     for col in (
-        "counterpart_exchange_rate",  # stored → backup real
-        "force_amount_company_currency",  # stored → backup real
-        "write_off_amount",  # stored → backup real
-        # amount_company_currency y counterpart_currency_amount eran compute
-        # sin store=True → no tienen columna en DB, no se backupean.
+        "counterpart_exchange_rate",
+        "force_amount_company_currency",
+        "write_off_amount",
+        "unreconciled_amount",
     ):
         if openupgrade.column_exists(cr, "account_payment", col):
             columns_to_backup.append((col, f"x_bkp_{col}", None))
@@ -46,87 +55,23 @@ def migrate(cr, version):
         )
 
     # ── 2. Renombrar counterpart_exchange_rate → counterpart_rate ─────────────
-    # Evita que el ORM cree la columna como si fuera un campo nuevo y encole
-    # recompute para todos los registros. Los valores quedan en formato viejo
-    # (user-friendly); el post-migrate los invierte a formato Odoo nativo.
+    # Evita que el ORM cree la columna como campo nuevo y encole recompute.
+    # Los valores quedan en formato viejo; el post-migrate los transforma.
     if openupgrade.column_exists(cr, "account_payment", "counterpart_exchange_rate"):
         openupgrade.rename_columns(cr, {"account_payment": [("counterpart_exchange_rate", "counterpart_rate")]})
-        # Default 1.0 para registros sin counterpart currency (NULL/0)
-        cr.execute("""
-            UPDATE account_payment
-            SET counterpart_rate = 1.0
-            WHERE counterpart_rate IS NULL OR counterpart_rate = 0;
-        """)
-        _logger.info(
-            "account_payment_pro: renamed counterpart_exchange_rate → counterpart_rate "
-            "(defaulted %s NULL/0 records to 1.0)",
-            cr.rowcount,
-        )
+        _logger.info("account_payment_pro: renamed counterpart_exchange_rate → counterpart_rate")
 
     # ── 3. Pre-crear accounting_rate ──────────────────────────────────────────
-    # Campo nuevo store=True. Si no existe al cargar el módulo, el ORM encola
-    # recompute (llama _get_conversion_rate por cada registro = lento).
+    # Campo nuevo store=True. Crear la columna evita que el ORM la registre como
+    # nueva y encole recompute masivo al cargar el módulo. Los valores los pone
+    # el post-migrate.
     if not openupgrade.column_exists(cr, "account_payment", "accounting_rate"):
         cr.execute("ALTER TABLE account_payment ADD COLUMN accounting_rate float8")
-
-        # 3a) Pagos con cotización forzada y A ≠ C → rate = amount / force
-        # Solo cuando A ≠ C: si A = C, accounting_rate es siempre 1.0.
-        # El force en pagos A=C existía como artefacto de other_currency=True
-        # en transferencias internas pero no afecta el rate A/C.
-        if openupgrade.column_exists(cr, "account_payment", "force_amount_company_currency"):
-            cr.execute("""
-                UPDATE account_payment ap
-                SET accounting_rate = ap.amount / ap.force_amount_company_currency
-                FROM res_company rc
-                WHERE rc.id = ap.company_id
-                  AND ap.currency_id != rc.currency_id
-                  AND ap.force_amount_company_currency IS NOT NULL
-                  AND ap.force_amount_company_currency != 0;
-            """)
-            _logger.info(
-                "account_payment_pro: accounting_rate from force (%s rows)",
-                cr.rowcount,
-            )
-
-        # 3b) Misma moneda (A == C) → rate = 1.0
-        cr.execute("""
-            UPDATE account_payment ap
-            SET accounting_rate = 1.0
-            FROM res_company rc
-            WHERE rc.id = ap.company_id
-              AND ap.currency_id = rc.currency_id
-              AND ap.accounting_rate IS NULL;
-        """)
-        _logger.info(
-            "account_payment_pro: accounting_rate = 1.0 for same-currency (%s rows)",
-            cr.rowcount,
-        )
-
-        # 3c) Moneda diferente sin force → tasa histórica desde res_currency_rate
-        # accounting_rate = _get_conversion_rate(C, A) = A_rate / C_rate = A_rate
-        # (C_rate es siempre 1.0 para la moneda de la compañía)
-        cr.execute("""
-            UPDATE account_payment ap
-            SET accounting_rate = COALESCE(
-                (SELECT r.rate
-                 FROM res_currency_rate r
-                 WHERE r.currency_id = ap.currency_id
-                   AND r.company_id = ap.company_id
-                   AND r.name <= COALESCE(ap.date, CURRENT_DATE)
-                 ORDER BY r.name DESC
-                 LIMIT 1),
-                1.0
-            )
-            WHERE ap.accounting_rate IS NULL;
-        """)
-        _logger.info(
-            "account_payment_pro: accounting_rate from currency rates (%s rows)",
-            cr.rowcount,
-        )
+        _logger.info("account_payment_pro: pre-created accounting_rate column")
 
     # ── 4. Pre-crear counterpart_currency_amount ──────────────────────────────
-    # Era compute sin store=True → no existe columna en DB. Ahora es store=True.
-    # Pre-crear evita recompute masivo; el post-migrate lo pobla correctamente.
+    # Era compute sin store=True → no existía columna. Ahora es store=True.
+    # Crear la columna evita el recompute masivo. Los valores los pone el post.
     if not openupgrade.column_exists(cr, "account_payment", "counterpart_currency_amount"):
         cr.execute("ALTER TABLE account_payment ADD COLUMN counterpart_currency_amount numeric")
         _logger.info("account_payment_pro: pre-created counterpart_currency_amount column")

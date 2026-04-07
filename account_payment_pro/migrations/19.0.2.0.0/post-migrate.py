@@ -6,23 +6,23 @@ Se ejecuta después de que el ORM cargó el nuevo código del módulo.
 
 Qué supone:
   - El pre-migrate creó columnas x_bkp_* con los valores originales.
-  - counterpart_currency_id ya existía como campo almacenado; la columna
-    conserva los valores pre-refactor (puede haber NULLs del viejo compute).
-  - counterpart_rate fue renombrado desde counterpart_exchange_rate (pre-migrate).
-  - accounting_rate y counterpart_currency_amount fueron pre-creados en pre-migrate.
+  - counterpart_rate fue renombrado desde counterpart_exchange_rate (pre-migrate)
+    con valores en formato viejo. accounting_rate y counterpart_currency_amount
+    fueron pre-creados con defaults seguros (1.0 y amount respectivamente).
 
 Qué garantiza al terminar:
-  - counterpart_rate contiene el rate histórico (1 / x_bkp_counterpart_exchange_rate).
-  - accounting_rate contiene el rate efectivo (amount / x_bkp_force_amount_company_currency).
-  - Pagos con ambos counterpart_exchange_rate + force: B1=A, counterpart_rate=1.0.
+  - accounting_rate contiene el rate efectivo A/C para cada pago.
+  - counterpart_rate contiene el rate histórico B1/A (1 / viejo counterpart_exchange_rate).
   - counterpart_currency_id poblado para todos los pagos (NULLs resueltos).
-  - counterpart_rate para B1=C con cotización forzada: 1/accounting_rate.
   - write_off_amount convertido de company_currency a destination_currency.
+  - unreconciled_amount convertido de company_currency a destination_currency
+    y con signo corregido para los escenarios invertidos.
   - counterpart_currency_amount pre-poblado y siempre positivo.
-  - unreconciled_amount con signo correcto para escenarios migrados.
 
-Re-ejecutable: las primeras transformaciones leen de x_bkp_* (inmutables),
-por lo que corregir un bug y volver a correr el post es seguro.
+Re-ejecutable: todas las transformaciones leen de x_bkp_* (inmutables) y
+filtran por x_bkp_migrated = TRUE (sentinel del pre-migrate). Esto garantiza
+que pagos creados después de la migración nunca son tocados, aunque el post
+se vuelva a correr.
 """
 
 import logging
@@ -36,128 +36,279 @@ def migrate(cr, version):
     if not version:
         return
 
-    # ── 1. counterpart_rate: restaurar rate histórico ──────────────────────────
-    # El valor original era user-friendly (ej: 1428.108 para "1 USD = 1428.108 ARS").
-    # El nuevo campo usa formato Odoo nativo A→B1 (ej: 0.000700 = USD/ARS).
-    if openupgrade.column_exists(cr, "account_payment", "x_bkp_counterpart_exchange_rate"):
-        cr.execute("""
-            UPDATE account_payment
-            SET counterpart_rate = 1.0 / x_bkp_counterpart_exchange_rate
-            WHERE x_bkp_counterpart_exchange_rate IS NOT NULL
-              AND x_bkp_counterpart_exchange_rate != 0;
-        """)
-        _logger.info(
-            "account_payment_pro: [step 1] restored counterpart_rate from backup (%s rows)",
-            cr.rowcount,
-        )
+    has_bkp_counterpart = openupgrade.column_exists(cr, "account_payment", "x_bkp_counterpart_exchange_rate")
+    has_bkp_force = openupgrade.column_exists(cr, "account_payment", "x_bkp_force_amount_company_currency")
+    has_bkp_write_off = openupgrade.column_exists(cr, "account_payment", "x_bkp_write_off_amount")
+    has_bkp_unreconciled = openupgrade.column_exists(cr, "account_payment", "x_bkp_unreconciled_amount")
 
-    # ── 2. accounting_rate: restaurar rate efectivo ────────────────────────────
-    # amount_company_currency era compute sin store → no hay backup directo.
-    # Cuando el usuario forzó la cotización se guardaba en force_amount_company_currency
-    # (campo almacenado), del cual sí tenemos backup.
-    # accounting_rate = A/C = amount / force_amount_company_currency.
-    # Solo cuando A ≠ C: si A = C, accounting_rate es siempre 1.0 y el force
-    # era un artefacto de other_currency=True en transferencias internas.
-    # Para pagos sin force, el pre-migrate ya lo pobló desde res_currency_rate.
-    if openupgrade.column_exists(cr, "account_payment", "x_bkp_force_amount_company_currency"):
+    # ══════════════════════════════════════════════════════════════════════════
+    # PASO 1: accounting_rate
+    # ══════════════════════════════════════════════════════════════════════════
+    # accounting_rate = A/C (formato Odoo: _get_conversion_rate(C, A))
+    # Se computa en 3 sub-pasos ordenados por prioridad.
+
+    # 1a) Misma moneda (A == C) → rate = 1.0
+    cr.execute("""
+        UPDATE account_payment ap
+        SET accounting_rate = 1.0
+        FROM res_company rc
+        WHERE rc.id = ap.company_id
+          AND ap.x_bkp_migrated = TRUE
+          AND ap.currency_id = rc.currency_id;
+    """)
+    _logger.info(
+        "account_payment_pro: [1a] accounting_rate = 1.0 for same-currency (%s rows)",
+        cr.rowcount,
+    )
+
+    # 1b) Con cotización forzada (A ≠ C) → rate = amount / force
+    if has_bkp_force:
         cr.execute("""
             UPDATE account_payment ap
             SET accounting_rate = ap.amount / ap.x_bkp_force_amount_company_currency
             FROM res_company rc
             WHERE rc.id = ap.company_id
+              AND ap.x_bkp_migrated = TRUE
               AND ap.currency_id != rc.currency_id
               AND ap.x_bkp_force_amount_company_currency IS NOT NULL
-              AND ap.x_bkp_force_amount_company_currency != 0;
+              AND ap.x_bkp_force_amount_company_currency != 0
+              AND ap.amount IS NOT NULL
+              AND ap.amount != 0;
         """)
         _logger.info(
-            "account_payment_pro: [step 2] restored accounting_rate from force backup (%s rows)",
+            "account_payment_pro: [1b] accounting_rate from force backup (%s rows)",
             cr.rowcount,
         )
 
-    # ── 3. Escenario (b): pagos con AMBOS counterpart_exchange_rate Y force ──
-    # En el código viejo _use_counterpart_currency() requería currency_id == company_currency_id,
-    # mientras que force_amount_company_currency requería other_currency = True.
-    # Condiciones mutuamente excluyentes → combinación rota, counterpart_exchange_rate
-    # no tenía efecto real.
-    # Fix: setear B1 = A (sin conversión de contrapartida), counterpart_rate = 1.0.
-    # El accounting_rate del step 2 ya captura la cotización forzada A↔C.
-    has_both = openupgrade.column_exists(
-        cr, "account_payment", "x_bkp_counterpart_exchange_rate"
-    ) and openupgrade.column_exists(cr, "account_payment", "x_bkp_force_amount_company_currency")
-    if has_both:
+    # 1c) Moneda diferente sin force → tasa histórica desde res_currency_rate
+    # _get_conversion_rate(C, A) = A_rate / C_rate.
+    # C_rate es siempre 1.0 para la moneda de la compañía, así que = A_rate.
+    cr.execute(  # pylint: disable=sql-injection
+        """
+        UPDATE account_payment ap
+        SET accounting_rate = COALESCE(
+            (SELECT r.rate
+             FROM res_currency_rate r
+             WHERE r.currency_id = ap.currency_id
+               AND r.company_id = ap.company_id
+               AND r.name <= COALESCE(ap.date, CURRENT_DATE)
+             ORDER BY r.name DESC
+             LIMIT 1),
+            1.0
+        )
+        FROM res_company rc
+        WHERE rc.id = ap.company_id
+          AND ap.x_bkp_migrated = TRUE
+          AND ap.currency_id != rc.currency_id
+          AND (NOT %(has_bkp_force)s
+               OR ap.x_bkp_force_amount_company_currency IS NULL
+               OR ap.x_bkp_force_amount_company_currency = 0);
+    """
+        % {"has_bkp_force": has_bkp_force}
+    )
+    _logger.info(
+        "account_payment_pro: [1c] accounting_rate from currency rates (%s rows)",
+        cr.rowcount,
+    )
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # PASO 2: counterpart_rate — restaurar rate histórico
+    # ══════════════════════════════════════════════════════════════════════════
+    # Valor viejo = C/B1 (user-friendly, ej: 1428 ARS/USD).
+    # Valor nuevo = B1/A (Odoo nativo). Como en caso (a) A=C → B1/A = 1/(C/B1).
+    if has_bkp_counterpart:
         cr.execute("""
             UPDATE account_payment
-            SET counterpart_currency_id = currency_id,
-                counterpart_rate = 1.0
-            WHERE x_bkp_counterpart_exchange_rate IS NOT NULL
-              AND x_bkp_counterpart_exchange_rate != 0
-              AND x_bkp_force_amount_company_currency IS NOT NULL
-              AND x_bkp_force_amount_company_currency != 0;
+            SET counterpart_rate = 1.0 / x_bkp_counterpart_exchange_rate
+            WHERE x_bkp_migrated = TRUE
+              AND x_bkp_counterpart_exchange_rate IS NOT NULL
+              AND x_bkp_counterpart_exchange_rate != 0;
         """)
         _logger.info(
-            "account_payment_pro: [step 3] fixed dual-rate payments (counterpart_exchange_rate + force) (%s rows)",
+            "account_payment_pro: [2] counterpart_rate from backup (%s rows)",
             cr.rowcount,
         )
 
-    # ── 4. counterpart_currency_id: poblar NULLs ──────────────────────────────
-    # counterpart_currency_id existía como store=True antes del refactor; la columna
-    # conserva valores previos. El viejo compute seteaba False/NULL cuando
-    # journal.currency == counterpart_currency. Aquí completamos todos los NULLs
-    # siguiendo la lógica del nuevo compute, ANTES de los pasos que dependen de él.
+    # ══════════════════════════════════════════════════════════════════════════
+    # PASO 3: Fix caso (b) — pagos con counterpart definida pero A ≠ C
+    # ══════════════════════════════════════════════════════════════════════════
+    # En el código viejo _use_counterpart_currency() requería A == C.
+    # Cuando A ≠ C, la counterpart_currency_id existía pero se IGNORABA en el
+    # asiento. Limpiar: B1 = A, counterpart_rate = 1.0.
+    # Esto cubre también el caso "both" (tenía counterpart + force simultáneamente,
+    # que eran condiciones mutuamente excluyentes en el código viejo).
+    cr.execute("""
+        UPDATE account_payment ap
+        SET counterpart_currency_id = ap.currency_id,
+            counterpart_rate = 1.0
+        FROM res_company rc
+        WHERE rc.id = ap.company_id
+          AND ap.x_bkp_migrated = TRUE
+          AND ap.currency_id != rc.currency_id
+          AND ap.counterpart_currency_id IS NOT NULL
+          AND ap.counterpart_currency_id != ap.currency_id;
+    """)
+    _logger.info(
+        "account_payment_pro: [3] fixed case (b) — counterpart ignored when A!=C (%s rows)",
+        cr.rowcount,
+    )
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # PASO 4: counterpart_currency_id — poblar NULLs
+    # ══════════════════════════════════════════════════════════════════════════
     _populate_counterpart_currency_id(cr)
 
-    # ── 5. counterpart_rate para B1=C cuando se forzó cotización ──────────────
-    # Cuando B1 = company_currency (diario extranjero pagando deuda local),
-    # counterpart_rate = B1/A = C/A = 1/accounting_rate.
-    # El step 2 corrigió accounting_rate, pero counterpart_rate aún tiene el valor
-    # pre-refactor. Lo actualizamos.
-    # Depende de: counterpart_currency_id poblado (step 4).
-    if openupgrade.column_exists(cr, "account_payment", "x_bkp_force_amount_company_currency"):
+    # ══════════════════════════════════════════════════════════════════════════
+    # PASO 5: counterpart_rate para registros recién poblados
+    # ══════════════════════════════════════════════════════════════════════════
+    # Registros que no tenían counterpart_exchange_rate (x_bkp NULL/0) pero
+    # ahora tienen counterpart_currency_id poblado por el paso 4.
+    # counterpart_rate sigue con el default 1.0; corregirlo según B1 vs A vs C.
+
+    # 5a) B1 = A → counterpart_rate = 1.0
+    cr.execute("""
+        UPDATE account_payment ap
+        SET counterpart_rate = 1.0
+        WHERE ap.x_bkp_migrated = TRUE
+          AND (ap.counterpart_rate IS NULL OR ap.counterpart_rate = 0)
+          AND ap.counterpart_currency_id IS NOT NULL
+          AND ap.counterpart_currency_id = ap.currency_id;
+    """)
+    _logger.info(
+        "account_payment_pro: [5a] counterpart_rate = 1.0 for B1=A (%s rows)",
+        cr.rowcount,
+    )
+
+    # 5b) B1 = C y A ≠ C → counterpart_rate = 1/accounting_rate (= C/A)
+    bkp_null_condition = (
+        "(ap.x_bkp_counterpart_exchange_rate IS NULL OR ap.x_bkp_counterpart_exchange_rate = 0)"
+        if has_bkp_counterpart
+        else "TRUE"
+    )
+    cr.execute(  # pylint: disable=sql-injection
+        """
+        UPDATE account_payment ap
+        SET counterpart_rate = 1.0 / ap.accounting_rate
+        FROM res_company rc
+        WHERE rc.id = ap.company_id
+          AND ap.x_bkp_migrated = TRUE
+          AND %(bkp_null_cond)s
+          AND ap.counterpart_currency_id = rc.currency_id
+          AND ap.currency_id != rc.currency_id
+          AND ap.accounting_rate IS NOT NULL
+          AND ap.accounting_rate != 0;
+    """
+        % {"bkp_null_cond": bkp_null_condition}
+    )
+    _logger.info(
+        "account_payment_pro: [5b] counterpart_rate for B1=C newly populated (%s rows)",
+        cr.rowcount,
+    )
+
+    # 5c) B1 ≠ A y B1 ≠ C → rate desde res_currency_rate
+    # _get_conversion_rate(A, B1) = B1_rate / A_rate
+    cr.execute(  # pylint: disable=sql-injection
+        """
+        UPDATE account_payment ap
+        SET counterpart_rate = COALESCE(
+            (SELECT r.rate FROM res_currency_rate r
+             WHERE r.currency_id = ap.counterpart_currency_id
+               AND r.company_id = ap.company_id
+               AND r.name <= COALESCE(ap.date, CURRENT_DATE)
+             ORDER BY r.name DESC LIMIT 1)
+            /
+            NULLIF(
+                (SELECT r.rate FROM res_currency_rate r
+                 WHERE r.currency_id = ap.currency_id
+                   AND r.company_id = ap.company_id
+                   AND r.name <= COALESCE(ap.date, CURRENT_DATE)
+                 ORDER BY r.name DESC LIMIT 1),
+                0
+            ),
+            1.0
+        )
+        FROM res_company rc
+        WHERE rc.id = ap.company_id
+          AND ap.x_bkp_migrated = TRUE
+          AND %(bkp_null_cond)s
+          AND ap.counterpart_currency_id != ap.currency_id
+          AND ap.counterpart_currency_id != rc.currency_id;
+    """
+        % {"bkp_null_cond": bkp_null_condition}
+    )
+    _logger.info(
+        "account_payment_pro: [5c] counterpart_rate for B1!=A!=C newly populated (%s rows)",
+        cr.rowcount,
+    )
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # PASO 6: write_off_amount — convertir de C a destination_currency
+    # ══════════════════════════════════════════════════════════════════════════
+    # Factor = counterpart_rate × accounting_rate = (B1/A) × (A/C) = B1/C.
+    # Cuando reconcile_on_company_currency = True, destination = C → factor = 1.
+    # Cuando B1 = C el factor se auto-neutraliza a 1.0.
+    if has_bkp_write_off:
         cr.execute("""
             UPDATE account_payment ap
-            SET counterpart_rate = 1.0 / ap.accounting_rate
+            SET write_off_amount = ap.x_bkp_write_off_amount
+                * CASE
+                    WHEN rc.reconcile_on_company_currency = TRUE THEN 1.0
+                    ELSE COALESCE(
+                        NULLIF(ap.counterpart_rate * ap.accounting_rate, 0),
+                        1.0
+                    )
+                  END
             FROM res_company rc
             WHERE rc.id = ap.company_id
-              AND ap.counterpart_currency_id = rc.currency_id
-              AND ap.counterpart_currency_id != ap.currency_id
-              AND ap.accounting_rate IS NOT NULL
-              AND ap.accounting_rate != 0
-              AND ap.x_bkp_force_amount_company_currency IS NOT NULL
-              AND ap.x_bkp_force_amount_company_currency != 0;
+              AND ap.x_bkp_migrated = TRUE
+              AND ap.x_bkp_write_off_amount IS NOT NULL
+              AND ap.x_bkp_write_off_amount != 0;
         """)
         _logger.info(
-            "account_payment_pro: [step 5] fixed counterpart_rate for B1=C forced payments (%s rows)",
+            "account_payment_pro: [6] write_off_amount converted to destination_currency (%s rows)",
             cr.rowcount,
         )
 
-    # ── 6. write_off_amount: convertir de company_currency (C) a destination_currency (B1) ──
-    # Fórmula: write_off_new = write_off_old × counterpart_rate × accounting_rate
-    #   counterpart_rate = B1/A, accounting_rate = A/C → producto = B1/C
-    #   Cuando A == C (lo más común), accounting_rate = 1 y simplifica a × counterpart_rate.
-    if openupgrade.column_exists(cr, "account_payment", "x_bkp_write_off_amount"):
+    # ══════════════════════════════════════════════════════════════════════════
+    # PASO 7: unreconciled_amount — convertir moneda + corregir signo
+    # ══════════════════════════════════════════════════════════════════════════
+    # Dos cambios simultáneos:
+    # a) Moneda: company_currency → destination_currency (mismo factor que write_off)
+    # b) Signo: selected_debt cambió de usar partner_type a payment_type.
+    #    Invertir para: customer+outbound y supplier+inbound.
+    if has_bkp_unreconciled:
         cr.execute("""
-            UPDATE account_payment
-            SET write_off_amount = x_bkp_write_off_amount * counterpart_rate * accounting_rate
-            WHERE x_bkp_write_off_amount IS NOT NULL
-              AND x_bkp_write_off_amount != 0
-              AND counterpart_rate IS NOT NULL
-              AND counterpart_rate != 0
-              AND accounting_rate IS NOT NULL
-              AND accounting_rate != 0
-              AND counterpart_rate * accounting_rate != 1.0;
+            UPDATE account_payment ap
+            SET unreconciled_amount = ap.x_bkp_unreconciled_amount
+                * CASE
+                    WHEN rc.reconcile_on_company_currency = TRUE THEN 1.0
+                    ELSE COALESCE(
+                        NULLIF(ap.counterpart_rate * ap.accounting_rate, 0),
+                        1.0
+                    )
+                  END
+                * CASE
+                    WHEN (ap.partner_type = 'customer' AND ap.payment_type = 'outbound')
+                      OR (ap.partner_type = 'supplier' AND ap.payment_type = 'inbound')
+                    THEN -1.0
+                    ELSE 1.0
+                  END
+            FROM res_company rc
+            WHERE rc.id = ap.company_id
+              AND ap.x_bkp_migrated = TRUE
+              AND ap.x_bkp_unreconciled_amount IS NOT NULL
+              AND ap.x_bkp_unreconciled_amount != 0;
         """)
         _logger.info(
-            "account_payment_pro: [step 6] migrated write_off_amount to destination_currency (%s rows)",
+            "account_payment_pro: [7] unreconciled_amount converted + sign fixed (%s rows)",
             cr.rowcount,
         )
 
-    # ── 7. counterpart_currency_amount: poblar ────────────────────────────────
-    # Era compute sin store=True en el código viejo → no hay backup.
-    # En el nuevo código es store=True; si no lo poblamos el ORM encola un
-    # recompute masivo (ADR-009).
-    # Fórmula idéntica a _compute_counterpart_currency_amount:
-    #   A != B1 → amount × counterpart_rate  |  A == B1 → amount
-    # Depende de: counterpart_currency_id (step 4) y counterpart_rate (steps 1/3/5).
+    # ══════════════════════════════════════════════════════════════════════════
+    # PASO 8: counterpart_currency_amount — poblar
+    # ══════════════════════════════════════════════════════════════════════════
+    # Fórmula = _compute_counterpart_currency_amount:
+    #   A ≠ B1 → amount × counterpart_rate  |  A == B1 → amount
     cr.execute("""
         UPDATE account_payment
         SET counterpart_currency_amount = CASE
@@ -167,68 +318,53 @@ def migrate(cr, version):
                  AND counterpart_rate != 0
             THEN amount * counterpart_rate
             ELSE amount
-        END;
+        END
+        WHERE x_bkp_migrated = TRUE;
     """)
     _logger.info(
-        "account_payment_pro: [step 7] pre-populated counterpart_currency_amount (%s rows)",
+        "account_payment_pro: [8] counterpart_currency_amount populated (%s rows)",
         cr.rowcount,
     )
 
-    # ── 8. counterpart_currency_amount: debe ser siempre positivo ─────────────
+    # ── 8b: asegurar que sea siempre positivo ─────────────────────────────────
     cr.execute("""
         UPDATE account_payment
         SET counterpart_currency_amount = ABS(counterpart_currency_amount)
-        WHERE counterpart_currency_amount < 0;
+        WHERE x_bkp_migrated = TRUE
+          AND counterpart_currency_amount < 0;
     """)
-    _logger.info(
-        "account_payment_pro: [step 8] fixed counterpart_currency_amount sign (%s rows)",
-        cr.rowcount,
-    )
-
-    # ── 9. unreconciled_amount: corregir signo para escenarios migrados ───────
-    # El refactor cambió el currency_field de unreconciled_amount, lo que invierte
-    # el signo para customer+outbound y supplier+inbound.
-    # Usamos x_bkp_write_off_amount como sentinel: si existe, el pago es pre-refactor.
-    if openupgrade.column_exists(cr, "account_payment", "x_bkp_write_off_amount"):
-        cr.execute("""
-            UPDATE account_payment
-            SET unreconciled_amount = -unreconciled_amount
-            WHERE unreconciled_amount != 0
-              AND x_bkp_write_off_amount IS NOT NULL
-              AND (
-                  (partner_type = 'customer' AND payment_type = 'outbound')
-                  OR (partner_type = 'supplier' AND payment_type = 'inbound')
-              );
-        """)
+    if cr.rowcount:
         _logger.info(
-            "account_payment_pro: [step 9] fixed unreconciled_amount sign (%s rows)",
+            "account_payment_pro: [8b] fixed negative counterpart_currency_amount (%s rows)",
             cr.rowcount,
         )
 
-    # ── 10. Validación ────────────────────────────────────────────────────────
+    # ══════════════════════════════════════════════════════════════════════════
+    # PASO 9: Validación
+    # ══════════════════════════════════════════════════════════════════════════
     cr.execute("""
         SELECT COUNT(*) FROM account_payment
-        WHERE state != 'draft'
-          AND (accounting_rate IS NULL OR counterpart_rate IS NULL);
+        WHERE x_bkp_migrated = TRUE
+          AND state != 'draft'
+          AND (accounting_rate IS NULL OR counterpart_rate IS NULL
+               OR counterpart_currency_id IS NULL);
     """)
     count = cr.fetchone()[0]
     if count:
         _logger.warning(
-            "account_payment_pro migration: %d posted payments with NULL accounting_rate "
-            "or counterpart_rate — review migration results.",
+            "account_payment_pro: %d posted payments with NULL accounting_rate, "
+            "counterpart_rate or counterpart_currency_id — review migration.",
             count,
         )
     else:
-        _logger.info(
-            "account_payment_pro migration: all posted payments have accounting_rate " "and counterpart_rate populated."
-        )
+        _logger.info("account_payment_pro: all posted payments have rates and " "counterpart_currency_id populated.")
 
 
 def _populate_counterpart_currency_id(cr):
     """Pobla counterpart_currency_id para registros que lo tienen en NULL.
 
-    Sigue la misma lógica que _compute_counterpart_currency_id del modelo,
-    ejecutada en 5 pasos ordenados por prioridad (cada paso solo toca NULLs).
+    Sigue la misma lógica que _compute_counterpart_currency_id del nuevo modelo,
+    ejecutada en 4 pasos ordenados por prioridad (cada paso solo toca NULLs).
     """
     # 4.1: Transferencias internas → moneda del diario destino (o compañía)
     cr.execute("""
@@ -238,79 +374,70 @@ def _populate_counterpart_currency_id(cr):
         JOIN res_company rc ON rc.id = dj.company_id
         WHERE ap.is_internal_transfer = TRUE
           AND ap.destination_journal_id = dj.id
+          AND ap.x_bkp_migrated = TRUE
           AND ap.counterpart_currency_id IS NULL;
     """)
     _logger.info(
-        "account_payment_pro: [step 4.1] counterpart_currency_id for internal transfers (%s rows)",
+        "account_payment_pro: [4.1] counterpart_currency_id for internal transfers (%s rows)",
         cr.rowcount,
     )
 
-    # 4.2: Pagos normales con cuenta que fuerza moneda → usar moneda de la cuenta
+    # 4.2: Cuenta con moneda forzada distinta a la de la compañía
     cr.execute("""
         UPDATE account_payment ap
         SET counterpart_currency_id = aa.currency_id
-        FROM account_account aa
-        WHERE ap.is_internal_transfer = FALSE
-          AND ap.destination_account_id = aa.id
+        FROM account_account aa, res_company rc
+        WHERE ap.destination_account_id = aa.id
+          AND rc.id = ap.company_id
           AND aa.currency_id IS NOT NULL
+          AND aa.currency_id != rc.currency_id
+          AND ap.is_internal_transfer = FALSE
+          AND ap.x_bkp_migrated = TRUE
           AND ap.counterpart_currency_id IS NULL;
     """)
     _logger.info(
-        "account_payment_pro: [step 4.2] counterpart_currency_id from account currency (%s rows)",
+        "account_payment_pro: [4.2] counterpart_currency_id from account currency (%s rows)",
         cr.rowcount,
     )
 
-    # 4.3: Pagos con reconcile_on_company_currency = True → moneda de compañía
+    # 4.3: Desde to_pay_move_line_ids cuando hay una sola moneda (sin reconcile)
     cr.execute("""
-        UPDATE account_payment ap
-        SET counterpart_currency_id = rc.currency_id
-        FROM res_company rc
-        WHERE ap.is_internal_transfer = FALSE
-          AND ap.company_id = rc.id
-          AND rc.reconcile_on_company_currency = TRUE
-          AND ap.counterpart_currency_id IS NULL;
-    """)
-    _logger.info(
-        "account_payment_pro: [step 4.3] counterpart_currency_id with reconcile mode (%s rows)",
-        cr.rowcount,
-    )
-
-    # 4.4: Usa moneda de las líneas a pagar si solo hay una moneda
-    cr.execute("""
-        WITH payment_line_currencies AS (
+        WITH payment_currencies AS (
             SELECT
-                ap.id AS payment_id,
-                MIN(aml.currency_id) AS min_currency,
-                MAX(aml.currency_id) AS max_currency
-            FROM account_payment ap
-            JOIN res_company rc ON rc.id = ap.company_id
-            JOIN account_move_line_payment_to_pay_rel rel ON rel.payment_id = ap.id
+                rel.payment_id,
+                MIN(aml.currency_id) AS min_c,
+                MAX(aml.currency_id) AS max_c
+            FROM account_move_line_payment_to_pay_rel rel
             JOIN account_move_line aml ON aml.id = rel.to_pay_line_id
-            WHERE ap.is_internal_transfer = FALSE
-              AND ap.counterpart_currency_id IS NULL
+            JOIN account_payment ap ON ap.id = rel.payment_id
+            JOIN res_company rc ON rc.id = ap.company_id
+            WHERE ap.counterpart_currency_id IS NULL
+              AND ap.is_internal_transfer = FALSE
+              AND ap.x_bkp_migrated = TRUE
               AND rc.reconcile_on_company_currency = FALSE
-            GROUP BY ap.id
+            GROUP BY rel.payment_id
         )
         UPDATE account_payment ap
-        SET counterpart_currency_id = plc.min_currency
-        FROM payment_line_currencies plc
-        WHERE ap.id = plc.payment_id
-          AND plc.min_currency = plc.max_currency;
+        SET counterpart_currency_id = pc.min_c
+        FROM payment_currencies pc
+        WHERE ap.id = pc.payment_id
+          AND pc.min_c = pc.max_c;
     """)
     _logger.info(
-        "account_payment_pro: [step 4.4] counterpart_currency_id from to_pay lines (%s rows)",
+        "account_payment_pro: [4.3] counterpart_currency_id from to_pay lines (%s rows)",
         cr.rowcount,
     )
 
-    # 4.5: Fallback final → moneda de compañía
+    # 4.4: Fallback → moneda de compañía (cubre reconcile_on_company_currency y resto)
     cr.execute("""
         UPDATE account_payment ap
         SET counterpart_currency_id = rc.currency_id
         FROM res_company rc
         WHERE ap.company_id = rc.id
+          AND ap.x_bkp_migrated = TRUE
           AND ap.counterpart_currency_id IS NULL;
     """)
     _logger.info(
-        "account_payment_pro: [step 4.5] counterpart_currency_id fallback to company (%s rows)",
+        "account_payment_pro: [4.4] counterpart_currency_id fallback to company currency (%s rows)",
         cr.rowcount,
     )
