@@ -324,7 +324,7 @@ class AccountPayment(models.Model):
             amount_payments = abs(amount_inbound + amount_outbound)
 
             rec.payment_difference = (
-                rec.main_payment_id.selected_debt
+                abs(rec.main_payment_id.selected_debt)
                 - amount_payments
                 - rec.main_payment_id.withholdings_amount
                 - rec.main_payment_id.write_off_amount
