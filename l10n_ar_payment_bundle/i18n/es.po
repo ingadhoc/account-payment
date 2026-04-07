@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-01 20:27+0000\n"
-"PO-Revision-Date: 2025-12-26 17:10+0000\n"
+"POT-Creation-Date: 2026-04-07 17:46+0000\n"
+"PO-Revision-Date: 2026-04-07 17:46+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
 "payment-19-0/account-payment-19-0-l10n_ar_payment_bundle/es/>\n"
@@ -25,7 +25,7 @@ msgstr ""
 #. module: l10n_ar_payment_bundle
 #: model:ir.model,name:l10n_ar_payment_bundle.model_account_chart_template
 msgid "Account Chart Template"
-msgstr "Plantilla de plan contable"
+msgstr "Plantilla de plan de cuentas"
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
@@ -35,22 +35,22 @@ msgstr "Monto"
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
 msgid "Amount (DC)"
-msgstr ""
+msgstr "Importe (Moneda deuda)"
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
 msgid "Amount (JC)"
-msgstr ""
+msgstr "Importe (MD)"
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
 msgid "Amount in Debt Currency"
-msgstr ""
+msgstr "Importe en moneda de la deuda"
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
 msgid "Amount on journal currency"
-msgstr ""
+msgstr "Importe en moneda del diario"
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_payment_rename_wizard_form
@@ -65,7 +65,7 @@ msgstr "Empresas"
 #. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__counterpart_currency_id
 msgid "Counterpart Currency"
-msgstr ""
+msgstr "Moneda de Imputación"
 
 #. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__create_uid
@@ -97,7 +97,7 @@ msgstr "Cliente/Proveedor"
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__display_name
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_res_company__display_name
 msgid "Display Name"
-msgstr "Nombre a Mostrar"
+msgstr "Nombre para mostrar"
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_payment_rename_wizard_form
@@ -120,8 +120,8 @@ msgstr "ID"
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_from_bundle_form
 msgid ""
 "IMPORTANT: Linked draft validation must be done from main receipt. Draft "
-"validation of a linked payment is only used for corrections and advanced use "
-"cases. Are you sure you want to continue?"
+"validation of a linked payment is only used for corrections and advanced use"
+" cases. Are you sure you want to continue?"
 msgstr ""
 "IMPORTANTE: La validación del borrador vinculado debe realizarse desde el "
 "recibo principal. La validación del borrador de un pago vinculado solo se "
@@ -132,8 +132,8 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
 msgid ""
 "IMPORTANT: Linked payment validation must be done from main receipt. Manual "
-"validation of a linked payment is only used for corrections and advanced use "
-"cases. Are you sure you want to continue?"
+"validation of a linked payment is only used for corrections and advanced use"
+" cases. Are you sure you want to continue?"
 msgstr ""
 "IMPORTANTE: La validación de un pago vinculado debe realizarse desde el "
 "recibo principal. La validación manual de un pago vinculado solo se utiliza "
@@ -216,7 +216,7 @@ msgstr "Facturas pagadas"
 #. module: l10n_ar_payment_bundle
 #: model:ir.model,name:l10n_ar_payment_bundle.model_account_payment_register
 msgid "Pay"
-msgstr ""
+msgstr "Pagar"
 
 #. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__payment_id
@@ -236,7 +236,7 @@ msgstr "Asistente para Renombrar Pago"
 #. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__payment_total
 msgid "Payment Total"
-msgstr ""
+msgstr "Total Pago"
 
 #. module: l10n_ar_payment_bundle
 #. odoo-python
@@ -244,7 +244,7 @@ msgstr ""
 msgid ""
 "Payment bundle method requires Payment PRO to be enabled in the company "
 "configuration."
-msgstr ""
+msgstr "El método de pago agrupado requiere que Payment PRO esté habilitado en la configuración de la compañía."
 
 #. module: l10n_ar_payment_bundle
 #: model:account.payment.method,name:l10n_ar_payment_bundle.account_payment_in_payment_bundle
@@ -268,7 +268,7 @@ msgstr "Pagos"
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
 msgid "Payments Amount"
-msgstr ""
+msgstr "Importe de Pagos"
 
 #. module: l10n_ar_payment_bundle
 #. odoo-python
@@ -279,7 +279,7 @@ msgstr "Por favor ingrese un nuevo nombre para el pago."
 #. module: l10n_ar_payment_bundle
 #: model:ir.model,name:l10n_ar_payment_bundle.model_account_resequence_wizard
 msgid "Remake the sequence of Journal Entries."
-msgstr "Rehacer la secuencia de los Asientos Contables."
+msgstr "Rehaga la secuencia de los asientos contables."
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
@@ -309,19 +309,19 @@ msgstr "Mostrar botón Mover"
 msgid ""
 "The counterpart currency of a linked payment must match the main payment's "
 "counterpart currency."
-msgstr ""
+msgstr "La moneda de contrapartida de un pago vinculado debe coincidir con la moneda de contrapartida del pago principal."
 
 #. module: l10n_ar_payment_bundle
 #. odoo-python
 #: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
 msgid "The main payment and linked payment must belong to the same company."
-msgstr ""
+msgstr "El pago principal y el pago vinculado deben pertenecer a la misma compañía."
 
 #. module: l10n_ar_payment_bundle
 #. odoo-python
 #: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
 msgid "The main payment and linked payments must belong to the same company."
-msgstr ""
+msgstr "El pago principal y los pagos vinculados deben pertenecer a la misma compañía."
 
 #. module: l10n_ar_payment_bundle
 #. odoo-python
@@ -353,7 +353,7 @@ msgstr ""
 #. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,help:l10n_ar_payment_bundle.field_account_payment__to_pay_move_line_ids
 msgid "This lines are the ones the user has selected to be paid."
-msgstr "Estas líneas son las que el usuario ha seleccionado para pagar."
+msgstr "Estas líneas son las que el usuario ha seleccionado para pagar"
 
 #. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__to_pay_move_line_ids
@@ -368,7 +368,7 @@ msgstr "Total"
 #. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment_register__use_payment_pro
 msgid "Use Payment Pro"
-msgstr ""
+msgstr "Usar Payment Pro"
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_from_bundle_form
@@ -377,8 +377,8 @@ msgid ""
 "corrections or advanced scenarios. It is recommended to validate linked "
 "payments through the main receipt. Do you want to proceed?"
 msgstr ""
-"ADVERTENCIA: La validación directa de un pago vinculado solo se utiliza para "
-"correcciones o casos de uso avanzados. Se recomienda validar los pagos "
+"ADVERTENCIA: La validación directa de un pago vinculado solo se utiliza para"
+" correcciones o casos de uso avanzados. Se recomienda validar los pagos "
 "vinculados a través del recibo principal. ¿Desea continuar?"
 
 #. module: l10n_ar_payment_bundle
@@ -390,8 +390,8 @@ msgstr "Advertencias"
 #. odoo-python
 #: code:addons/l10n_ar_payment_bundle/models/account_journal.py:0
 msgid ""
-"You cannot assign a currency to journals that use the payment bundle payment "
-"method."
+"You cannot assign a currency to journals that use the payment bundle payment"
+" method."
 msgstr ""
 "No puede asignar una Moneda a los diarios que utilizan el método de pago de "
 "Múltiples Pagos."
@@ -405,27 +405,3 @@ msgid ""
 msgstr ""
 "No puede resecuenciar movimientos vinculados a un pago múltiple. Por favor "
 "resecuencie el pago en su lugar."
-
-#~ msgid "<strong><span>Total Imputed</span></strong>"
-#~ msgstr "<strong><span>Total Imputado</span></strong>"
-
-#~ msgid "<strong><span>Total Paid</span></strong>"
-#~ msgstr "<strong><span>Total Pagado</span></strong>"
-
-#~ msgid "Amount in SC"
-#~ msgstr "Monto en Moneda Secundaria"
-
-#~ msgid "Counterpart Exchange Rate"
-#~ msgstr "Tasa de Imputación"
-
-#~ msgid "Payment Total (SC)"
-#~ msgstr "Total del pago (Moneda Secundaria)"
-
-#~ msgid "Rate"
-#~ msgstr "Tasa de Cambio"
-
-#~ msgid "This action is only available for bundle payments."
-#~ msgstr "Esta acción solo está disponible para pagos múltiples."
-
-#~ msgid "You cannot rename canceled payments."
-#~ msgstr "No puede renombrar pagos cancelados."
