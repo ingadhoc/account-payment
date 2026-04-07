@@ -29,11 +29,11 @@ def migrate(cr, version):
     # en caso de bugs sin perder datos originales.
     columns_to_backup = []
     for col in (
-        "counterpart_exchange_rate",
-        "force_amount_company_currency",
-        "amount_company_currency",
-        "write_off_amount",
-        "counterpart_currency_amount",
+        "counterpart_exchange_rate",  # stored → backup real
+        "force_amount_company_currency",  # stored → backup real
+        "write_off_amount",  # stored → backup real
+        # amount_company_currency y counterpart_currency_amount eran compute
+        # sin store=True → no tienen columna en DB, no se backupean.
     ):
         if openupgrade.column_exists(cr, "account_payment", col):
             columns_to_backup.append((col, f"x_bkp_{col}", None))

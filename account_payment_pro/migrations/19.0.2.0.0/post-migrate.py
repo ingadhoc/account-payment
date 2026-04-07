@@ -47,17 +47,20 @@ def migrate(cr, version):
         )
 
     # ── 2. accounting_rate: restaurar rate efectivo ────────────────────────────
-    # accounting_rate = A/C = amount / amount_company_currency
-    # Captura la tasa real usada (incluyendo force_amount_company_currency).
-    if openupgrade.column_exists(cr, "account_payment", "x_bkp_amount_company_currency"):
+    # amount_company_currency era compute sin store → no hay backup directo.
+    # Cuando el usuario forzó la cotización se guardaba en force_amount_company_currency
+    # (campo almacenado), del cual sí tenemos backup.
+    # accounting_rate = A/C = amount / force_amount_company_currency.
+    # Para pagos sin force, el ORM ya lo computa correctamente al cargar el módulo.
+    if openupgrade.column_exists(cr, "account_payment", "x_bkp_force_amount_company_currency"):
         cr.execute("""
             UPDATE account_payment
-            SET accounting_rate = amount / x_bkp_amount_company_currency
-            WHERE x_bkp_amount_company_currency IS NOT NULL
-              AND x_bkp_amount_company_currency != 0;
+            SET accounting_rate = amount / x_bkp_force_amount_company_currency
+            WHERE x_bkp_force_amount_company_currency IS NOT NULL
+              AND x_bkp_force_amount_company_currency != 0;
         """)
         _logger.info(
-            "account_payment_pro: restored accounting_rate from backup (%s rows)",
+            "account_payment_pro: restored accounting_rate from force_amount_company_currency backup (%s rows)",
             cr.rowcount,
         )
 
@@ -82,36 +85,28 @@ def migrate(cr, version):
             cr.rowcount,
         )
 
-    # ── 4. counterpart_currency_amount: restaurar valor original ───────────────
-    # El ORM lo recomputó con el counterpart_rate incorrecto.
-    # Restauramos el valor que el usuario realmente usó.
-    if openupgrade.column_exists(cr, "account_payment", "x_bkp_counterpart_currency_amount"):
-        cr.execute("""
-            UPDATE account_payment
-            SET counterpart_currency_amount = x_bkp_counterpart_currency_amount
-            WHERE x_bkp_counterpart_currency_amount IS NOT NULL;
-        """)
-        _logger.info(
-            "account_payment_pro: restored counterpart_currency_amount from backup (%s rows)",
-            cr.rowcount,
-        )
-    else:
-        # Sin backup, recalcular desde el counterpart_rate ya corregido
-        cr.execute("""
-            UPDATE account_payment
-            SET counterpart_currency_amount = CASE
-                WHEN counterpart_currency_id IS NOT NULL
-                     AND counterpart_currency_id != currency_id
-                     AND counterpart_rate IS NOT NULL
-                     AND counterpart_rate != 0
-                THEN amount * counterpart_rate
-                ELSE amount
-            END;
-        """)
-        _logger.info(
-            "account_payment_pro: recalculated counterpart_currency_amount (%s rows)",
-            cr.rowcount,
-        )
+    # ── 4. counterpart_currency_amount: pre-poblar para evitar recompute masivo ──
+    # Era compute sin store=True en el código viejo → no hay backup.
+    # En el nuevo código es store=True; si no lo poblamos aquí el ORM encola un
+    # recompute para todos los registros históricos (ADR-009).
+    # Fórmula idéntica a _compute_counterpart_currency_amount:
+    #   A != B1 → amount × counterpart_rate  |  A == B1 → amount
+    # counterpart_rate ya fue corregido en el paso 1, así que los valores son correctos.
+    cr.execute("""
+        UPDATE account_payment
+        SET counterpart_currency_amount = CASE
+            WHEN counterpart_currency_id IS NOT NULL
+                 AND counterpart_currency_id != currency_id
+                 AND counterpart_rate IS NOT NULL
+                 AND counterpart_rate != 0
+            THEN amount * counterpart_rate
+            ELSE amount
+        END;
+    """)
+    _logger.info(
+        "account_payment_pro: pre-populated counterpart_currency_amount (%s rows)",
+        cr.rowcount,
+    )
 
     # ── 5. Validación ─────────────────────────────────────────────────────────
     cr.execute("""
