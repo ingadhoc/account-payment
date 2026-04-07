@@ -12,9 +12,11 @@ Qué supone:
 
 Qué garantiza al terminar:
   - counterpart_rate contiene el rate histórico (1 / x_bkp_counterpart_exchange_rate).
-  - accounting_rate contiene el rate efectivo (amount / x_bkp_amount_company_currency).
+  - accounting_rate contiene el rate efectivo (amount / x_bkp_force_amount_company_currency).
+  - counterpart_rate para B1=C con cotización forzada: 1/accounting_rate.
+  - Pagos con ambos counterpart_exchange_rate + force: B1=A, counterpart_rate=1.0.
   - write_off_amount está convertido de company_currency a destination_currency.
-  - counterpart_currency_amount refleja los valores originales.
+  - counterpart_currency_amount pre-poblado para evitar recompute masivo.
 
 Re-ejecutable: todas las transformaciones leen de x_bkp_* (inmutables),
 por lo que corregir un bug y volver a correr el post es seguro.
@@ -64,7 +66,55 @@ def migrate(cr, version):
             cr.rowcount,
         )
 
-    # ── 3. write_off_amount: convertir de company_currency (C) a destination_currency (B1) ──
+    # ── 2b. Escenario (b): pagos con AMBOS counterpart_exchange_rate Y force ──
+    # En el código viejo _use_counterpart_currency() requería currency_id == company_currency_id,
+    # mientras que force_amount_company_currency requería other_currency = True.
+    # Condiciones mutuamente excluyentes → combinación rota, counterpart_exchange_rate
+    # no tenía efecto real.
+    # Fix: setear B1 = A (sin conversión de contrapartida), counterpart_rate = 1.0.
+    # El accounting_rate del step 2 ya captura la cotización forzada A↔C.
+    has_both = openupgrade.column_exists(
+        cr, "account_payment", "x_bkp_counterpart_exchange_rate"
+    ) and openupgrade.column_exists(cr, "account_payment", "x_bkp_force_amount_company_currency")
+    if has_both:
+        cr.execute("""
+            UPDATE account_payment
+            SET counterpart_currency_id = currency_id,
+                counterpart_rate = 1.0
+            WHERE x_bkp_counterpart_exchange_rate IS NOT NULL
+              AND x_bkp_counterpart_exchange_rate != 0
+              AND x_bkp_force_amount_company_currency IS NOT NULL
+              AND x_bkp_force_amount_company_currency != 0;
+        """)
+        _logger.info(
+            "account_payment_pro: fixed broken dual-rate payments (counterpart_exchange_rate + force) (%s rows)",
+            cr.rowcount,
+        )
+
+    # ── 2c. Corregir counterpart_rate para B1=C cuando se forzó cotización ────
+    # Cuando B1 = company_currency (caso estándar: diario extranjero pagando deuda local),
+    # counterpart_rate = B1/A = C/A = 1/accounting_rate.
+    # El step 2 acaba de corregir accounting_rate, pero counterpart_rate sigue con el
+    # valor que el ORM computó usando la tasa de mercado. Lo corregimos.
+    if openupgrade.column_exists(cr, "account_payment", "x_bkp_force_amount_company_currency"):
+        cr.execute("""
+            UPDATE account_payment ap
+            SET counterpart_rate = 1.0 / ap.accounting_rate
+            FROM res_company rc
+            WHERE rc.id = ap.company_id
+              AND ap.counterpart_currency_id = rc.currency_id
+              AND ap.counterpart_currency_id != ap.currency_id
+              AND ap.accounting_rate IS NOT NULL
+              AND ap.accounting_rate != 0
+              AND ap.x_bkp_force_amount_company_currency IS NOT NULL
+              AND ap.x_bkp_force_amount_company_currency != 0;
+        """)
+        _logger.info(
+            "account_payment_pro: fixed counterpart_rate for B1=C forced payments (%s rows)",
+            cr.rowcount,
+        )
+
+    # ── 4. write_off_amount: convertir de company_currency (C) a destination_currency (B1) ──
     # Fórmula: write_off_new = write_off_old × counterpart_rate × accounting_rate
     #   counterpart_rate = B1/A, accounting_rate = A/C → producto = B1/C
     #   Cuando A == C (lo más común), accounting_rate = 1 y simplifica a × counterpart_rate.
@@ -85,13 +135,13 @@ def migrate(cr, version):
             cr.rowcount,
         )
 
-    # ── 4. counterpart_currency_amount: pre-poblar para evitar recompute masivo ──
+    # ── 5. counterpart_currency_amount: pre-poblar para evitar recompute masivo ──
     # Era compute sin store=True en el código viejo → no hay backup.
     # En el nuevo código es store=True; si no lo poblamos aquí el ORM encola un
     # recompute para todos los registros históricos (ADR-009).
     # Fórmula idéntica a _compute_counterpart_currency_amount:
     #   A != B1 → amount × counterpart_rate  |  A == B1 → amount
-    # counterpart_rate ya fue corregido en el paso 1, así que los valores son correctos.
+    # counterpart_rate ya fue corregido en los pasos 1/2b/2c.
     cr.execute("""
         UPDATE account_payment
         SET counterpart_currency_amount = CASE
@@ -108,7 +158,7 @@ def migrate(cr, version):
         cr.rowcount,
     )
 
-    # ── 5. Validación ─────────────────────────────────────────────────────────
+    # ── 6. Validación ─────────────────────────────────────────────────────────
     cr.execute("""
         SELECT COUNT(*) FROM account_payment
         WHERE state != 'draft'
