@@ -56,13 +56,18 @@ def migrate(cr, version):
     # Cuando el usuario forzó la cotización se guardaba en force_amount_company_currency
     # (campo almacenado), del cual sí tenemos backup.
     # accounting_rate = A/C = amount / force_amount_company_currency.
+    # Solo cuando A ≠ C: si A = C, accounting_rate es siempre 1.0 y el force
+    # era un artefacto de other_currency=True en transferencias internas.
     # Para pagos sin force, el pre-migrate ya lo pobló desde res_currency_rate.
     if openupgrade.column_exists(cr, "account_payment", "x_bkp_force_amount_company_currency"):
         cr.execute("""
-            UPDATE account_payment
-            SET accounting_rate = amount / x_bkp_force_amount_company_currency
-            WHERE x_bkp_force_amount_company_currency IS NOT NULL
-              AND x_bkp_force_amount_company_currency != 0;
+            UPDATE account_payment ap
+            SET accounting_rate = ap.amount / ap.x_bkp_force_amount_company_currency
+            FROM res_company rc
+            WHERE rc.id = ap.company_id
+              AND ap.currency_id != rc.currency_id
+              AND ap.x_bkp_force_amount_company_currency IS NOT NULL
+              AND ap.x_bkp_force_amount_company_currency != 0;
         """)
         _logger.info(
             "account_payment_pro: [step 2] restored accounting_rate from force backup (%s rows)",
