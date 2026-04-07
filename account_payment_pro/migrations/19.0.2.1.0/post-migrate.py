@@ -36,7 +36,7 @@ def migrate(cr, version):
             rc.currency_id
         )
         FROM account_journal dj
-        JOIN res_company rc ON rc.id = ap.company_id
+        JOIN res_company rc ON rc.id = dj.company_id
         WHERE ap.is_internal_transfer = TRUE
           AND ap.destination_journal_id = dj.id
           AND ap.counterpart_currency_id IS NULL;
