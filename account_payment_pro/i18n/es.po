@@ -92,7 +92,9 @@ msgstr "Ajuste / Adelanto"
 #. odoo-python
 #: code:addons/account_payment_pro/models/account_payment.py:0
 msgid "All selected debt lines must have the same currency. Found: %s"
-msgstr "Todas las líneas de deuda seleccionadas deben tener la misma moneda. Encontrado: %s"
+msgstr ""
+"Todas las líneas de deuda seleccionadas deben tener la misma moneda. "
+"Encontrado: %s"
 
 #. module: account_payment_pro
 #. odoo-python
@@ -131,16 +133,16 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
 msgid "Allow to pay vendor invoices automatically on invoice validation."
 msgstr ""
-"Permitir pagar las facturas de los proveedores automáticamente al validar la"
-" factura."
+"Permitir pagar las facturas de los proveedores automáticamente al validar la "
+"factura."
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_res_config_settings__group_pay_now_vendor_invoices
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
 msgid ""
 "Allow users to choose a payment journal on invoices so that invoice is "
-"automatically paid after invoice validation. A payment will be created using"
-" choosen journal"
+"automatically paid after invoice validation. A payment will be created using "
+"choosen journal"
 msgstr ""
 "Permitir a los usuarios elegir un diario de pagos en las facturas para que "
 "la factura se pague automáticamente después de su validación. Se creará un "
@@ -373,8 +375,8 @@ msgstr ""
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment_invoice_wizard__use_documents
 msgid ""
-"If active: will be using for legal invoicing (invoices, debit/credit notes)."
-" If not set means that will be used to register accounting entries not "
+"If active: will be using for legal invoicing (invoices, debit/credit notes). "
+"If not set means that will be used to register accounting entries not "
 "related to invoicing legal documents. For Example: Receipts, Tax Payments, "
 "Register journal entries"
 msgstr ""
@@ -392,8 +394,8 @@ msgid ""
 "journals with manual method are shown."
 msgstr ""
 "Si configura un diario aquí, después de la validación de la factura, la "
-"factura se pagará automáticamente con este diario. Como se utiliza el método"
-" de pago manual, solo se muestran los diarios con método manual."
+"factura se pagará automáticamente con este diario. Como se utiliza el método "
+"de pago manual, solo se muestran los diarios con método manual."
 
 #. module: account_payment_pro
 #: model:ir.model,name:account_payment_pro.model_base_language_install
@@ -437,7 +439,8 @@ msgstr "Diario debe contener un método de pago \"Manual\""
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid ""
 "La deuda seleccionada tiene múltiples monedas.\n"
-"                    Seleccione la moneda de cancelación para filtrar las líneas."
+"                    Seleccione la moneda de cancelación para filtrar las "
+"líneas."
 msgstr ""
 
 #. module: account_payment_pro
@@ -448,8 +451,7 @@ msgstr "Etiqueta"
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_write_off_type__label
 msgid ""
-"Label to be used on journal items labels, if not configured name will be "
-"used"
+"Label to be used on journal items labels, if not configured name will be used"
 msgstr ""
 "Etiqueta que se utilizará en el detalle de los apuntes contables, si no se "
 "configura se utilizará el nombre por defecto."
@@ -547,11 +549,11 @@ msgstr "Moneda de Conciliación del Pago"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
 msgid ""
-"Payment Pro incorpora funcionalidades que permiten llevar un flujo de cobros"
-"                         y pagos con retenciones, especificamente utilizado "
-"en Argentina. Al activarlo a                         ​su ​vez, se pierden "
-"algunas funcionalidades nativas como descuento por pronto pago"
-"                         y sugerencias de diferencia de cambio"
+"Payment Pro incorpora funcionalidades que permiten llevar un flujo de "
+"cobros                         y pagos con retenciones, especificamente "
+"utilizado en Argentina. Al activarlo a                         ​su ​vez, se "
+"pierden algunas funcionalidades nativas como descuento por pronto "
+"pago                         y sugerencias de diferencia de cambio"
 msgstr ""
 
 #. module: account_payment_pro
@@ -576,8 +578,8 @@ msgstr ""
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid ""
-"Payment will be automatically matched with the oldest lines of this list (by"
-" maturity date). You can remove any line you dont want to be matched."
+"Payment will be automatically matched with the oldest lines of this list (by "
+"maturity date). You can remove any line you dont want to be matched."
 msgstr ""
 "El pago se emparejará automáticamente con las líneas más antiguas de esta "
 "lista (por fecha de vencimiento). Puedes eliminar cualquier línea que no "
@@ -831,11 +833,9 @@ msgstr ""
 #. module: account_payment_pro
 #. odoo-python
 #: code:addons/account_payment_pro/models/account_payment.py:0
-msgid ""
-"You can't create payments for entries belonging to different companies."
+msgid "You can't create payments for entries belonging to different companies."
 msgstr ""
-"No se pueden crear pagos para asientos que pertenezcan a diferentes "
-"compañías"
+"No se pueden crear pagos para asientos que pertenezcan a diferentes compañías"
 
 #. module: account_payment_pro
 #: model:ir.model,name:account_payment_pro.model_account_payment_invoice_wizard
