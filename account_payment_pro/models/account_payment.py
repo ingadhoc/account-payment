@@ -400,7 +400,7 @@ class AccountPayment(models.Model):
             currencies = rec.to_pay_move_line_ids.mapped("currency_id")
             if len(currencies) > 1:
                 raise ValidationError(
-                    _("All selected debt lines must have the same currency. " "Found: %s")
+                    _("All selected debt lines must have the same currency. Found: %s")
                     % ", ".join(currencies.mapped("name"))
                 )
 
@@ -895,7 +895,6 @@ class AccountPayment(models.Model):
         # # if payment group is being created from a payment we dont want to compute to_pay_move_lines
         # if self.env.context.get('created_automatically'):
         #     return
-
         # Se recomputan las lienas solo si la deuda que esta seleccionada solo si
         # cambio el partner, compania o partner_type
         records = self.filtered(lambda x: x.state == "draft")
@@ -905,7 +904,7 @@ class AccountPayment(models.Model):
 
         if internal_transfers or not self.env.context.get("pay_now"):
             ((internal_transfers or self) - with_payment_pro).to_pay_move_line_ids = [Command.clear()]
-        for rec in with_payment_pro:
+        for rec in with_payment_pro.filtered("partner_id"):
             rec._add_all()
 
     def _get_filter_payments(self, records, extra_fields):
@@ -921,8 +920,21 @@ class AccountPayment(models.Model):
 
     def _get_to_pay_move_lines_domain(self):
         self.ensure_one()
-        domain = [
-            ("partner_id", "=", self.partner_id.commercial_partner_id.id),
+        # Cuando se llama desde action_add_all (manual), permitir líneas sin partner
+        # Cuando se llama desde _compute_to_pay_move_lines (automático), solo con partner
+        if self.env.context.get("include_lines_without_partner"):
+            partner_domain = [
+                "|",
+                ("partner_id", "=", self.partner_id.commercial_partner_id.id),
+                ("partner_id", "=", False),
+            ]
+        else:
+            partner_domain = [
+                ("partner_id", "=", self.partner_id.commercial_partner_id.id),
+                ("partner_id", "!=", False),
+            ]
+
+        domain = partner_domain + [
             ("company_id", "=", self.company_id.id),
             ("move_id.state", "=", "posted"),
             ("account_id.reconcile", "=", True),
@@ -946,7 +958,7 @@ class AccountPayment(models.Model):
             ]
 
     def action_add_all(self):
-        ctx = {}
+        ctx = {"include_lines_without_partner": True}
         if self.counterpart_currency_id and not self.company_id.reconcile_on_company_currency:
             ctx["force_currency_domain"] = self.counterpart_currency_id.id
         self.with_context(active_ids=False, **ctx)._add_all()

@@ -61,7 +61,7 @@ class AccountPayment(models.Model):
             rec.is_main_payment = rec.payment_method_line_id.payment_method_id.code == "payment_bundle"
 
     @api.onchange("company_id", "partner_id")
-    def _onchange_company_id(self):
+    def _onchange_bundle_company_id(self):
         """si cambia partner o company por ahora limpiamos los pagos, eventualmente podríamos hacer partner_id computado
         y que, si cambia, se actualice. pero en tal caso habría que revisar otros campos que deberían recomputarse (cuentas, tokens, etc).
         """
