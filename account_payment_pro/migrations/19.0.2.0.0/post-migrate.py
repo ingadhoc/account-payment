@@ -252,7 +252,7 @@ def migrate(cr, version):
             UPDATE account_payment ap
             SET write_off_amount = ap.x_bkp_write_off_amount
                 * CASE
-                    WHEN rc.reconcile_on_company_currency = TRUE THEN 1.0
+                    WHEN rc.reconcile_on_company_currency IS TRUE THEN 1.0
                     ELSE COALESCE(
                         NULLIF(ap.counterpart_rate * ap.accounting_rate, 0),
                         1.0
@@ -281,7 +281,7 @@ def migrate(cr, version):
             UPDATE account_payment ap
             SET unreconciled_amount = ap.x_bkp_unreconciled_amount
                 * CASE
-                    WHEN rc.reconcile_on_company_currency = TRUE THEN 1.0
+                    WHEN rc.reconcile_on_company_currency IS TRUE THEN 1.0
                     ELSE COALESCE(
                         NULLIF(ap.counterpart_rate * ap.accounting_rate, 0),
                         1.0
@@ -372,7 +372,7 @@ def _populate_counterpart_currency_id(cr):
         SET counterpart_currency_id = COALESCE(dj.currency_id, rc.currency_id)
         FROM account_journal dj
         JOIN res_company rc ON rc.id = dj.company_id
-        WHERE ap.is_internal_transfer = TRUE
+        WHERE ap.is_internal_transfer IS TRUE
           AND ap.destination_journal_id = dj.id
           AND ap.x_bkp_migrated = TRUE
           AND ap.counterpart_currency_id IS NULL;
@@ -391,7 +391,7 @@ def _populate_counterpart_currency_id(cr):
           AND rc.id = ap.company_id
           AND aa.currency_id IS NOT NULL
           AND aa.currency_id != rc.currency_id
-          AND ap.is_internal_transfer = FALSE
+          AND ap.is_internal_transfer IS NOT TRUE
           AND ap.x_bkp_migrated = TRUE
           AND ap.counterpart_currency_id IS NULL;
     """)
@@ -412,9 +412,9 @@ def _populate_counterpart_currency_id(cr):
             JOIN account_payment ap ON ap.id = rel.payment_id
             JOIN res_company rc ON rc.id = ap.company_id
             WHERE ap.counterpart_currency_id IS NULL
-              AND ap.is_internal_transfer = FALSE
+              AND ap.is_internal_transfer IS NOT TRUE
               AND ap.x_bkp_migrated = TRUE
-              AND rc.reconcile_on_company_currency = FALSE
+              AND rc.reconcile_on_company_currency IS NOT TRUE
             GROUP BY rel.payment_id
         )
         UPDATE account_payment ap
