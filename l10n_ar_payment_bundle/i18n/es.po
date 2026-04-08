@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-08 11:17+0000\n"
+"POT-Creation-Date: 2026-04-08 13:37+0000\n"
 "PO-Revision-Date: 2026-04-07 17:46+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
@@ -392,21 +392,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__warnings
 msgid "Warnings"
 msgstr "Advertencias"
-
-#. module: l10n_ar_payment_bundle
-#. odoo-python
-#: code:addons/l10n_ar_payment_bundle/models/account_journal.py:0
-msgid ""
-"You can only have one Payment Bundle method for inbound payments per journal."
-msgstr ""
-
-#. module: l10n_ar_payment_bundle
-#. odoo-python
-#: code:addons/l10n_ar_payment_bundle/models/account_journal.py:0
-msgid ""
-"You can only have one Payment Bundle method for outbound payments per "
-"journal."
-msgstr ""
 
 #. module: l10n_ar_payment_bundle
 #. odoo-python
