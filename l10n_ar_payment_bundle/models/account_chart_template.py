@@ -7,7 +7,7 @@ class AccountChartTemplate(models.AbstractModel):
 
     @template(model="account.journal")
     def _get_payment_bundle_account_journal(self, template_code):
-        if self.env.company.country_code == "AR":
+        if self.env.company.use_payment_pro:
             return {
                 "payment_bundle_journal": {
                     "name": _("Multiple payments"),
