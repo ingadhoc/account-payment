@@ -958,7 +958,6 @@ class AccountPayment(models.Model):
         # # if payment group is being created from a payment we dont want to compute to_pay_move_lines
         # if self.env.context.get('created_automatically'):
         #     return
-
         # Se recomputan las lienas solo si la deuda que esta seleccionada solo si
         # cambio el partner, compania o partner_type
         records = self.filtered(lambda x: x.state == "draft")
@@ -984,6 +983,11 @@ class AccountPayment(models.Model):
 
     def _get_to_pay_move_lines_domain(self):
         self.ensure_one()
+        # Cuando se llama desde action_add_all (manual), permitir líneas sin partner
+        # Cuando se llama desde _compute_to_pay_move_lines (automático), solo con partner
+        if not self.partner_id and not self.env.context.get("include_lines_without_partner"):
+            return [(0, "=", 1)]
+
         domain = [
             ("partner_id", "=", self.partner_id.commercial_partner_id.id),
             ("company_id", "=", self.company_id.id),
@@ -1012,7 +1016,7 @@ class AccountPayment(models.Model):
         ctx = {}
         if self.counterpart_currency_id and not self.company_id.reconcile_on_company_currency:
             ctx["force_currency_domain"] = self.counterpart_currency_id.id
-        self.with_context(active_ids=False, **ctx)._add_all()
+        self.with_context(active_ids=False, include_lines_without_partner=True, **ctx)._add_all()
 
     def remove_all(self):
         self.to_pay_move_line_ids = False
