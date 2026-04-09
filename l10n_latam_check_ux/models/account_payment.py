@@ -182,3 +182,64 @@ class AccountPayment(models.Model):
                     "All selected checks must belong to the source journal (%s)."
                     % rec.destination_journal_id.display_name
                 )
+
+    def _prepare_paired_payment_values(self):
+        """Override to validate check payment method combinations on internal transfers.
+
+        Rules:
+        - Third-party check outbounds must pair with third-party check inbounds
+        - Non-check payment methods cannot pair with check methods (except the above)
+        - Check outbound methods cannot be paired destinations
+        """
+        vals = super()._prepare_paired_payment_values()
+        if not self.is_internal_transfer:
+            return vals
+
+        paired_method_code = (
+            self.env["account.payment.method.line"].browse(vals.get("payment_method_line_id")).code
+            if vals.get("payment_method_line_id")
+            else None
+        )
+        source_method_code = self.payment_method_line_id.code
+
+        # Valid check method codes
+        check_inbound_codes = {"in_third_party_checks", "new_third_party_checks"}
+        check_outbound_codes = {"out_third_party_checks", "return_third_party_checks", "own_checks"}
+        all_check_codes = check_inbound_codes | check_outbound_codes
+
+        # Rule 1: Outbound third-party checks must pair with inbound third-party checks
+        if source_method_code == "out_third_party_checks":
+            if paired_method_code not in ["in_third_party_checks", "manual", "new_third_party_checks"]:
+                raise ValidationError(
+                    "When transferring third-party checks out (source: '%s'), "
+                    "the destination journal must have the 'Third Party Checks' inbound method. "
+                    "Please select a different destination journal." % self.payment_method_line_id.name
+                )
+
+        # Rule 2: Non-third-party-check outbounds cannot pair with any check method
+        elif source_method_code != "out_third_party_checks" and paired_method_code in all_check_codes:
+            raise ValidationError(
+                "The payment method '%s' cannot be paired with a check payment method. "
+                "To transfer checks, use a third-party checks journal as the source. "
+                "Please select a different destination journal."
+                % (
+                    self.env["account.payment.method.line"].browse(vals.get("payment_method_line_id")).name
+                    if vals.get("payment_method_line_id")
+                    else "None"
+                )
+            )
+
+        # Rule 3: Check outbound methods cannot be on the paired (destination) side
+        # (This catches edge cases where config might slip through)
+        if paired_method_code in check_outbound_codes:
+            raise ValidationError(
+                "Outbound check methods (%s) are not allowed on the destination journal. "
+                "Please configure the destination journal with appropriate inbound payment methods."
+                % (
+                    self.env["account.payment.method.line"].browse(vals.get("payment_method_line_id")).name
+                    if vals.get("payment_method_line_id")
+                    else "None"
+                )
+            )
+
+        return vals
