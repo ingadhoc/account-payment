@@ -32,14 +32,17 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
             raise ValidationError(
                 _("In order to transfer checks between branches you need to use internal transfer menu.")
             )
+
+        company = self.check_ids.mapped("company_id")
+
         if self.split_payment:
-            return self._create_split_payments()
+            return self.with_company(company)._create_split_payments()
 
         # Ensure that third-party check deposits made through the Odoo wizard
         # behave the same way as an internal transfer.
         outbound_payment = super(
             L10nLatamPaymentMassTransfer,
-            self.with_context(
+            self.with_company(company).with_context(
                 default_is_internal_transfer=True,
                 check_deposit_transfer=True,
             ),
@@ -70,8 +73,10 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
         counterpart journal and then, when posting a second payment will be created automatically"""
         self.ensure_one()
         checks = self.check_ids.filtered(
-            lambda x: x.payment_method_line_id.code == "new_third_party_checks"
-            and x.currency_id == self.check_ids[0].currency_id
+            lambda x: (
+                x.payment_method_line_id.code == "new_third_party_checks"
+                and x.currency_id == self.check_ids[0].currency_id
+            )
         )
         currency_id = self.check_ids[0].currency_id
 
@@ -159,10 +164,3 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
             company = wizard.check_ids.mapped("company_id")
             if len(company) > 1:
                 raise ValidationError(_("All selected checks must belong to the same company."))
-            if company.id != self.env.company.id:
-                raise ValidationError(
-                    _(
-                        "Operation not allowed: To transfer the checks, you must be operating in the same company "
-                        "where the checks are registered. Please switch to the appropriate company and try again."
-                    )
-                )
