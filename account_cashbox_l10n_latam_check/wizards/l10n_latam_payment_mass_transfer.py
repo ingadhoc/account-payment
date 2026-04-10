@@ -26,8 +26,10 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
     @api.depends("destination_journal_id")
     def _compute_cashbox_session_id(self):
         for rec in self:
-            session_ids = self.env["account.cashbox.session"].search(
-                [("state", "=", "opened"), "|", ("user_ids", "=", self.env.uid), ("user_ids", "=", False)]
+            session_ids = (
+                self.env["account.cashbox.session"]
+                .search([("state", "=", "opened"), "|", ("user_ids", "=", self.env.uid), ("user_ids", "=", False)])
+                .filtered(lambda x: rec.destination_journal_id in x.cashbox_id.journal_ids)
             )
             if len(session_ids) == 1:
                 rec.cashbox_session_id = session_ids.id
