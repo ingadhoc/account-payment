@@ -44,23 +44,10 @@
             <attribute name="readonly">state != 'draft' or context.get('default_company_id')</attribute>
         </xpath>
 
+
         <field name="partner_id" position="before">
             <field name="company_id" options="{'no_create': True}" domain="[('id', 'in', allowed_company_ids)]" groups="base.group_multi_company" readonly="state != 'draft' or context.get('default_company_id')"/>
         </field>
-
-        <xpath expr="//field[@name='partner_id'][2]" position="after">
-            <field name="partner_bank_id" string="Customer Bank Account" context="{'default_partner_id': partner_id, 'display_account_trust': True}" invisible="(not show_partner_bank_account or partner_type != 'customer' or payment_type == 'inbound') or (is_internal_transfer)" required="(require_partner_bank_account) and (not is_internal_transfer)"/>
-            <field name="partner_bank_id" string="Vendor Bank Account" context="{'default_partner_id': partner_id, 'display_account_trust': True}" invisible="(not show_partner_bank_account or partner_type != 'supplier' or payment_type == 'inbound') or (is_internal_transfer)" required="(require_partner_bank_account) and (not is_internal_transfer)"/>
-        </xpath>
-
-        <!-- Hide original partner_bank_id fields from group2 -->
-        <xpath expr="//group[@name='group2']//field[@name='partner_bank_id'][1]" position="attributes">
-            <attribute name="invisible">1</attribute>
-        </xpath>
-        <xpath expr="//group[@name='group2']//field[@name='partner_bank_id'][2]" position="attributes">
-            <attribute name="invisible">1</attribute>
-        </xpath>
-
 
         <!-- movemos amount a la columna 2 para que quede todo lo relativo al metodo de pago junto -->
         <group name="group2">
