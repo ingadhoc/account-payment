@@ -14,4 +14,5 @@ class accountPaymentMethodLine(models.Model):
         "method_id",
         "card_id",
         string="Cards",
+        check_company=True,
     )
