@@ -552,24 +552,28 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
     # ==================================================================
 
     def test_b6_constrains_currency_consistency(self):
-        """B.6 · Verifica que no se pueda guardar un linked payment con
+        """B.6 · Verifica que no se pueda confirmar un linked payment con
         counterpart_currency_id distinto al del main payment.
 
-        Protege contra corrupción silenciosa de payment_total y
-        payment_difference cuando B del linked ≠ B del main.
+        La validación se ejecuta en action_post (no al crear), porque al
+        crear desde la UI el main_payment aún no persistió su
+        counterpart_currency_id y la comparación contra DB daría falso
+        positivo.
         """
         invoice = self._create_invoice(1_000, self.usd)
         main = self._create_main_payment(invoice, fiscal_position=False, l10n_ar_fiscal_position_id=False)
         self.assertEqual(main.counterpart_currency_id, self.usd)
 
+        # Forzamos counterpart_currency_id=ARS en un bundle con B=USD
+        linked = self._add_linked_payment(
+            main,
+            self.bank_ars,
+            amount=1_000,
+            counterpart_currency_id=self.ars.id,
+        )
+
         with self.assertRaisesRegex(ValidationError, "The counterpart currency of a linked payment must match"):
-            # Forzamos counterpart_currency_id=ARS en un bundle con B=USD
-            self._add_linked_payment(
-                main,
-                self.bank_ars,
-                amount=1_000,
-                counterpart_currency_id=self.ars.id,
-            )
+            linked.action_post()
 
     # ==================================================================
     # B.7 — Bundle reconcile (A=C=ARS, B1=USD, B2=ARS) + IIBB
