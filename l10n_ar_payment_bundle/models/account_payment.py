@@ -39,7 +39,6 @@ class AccountPayment(models.Model):
             if rec.link_payment_ids.filtered(lambda p: p.company_id != rec.company_id):
                 raise ValidationError(_("The main payment and linked payments must belong to the same company."))
 
-    @api.constrains("counterpart_currency_id", "main_payment_id")
     def _check_bundle_currency_consistency(self):
         for rec in self.filtered("main_payment_id"):
             if rec.counterpart_currency_id != rec.main_payment_id.counterpart_currency_id:
@@ -205,6 +204,8 @@ class AccountPayment(models.Model):
 
         if self.main_payment_id and not self.main_payment_id.name:
             raise ValidationError(_("The main payment must have a name before a linked payment can be posted."))
+
+        self._check_bundle_currency_consistency()
 
         res = super(AccountPayment, self).action_post()
 
