@@ -101,21 +101,13 @@ class AccountPayment(models.Model):
             journals = rec.available_journal_ids
 
             # If it's a linked payment remove only the bundle journal (any currency allowed)
-            if rec.main_payment_id:
-                journals = journals.filtered(lambda j: j._origin.id != bundle_journal_id)
-            # Internal transfers cannot use journals configured with payment bundle methods.
-            elif rec.is_internal_transfer:
-                journals = journals.filtered(lambda j: j._origin.id != bundle_journal_id)
-            # If company doesn't use Payment Pro just remove bundle journal
-            elif not rec.use_payment_pro:
+            if rec.main_payment_id or rec.is_main_payment or not rec.use_payment_pro:
                 journals = journals.filtered(lambda j: j._origin.id != bundle_journal_id)
 
             rec.available_journal_ids = journals
 
     def _compute_destination_journal_domain(self):
-        parent = super(AccountPayment, self)
-        if hasattr(parent, "_compute_destination_journal_domain"):
-            parent._compute_destination_journal_domain()
+        super()._compute_destination_journal_domain()
 
         for rec in self.filtered(lambda p: p.is_internal_transfer and p.destination_company_id):
             bundle_journal_id = rec.company_id._get_bundle_journal(rec.payment_type)
