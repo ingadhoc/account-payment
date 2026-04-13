@@ -10,16 +10,16 @@ msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-02-23 18:51+0000\n"
-"PO-Revision-Date: 2025-12-26 17:10+0000\n"
+"PO-Revision-Date: 2026-04-13 22:41+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
-"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
-"payment-19-0/account-payment-19-0-account_cashbox/es/>\n"
+"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/"
+"account-payment-19-0/account-payment-19-0-account_cashbox/es/>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == "
-"0) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == 0)"
+" ? 1 : 2);\n"
 "X-Generator: Weblate 5.10.4\n"
 
 #. module: account_cashbox
@@ -102,7 +102,7 @@ msgstr "Ícono de Tipo de Actividad"
 #. odoo-python
 #: code:addons/account_cashbox/models/account_cashbox_session.py:0
 msgid "All session users must be allowed on the cashbox."
-msgstr ""
+msgstr "Todas las sesiones de usuarios deben estar habilitadas en la caja."
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__allow_concurrent_sessions
@@ -299,7 +299,7 @@ msgstr "Caja Predeterminada"
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_payment__destination_cashbox_session_id
 msgid "Destination POP Session"
-msgstr ""
+msgstr "Sesión Diario Destino"
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__balance_difference
@@ -441,6 +441,8 @@ msgid ""
 "In case of internal transfer payments, this field indicates the destination "
 "POP session."
 msgstr ""
+"En el caso de pagos por transferencia interna, este campo indica la sesión "
+"del diario destino."
 
 #. module: account_cashbox
 #: model:ir.model.fields,help:account_cashbox.field_res_users__default_cashbox_id
