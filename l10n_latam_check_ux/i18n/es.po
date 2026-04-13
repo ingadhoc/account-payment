@@ -426,6 +426,12 @@ msgstr "account.check.to_date.report.wizard"
 msgid "or"
 msgstr "o"
 
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/models/account_payment_method_line.py:0
+msgid "You cannot delete this payment method because it has associated checks. You must first delete or reassign all related checks."
+msgstr "No puede eliminar este método de pago porque tiene cheques asociados. Primero debe eliminar o reasignar todos los cheques relacionados."
+
 #~ msgid ""
 #~ "Operation not allowed: To transfer the checks, you must be operating in "
 #~ "the same company where the checks are registered. Please switch to the "
