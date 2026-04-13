@@ -391,6 +391,12 @@ msgid "Total"
 msgstr ""
 
 #. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/models/account_payment_method_line.py:0
+msgid "You cannot delete this payment method because it has associated checks. You must first delete or reassign all related checks."
+msgstr ""
+
+#. module: l10n_latam_check_ux
 #: model:ir.model,name:l10n_latam_check_ux.model_account_check_to_date_report_wizard
 msgid "account.check.to_date.report.wizard"
 msgstr ""
