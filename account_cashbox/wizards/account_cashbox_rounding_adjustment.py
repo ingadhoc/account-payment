@@ -13,7 +13,9 @@ class AccountCashboxRoundingAdjustment(models.TransientModel):
         """
 
         # Create journal entries for each line with a rounding difference
-        for line in self.cashbox_session_id.line_ids.filtered(lambda x: x.balance_difference != 0):
+        for line in self.cashbox_session_id.line_ids.filtered(
+            lambda x: x.balance_difference != 0 and x.require_cash_control
+        ):
             currency = line.journal_id.currency_id or self.cashbox_session_id.company_id.currency_id
             if currency != self.cashbox_session_id.company_id.currency_id:
                 negative_amount = abs(min(line.balance_difference, 0.0)) / currency.rate
