@@ -24,9 +24,11 @@ class AccountMove(models.Model):
     def _compute_open_move_lines(self):
         for rec in self:
             rec.open_move_line_ids = rec.line_ids.filtered(
-                lambda r: not r.reconciled
-                and r.parent_state == "posted"
-                and r.account_id.account_type in self.env["account.payment"]._get_valid_payment_account_types()
+                lambda r: (
+                    not r.reconciled
+                    and r.parent_state == "posted"
+                    and r.account_id.account_type in self.env["account.payment"]._get_valid_payment_account_types()
+                )
             )
 
     def pay_now(self):
@@ -72,6 +74,7 @@ class AccountMove(models.Model):
                 payment.payment_method_id = pay_journal._get_manual_payment_method_id(payment_type).id
 
             payment.amount = abs(difference)
+            payment.amount_exact = abs(difference)
             payment.action_post()
             rec.write({"matched_payment_ids": [(4, payment.id)]})
 

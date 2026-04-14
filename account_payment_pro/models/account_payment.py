@@ -5,6 +5,20 @@ from odoo.exceptions import ValidationError
 class AccountPayment(models.Model):
     _inherit = "account.payment"
 
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        if "previous_currency_id" in fields_list and "previous_currency_id" not in res:
+            currency_id = res.get("currency_id")
+            if not currency_id:
+                journal_id = res.get("journal_id") or self.env.context.get("default_journal_id")
+                if journal_id:
+                    journal = self.env["account.journal"].browse(journal_id)
+                    currency_id = (journal.currency_id or journal.company_id.currency_id).id
+            if currency_id:
+                res["previous_currency_id"] = currency_id
+        return res
+
     # Modelo tri-monetario: A (currency_id), B1 (counterpart_currency_id), B2 (destination_currency_id), C (company_currency_id)
     # desde account_payment_group, modelo account.payment
     counterpart_currency_amount = fields.Monetary(
@@ -78,6 +92,16 @@ class AccountPayment(models.Model):
         "res.currency",
         store=False,
         copy=False,
+    )
+    # Campo auxiliar que guarda el valor exacto de amount sin redondeo monetario.
+    # Se sincroniza automáticamente con amount pero conserva todos los decimales.
+    amount_exact = fields.Float(
+        string="Amount (Exact)",
+        digits=0,
+        store=True,
+        readonly=False,
+        copy=False,
+        help="Exact value of amount with full precision, used internally for conversions to avoid rounding errors.",
     )
     journal_currency_id = fields.Many2one(related="journal_id.currency_id", string="Journal Currency")
     destination_journal_currency_id = fields.Many2one(
@@ -367,21 +391,35 @@ class AccountPayment(models.Model):
             # previous_currency_id se round-tripea desde el cliente en cada onchange,
             # por eso refleja la moneda real anterior (funciona en registros nuevos y
             # en cambios consecutivos A→B→C sin guardar, donde _origin no sirve).
-            old_currency = rec.previous_currency_id
+            old_currency = rec.previous_currency_id or rec._origin.currency_id
+            if not old_currency:
+                old_currency = rec.company_currency_id
             # Actualizar para el próximo onchange antes de cualquier continue
             rec.previous_currency_id = new_currency
-            if rec.state != "draft" or not rec.amount:
+            old_amount = rec.amount_exact or rec.amount
+            if rec.state != "draft" or not old_amount:
                 continue
             if not old_currency or old_currency == new_currency:
                 continue
-            rec.amount = abs(
+            if not old_amount:
+                old_amount = rec.env.context.get("default_amount_exact", 0.0)
+            amount = abs(
                 old_currency._convert(
-                    rec.amount,
+                    old_amount,
                     new_currency,
                     rec.company_id,
                     rec.date or fields.Date.context_today(rec),
+                    False,
                 )
             )
+            if (
+                rec.env.context.get("default_amount_exact")
+                and rec.currency_id == rec.company_currency_id
+                and rec.amount_exact == rec._origin.amount_exact
+                and not rec.currency_id.is_zero(amount - rec.env.context.get("default_amount_exact"))
+            ):
+                amount = rec.env.context.get("default_amount_exact")
+            rec.update({"amount_exact": amount, "amount": amount})
 
     @api.constrains("to_pay_move_line_ids")
     def _check_to_pay_lines_account(self):
@@ -421,7 +459,30 @@ class AccountPayment(models.Model):
 
         super().action_draft()
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Sincronizar amount_exact con amount en creación si no está explícitamente definido."""
+        for vals in vals_list:
+            # Solo sincronizar si amount_exact no viene en los valores
+            if "amount" in vals and "amount_exact" not in vals:
+                vals["amount_exact"] = vals["amount"]
+        return super().create(vals_list)
+
     def write(self, vals):
+        # Sincronizar amount_exact cuando amount cambie
+        # El compute _compute_amount_exact maneja la mayoría de casos, pero aquí
+        # manejamos el caso especial cuando counterpart_rate cambia junto con amount
+        if "amount" in vals and "amount_exact" not in vals and "counterpart_rate" in vals:
+            for rec in self:
+                # Si se está cambiando counterpart_rate, necesitamos recalcular amount_exact
+                # basándonos en el valor anterior de amount_exact y la nueva tasa
+                if rec.amount_exact:
+                    amount = rec.amount_exact / vals["counterpart_rate"]
+                    vals["amount_exact"] = amount if round(amount, 2) == vals["amount"] else vals["amount"]
+                else:
+                    vals["amount_exact"] = vals["amount"]
+                break  # Solo necesitamos calcular una vez
+
         for rec in self:
             if rec.company_id.use_payment_pro or (
                 "company_id" in vals and rec.env["res.company"].browse(vals["company_id"]).use_payment_pro
@@ -440,6 +501,7 @@ class AccountPayment(models.Model):
                 # la company_id se cambia correctamente.
                 if "company_id" in vals and "journal_id" in vals:
                     rec.move_id.journal_id = vals["journal_id"]
+
         return super().write(vals)
 
     ##############################
@@ -473,26 +535,35 @@ class AccountPayment(models.Model):
             self = self.with_company(self.company_id.id)
         super(AccountPayment, self)._compute_available_journal_ids()
 
-    @api.depends("amount", "counterpart_rate", "counterpart_currency_id", "currency_id")
+    @api.depends(
+        "amount", "amount_exact", "counterpart_rate", "counterpart_currency_id", "currency_id", "company_id", "date"
+    )
     def _compute_counterpart_currency_amount(self):
         for rec in self:
             if rec.counterpart_currency_id and rec.counterpart_currency_id != rec.currency_id:
+                amount = rec.amount_exact if rec.amount_exact else rec.amount
                 if rec.counterpart_rate:
                     # amount está en A, convertir a B1 usando counterpart_rate
-                    rec.counterpart_currency_amount = rec.amount * rec.counterpart_rate
+                    rec.counterpart_currency_amount = amount * rec.counterpart_rate
                 else:
                     rec.counterpart_currency_amount = 0.0
             else:
                 # A == B1, son la misma moneda
-                rec.counterpart_currency_amount = rec.amount
+                rec.counterpart_currency_amount = rec.amount_exact if rec.amount_exact else rec.amount
 
     @api.onchange("counterpart_currency_amount")
     def _inverse_counterpart_currency_amount(self):
         for rec in self:
+            # Usar amount_exact para comparación precisa
+            amount_to_compare = rec.amount_exact if rec.amount_exact else rec.amount
             if rec.counterpart_currency_id and not rec.counterpart_currency_id.is_zero(
-                rec.amount * rec.counterpart_rate - rec.counterpart_currency_amount
+                amount_to_compare * rec.counterpart_rate - rec.counterpart_currency_amount
             ):
-                rec.amount = rec.counterpart_currency_amount / rec.counterpart_rate if rec.counterpart_rate else 0
+                # Usar amount_exact para cálculo preciso sin pérdida de decimales
+                if rec.counterpart_rate:
+                    exact_amount = rec.counterpart_currency_amount / rec.counterpart_rate
+                    rec.amount_exact = exact_amount
+                    rec.amount = exact_amount
 
     @api.depends(
         "accounting_rate", "counterpart_currency_id", "currency_id", "company_currency_id", "company_id", "date"
@@ -552,7 +623,9 @@ class AccountPayment(models.Model):
             # Para pagos sin ppro que tengan accounting rate, forzamos el balance
             # para que no haya diferencias en el asiento
             if self.accounting_rate and self.currency_id != self.company_currency_id and force_balance is None:
-                force_balance = self.amount / self.accounting_rate  # A/C → monto en C
+                # Usar amount_exact para cálculo preciso
+                amount_for_calc = self.amount_exact if self.amount_exact else self.amount
+                force_balance = amount_for_calc / self.accounting_rate  # A/C → monto en C
             return super()._prepare_move_lines_per_type(
                 write_off_line_vals=write_off_line_vals, force_balance=force_balance
             )
@@ -599,8 +672,17 @@ class AccountPayment(models.Model):
         # Cuando force_balance está definido, el balance ya fue forzado por base Odoo
         # (ej: paired payment de transferencia interna) y NO debe recalcularse.
         if self.accounting_rate and self.currency_id != self.company_currency_id and force_balance is None:
-            for liq_line in liquidity_lines:
-                liq_line["balance"] = liq_line["amount_currency"] / self.accounting_rate
+            # Usar amount_exact si está disponible para evitar desbalances por redondeo.
+            # Cuando hay una sola línea de liquidez, usamos amount_exact directamente.
+            # Cuando hay múltiples líneas (cheques), usamos el amount_currency de cada una.
+            if len(liquidity_lines) == 1 and self.amount_exact and self.amount_exact != self.amount:
+                amount_for_balance = self.amount_exact
+                liq_sign = 1 if liquidity_lines[0]["amount_currency"] >= 0 else -1
+                liquidity_lines[0]["amount_currency"] = liq_sign * abs(amount_for_balance)
+                liquidity_lines[0]["balance"] = liquidity_lines[0]["amount_currency"] / self.accounting_rate
+            else:
+                for liq_line in liquidity_lines:
+                    liq_line["balance"] = liq_line["amount_currency"] / self.accounting_rate
 
         # ── Recalcular balance de CONTRAPARTIDA para cerrar el asiento ────────────
         write_off_balance = sum(line["balance"] for line in res.get("write_off_lines", []))
@@ -663,10 +745,12 @@ class AccountPayment(models.Model):
         dest_currency = self.destination_journal_id.currency_id or self.company_currency_id
         if dest_currency != self.currency_id:
             # balance_in_c: monto en moneda de compañía (ARS)
+            # Usar amount_exact para cálculos precisos
+            amount_for_calc = self.amount_exact if self.amount_exact else self.amount
             if self.accounting_rate and self.currency_id != self.company_currency_id:
-                balance_in_c = self.amount / self.accounting_rate
+                balance_in_c = amount_for_calc / self.accounting_rate
             else:
-                balance_in_c = self.amount
+                balance_in_c = amount_for_calc
 
             if dest_currency == self.counterpart_currency_id and self.counterpart_currency_amount:
                 # counterpart_currency_id coincide con la moneda destino (caso habitual
@@ -685,13 +769,14 @@ class AccountPayment(models.Model):
                 )
                 paired_amount = dest_currency.round(balance_in_c * dest_rate)
 
+            vals["amount_exact"] = paired_amount
             vals["amount"] = paired_amount
 
             # counterpart_currency_amount del paired = monto original (cuánto
             # salió del journal original). Lo pasamos explícitamente porque copy()
             # copia el valor del original y al tener inverse= el ORM ejecuta el
             # inverse durante create, sobreescribiendo amount.
-            vals["counterpart_currency_amount"] = self.amount
+            vals["counterpart_currency_amount"] = self.amount_exact if self.amount_exact else self.amount
 
             # Fijar accounting_rate del paired para que refleje la tasa implícita
             # real de la operación (balance_in_c / paired_amount), no la del día.
@@ -702,7 +787,7 @@ class AccountPayment(models.Model):
             # moneda del journal original (B1_paired = self.currency_id).
             # rate = original_amount / paired_amount = B1/A del paired.
             if paired_amount:
-                vals["counterpart_rate"] = self.amount / paired_amount
+                vals["counterpart_rate"] = (self.amount_exact if self.amount_exact else self.amount) / paired_amount
 
         return vals
 
@@ -835,6 +920,7 @@ class AccountPayment(models.Model):
         "counterpart_currency_amount",
         "write_off_amount",
         "amount",
+        "amount_exact",
         "accounting_rate",
         "counterpart_currency_id",
         "destination_currency_id",
@@ -842,12 +928,16 @@ class AccountPayment(models.Model):
     def _compute_payment_total(self):
         for rec in self:
             if rec.counterpart_currency_id == rec.destination_currency_id:
-                # B1 == B2 (caso normal sin reconcile): cca ya está en B2
+                # B1 == B2 (caso normal sin reconcile): cca ya está en B2.
+                # Aplica tanto si A != C (journal en moneda extranjera) como si A == C
+                # (journal en moneda de compañía), porque counterpart_currency_amount
+                # siempre está expresado en B1 = B2 = destination_currency_id.
                 base_amount = rec.counterpart_currency_amount
             else:
                 # B1 != B2 (reconcile_on_company_currency): B2 = C siempre
-                # Convertir A → C = amount / accounting_rate
-                base_amount = rec.amount / rec.accounting_rate if rec.accounting_rate else rec.amount
+                # Convertir A → C = amount_exact / accounting_rate (usar amount_exact para evitar redondeos)
+                amount_for_calc = rec.amount_exact if rec.amount_exact else rec.amount
+                base_amount = amount_for_calc / rec.accounting_rate if rec.accounting_rate else amount_for_calc
             rec.payment_total = base_amount + rec.write_off_amount
 
     # TODO revisar depends
@@ -873,8 +963,11 @@ class AccountPayment(models.Model):
             if not rec.payment_difference:
                 continue
             diff_in_a = rec._get_payment_difference_in_currency_a()
-            amount = rec.amount + diff_in_a
-            rec.amount = amount if amount > 0 else 0
+            amount = rec.amount_exact + diff_in_a
+            # No permitir valores negativos, pero mantener el valor actual si el ajuste resulta negativo
+            if amount > 0:
+                rec.amount_exact = amount
+                rec.amount = amount
 
     def action_adjust_writeoff_for_difference(self):
         """Ajusta write_off_amount para que payment_difference quede en cero."""
@@ -930,8 +1023,11 @@ class AccountPayment(models.Model):
             if not rec.payment_difference or not rec.currency_id:
                 continue
             diff_in_a = rec._get_payment_difference_in_currency_a()
-            amount = rec.amount + diff_in_a
-            rec.amount = amount if amount > 0 else 0
+            amount = rec.amount_exact + diff_in_a
+            # No permitir valores negativos, pero mantener el valor actual si el ajuste resulta negativo
+            if amount > 0:
+                rec.amount_exact = amount
+                rec.amount = amount
 
     @api.onchange("l10n_latam_new_check_ids")
     def _onchange_new_check_default_amount(self):
