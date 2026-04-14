@@ -63,11 +63,13 @@
         <div name="amount_div" position="after">
             <!-- Rate de contrapartida: visible solo si A != B1 AND B1 != C -->
             <label for="user_counterpart_rate" string="Rate"
-                invisible="currency_id == counterpart_currency_id
+                invisible="not counterpart_currency_id
+                        or currency_id == counterpart_currency_id
                         or counterpart_currency_id == company_currency_id"/>
             <!-- Caso invertido (B1 fuerte): "1 B1 = X A" -->
             <div name="counterpart_rate_lt1" class="d-flex gap-1 text-muted"
-                invisible="currency_id == counterpart_currency_id
+                invisible="not counterpart_currency_id
+                        or currency_id == counterpart_currency_id
                         or counterpart_currency_id == company_currency_id
                         or not counterpart_rate_inverted">
                 <span>1</span>
@@ -81,7 +83,8 @@
             </div>
             <!-- Caso directo (A fuerte): "1 A = X B1" -->
             <div name="counterpart_rate_gte1" class="d-flex gap-1 text-muted"
-                invisible="currency_id == counterpart_currency_id
+                invisible="not counterpart_currency_id
+                        or currency_id == counterpart_currency_id
                         or counterpart_currency_id == company_currency_id
                         or counterpart_rate_inverted">
                 <span>1</span>

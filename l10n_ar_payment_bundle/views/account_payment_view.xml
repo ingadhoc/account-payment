@@ -58,6 +58,13 @@
             <xpath expr="//div[@name='write_off_amount']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
+            <!-- En el modal de linked payment no tiene sentido ajustar amount ni write-off individualmente -->
+            <button name="action_adjust_amount_for_difference" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </button>
+            <button name="action_adjust_writeoff_for_difference" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </button>
 
             <field name="counterpart_currency_id" position="attributes">
                 <attribute name="readonly">1</attribute>
@@ -143,6 +150,10 @@
             <div name="amount_div" position="attributes">
                 <attribute name="invisible">is_main_payment</attribute>
             </div>
+            <!-- Ocultar botón "→ Amount" en pago principal: amount siempre debe ser 0 -->
+            <button name="action_adjust_amount_for_difference" position="attributes">
+                <attribute name="invisible" separator=" or " add="is_main_payment"/>
+            </button>
             <div name="counterpart_currency_amount" position="attributes">
                 <attribute name="invisible" separator=" or " add="is_main_payment"></attribute>
             </div>
