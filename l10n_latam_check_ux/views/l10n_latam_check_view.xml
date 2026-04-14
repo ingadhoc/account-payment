@@ -7,10 +7,16 @@
         <field name="arch" type="xml">
             <xpath expr="//button[@name='action_void']" position="after">
                 <field name="check_add_debit_button" invisible="1"/>
+                <field name="can_reject" invisible="1"/>
                 <button name="%(action_debit_check_wizard)d"
                         string="Debit check"
                         invisible="payment_method_code != 'own_checks' or issue_state != 'handed' or not check_add_debit_button"
                         type="action"/>
+                <button name="%(action_reject_check_wizard)d"
+                        string="Reject Check"
+                        invisible="not can_reject"
+                        type="action"
+                        class="oe_highlight"/>
             </xpath>
         </field>
     </record>
@@ -63,4 +69,14 @@
         <field name="domain">[('payment_method_code', '=', 'new_third_party_checks'), ('payment_state', '!=', 'draft')]</field>
     </record>
 
+    <record model="ir.ui.view" id="view_account_third_party_check_tree_reject">
+        <field name="name">account.third.party.check.list.reject</field>
+        <field name="model">l10n_latam.check</field>
+        <field name="inherit_id" ref="l10n_latam_check.view_account_third_party_check_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list/header/button[@name='%(l10n_latam_check.action_view_l10n_latam_payment_mass_transfer)d']" position="after">
+                <button name="%(action_reject_check_wizard)d" type="action" string="Reject Check"/>
+            </xpath>
+        </field>
+    </record>
 </odoo>
