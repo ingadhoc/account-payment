@@ -129,6 +129,15 @@ class AccountPayment(models.Model):
         main_paments.amount = 0.0
         super(AccountPayment, self - main_paments)._compute_amount()
 
+    @api.onchange("to_pay_move_line_ids")
+    def _onchange_to_pay_lines_adjust_amount(self):
+        """Para pagos principales del bundle, amount siempre debe ser 0; evita que
+        la lógica de account_payment_pro intente ajustar el amount y dispare la
+        constraint _check_amount_in_main_payment."""
+        main_payments = self.filtered("is_main_payment")
+        main_payments.amount = 0
+        super(AccountPayment, self - main_payments)._onchange_to_pay_lines_adjust_amount()
+
     @api.onchange("withholdings_amount")
     def _onchange_withholdings(self):
         """dejamos este onchange además del compute_amount porque "le gana" en ejecución y, si cambian retenciones le asignaba un amount"""
