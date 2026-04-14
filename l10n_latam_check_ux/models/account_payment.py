@@ -217,7 +217,10 @@ class AccountPayment(models.Model):
                 )
 
         # Rule 2: Non-third-party-check outbounds cannot pair with any check method
-        elif source_method_code != "out_third_party_checks" and paired_method_code in all_check_codes:
+        elif (
+            source_method_code not in ["out_third_party_checks", "return_third_party_checks"]
+            and paired_method_code in all_check_codes
+        ):
             raise ValidationError(
                 "The payment method '%s' cannot be paired with a check payment method. "
                 "To transfer checks, use a third-party checks journal as the source. "

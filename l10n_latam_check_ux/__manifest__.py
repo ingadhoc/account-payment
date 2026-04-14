@@ -35,6 +35,7 @@
     "data": [
         "wizards/account_check_action_wizard_view.xml",
         "wizards/checks_to_date_view.xml",
+        "wizards/account_check_reject_wizard_view.xml",
         "views/account_payment_view.xml",
         "views/l10n_latam_check_view.xml",
         "views/account_journal_view.xml",
