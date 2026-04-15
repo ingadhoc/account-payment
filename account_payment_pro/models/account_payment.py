@@ -1056,6 +1056,41 @@ class AccountPayment(models.Model):
         return self.ids
 
     # --- ORM METHODS--- #
+    def export_data(self, fields_to_export):
+        """Fix context loss during export for matched/unmatched amounts.
+        Pre-calculate values with correct context, then override in export result.
+        """
+        if any(field in fields_to_export for field in ["matched_amount", "unmatched_amount"]):
+            self.invalidate_recordset(["matched_amount", "unmatched_amount"])
+
+            # Pre-calculate with individual context
+            values_by_payment = {}
+            for payment in self:
+                payment.invalidate_recordset(["matched_amount", "unmatched_amount"])
+                payment_with_context = payment.with_context(matched_payment_ids=payment.ids)
+                values_by_payment[payment.id] = {
+                    "matched_amount": payment_with_context.matched_amount,
+                    "unmatched_amount": payment_with_context.unmatched_amount,
+                }
+
+            result = super().export_data(fields_to_export)
+
+            # Override with correct values
+            matched_idx = fields_to_export.index("matched_amount") if "matched_amount" in fields_to_export else None
+            unmatched_idx = (
+                fields_to_export.index("unmatched_amount") if "unmatched_amount" in fields_to_export else None
+            )
+
+            for idx, payment in enumerate(self):
+                if matched_idx is not None:
+                    result["datas"][idx][matched_idx] = values_by_payment[payment.id]["matched_amount"]
+                if unmatched_idx is not None:
+                    result["datas"][idx][unmatched_idx] = values_by_payment[payment.id]["unmatched_amount"]
+
+            return result
+
+        return super().export_data(fields_to_export)
+
     def web_read(self, specification):
         fields_to_read = list(specification) or ["id"]
         if "matched_move_line_ids" in fields_to_read and "context" in specification["matched_move_line_ids"]:
