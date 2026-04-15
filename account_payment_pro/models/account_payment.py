@@ -773,7 +773,6 @@ class AccountPayment(models.Model):
 
         (self - stored_payments).matched_move_line_ids = False
 
-    @api.depends("move_id.line_ids")
     def _compute_exchange_diff_move_ids(self):
         """Recolecta todos los asientos de diferencia de cambio vinculados a este pago
         via account.partial.reconcile.exchange_move_id.
@@ -797,11 +796,14 @@ class AccountPayment(models.Model):
     def action_open_exchange_diff_moves(self):
         """Abre los asientos de diferencia de cambio relacionados con este pago."""
         self.ensure_one()
+        list_view_id = self.env.ref("account.view_move_tree").id
+        form_view_id = self.env.ref("account.view_move_form").id
         return {
             "type": "ir.actions.act_window",
             "name": _("Exchange Differences"),
             "res_model": "account.move",
             "view_mode": "list,form",
+            "views": [(list_view_id, "list"), (form_view_id, "form")],
             "domain": [("id", "in", self.exchange_diff_move_ids.ids)],
         }
 

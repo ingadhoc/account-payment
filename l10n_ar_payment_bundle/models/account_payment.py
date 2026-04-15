@@ -372,5 +372,11 @@ class AccountPayment(models.Model):
         for rec in self.filtered("is_main_payment"):
             rec.matched_move_line_ids |= rec.link_payment_ids.mapped("matched_move_line_ids")
 
+    def _compute_exchange_diff_move_ids(self):
+        super()._compute_exchange_diff_move_ids()
+        for rec in self.filtered("is_main_payment"):
+            rec.exchange_diff_move_ids |= rec.link_payment_ids.mapped("exchange_diff_move_ids")
+            rec.exchange_diff_move_count = len(rec.exchange_diff_move_ids)
+
     def _get_mached_payment(self):
         return super()._get_mached_payment() + self.link_payment_ids.ids
