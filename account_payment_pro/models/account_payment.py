@@ -132,6 +132,33 @@ class AccountPayment(models.Model):
     use_payment_pro = fields.Boolean(compute="_compute_use_payment_pro")
 
     open_move_line_ids = fields.One2many(related="move_id.open_move_line_ids")
+    # Campo técnico para round-trip del onchange: el cliente lo devuelve en cada llamada,
+    # evitando depender de _origin (que no se actualiza entre onchanges y no existe en registros nuevos).
+    previous_currency_id = fields.Many2one(
+        "res.currency",
+        store=True,
+        copy=False,
+    )
+    amount_exact = fields.Float(
+        string="Amount (Exact)",
+        digits=0,
+        copy=False,
+        help="Exact value of amount with full precision, used internally for conversions to avoid rounding errors.",
+    )
+
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        if "previous_currency_id" in fields_list and "previous_currency_id" not in res:
+            currency_id = res.get("currency_id")
+            if not currency_id:
+                journal_id = res.get("journal_id") or self._context.get("default_journal_id")
+                if journal_id:
+                    journal = self.env["account.journal"].browse(journal_id)
+                    currency_id = (journal.currency_id or journal.company_id.currency_id).id
+            if currency_id:
+                res["previous_currency_id"] = currency_id
+        return res
 
     @api.depends("journal_id")
     def _compute_counterpart_currency_id(self):
@@ -167,7 +194,16 @@ class AccountPayment(models.Model):
             self.move_id.posted_before = False
         super().action_draft()
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if "amount" in vals and "amount_exact" not in vals:
+                vals["amount_exact"] = vals["amount"]
+        return super().create(vals_list)
+
     def write(self, vals):
+        if "amount" in vals and "amount_exact" not in vals:
+            vals["amount_exact"] = vals["amount"]
         for rec in self:
             if rec.company_id.use_payment_pro or (
                 "company_id" in vals and rec.env["res.company"].browse(vals["company_id"]).use_payment_pro
@@ -290,7 +326,50 @@ class AccountPayment(models.Model):
         if self._origin.company_id and self.company_id != self._origin.company_id and self.state == "draft":
             self.remove_all()
 
-    @api.depends("amount", "other_currency", "force_amount_company_currency")
+    @api.onchange("amount")
+    def _onchange_amount_update_exact(self):
+        for rec in self:
+            if not rec.currency_id.is_zero(rec.amount - rec.amount_exact):
+                rec.amount_exact = rec.amount
+
+    @api.onchange("currency_id")
+    def _onchange_currency_recompute_amount(self):
+        """Al cambiar la moneda del diario, reconvertir amount a la nueva moneda A."""
+        for rec in self:
+            new_currency = rec.currency_id
+            # previous_currency_id se round-tripea desde el cliente en cada onchange,
+            # por eso refleja la moneda real anterior (funciona en registros nuevos y
+            # en cambios consecutivos A→B→C sin guardar, donde _origin no sirve).
+            old_currency = rec.previous_currency_id or rec._origin.currency_id
+            if not old_currency:
+                old_currency = rec.company_currency_id
+            # Actualizar para el próximo onchange antes de cualquier continue
+            rec.previous_currency_id = new_currency
+            if rec.state != "draft" or not rec.amount:
+                continue
+
+            old_amount = rec.amount_exact or rec.amount
+            if not old_amount:
+                old_amount = rec.env.context.get("default_amount", 0.0)
+            amount = abs(
+                old_currency._convert(
+                    old_amount,
+                    new_currency,
+                    rec.company_id,
+                    rec.date or fields.Date.context_today(rec),
+                    False,
+                )
+            )
+            if (
+                rec.env.context.get("default_amount")
+                and rec.currency_id == rec.company_currency_id
+                and rec.amount_exact == rec._origin.amount_exact
+                and not rec.currency_id.is_zero(amount - rec.env.context.get("default_amount"))
+            ):
+                amount = rec.env.context.get("default_amount")
+            rec.update({"amount_exact": amount, "amount": amount})
+
+    @api.depends("amount", "amount_exact", "other_currency", "force_amount_company_currency")
     def _compute_amount_company_currency(self):
         """
         * Si las monedas son iguales devuelve 1
@@ -298,13 +377,14 @@ class AccountPayment(models.Model):
         * sino, devuelve el amount convertido a la moneda de la cia
         """
         for rec in self:
+            amount = rec.amount_exact or rec.amount
             if not rec.other_currency:
-                amount_company_currency = rec.amount
+                amount_company_currency = amount
             elif rec.force_amount_company_currency:
                 amount_company_currency = rec.force_amount_company_currency
             else:
                 amount_company_currency = rec.currency_id._convert(
-                    rec.amount, rec.company_id.currency_id, rec.company_id, rec.date
+                    amount, rec.company_id.currency_id, rec.company_id, rec.date
                 )
             rec.amount_company_currency = amount_company_currency
 

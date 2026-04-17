@@ -72,6 +72,7 @@ class AccountMove(models.Model):
                 payment.payment_method_id = pay_journal._get_manual_payment_method_id(payment_type).id
 
             payment.amount = abs(difference)
+            payment.amount_exact = abs(difference)
             payment.action_post()
             rec.write({"matched_payment_ids": [(4, payment.id)]})
 

@@ -72,6 +72,7 @@ class AccountMoveLine(models.Model):
                 "default_partner_type": partner_type,
                 "default_partner_id": to_pay_partner_id,
                 "default_amount": abs(to_pay_amount),
+                "default_amount_exact": abs(to_pay_amount),
                 "default_to_pay_move_line_ids": to_pay_move_lines.ids,
                 # We set this because if became from other view and in the context has 'create=False'
                 # you can't crate payment lines (for ej: subscription)
