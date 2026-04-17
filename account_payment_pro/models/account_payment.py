@@ -548,6 +548,7 @@ class AccountPayment(models.Model):
                 super(AccountPayment, rec)._compute_destination_account_id()
 
     def _prepare_move_lines_per_type(self, write_off_line_vals=None, force_balance=None):
+<<<<<<< f59c1442a8019e1f9554649bee69f71f259888b9
         if not self.company_id.use_payment_pro:
             # Para pagos sin ppro que tengan accounting rate, forzamos el balance
             # para que no haya diferencias en el asiento
@@ -575,6 +576,60 @@ class AccountPayment(models.Model):
                     "balance": wo_balance,
                 }
             )
+||||||| 0485f844ec6636a5174f05964afe4b03e8a9547e
+        # TODO: elimino los write_off_line_vals porque los regenero tanto aca
+        # como en retenciones. esto puede generar problemas
+        if self.company_id.use_payment_pro:
+            write_off_line_vals = []
+            if self.write_off_amount:
+                amount = self.write_off_amount if self.payment_type == "inbound" else -self.write_off_amount
+                write_off_line_vals.append(
+                    {
+                        "name": self.write_off_type_id.label or self.write_off_type_id.name,
+                        "account_id": self.write_off_type_id.account_id.id,
+                        "partner_id": self.partner_id.id,
+                        "currency_id": self.currency_id.id,
+                        "amount_currency": amount,
+                        "balance": self.currency_id._convert(
+                            amount, self.company_id.currency_id, self.company_id, self.date
+                        ),
+                    }
+                )
+        else:
+            # Si hay force_amount_company_currency, usarlo como force_balance
+            if self.force_amount_company_currency and force_balance is None:
+                force_balance = self.force_amount_company_currency
+=======
+        # TODO: elimino los write_off_line_vals porque los regenero tanto aca
+        # como en retenciones. esto puede generar problemas
+        if self.company_id.use_payment_pro:
+            write_off_line_vals = []
+            if self.write_off_amount:
+                sign = 1 if self.payment_type == "inbound" else -1
+                # write_off_amount está definido en company_currency_id, por lo que el balance es directo
+                balance = sign * self.write_off_amount
+                if self.currency_id != self.company_id.currency_id:
+                    # amount_currency se deriva del balance usando la conversión inversa
+                    amount_currency = self.company_id.currency_id._convert(
+                        balance, self.currency_id, self.company_id, self.date
+                    )
+                else:
+                    amount_currency = balance
+                write_off_line_vals.append(
+                    {
+                        "name": self.write_off_type_id.label or self.write_off_type_id.name,
+                        "account_id": self.write_off_type_id.account_id.id,
+                        "partner_id": self.partner_id.id,
+                        "currency_id": self.currency_id.id,
+                        "amount_currency": amount_currency,
+                        "balance": balance,
+                    }
+                )
+        else:
+            # Si hay force_amount_company_currency, usarlo como force_balance
+            if self.force_amount_company_currency and force_balance is None:
+                force_balance = self.force_amount_company_currency
+>>>>>>> 14fd0e7c604fb37f189c6a4c36ae790a691743e1
 
         res = super()._prepare_move_lines_per_type(write_off_line_vals=write_off_line_vals, force_balance=force_balance)
 
