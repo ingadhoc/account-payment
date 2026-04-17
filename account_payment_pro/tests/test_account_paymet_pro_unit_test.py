@@ -168,3 +168,74 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
             places=2,
             msg="Liquidity line balance should still use forced amount after synchronization",
         )
+
+    def test_write_off_line_amounts_company_vs_payment_currency(self):
+        """Minimal test: company currency vs payment currency, force company amount and check write-off line balance"""
+        # Use existing company and ensure we have a different currency for the payment
+        company_currency = self.company.currency_id
+
+        # Use USD as payment currency (different from company currency)
+        usd = self.env["res.currency"].with_context(active_test=False).search([("name", "=", "USD")], limit=1)
+        usd.active = True
+
+        # If company already uses USD, skip test since we need different currencies
+        if company_currency == usd:
+            self.skipTest("Test requires payment currency different from company currency")
+
+        # create payment in USD but force company amount so exchange_rate = 1300
+        payment = self.env["account.payment"].create(
+            {
+                "payment_type": "inbound",
+                "partner_type": "customer",
+                "partner_id": self.partner_ri.id,
+                "journal_id": self.company_bank_journal.id,
+                "company_id": self.company.id,
+                "amount": 1.0,
+                "currency_id": usd.id,
+                "force_amount_company_currency": 1300.0,
+            }
+        )
+
+        # Create a dedicated account for write-off to avoid conflicts with payment accounts
+        write_off_account = self.env["account.account"].create(
+            {
+                "name": "Write-Off Test Account",
+                "code": "WOTEST001",
+                "account_type": "expense",
+                "company_id": self.company.id,
+            }
+        )
+        wot = self.env["account.write_off.type"].create(
+            {
+                "name": "WOT Test",
+                "label": "WOT Test",
+                "company_ids": [(6, 0, [self.company.id])],
+                "account_id": write_off_account.id,
+            }
+        )
+
+        payment.write_off_type_id = wot
+        payment.write_off_amount = 1000.0
+
+        payment.action_post()
+
+        write_off_lines = payment.move_id.line_ids.filtered(lambda l: l.account_id == wot.account_id)
+        self.assertTrue(write_off_lines, "No write-off move line found")
+        self.assertEqual(len(write_off_lines), 1, "Expected exactly one write-off move line")
+
+        line = write_off_lines[0]
+        expected_amount_currency = 1000.0 / 1300.0
+        expected_balance = 1000.0
+
+        self.assertAlmostEqual(
+            float(line.amount_currency or 0.0),
+            expected_amount_currency,
+            places=6,
+            msg="amount_currency on write-off line is incorrect",
+        )
+        self.assertAlmostEqual(
+            float(line.balance),
+            expected_balance,
+            places=2,
+            msg="balance on write-off line should be the write_off_amount in company currency",
+        )
