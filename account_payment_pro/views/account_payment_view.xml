@@ -57,6 +57,9 @@
 
         <div name="amount_div" position="after">
             <field name="company_currency_id" invisible="True"/>
+            <!-- Campo técnico: round-trip de la moneda anterior para _onchange_currency_recompute_amount -->
+            <field name="previous_currency_id" invisible="True"/>
+            <field name="amount_exact" invisible="True"/>
             <field name="other_currency" invisible="True"/>
             <field name="force_amount_company_currency" invisible="True"/>
             <div class="o_row" name="exchange_rate_div" invisible="not other_currency">
