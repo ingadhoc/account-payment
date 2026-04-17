@@ -332,17 +332,24 @@ class AccountPayment(models.Model):
         if self.company_id.use_payment_pro:
             write_off_line_vals = []
             if self.write_off_amount:
-                amount = self.write_off_amount if self.payment_type == "inbound" else -self.write_off_amount
+                sign = 1 if self.payment_type == "inbound" else -1
+                # write_off_amount está definido en company_currency_id, por lo que el balance es directo
+                balance = sign * self.write_off_amount
+                if self.currency_id != self.company_id.currency_id:
+                    # amount_currency se deriva del balance usando la conversión inversa
+                    amount_currency = self.company_id.currency_id._convert(
+                        balance, self.currency_id, self.company_id, self.date
+                    )
+                else:
+                    amount_currency = balance
                 write_off_line_vals.append(
                     {
                         "name": self.write_off_type_id.label or self.write_off_type_id.name,
                         "account_id": self.write_off_type_id.account_id.id,
                         "partner_id": self.partner_id.id,
                         "currency_id": self.currency_id.id,
-                        "amount_currency": amount,
-                        "balance": self.currency_id._convert(
-                            amount, self.company_id.currency_id, self.company_id, self.date
-                        ),
+                        "amount_currency": amount_currency,
+                        "balance": balance,
                     }
                 )
         else:
