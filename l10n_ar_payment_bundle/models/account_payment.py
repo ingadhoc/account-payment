@@ -161,6 +161,17 @@ class AccountPayment(models.Model):
         for rec in self.filtered(lambda x: x.main_payment_id and x.currency_id == x.company_currency_id):
             rec.counterpart_rate = rec.main_payment_id.counterpart_rate
 
+    @api.depends("main_payment_id")
+    def _compute_accounting_rate(self):
+        super(AccountPayment, self)._compute_accounting_rate()
+        for rec in self.filtered(lambda x: x.main_payment_id and x.currency_id == x.counterpart_currency_id):
+            # Si B = C en ambos pagos, tomamos la tasa forzada del main como
+            # fuente de verdad para mantener counterpart_rate alineado.
+            if rec.main_payment_id.counterpart_rate and rec.accounting_rate != rec.main_payment_id.counterpart_rate:
+                rec.accounting_rate = rec.main_payment_id.counterpart_rate
+            else:
+                rec.accounting_rate = rec.main_payment_id.accounting_rate
+
     @api.depends("main_payment_id.counterpart_currency_id")
     def _compute_counterpart_currency_id(self):
         for rec in self.filtered("main_payment_id"):
