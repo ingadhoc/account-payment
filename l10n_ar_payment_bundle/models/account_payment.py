@@ -99,9 +99,8 @@ class AccountPayment(models.Model):
 
             bundle_journal_id = rec.company_id._get_bundle_journal(rec.payment_type)
             journals = rec.available_journal_ids
-
             # If it's a linked payment remove only the bundle journal (any currency allowed)
-            if rec.main_payment_id or rec.is_main_payment or not rec.use_payment_pro:
+            if rec.main_payment_id or rec.is_internal_transfer or not rec.use_payment_pro:
                 journals = journals.filtered(lambda j: j._origin.id != bundle_journal_id)
 
             rec.available_journal_ids = journals
