@@ -365,6 +365,53 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         # Pago intencional parcial: 500+500+30 = 1030 USD de 1210 USD total
         self.assertEqual(invoice.payment_state, "partial", "1030 USD pagados de 1210 USD → debe quedar parcial")
 
+    def test_b3_linked_usd_uses_forced_main_counterpart_rate(self):
+        """B.3.x · Main con deuda USD y counterpart rate forzado.
+
+        Caso de regresión:
+        - Main: A=ARS, B=USD, se fuerza user_counterpart_rate=1400 (en vez de tasa vigente)
+        - Linked USD: A=B=USD
+
+        Verifica:
+        - linked.accounting_rate toma la tasa forzada del main (USD/ARS = 1/1400)
+        - no toma la tasa contable de mercado del día
+        """
+        invoice = self._create_invoice(1_000, self.usd)
+        main = self._create_main_payment(invoice, fiscal_position=False, l10n_ar_fiscal_position_id=False)
+
+        forced_user_rate = 1_400.0
+        forced_counterpart_rate = 1.0 / forced_user_rate
+        market_counterpart_rate = self._get_rate(self.ars, self.usd)
+
+        self.assertNotAlmostEqual(
+            forced_counterpart_rate,
+            market_counterpart_rate,
+            places=9,
+            msg="Precondición: la tasa forzada debe diferir de la tasa de mercado",
+        )
+
+        main.counterpart_rate = forced_counterpart_rate
+        self.assertAlmostEqual(main.counterpart_rate, forced_counterpart_rate, places=9)
+
+        linked_usd = self._add_linked_payment(main, self.bank_usd, 100)
+        self.assertEqual(linked_usd.currency_id, self.usd)
+        self.assertEqual(linked_usd.counterpart_currency_id, self.usd)
+        self.assertAlmostEqual(linked_usd.counterpart_rate, 1.0, places=9, msg="A=B en linked USD")
+
+        self.assertAlmostEqual(
+            linked_usd.accounting_rate,
+            forced_counterpart_rate,
+            places=9,
+            msg="El linked USD debe respetar la tasa forzada en el main",
+        )
+        self.assertNotAlmostEqual(
+            linked_usd.accounting_rate,
+            market_counterpart_rate,
+            places=9,
+            msg="No debe usar la tasa contable de mercado",
+        )
+        self.assertAlmostEqual(linked_usd.user_accounting_rate, forced_user_rate, places=6)
+
     def test_b4_bundle_deuda_usd_cheques_ars_y_transfer_usd(self):
         """B.4 · Factura 1 210 USD (1 000 neto, 1 USD = 1 200 ARS).
         Bundle: 2 cheques propios ARS + 1 transferencia USD + retención IIBB.
