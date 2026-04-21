@@ -29,17 +29,27 @@ class AccountMove(models.Model):
                 and r.account_id.account_type in self.env["account.payment"]._get_valid_payment_account_types()
             )
 
+    # Map explícito move_type → (payment_type, partner_type).
+    # Se usa en pay_now() para setear el payment_type correcto desde el create,
+    # evitando el truco de "crear inbound y flipear" que dejó de funcionar en v19
+    # cuando _compute_selected_debt pasó a calcular el signo por payment_type en
+    # lugar de partner_type (refactor tri-currency).
+    _PAY_NOW_TYPE_MAP = {
+        "in_invoice": ("outbound", "supplier"),
+        "out_invoice": ("inbound", "customer"),
+        "in_refund": ("inbound", "supplier"),
+        "out_refund": ("outbound", "customer"),
+    }
+
     def pay_now(self):
         for rec in self.filtered(
-            lambda x: x.pay_now_journal_id and x.state == "posted" and x.payment_state in ("not_paid", "patial")
+            lambda x: x.pay_now_journal_id
+            and x.state == "posted"
+            and x.payment_state in ("not_paid", "partial")
+            and x.move_type in self._PAY_NOW_TYPE_MAP
         ):
             pay_journal = rec.pay_now_journal_id
-            if rec.move_type in ["in_invoice", "in_refund"]:
-                partner_type = "supplier"
-            else:
-                partner_type = "customer"
-
-            payment_type = "inbound"
+            payment_type, partner_type = self._PAY_NOW_TYPE_MAP[rec.move_type]
             payment_method = pay_journal._get_manual_payment_method_id(payment_type)
 
             payment = (
@@ -60,18 +70,7 @@ class AccountMove(models.Model):
                 )
             )
 
-            # compute payment_difference here to avoid lazy evaluation issues
-            difference = payment.payment_difference
-
-            # el difference es positivo para facturas (de cliente o proveedor) pero negativo para NC.
-            # para factura de proveedor o NC de cliente es outbound
-            # para factura de cliente o NC de proveedor es inbound
-            # igualmente lo hacemos con el difference y no con el type por las dudas de que facturas en negativo
-            if partner_type == "supplier" and difference >= 0.0 or partner_type == "customer" and difference < 0.0:
-                payment.payment_type = "outbound"
-                payment.payment_method_id = pay_journal._get_manual_payment_method_id(payment_type).id
-
-            payment.amount = abs(difference)
+            payment.amount = abs(payment.payment_difference)
             payment.action_post()
             rec.write({"matched_payment_ids": [(4, payment.id)]})
 
