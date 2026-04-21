@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-13 14:40+0000\n"
-"PO-Revision-Date: 2026-04-13 14:40+0000\n"
+"POT-Creation-Date: 2026-04-21 16:12+0000\n"
+"PO-Revision-Date: 2026-04-21 16:12+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -814,10 +814,4 @@ msgstr ""
 #. module: account_payment_pro
 #: model:ir.model,name:account_payment_pro.model_account_write_off_type
 msgid "account.write_off.type"
-msgstr ""
-
-#. module: account_payment_pro
-#. odoo-python
-#: code:addons/account_payment_pro/models/account_payment.py:0
-msgid "id"
 msgstr ""
