@@ -171,6 +171,23 @@ class TestAccountCashboxBundle(common.TransactionCase):
             "Bundle payment with only withholdings should not require cashbox session",
         )
 
+    def test_cashbox_demo_no_journals(self):
+        """
+        Coverage test: _cashbox_bundle_demo_cashboxes with a company that has
+        no cash and no bank journals → journal_ids list stays empty (both False branches)
+        """
+        # Create a company without installing a chart of accounts (no journals)
+        empty_company = self.env["res.company"].create({"name": "Empty Co Test"})
+
+        chart = self.env["account.chart.template"].with_company(empty_company)
+        result = chart._cashbox_bundle_demo_cashboxes(empty_company)
+
+        self.assertEqual(
+            result["demo_cashbox_main"]["journal_ids"],
+            [],
+            "journal_ids should be empty when no cash or bank journals exist",
+        )
+
     def test_user_without_session_requirement(self):
         """
         Additional test: Verify that without requiere_account_cashbox_session,
