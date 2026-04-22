@@ -833,3 +833,42 @@ msgstr "Requiere control de efectivo"
 #: model:ir.model,name:account_cashbox.model_account_cashbox_session_line
 msgid "session journal"
 msgstr "Diario de la sesión"
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_rounding_adjustment_wizard
+msgid "Currency Rate"
+msgstr "Tasa de cambio"
+
+#. module: account_cashbox
+#: model:ir.model.fields,help:account_cashbox.field_account_cashbox_rounding_adjustment_wizard__force_rate
+msgid ""
+"Check to manually set the exchange rate. If unchecked, the system will use "
+"the current currency exchange rate."
+msgstr ""
+"Marque para establecer manualmente la tasa de cambio. Si no está marcado, "
+"el sistema usará la tasa de cambio actual."
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_rounding_adjustment_wizard
+msgid "Force rate?"
+msgstr "¿Forzar tasa?"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_rounding_adjustment_wizard__force_rate
+msgid "Force Rate"
+msgstr "Forzar tasa"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_rounding_adjustment_wizard__forced_rate
+msgid "Forced Rate"
+msgstr "Tasa forzada"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_rounding_adjustment_wizard__has_currency
+msgid "Has Currency"
+msgstr "Tiene moneda"
+
+#. module: account_cashbox
+#: model:ir.model.fields,help:account_cashbox.field_account_cashbox_rounding_adjustment_wizard__forced_rate
+msgid "Manually set the currency exchange rate for the adjustment"
+msgstr "Establecer manualmente la tasa de cambio para el ajuste"

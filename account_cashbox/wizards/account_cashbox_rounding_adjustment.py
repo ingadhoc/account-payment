@@ -1,4 +1,4 @@
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class AccountCashboxRoundingAdjustment(models.TransientModel):
@@ -6,6 +6,18 @@ class AccountCashboxRoundingAdjustment(models.TransientModel):
     _description = "Cashbox Rounding Adjustment"
 
     cashbox_session_id = fields.Many2one("account.cashbox.session")
+    forced_rate = fields.Float(
+        help="Manually set the currency exchange rate for the adjustment",
+        store=True,
+        readonly=False,
+    )
+    force_rate = fields.Boolean(
+        help="Check to manually set the exchange rate. If unchecked, the system will use the current currency exchange rate.",
+    )
+    has_currency = fields.Boolean(
+        compute="_compute_has_currency",
+        store=False,
+    )
 
     def action_create_journal_entries(self):
         """
@@ -17,7 +29,10 @@ class AccountCashboxRoundingAdjustment(models.TransientModel):
             lambda x: x.balance_difference != 0 and x.require_cash_control
         ):
             currency = line.journal_id.currency_id or self.cashbox_session_id.company_id.currency_id
-            if currency != self.cashbox_session_id.company_id.currency_id:
+            if self.force_rate and self.forced_rate:
+                negative_amount = abs(min(line.balance_difference, 0.0)) * self.forced_rate
+                positive_amount = max(line.balance_difference, 0.0) * self.forced_rate
+            elif currency != self.cashbox_session_id.company_id.currency_id:
                 negative_amount = abs(min(line.balance_difference, 0.0)) / currency.rate
                 positive_amount = max(line.balance_difference, 0.0) / currency.rate
             else:
@@ -65,6 +80,15 @@ class AccountCashboxRoundingAdjustment(models.TransientModel):
 
         self.cashbox_session_id.write({"state": "closed"})
         return True
+
+    @api.depends("cashbox_session_id.line_ids.journal_id.currency_id", "cashbox_session_id.company_id.currency_id")
+    def _compute_has_currency(self):
+        for rec in self:
+            comp_currency = rec.cashbox_session_id.company_id.currency_id
+            rec.has_currency = any(
+                j.currency_id and j.currency_id != comp_currency
+                for j in rec.cashbox_session_id.line_ids.mapped("journal_id")
+            )
 
     def action_close_without_entries(self):
         """
