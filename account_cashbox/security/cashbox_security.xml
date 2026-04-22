@@ -16,7 +16,7 @@
     <record id="cashbox_user" model="ir.rule">
         <field name="name">Cashbox Invoicing User</field>
         <field name="model_id" ref="model_account_cashbox"/>
-        <field name="domain_force">['|', ('allowed_res_users_ids', '=', user.id),('allowed_res_users_ids', '=', False)]</field>
+        <field name="domain_force">['|', '|', ('allowed_res_users_ids', '=', user.id), ('allowed_res_users_ids', '=', False), ('allowed_users_view_payments', 'in', [user.id])]</field>
         <field name="groups" eval="[(4, ref('account.group_account_invoice'))]"/>
     </record>
 
@@ -43,4 +43,15 @@
         <field name="groups" eval="[(4, ref('account.group_account_manager'))]"/>
     </record>
 
+    <!-- Permitir solo lectura de sesiones de caja a usuarios en allowed_users_view_payments -->
+    <record id="cashbox_session_view_only" model="ir.rule">
+        <field name="name">Cashbox Session View Only</field>
+        <field name="model_id" ref="model_account_cashbox_session"/>
+        <field name="domain_force">[('cashbox_id.allowed_users_view_payments', 'in', [user.id])]</field>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+        <field name="groups" eval="[(4, ref('account.group_account_invoice'))]"/>
+    </record>
 </odoo>
