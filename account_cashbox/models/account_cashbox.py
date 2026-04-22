@@ -41,6 +41,13 @@ class AccountCashbox(models.Model):
         store=True,
         readonly=False,
     )
+    allowed_users_view_payments = fields.Many2many(
+        "res.users",
+        store=True,
+        readonly=False,
+        string="Allowed Users to View Payments",
+        help="Users in this field will be able to view the payments made in the cashbox sessions, without being able to operate the cashbox.",
+    )
     cash_control_journal_ids = fields.Many2many("account.journal", string="Journals with Open / Close control")
     session_ids = fields.One2many("account.cashbox.session", "cashbox_id")
     sequence_id = fields.Many2one(

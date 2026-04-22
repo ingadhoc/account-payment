@@ -14,6 +14,11 @@ POP_SESSION_STATE = [
 
 
 class AccountCashboxSession(models.Model):
+    def _check_user_can_operate(self):
+        allowed_view_ids = self.cashbox_id.allowed_users_view_payments.ids
+        if self.env.uid in allowed_view_ids:
+            raise UserError(_("You are not allowed to operate this cashbox."))
+
     _name = "account.cashbox.session"
     _order = "opening_date desc"
     _description = "Cashbox session"
@@ -144,6 +149,7 @@ class AccountCashboxSession(models.Model):
         self.state = "opened"
 
     def action_account_cashbox_session_open(self):
+        self._check_user_can_operate()
         for session in self:
             values = {}
             if not session.opening_date:
@@ -152,6 +158,7 @@ class AccountCashboxSession(models.Model):
             session.write(values)
 
     def action_closing_control(self):
+        self._check_user_can_operate()
         for session in self:
             values = {}
             if not session.closing_date:
@@ -160,6 +167,7 @@ class AccountCashboxSession(models.Model):
             session.write(values)
 
     def action_account_cashbox_session_close(self):
+        self._check_user_can_operate()
         if self.state == "closing_control" and self.require_cash_control:
             lines_w_cash_control = self.line_ids.filtered(lambda x: x.require_cash_control)
             if any(balance == 0.0001 for balance in lines_w_cash_control.mapped("balance_end_real")):

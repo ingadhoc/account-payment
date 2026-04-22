@@ -58,6 +58,7 @@
                             <field name="journal_ids" context="{'default_type': 'cash'}" widget="many2many_tags"/>
                             <field name="cash_control_journal_ids" domain="[('id', 'in', journal_ids)]" widget="many2many_checkboxes" />
                             <field name="max_diff" invisible="cash_control_journal_ids == []" />
+                            <field name="allowed_users_view_payments" widget="many2many_tags" options="{'no_create': True}" />
                         </group>
                     </group>
                 </sheet>
