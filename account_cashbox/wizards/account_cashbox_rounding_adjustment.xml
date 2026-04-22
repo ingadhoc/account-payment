@@ -11,6 +11,9 @@
                         To resolve this, you can automatically generate journal entries for the rounding difference by clicking <b>Create Journal Entries</b>.<br/>
                         If you prefer not to create these entries, click <b>Don't create entries and close</b> to exit without changes.
                     </p>
+                    <label for="force_rate" string="Force rate?" invisible="not has_currency"/>
+                    <field name="force_rate" invisible="not has_currency"/>
+                    <field name="forced_rate" invisible="not has_currency or not force_rate"/>
                 <footer>
                     <button name="action_create_journal_entries"
                             string="Create Journal Entries"
