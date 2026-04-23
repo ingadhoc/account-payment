@@ -81,6 +81,7 @@
                                     column_invisible="parent.require_cash_control == False"/>
                                 <field name="balance_end_real"
                                     required="parent.state == 'closing_control'"
+                                    decoration-muted="balance_end_real == 0.0001"
                                     readonly="parent.state != 'closing_control'"
                                     invisible = "require_cash_control == False"
                                     column_invisible="parent.require_cash_control == False or parent.state not in ['closing_control', 'closed']"/>
