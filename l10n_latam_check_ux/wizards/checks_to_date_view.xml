@@ -29,7 +29,7 @@
             id="menu_account_check_to_date_report"
             name="Cheques a fecha"
             sequence="20"
-            parent="account_reports.account_reports_audit_reports_menu"
+            parent="account.account_reports_management_menu"
             action="action_account_check_to_date_report"
             />
 
