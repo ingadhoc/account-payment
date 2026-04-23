@@ -239,3 +239,43 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
             places=2,
             msg="balance on write-off line should be the write_off_amount in company currency",
         )
+
+    def test_partner_change_does_not_reset_unreconciled_amount_on_other_payments(self):
+        """Multi-record write: changing partner_id on one payment must not reset unreconciled_amount
+        on payments whose partner is not changing."""
+        partner2 = self.env["res.partner"].create({"name": "Partner B"})
+
+        payment_changing = self.env["account.payment"].create(
+            {
+                "payment_type": "outbound",
+                "partner_type": "supplier",
+                "partner_id": self.partner_ri.id,
+                "journal_id": self.company_bank_journal.id,
+                "amount": 100.0,
+            }
+        )
+        payment_not_changing = self.env["account.payment"].create(
+            {
+                "payment_type": "outbound",
+                "partner_type": "supplier",
+                "partner_id": partner2.id,
+                "journal_id": self.company_bank_journal.id,
+                "amount": 200.0,
+            }
+        )
+        # Set a non-zero unreconciled_amount on the payment that should NOT be touched
+        payment_not_changing.unreconciled_amount = 50.0
+
+        # Write partner_id change targeting the first payment's new partner, batched with the second
+        (payment_changing | payment_not_changing).write({"partner_id": partner2.id})
+
+        self.assertEqual(
+            payment_not_changing.unreconciled_amount,
+            50.0,
+            "unreconciled_amount must not be reset on payments that did not change partner",
+        )
+        self.assertEqual(
+            payment_changing.unreconciled_amount,
+            0.0,
+            "unreconciled_amount must be reset to 0 on payments that changed partner",
+        )

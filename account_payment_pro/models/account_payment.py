@@ -186,6 +186,28 @@ class AccountPayment(models.Model):
                 # la company_id se cambia correctamente.
                 if "company_id" in vals and "journal_id" in vals:
                     rec.move_id.journal_id = vals["journal_id"]
+
+        # On partner change, the web client may include a stale to_pay_amount (computed for the
+        # old partner) in the same write. If _inverse_to_pay_amount runs before to_pay_move_line_ids
+        # is recomputed for the new partner, selected_debt is still from the old partner and
+        # unreconciled_amount ends up negative. Fix: for records actually changing partner, drop
+        # to_pay_amount from vals and reset unreconciled_amount so the compute runs clean.
+        if "partner_id" in vals:
+            changing = self.filtered(
+                lambda r: r.state == "draft" and r.company_id.use_payment_pro and r.partner_id.id != vals["partner_id"]
+            )
+            if changing:
+                not_changing = self - changing
+                changing_vals = dict(vals)
+                changing_vals.pop("to_pay_amount", None)
+                changing_vals["unreconciled_amount"] = 0
+                result = True
+                if not_changing:
+                    result = super(AccountPayment, not_changing).write(vals) and result
+                if changing:
+                    result = super(AccountPayment, changing).write(changing_vals) and result
+                return result
+
         return super().write(vals)
 
     ##############################
