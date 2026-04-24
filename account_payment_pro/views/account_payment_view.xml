@@ -103,6 +103,7 @@
             <field name="accounting_rate_inverted" invisible="True"/>
             <!-- Campo técnico: round-trip de la moneda anterior para _onchange_currency_recompute_amount -->
             <field name="previous_currency_id" invisible="True"/>
+            <field name="amount_exact" invisible="True"/>
             <!-- Importe en moneda de contrapartida: visible si A != B -->
             <!-- TODO ver si encontramos una mejor opcion y/o podemos ponerle la negrita tmb al destination_currency_id -->
             <div class="o_row" invisible="currency_id == counterpart_currency_id" name="counterpart_currency_amount">

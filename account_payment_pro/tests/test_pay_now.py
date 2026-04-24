@@ -1,7 +1,7 @@
 """Tests para el flujo pay_now_journal_id ("Diario de pago directo") del modelo
 account.move.
 
-Regresion cubierta:
+Regresión cubierta:
 En v19 el refactor tri-currency cambio _compute_selected_debt para calcular el
 signo a partir de payment_type en lugar de partner_type. El codigo original de
 pay_now() creaba el account.payment con payment_type="inbound" hardcodeado y lo
@@ -25,27 +25,28 @@ class TestPayNowJournal(common.TransactionCase):
         cls.company = cls.env.company
         cls.company.use_payment_pro = True
 
-        # Journal bank con outstanding accounts seteados (igual que los otros tests)
         cls.pay_journal = cls.env["account.journal"].search(
             [("company_id", "=", cls.company.id), ("type", "=", "bank")], limit=1
         )
-        outstanding_account = cls.env["account.account"].search(
-            [("company_ids", "=", cls.company.id), ("account_type", "=", "asset_current")], limit=1
-        )
-        if outstanding_account:
-            for pml in cls.pay_journal.inbound_payment_method_line_ids:
-                if not pml.payment_account_id:
-                    pml.payment_account_id = outstanding_account
-            for pml in cls.pay_journal.outbound_payment_method_line_ids:
-                if not pml.payment_account_id:
-                    pml.payment_account_id = outstanding_account
-
         cls.sale_journal = cls.env["account.journal"].search(
             [("company_id", "=", cls.company.id), ("type", "=", "sale")], limit=1
         )
         cls.purchase_journal = cls.env["account.journal"].search(
             [("company_id", "=", cls.company.id), ("type", "=", "purchase")], limit=1
         )
+        assert cls.pay_journal, "Se necesita un journal type=bank en la compañía"
+        assert cls.sale_journal, "Se necesita un journal type=sale en la compañía"
+        assert cls.purchase_journal, "Se necesita un journal type=purchase en la compañía"
+
+        # Para métodos manuales, usar la cuenta default del diario (no outstanding).
+        # Con outstanding, Odoo deja el pago como "in_payment" hasta que se concilie
+        # con un extracto bancario — lo que invalidaría los asserts de payment_state.
+        for pml in cls.pay_journal.inbound_payment_method_line_ids:
+            if pml.payment_method_id.code == "manual":
+                pml.payment_account_id = cls.pay_journal.default_account_id
+        for pml in cls.pay_journal.outbound_payment_method_line_ids:
+            if pml.payment_method_id.code == "manual":
+                pml.payment_account_id = cls.pay_journal.default_account_id
 
         ar = cls.env.ref("base.ar", raise_if_not_found=False)
         partner_vals = {"name": "Pay Now Partner"}

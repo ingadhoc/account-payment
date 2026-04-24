@@ -71,6 +71,7 @@ class AccountMove(models.Model):
             )
 
             payment.amount = abs(payment.payment_difference)
+            payment.amount_exact = abs(payment.payment_difference)
             payment.action_post()
             rec.write({"matched_payment_ids": [(4, payment.id)]})
 
