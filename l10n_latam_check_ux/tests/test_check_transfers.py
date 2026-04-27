@@ -87,9 +87,13 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
 
         cls.assertTrue(cls.company_bank_journal.ids, "A bank journal is required to run this test")
         cls.assertTrue(
-            cls.third_party_check_journal.ids, "Third party check journal was not created so we can run the tests"
+            cls.third_party_check_journal.ids,
+            "Third party check journal was not created so we can run the tests",
         )
-        cls.assertTrue(cls.rejected_check_journal.ids, "Rejected check journal was not created so we can run the tests")
+        cls.assertTrue(
+            cls.rejected_check_journal.ids,
+            "Rejected check journal was not created so we can run the tests",
+        )
 
         outbound_method_commands = []
         if not cls.company_bank_journal.outbound_payment_method_line_ids.filtered(
