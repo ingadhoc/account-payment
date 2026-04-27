@@ -67,3 +67,10 @@ class l10nLatamAccountPaymentCheck(models.Model):
         partner_id_change = self._origin.payment_id.partner_id != self.payment_id.partner_id
         if payment_method_change or partner_id_change:
             super()._compute_issuer_vat()
+
+    def _compute_issue_state(self):
+        super()._compute_issue_state()
+        for rec in self:
+            account = rec.outstanding_line_id.account_id
+            if account and not account.reconcile:
+                rec.issue_state = "debited"
