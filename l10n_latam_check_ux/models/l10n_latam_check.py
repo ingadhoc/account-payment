@@ -17,6 +17,7 @@ class l10nLatamAccountPaymentCheck(models.Model):
         readonly=True,
     )
     operation_ids = fields.Many2many(check_company=False)
+    outstanding_line_id = fields.Many2one(check_company=False)
 
     @api.depends("operation_ids.state", "payment_id.state")
     def _compute_company_id(self):
