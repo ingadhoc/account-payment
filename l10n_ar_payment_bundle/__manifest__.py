@@ -27,6 +27,6 @@
     "installable": True,
     "auto_install": False,
     "application": False,
-    "demo": [],
+    "demo": ["demo/l10n_ar_payment_bundle_demo.xml"],
     "post_init_hook": "post_init_hook",
 }

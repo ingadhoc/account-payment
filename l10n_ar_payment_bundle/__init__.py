@@ -1,5 +1,6 @@
 from . import models
 from . import wizard
+from . import demo
 
 
 def post_init_hook(env):
