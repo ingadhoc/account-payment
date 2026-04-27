@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-21 16:12+0000\n"
+"POT-Creation-Date: 2026-04-27 11:36+0000\n"
 "PO-Revision-Date: 2026-04-07 15:01+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
@@ -167,6 +167,11 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
 msgid "Amount"
 msgstr "Monto"
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__amount_exact
+msgid "Amount (Exact)"
+msgstr ""
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
@@ -332,6 +337,13 @@ msgstr "Número de Documento"
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_invoice_wizard
 msgid "Document Type"
 msgstr "Tipo de Documentos"
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__amount_exact
+msgid ""
+"Exact value of amount with full precision, used internally for conversions "
+"to avoid rounding errors."
+msgstr ""
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__exchange_diff_move_ids
