@@ -67,6 +67,7 @@ class AccountCheckToDateReportWizard(models.TransientModel):
                         WHERE
                         apm.code = 'own_checks'
                         AND ap_move.date <= %(to_date)s
+                        AND ap.state not in ('canceled', 'draft')
                         ORDER BY c.id, ap_move.date desc
                     ) t
                     LEFT JOIN
