@@ -52,7 +52,8 @@ class AccountCheckToDateReportWizard(models.TransientModel):
                         SELECT
                             c.id as check_id,
                             ap_move.date as operation_date,
-                            apm.code as operation_code
+                            apm.code as operation_code,
+                            c.issue_state AS issue_state
                         FROM l10n_latam_check c
                         JOIN account_payment AS ap
                             ON c.payment_id = ap.id
@@ -67,6 +68,7 @@ class AccountCheckToDateReportWizard(models.TransientModel):
                         WHERE
                         apm.code = 'own_checks'
                         AND ap_move.date <= %(to_date)s
+                        AND ap.state not in ('canceled', 'draft')
                         ORDER BY c.id, ap_move.date desc
                     ) t
                     LEFT JOIN
@@ -98,7 +100,8 @@ class AccountCheckToDateReportWizard(models.TransientModel):
                         HAVING BOOL_AND(afr_partial.id IS NOT NULL)
                     ) t2
                     ON t.check_id = t2.check_id
-                WHERE t2.operation_date >= %(to_date)s OR t2.operation_date IS NULL
+                WHERE t2.operation_date >= %(to_date)s
+                OR (t2.operation_date IS NULL AND t.issue_state != 'debited')
                 ;
             """,
             to_date=to_date,
