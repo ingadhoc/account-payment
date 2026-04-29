@@ -222,6 +222,12 @@ class AccountPayment(models.Model):
                 # la company_id se cambia correctamente.
                 if "company_id" in vals and "journal_id" in vals:
                     rec.move_id.journal_id = vals["journal_id"]
+
+        if "partner_id" in vals:
+            self.filtered(
+                lambda r: r.state == "draft" and r.company_id.use_payment_pro and r.partner_id.id != vals["partner_id"]
+            ).remove_all()
+
         return super().write(vals)
 
     ##############################
