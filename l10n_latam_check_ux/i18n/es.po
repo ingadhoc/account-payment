@@ -9,17 +9,17 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-17 15:00+0000\n"
+"POT-Creation-Date: 2026-04-29 12:28+0000\n"
 "PO-Revision-Date: 2026-04-23 18:41+0000\n"
 "Last-Translator: julia elizondo <jue@adhoc.inc>\n"
-"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/"
-"account-payment-19-0/account-payment-19-0-l10n_latam_check_ux/es/>\n"
+"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
+"payment-19-0/account-payment-19-0-l10n_latam_check_ux/es/>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == 0)"
-" ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == "
+"0) ? 1 : 2);\n"
 "X-Generator: Weblate 5.10.4\n"
 
 #. module: l10n_latam_check_ux
@@ -374,6 +374,11 @@ msgstr "Operación"
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_payment__l10n_latam_move_check_ids_operation_date
 msgid "Operation Date"
 msgstr "Fecha de Operación"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__outstanding_line_id
+msgid "Outstanding Line"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model:ir.model,name:l10n_latam_check_ux.model_account_payment_method_line
