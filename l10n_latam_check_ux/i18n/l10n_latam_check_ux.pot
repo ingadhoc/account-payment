@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-17 15:00+0000\n"
-"PO-Revision-Date: 2026-04-17 15:00+0000\n"
+"POT-Creation-Date: 2026-04-29 12:28+0000\n"
+"PO-Revision-Date: 2026-04-29 12:28+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -353,6 +353,11 @@ msgstr ""
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_payment__l10n_latam_move_check_ids_operation_date
 msgid "Operation Date"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__outstanding_line_id
+msgid "Outstanding Line"
 msgstr ""
 
 #. module: l10n_latam_check_ux
