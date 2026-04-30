@@ -69,6 +69,7 @@ class AccountCheckToDateReportWizard(models.TransientModel):
                         apm.code = 'own_checks'
                         AND ap_move.date <= %(to_date)s
                         AND ap.state not in ('canceled', 'draft')
+                        AND c.issue_state != 'voided'
                         ORDER BY c.id, ap_move.date desc
                     ) t
                     LEFT JOIN
@@ -81,7 +82,7 @@ class AccountCheckToDateReportWizard(models.TransientModel):
                             ON ap.id = c.payment_id
                         JOIN account_move as am
                             ON ap.move_id = am.id
-                        JOIN account_move_line aml on aml.move_id = am.id
+                        JOIN account_move_line aml on aml.id = c.outstanding_line_id
                         JOIN account_account aa
                             ON aa.id = aml.account_id
                         LEFT JOIN account_partial_reconcile afr_partial
@@ -189,7 +190,7 @@ class AccountCheckToDateReportWizard(models.TransientModel):
             LEFT JOIN account_payment_method AS apm ON apm.id = ap.payment_method_id
             LEFT JOIN account_move AS ap_move ON ap.move_id = ap_move.id
             LEFT JOIN account_journal AS journal ON ap_move.journal_id = journal.id
-            WHERE apm.code = 'new_third_party_checks'
+            WHERE apm.code in ('new_third_party_checks','in_third_party_checks')
             AND (
                 c.current_journal_id IS NOT NULL
                 OR EXISTS (
@@ -212,7 +213,11 @@ class AccountCheckToDateReportWizard(models.TransientModel):
             LEFT JOIN account_move AS ap_move ON ap.move_id = ap_move.id
             LEFT JOIN account_journal AS journal ON ap_move.journal_id = journal.id
             LEFT JOIN l10n_latam_check_account_payment_rel rel ON rel.check_id = c.id
-            WHERE apm.code = 'new_third_party_checks' AND c.current_journal_id IS NOT NULL AND rel.check_id IS NULL AND ap_move.date <= %s;
+            WHERE
+                apm.code in ('new_third_party_checks','in_third_party_checks')
+                AND c.current_journal_id IS NOT NULL
+                AND rel.check_id IS NULL
+                AND ap_move.date <= %s;
         """
         self.env.cr.execute(query, (to_date, to_date, to_date))
         res = self.env.cr.fetchall()
