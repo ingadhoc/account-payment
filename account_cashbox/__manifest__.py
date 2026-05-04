@@ -4,7 +4,7 @@
 {
     "name": "Cashbox management",
     "summary": "Introduces concept cashbox and accounting journal sessions",
-    "version": "19.0.1.3.0",
+    "version": "19.0.1.4.0",
     "category": "Accounting",
     "website": "www.adhoc.com.ar",
     "author": "juanpgarza, ADHOC SA",
