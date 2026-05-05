@@ -29,7 +29,13 @@
             id="menu_account_check_to_date_report"
             name="Cheques a fecha"
             sequence="20"
+<<<<<<< 6083a0431953d59deeb72599d850d04b34d1e7e1
             parent="account.account_reports_management_menu"
+||||||| 278c179dcbb85994a77269efb0159cb0b9427e67
+            parent="account_reports.account_reports_audit_reports_menu"
+=======
+            parent="account.menu_finance_reports"
+>>>>>>> 94ff2abaa4d0b96e4faf8456a85ffa7037625bbd
             action="action_account_check_to_date_report"
             />
 
