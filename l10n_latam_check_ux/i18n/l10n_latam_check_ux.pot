@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-29 12:28+0000\n"
-"PO-Revision-Date: 2026-04-29 12:28+0000\n"
+"POT-Creation-Date: 2026-05-05 16:50+0000\n"
+"PO-Revision-Date: 2026-05-05 16:50+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -62,6 +62,11 @@ msgstr ""
 #. odoo-python
 #: code:addons/l10n_latam_check_ux/wizards/l10n_latam_payment_mass_transfer.py:0
 msgid "A second payment has been created: "
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model,name:l10n_latam_check_ux.model_account_account
+msgid "Account"
 msgstr ""
 
 #. module: l10n_latam_check_ux
@@ -219,6 +224,7 @@ msgid "Diario:"
 msgstr ""
 
 #. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_account__display_name
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_action_wizard__display_name
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__display_name
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_journal__display_name
@@ -251,6 +257,7 @@ msgid "Hasta Fecha"
 msgstr ""
 
 #. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_account__id
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_action_wizard__id
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__id
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_journal__id
