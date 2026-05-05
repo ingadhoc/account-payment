@@ -40,16 +40,57 @@ class AccountCheckActionWizard(models.TransientModel):
                 "move_line_ids": move_line_id,
                 "date": self.date,
             }
-            # Aquí hacemos el asiento del débito.
-            wizard = (
-                self.env["account.reconcile.wizard"]
-                .with_context(active_model="account.move.line", active_ids=move_line_id)
-                .create(new_mv_line_dicts)
-            )
-            wizard.reconcile()
-            debit_move = self.env["account.move"].search(
-                [("line_ids.name", "=", label), ("date", "=", self.date)], limit=1
-            )
+            # si existe account.reconcile.wizard (Enterprise)
+            if "account.reconcile.wizard" in self.env:
+                wizard = (
+                    self.env["account.reconcile.wizard"]
+                    .with_context(active_model="account.move.line", active_ids=move_line_id)
+                    .create(new_mv_line_dicts)
+                )
+                wizard.reconcile()
+                debit_move = self.env["account.move"].search(
+                    [("line_ids.name", "=", label), ("date", "=", self.date)], limit=1
+                )
+            else:
+                amount = abs(sum(check.outstanding_line_id.mapped("balance")))
+                if not amount:
+                    raise UserError(_("No se pudo determinar el importe a debitar para el cheque %s.") % check.name)
+                move_vals = {
+                    "date": self.date,
+                    "journal_id": check.original_journal_id.id,
+                    "ref": label,
+                    "line_ids": [
+                        (
+                            0,
+                            0,
+                            {
+                                "name": label,
+                                "account_id": outstanding_account.id,
+                                "debit": amount if amount > 0 else 0.0,
+                                "credit": 0.0 if amount > 0 else -amount,
+                                "partner_id": check.partner_id.id,
+                            },
+                        ),
+                        (
+                            0,
+                            0,
+                            {
+                                "name": label,
+                                "account_id": check.outstanding_line_id.account_id.id,
+                                "debit": 0.0 if amount > 0 else -amount,
+                                "credit": amount if amount > 0 else 0.0,
+                                "partner_id": check.partner_id.id,
+                            },
+                        ),
+                    ],
+                }
+                debit_move = self.env["account.move"].create(move_vals)
+                debit_move.post()
+                lines_to_reconcile = check.outstanding_line_id | debit_move.line_ids.filtered(
+                    lambda l: l.account_id == check.outstanding_line_id.account_id
+                )
+                if lines_to_reconcile and len(lines_to_reconcile) == 2:
+                    lines_to_reconcile.reconcile()
             if debit_move:
                 check.message_post(
                     body=f'El cheque nro "{check.name}" ha sido debitado. ' + debit_move._get_html_link()
