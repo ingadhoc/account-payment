@@ -153,20 +153,24 @@ class AccountPayment(models.Model):
         return super()._select_bundle(bundles)
 
     def action_post(self):
-        if self.link_payment_ids and self.payment_method_code != "payment_bundle":
-            self.link_payment_ids.unlink()
+        for rec in self:
+            if rec.link_payment_ids and rec.payment_method_code != "payment_bundle":
+                rec.link_payment_ids.unlink()
 
-        if self.main_payment_id and not self.main_payment_id.name:
-            raise ValidationError(_("The main payment must have a name before a linked payment can be posted."))
+            if rec.main_payment_id and not rec.main_payment_id.name:
+                raise ValidationError(_("The main payment must have a name before a linked payment can be posted."))
 
         res = super(AccountPayment, self).action_post()
 
-        start_number = len(self.link_payment_ids.filtered(lambda x: x.name is not False))
-        for i, payment in enumerate(self.link_payment_ids, start=start_number):
-            if not payment.name:
-                payment.name = f"{self.name} ({i + 1})"
+        for rec in self:
+            start_number = len(rec.link_payment_ids.filtered(lambda x: x.name is not False))
+            for i, payment in enumerate(rec.link_payment_ids, start=start_number):
+                if not payment.name:
+                    payment.name = f"{rec.name} ({i + 1})"
 
-        draft_linked = self.link_payment_ids.filtered(lambda x: x.state == "draft")
+        draft_linked = self.filtered(lambda x: x.state != "draft").link_payment_ids.filtered(
+            lambda x: x.state == "draft"
+        )
         if draft_linked:
             draft_linked.action_post()
 
