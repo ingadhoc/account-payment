@@ -348,3 +348,7 @@ class AccountPayment(models.Model):
                     }
 
             rec.warnings = warnings
+
+    @api.onchange("to_pay_move_line_ids")
+    def _onchange_amount(self):
+        super(AccountPayment, self.filtered(lambda r: r.payment_method_code != "payment_bundle"))._onchange_amount()
