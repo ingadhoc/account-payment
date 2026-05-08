@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_payment_receipt" inherit_id="account.report_payment_receipt" priority="20">
+        <xpath expr="//t[@t-foreach='docs']" position="before">
+            <t t-set="payment_bundles" t-value="docs._get_payment_bundles()"/>
+        </xpath>
+        <xpath expr="//t[@t-set='payment_bundle']" position="attributes">
+            <attribute name="t-value">o._select_bundle(payment_bundles)</attribute>
+        </xpath>
+    </template>
+
+    <template id="report_payment_receipt_bundle">
+        <t t-call="web.html_container">
+            <t t-foreach="docs.with_context(print_in_bundles=True)._get_payment_bundles().values()" t-as="payment_bundle">
+                <t t-set="o" t-value="payment_bundle[0]"/>
+                <t t-set="lang" t-value="o.partner_id.lang or o.company_id.partner_id.lang"/>
+                <t t-call="#{ o._get_name_receipt_report('account_payment_pro.report_payment_receipt_document') }" t-lang="lang"/>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_receipt_bundle" model="ir.actions.report">
+        <field name="name">Payment Receipt bundled</field>
+        <field name="model">account.payment</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">l10n_ar_payment_bundle.report_payment_receipt_bundle</field>
+        <field name="report_file">l10n_ar_payment_bundle.report_payment_receipt_bundle</field>
+        <field name="binding_model_id" ref="model_account_payment"/>
+        <field name="binding_type">report</field>
+        <field name="binding_view_types">list</field>
+    </record>
+</odoo>

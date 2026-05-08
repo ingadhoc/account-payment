@@ -213,6 +213,16 @@ class AccountPayment(models.Model):
 
             rec.warnings = warnings
 
+    def _get_payment_bundle_key(self):
+        """Group selected payments only when printing the bundled receipt action."""
+        self.ensure_one()
+        if self.env.context.get("print_in_bundles"):
+            bundle_currency = (
+                self.currency_id if self.currency_id != self.company_currency_id else self.counterpart_currency_id
+            )
+            return f"{self.company_id.id}-{self.partner_id.id}-{self.payment_type}-{bundle_currency.id}"
+        return super()._get_payment_bundle_key()
+
     def _get_payment_bundles(self):
         main_payments = self.filtered("is_main_payment")
         bundles = super(AccountPayment, self - main_payments)._get_payment_bundles()
