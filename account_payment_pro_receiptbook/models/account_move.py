@@ -36,10 +36,36 @@ class AccountMove(models.Model):
 
     def _get_next_sequence_format(self):
         if self.receiptbook_id:
+            starting_sequence = self._get_starting_sequence()
+            format_string, starting_values = self._get_sequence_format_param(starting_sequence)
+            expected_prefix = starting_values.get("prefix1", "")
+
             last_sequence = self._get_last_sequence()
-            new = not last_sequence
-            if new:
-                last_sequence = self._get_last_sequence(relaxed=True) or self._get_starting_sequence()
+
+            if last_sequence:
+                _, last_values = self._get_sequence_format_param(last_sequence)
+                if last_values.get("prefix1") != expected_prefix:
+                    # La última secuencia tiene un formato incorrecto (por error previo).
+                    # Buscamos en la BD la última secuencia válida para este receiptbook
+                    # filtrando directamente por el sequence_prefix correcto.
+                    self.flush_model(["name", "sequence_number", "sequence_prefix"])
+                    self.env.cr.execute(
+                        """
+                        SELECT name FROM account_move
+                        WHERE receiptbook_id = %s
+                          AND name != '/'
+                          AND sequence_prefix = %s
+                        ORDER BY sequence_number DESC
+                        LIMIT 1
+                        """,
+                        [self.receiptbook_id.id, expected_prefix],
+                    )
+                    row = self.env.cr.fetchone()
+                    last_sequence = row[0] if row else None
+
+            if not last_sequence:
+                starting_values["seq"] = 0
+                return format_string, starting_values
 
             format_string, format_values = self._get_sequence_format_param(last_sequence)
             return format_string, format_values
