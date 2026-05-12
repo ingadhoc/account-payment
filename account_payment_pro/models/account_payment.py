@@ -306,6 +306,15 @@ class AccountPayment(models.Model):
             else:
                 rec.counterpart_exchange_rate = False
 
+    @api.constrains("counterpart_exchange_rate")
+    def _check_counterpart_exchange_rate(self):
+        for rec in self.filtered(
+            lambda x: x.counterpart_currency_id and (not x.counterpart_exchange_rate or x.counterpart_exchange_rate < 0)
+        ):
+            raise ValidationError(
+                _("Counterpart exchange rate must be positive and not zero when counterpart currency is set.")
+            )
+
     # this onchange is necesary because odoo, sometimes, re-compute
     # and overwrites amount_company_currency. That happends due to an issue
     # with rounding of amount field (amount field is not change but due to
