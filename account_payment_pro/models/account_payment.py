@@ -567,6 +567,7 @@ class AccountPayment(models.Model):
                 rec.counterpart_rate = (1.0 / rec.accounting_rate) if rec.accounting_rate else 1.0
                 continue
 
+<<<<<<< 59d46c686fe204f8e927dfe6a8fca4171d2c5d70
             # Caso A == B1: sin conversión
             if rec.currency_id == rec.counterpart_currency_id:
                 rec.counterpart_rate = 1.0
@@ -582,10 +583,59 @@ class AccountPayment(models.Model):
 
     @api.onchange("counterpart_rate")
     def _inverse_counterpart_rate(self):
+||||||| 278c179dcbb85994a77269efb0159cb0b9427e67
+    @api.depends("amount", "amount_exact", "other_currency", "force_amount_company_currency")
+    def _compute_amount_company_currency(self):
+        """
+        * Si las monedas son iguales devuelve 1
+        * si no, si hay force_amount_company_currency, devuelve ese valor
+        * sino, devuelve el amount convertido a la moneda de la cia
+        """
+=======
+    @api.depends(
+        "amount", "amount_exact", "other_currency", "force_amount_company_currency", "amount_company_currency_signed"
+    )
+    def _compute_amount_company_currency(self):
+        """
+        * Si las monedas son iguales devuelve 1
+        * si no, si hay force_amount_company_currency, devuelve ese valor
+        * si ya hay asiento, usa el importe contable nativo sin signo
+        * sino, devuelve el amount convertido a la moneda de la cia
+        """
+>>>>>>> b7969aaa5bab8da2292111b20d31ebefe0d18ed9
         for rec in self:
+<<<<<<< 59d46c686fe204f8e927dfe6a8fca4171d2c5d70
             if rec.counterpart_currency_id == rec.company_currency_id:
                 # counterpart_rate = B1/A = C/A = 1/accounting_rate → accounting_rate = 1/counterpart_rate
                 rec.accounting_rate = (1.0 / rec.counterpart_rate) if rec.counterpart_rate else 1.0
+||||||| 278c179dcbb85994a77269efb0159cb0b9427e67
+            amount = rec.amount_exact or rec.amount
+            if not rec.other_currency:
+                amount_company_currency = amount
+            elif rec.force_amount_company_currency:
+                amount_company_currency = rec.force_amount_company_currency
+            else:
+                amount_company_currency = rec.currency_id._convert(
+                    amount, rec.company_id.currency_id, rec.company_id, rec.date
+                )
+            rec.amount_company_currency = amount_company_currency
+=======
+            amount = rec.amount_exact or rec.amount
+            if not rec.other_currency:
+                amount_company_currency = amount
+            elif rec.force_amount_company_currency:
+                amount_company_currency = rec.force_amount_company_currency
+            elif rec.move_id:
+                amount_company_currency = abs(rec.amount_company_currency_signed)
+            else:
+                amount_company_currency = rec.currency_id._convert(
+                    amount,
+                    rec.company_id.currency_id,
+                    rec.company_id,
+                    rec.date,
+                )
+            rec.amount_company_currency = amount_company_currency
+>>>>>>> b7969aaa5bab8da2292111b20d31ebefe0d18ed9
 
     @api.depends("to_pay_move_line_ids")
     def _compute_destination_account_id(self):

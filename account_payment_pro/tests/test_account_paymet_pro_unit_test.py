@@ -179,6 +179,7 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
             f"payment_total should remain {payment_total_before} after action_draft, not reset to 0",
         )
 
+<<<<<<< 59d46c686fe204f8e927dfe6a8fca4171d2c5d70
         # Verify that partial reconciliations were removed
         payment_lines_after = payment.move_id.line_ids.filtered(
             lambda l: l.account_id.account_type in payment._get_valid_payment_account_types()
@@ -187,6 +188,47 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
             "matched_credit_ids"
         )
         self.assertFalse(partials_after, "Partial reconciliations should be removed after action_draft")
+||||||| 278c179dcbb85994a77269efb0159cb0b9427e67
+    def test_write_off_line_amounts_company_vs_payment_currency(self):
+        """Minimal test: company currency vs payment currency, force company amount and check write-off line balance"""
+        # Use existing company and ensure we have a different currency for the payment
+        company_currency = self.company.currency_id
+=======
+    def test_posted_payment_without_payment_pro_keeps_accounting_rate_after_rate_change(self):
+        self.company.use_payment_pro = False
+
+        payment = self.env["account.payment"].create(
+            {
+                "payment_type": "inbound",
+                "partner_type": "customer",
+                "partner_id": self.partner_ri.id,
+                "journal_id": self.company_bank_journal.id,
+                "amount": 100.0,
+                "currency_id": self.eur_currency.id,
+                "date": self.today,
+            }
+        )
+        payment.action_post()
+
+        liquidity_lines = payment.move_id.line_ids.filtered(
+            lambda line: line.account_id == payment.outstanding_account_id
+        )
+        accounting_amount = abs(sum(liquidity_lines.mapped("balance")))
+        self.assertAlmostEqual(accounting_amount, 100000.0, places=2)
+        self.assertAlmostEqual(payment.amount_company_currency, accounting_amount, places=2)
+        self.assertAlmostEqual(payment.exchange_rate, 1000.0, places=2)
+
+        self.rates[1].inverse_company_rate = 2000
+        payment.invalidate_recordset(["amount_company_currency", "exchange_rate"])
+
+        self.assertAlmostEqual(payment.amount_company_currency, accounting_amount, places=2)
+        self.assertAlmostEqual(payment.exchange_rate, 1000.0, places=2)
+
+    def test_write_off_line_amounts_company_vs_payment_currency(self):
+        """Minimal test: company currency vs payment currency, force company amount and check write-off line balance"""
+        # Use existing company and ensure we have a different currency for the payment
+        company_currency = self.company.currency_id
+>>>>>>> b7969aaa5bab8da2292111b20d31ebefe0d18ed9
 
         # Verify payment is in draft state
         self.assertEqual(payment.state, "draft", "Payment should be in draft state after action_draft")
