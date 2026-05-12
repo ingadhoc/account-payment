@@ -378,11 +378,14 @@ class AccountPayment(models.Model):
                 amount = rec.env.context.get("default_amount")
             rec.update({"amount_exact": amount, "amount": amount})
 
-    @api.depends("amount", "amount_exact", "other_currency", "force_amount_company_currency")
+    @api.depends(
+        "amount", "amount_exact", "other_currency", "force_amount_company_currency", "amount_company_currency_signed"
+    )
     def _compute_amount_company_currency(self):
         """
         * Si las monedas son iguales devuelve 1
         * si no, si hay force_amount_company_currency, devuelve ese valor
+        * si ya hay asiento, usa el importe contable nativo sin signo
         * sino, devuelve el amount convertido a la moneda de la cia
         """
         for rec in self:
@@ -391,9 +394,14 @@ class AccountPayment(models.Model):
                 amount_company_currency = amount
             elif rec.force_amount_company_currency:
                 amount_company_currency = rec.force_amount_company_currency
+            elif rec.move_id:
+                amount_company_currency = abs(rec.amount_company_currency_signed)
             else:
                 amount_company_currency = rec.currency_id._convert(
-                    amount, rec.company_id.currency_id, rec.company_id, rec.date
+                    amount,
+                    rec.company_id.currency_id,
+                    rec.company_id,
+                    rec.date,
                 )
             rec.amount_company_currency = amount_company_currency
 
