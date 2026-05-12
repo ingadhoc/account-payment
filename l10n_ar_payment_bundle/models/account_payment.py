@@ -284,11 +284,29 @@ class AccountPayment(models.Model):
         )
 
     def _generate_journal_entry(self, write_off_line_vals=None, force_balance=None, line_ids=None):
-        super(AccountPayment, self - self._bypass_journal_entry())._generate_journal_entry(
+        bypassed = self._bypass_journal_entry()
+        super(AccountPayment, self - bypassed)._generate_journal_entry(
             write_off_line_vals=write_off_line_vals,
             force_balance=force_balance,
             line_ids=line_ids,
         )
+        # For bypassed main payments with a receiptbook, create a temporary move so the
+        # sequence mixin's _get_next_sequence_format (receiptbook override) is used to
+        # derive the correct name instead of falling back to ir.sequence.next_by_code.
+        for rec in bypassed.filtered(lambda x: x.receiptbook_id and (not x.name or x.name == "/") and x.journal_id):
+            dummy_move = self.env["account.move"].create(
+                {
+                    "move_type": "entry",
+                    "date": rec.date,
+                    "journal_id": rec.journal_id.id,
+                    "company_id": rec.company_id.id,
+                    "currency_id": rec.currency_id.id,
+                    "origin_payment_id": rec.id,
+                }
+            )
+            dummy_move._set_next_sequence()
+            rec.name = dummy_move.name
+            dummy_move.unlink()
 
     @api.depends("partner_id", "amount", "date", "payment_type")
     def _compute_duplicate_payment_ids(self):
