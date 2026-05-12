@@ -538,10 +538,63 @@ class AccountPayment(models.Model):
     @api.onchange("counterpart_currency_amount")
     def _inverse_counterpart_currency_amount(self):
         for rec in self:
+<<<<<<< b29b1b10f45359f3567e9b5f27e83fedbae5acdb
             # Usar amount_exact para comparación precisa
             amount_to_compare = rec.amount_exact if rec.amount_exact else rec.amount
             if rec.counterpart_currency_id and not rec.counterpart_currency_id.is_zero(
                 amount_to_compare * rec.counterpart_rate - rec.counterpart_currency_amount
+||||||| a469fd313ca92d3b1c3ce4ca1ee046e1e941e71d
+            if rec.counterpart_currency_id:
+                rate = self.env["res.currency"]._get_conversion_rate(
+                    from_currency=rec.company_currency_id,
+                    to_currency=rec.counterpart_currency_id,
+                    company=rec.company_id,
+                    date=rec.date,
+                )
+                rec.counterpart_exchange_rate = 1 / rate if rate else False
+            else:
+                rec.counterpart_exchange_rate = False
+
+    # this onchange is necesary because odoo, sometimes, re-compute
+    # and overwrites amount_company_currency. That happends due to an issue
+    # with rounding of amount field (amount field is not change but due to
+    # rouding odoo believes amount has changed)
+    @api.onchange("amount_company_currency")
+    def _inverse_amount_company_currency(self):
+        for rec in self:
+            if rec.other_currency and rec.amount_company_currency != rec.currency_id._convert(
+                rec.amount, rec.company_id.currency_id, rec.company_id, rec.date
+=======
+            if rec.counterpart_currency_id:
+                rate = self.env["res.currency"]._get_conversion_rate(
+                    from_currency=rec.company_currency_id,
+                    to_currency=rec.counterpart_currency_id,
+                    company=rec.company_id,
+                    date=rec.date,
+                )
+                rec.counterpart_exchange_rate = 1 / rate if rate else False
+            else:
+                rec.counterpart_exchange_rate = False
+
+    @api.constrains("counterpart_exchange_rate")
+    def _check_counterpart_exchange_rate(self):
+        for rec in self.filtered(
+            lambda x: x.counterpart_currency_id and (not x.counterpart_exchange_rate or x.counterpart_exchange_rate < 0)
+        ):
+            raise ValidationError(
+                _("Counterpart exchange rate must be positive and not zero when counterpart currency is set.")
+            )
+
+    # this onchange is necesary because odoo, sometimes, re-compute
+    # and overwrites amount_company_currency. That happends due to an issue
+    # with rounding of amount field (amount field is not change but due to
+    # rouding odoo believes amount has changed)
+    @api.onchange("amount_company_currency")
+    def _inverse_amount_company_currency(self):
+        for rec in self:
+            if rec.other_currency and rec.amount_company_currency != rec.currency_id._convert(
+                rec.amount, rec.company_id.currency_id, rec.company_id, rec.date
+>>>>>>> 3e606a44bc944882ac8a464421a2911602faa438
             ):
                 # Usar amount_exact para cálculo preciso sin pérdida de decimales
                 if rec.counterpart_rate:
