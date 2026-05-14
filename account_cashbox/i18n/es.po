@@ -9,17 +9,17 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-23 18:51+0000\n"
+"POT-Creation-Date: 2026-04-22 17:40+0000\n"
 "PO-Revision-Date: 2026-04-13 22:41+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
-"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/"
-"account-payment-19-0/account-payment-19-0-account_cashbox/es/>\n"
+"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
+"payment-19-0/account-payment-19-0-account_cashbox/es/>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == 0)"
-" ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == "
+"0) ? 1 : 2);\n"
 "X-Generator: Weblate 5.10.4\n"
 
 #. module: account_cashbox
@@ -217,6 +217,15 @@ msgid "Cashbox session associated with this move."
 msgstr "Sesión de Caja asociada a este movimiento."
 
 #. module: account_cashbox
+#: model:ir.model.fields,help:account_cashbox.field_account_cashbox_rounding_adjustment_wizard__force_rate
+msgid ""
+"Check to manually set the exchange rate. If unchecked, the system will use "
+"the current currency exchange rate."
+msgstr ""
+"Marque para establecer manualmente la tasa de cambio. Si no está marcado, el "
+"sistema usará la tasa de cambio actual."
+
+#. module: account_cashbox
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_form
 msgid "Close"
 msgstr "Cerrar"
@@ -370,6 +379,26 @@ msgid "Font awesome icon e.g. fa-tasks"
 msgstr "Icono de Font Awesome, por ejemplo, fa-tasks."
 
 #. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_rounding_adjustment_wizard__force_rate
+msgid "Force Rate"
+msgstr "Forzar tasa"
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_rounding_adjustment_wizard
+msgid "Force rate?"
+msgstr "¿Forzar tasa?"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_rounding_adjustment_wizard__forced_rate
+msgid "Forced Rate"
+msgstr "Tasa forzada"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_rounding_adjustment_wizard__has_currency
+msgid "Has Currency"
+msgstr "Tiene moneda"
+
+#. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__has_message
 msgid "Has Message"
 msgstr "Tiene Mensaje"
@@ -502,6 +531,11 @@ msgstr "Línea"
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_kanban
 msgid "List Sessions"
 msgstr "Listar Sesiones"
+
+#. module: account_cashbox
+#: model:ir.model.fields,help:account_cashbox.field_account_cashbox_rounding_adjustment_wizard__forced_rate
+msgid "Manually set the currency exchange rate for the adjustment"
+msgstr "Establecer manualmente la tasa de cambio para el ajuste"
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox__max_diff
@@ -834,41 +868,5 @@ msgstr "Requiere control de efectivo"
 msgid "session journal"
 msgstr "Diario de la sesión"
 
-#. module: account_cashbox
-#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_rounding_adjustment_wizard
-msgid "Currency Rate"
-msgstr "Tasa de cambio"
-
-#. module: account_cashbox
-#: model:ir.model.fields,help:account_cashbox.field_account_cashbox_rounding_adjustment_wizard__force_rate
-msgid ""
-"Check to manually set the exchange rate. If unchecked, the system will use "
-"the current currency exchange rate."
-msgstr ""
-"Marque para establecer manualmente la tasa de cambio. Si no está marcado, "
-"el sistema usará la tasa de cambio actual."
-
-#. module: account_cashbox
-#: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_rounding_adjustment_wizard
-msgid "Force rate?"
-msgstr "¿Forzar tasa?"
-
-#. module: account_cashbox
-#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_rounding_adjustment_wizard__force_rate
-msgid "Force Rate"
-msgstr "Forzar tasa"
-
-#. module: account_cashbox
-#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_rounding_adjustment_wizard__forced_rate
-msgid "Forced Rate"
-msgstr "Tasa forzada"
-
-#. module: account_cashbox
-#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_rounding_adjustment_wizard__has_currency
-msgid "Has Currency"
-msgstr "Tiene moneda"
-
-#. module: account_cashbox
-#: model:ir.model.fields,help:account_cashbox.field_account_cashbox_rounding_adjustment_wizard__forced_rate
-msgid "Manually set the currency exchange rate for the adjustment"
-msgstr "Establecer manualmente la tasa de cambio para el ajuste"
+#~ msgid "Currency Rate"
+#~ msgstr "Tasa de cambio"
