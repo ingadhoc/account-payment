@@ -351,3 +351,174 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
 
         self.assertIn(payment.state, ["paid", "in_process"], "El pago invertido debe poder postearse")
         self.assertIn(credit_note.payment_state, ["paid", "in_payment"], "La nota de crédito debe quedar pagada")
+
+    def test_action_register_payment_single_partner_opens_account_payment(self):
+        """Single partner: action_register_payment should open `account.payment` form."""
+        invoice = self.env["account.move"].create(
+            {
+                "partner_id": self.partner_ri.id,
+                "invoice_date": self.today,
+                "move_type": "out_invoice",
+                "journal_id": self.company_journal.id,
+                "company_id": self.company.id,
+                "invoice_line_ids": [
+                    Command.create(
+                        {
+                            "product_id": self.env.ref("product.product_product_16").id,
+                            "quantity": 1,
+                            "price_unit": 120,
+                        }
+                    ),
+                ],
+            }
+        )
+        invoice.action_post()
+
+        action = invoice.action_register_payment()
+        self.assertEqual(action.get("res_model"), "account.payment")
+        self.assertEqual(action.get("target"), "current")
+        ctx = action.get("context") or {}
+        self.assertIn("default_to_pay_move_line_ids", ctx)
+        self.assertTrue(ctx.get("default_to_pay_move_line_ids"))
+
+    def test_action_register_payment_multiple_partners_opens_register_wizard(self):
+        """Multiple partners: should open `account.payment.register` wizard with `payment_pro` context."""
+        partner_other = self.env.ref("base.res_partner_12")
+        invoice_1 = self.env["account.move"].create(
+            {
+                "partner_id": self.partner_ri.id,
+                "invoice_date": self.today,
+                "move_type": "out_invoice",
+                "journal_id": self.company_journal.id,
+                "company_id": self.company.id,
+                "invoice_line_ids": [
+                    Command.create(
+                        {
+                            "product_id": self.env.ref("product.product_product_16").id,
+                            "quantity": 1,
+                            "price_unit": 50,
+                        }
+                    ),
+                ],
+            }
+        )
+        invoice_2 = self.env["account.move"].create(
+            {
+                "partner_id": partner_other.id,
+                "invoice_date": self.today,
+                "move_type": "out_invoice",
+                "journal_id": self.company_journal.id,
+                "company_id": self.company.id,
+                "invoice_line_ids": [
+                    Command.create(
+                        {
+                            "product_id": self.env.ref("product.product_product_16").id,
+                            "quantity": 1,
+                            "price_unit": 75,
+                        }
+                    ),
+                ],
+            }
+        )
+        invoice_1.action_post()
+        invoice_2.action_post()
+
+        action = (invoice_1 + invoice_2).action_register_payment()
+        self.assertEqual(action.get("res_model"), "account.payment.register")
+        self.assertEqual(action.get("target"), "new")
+        ctx = action.get("context") or {}
+        self.assertTrue(ctx.get("payment_pro"))
+        self.assertIn("active_ids", ctx)
+        self.assertTrue(ctx.get("active_ids"))
+
+    def test_create_payments_and_grouping(self):
+        """Create payments from register wizard and assert payments are posted and grouped per partner when enabled."""
+        # Create two invoices for partner_ri and two for another partner
+        partner_other = self.env.ref("base.res_partner_12")
+        invoices = self.env["account.move"]
+        amounts = [30, 40, 50, 60]
+        partners = [self.partner_ri, self.partner_ri, partner_other, partner_other]
+        for amt, partner in zip(amounts, partners):
+            inv = self.env["account.move"].create(
+                {
+                    "partner_id": partner.id,
+                    "invoice_date": self.today,
+                    "move_type": "out_invoice",
+                    "journal_id": self.company_journal.id,
+                    "company_id": self.company.id,
+                    "invoice_line_ids": [
+                        Command.create(
+                            {
+                                "product_id": self.env.ref("product.product_product_16").id,
+                                "quantity": 1,
+                                "price_unit": amt,
+                            }
+                        ),
+                    ],
+                }
+            )
+            inv.action_post()
+            invoices |= inv
+
+        # Open register wizard for all invoice lines
+        action = invoices.line_ids.action_register_payment()
+        ctx = action.get("context") or {}
+        # Create the wizard record as the UI would do
+        wiz = self.env["account.payment.register"].with_context(**ctx).create({})
+
+        # By default, don't group payments: create one payment per move
+        # Simulate clicking 'Create payments' (Public API: action_create_payments)
+        # Call the method and collect created payments
+        payments = wiz._create_payments()
+        # payments can be recordset or list depending on implementation; ensure recordset
+        payments = self.env["account.payment"].browse(payments.ids if hasattr(payments, "ids") else [])
+
+        # All payments should be posted (state in 'posted' -> payment.state 'posted' or 'paid')
+        self.assertTrue(payments, "Payments should be created")
+        for p in payments:
+            self.assertIn(p.state, ["posted", "in_process", "paid"], "Payment should be posted or paid")
+
+        # Now test grouping: when grouping is enabled we expect one payment per partner
+        # Recreate wizard with grouping context
+        # Prepare new invoices for grouping test
+        invoices2 = self.env["account.move"]
+        for amt, partner in zip([10, 20, 30, 40], [self.partner_ri, self.partner_ri, partner_other, partner_other]):
+            inv = self.env["account.move"].create(
+                {
+                    "partner_id": partner.id,
+                    "invoice_date": self.today,
+                    "move_type": "out_invoice",
+                    "journal_id": self.company_journal.id,
+                    "company_id": self.company.id,
+                    "invoice_line_ids": [
+                        Command.create(
+                            {
+                                "product_id": self.env.ref("product.product_product_16").id,
+                                "quantity": 1,
+                                "price_unit": amt,
+                            }
+                        )
+                    ],
+                }
+            )
+            inv.action_post()
+            invoices2 |= inv
+
+        action2 = invoices2.line_ids.action_register_payment()
+        ctx2 = action2.get("context") or {}
+        # Simulate a grouped run by setting group_payment on the wizard if available
+        wiz2 = self.env["account.payment.register"].with_context(**ctx2).create({})
+        # try to set group_payment on wizard if exists, or in context
+        if hasattr(wiz2, "group_payment"):
+            wiz2.group_payment = True
+        else:
+            wiz2 = self.env["account.payment.register"].with_context(**{**ctx2, "group_payment": True}).create({})
+
+        payments2 = wiz2._create_payments()
+        payments2 = self.env["account.payment"].browse(payments2.ids if hasattr(payments2, "ids") else [])
+        self.assertTrue(payments2, "Payments should be created when grouping")
+
+        # There should be exactly one payment per partner
+        partners_created = payments2.mapped("partner_id")
+        unique_partners = partners_created
+        self.assertEqual(len(payments2), len(unique_partners), "There should be one payment per partner when grouping")

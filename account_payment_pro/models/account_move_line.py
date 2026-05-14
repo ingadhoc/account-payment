@@ -97,57 +97,85 @@ class AccountMoveLine(models.Model):
         # usamos payment pro si lo pasamos forzado (Caso pay and new donde todavia no tenemos company) o si estoy
         # pagando deuda de una sola cia y tiene payment pro
         # y si ademas estoy pagando solo deuda de un partner
-        if payment_pro is not False and ((payment_pro or company_pay_pro) and len(to_pay_partners) <= 1):
+
+        # Caso 1: tiene payment pro
+        if payment_pro is not False and (payment_pro or company_pay_pro):
             to_pay_move_lines = self.filtered(
                 lambda r: not r.reconciled and r.account_id.account_type in ["asset_receivable", "liability_payable"]
             )
-            if not to_pay_move_lines:
-                partner_type = self.env.context.get("default_partner_type")
-                to_pay_partner_id = self.env.context.get("default_partner_id")
-                company_id = self.env.context.get("default_company_id")
-                if not partner_type or not to_pay_partner_id:
-                    raise UserError(_("Nothing to be paid on selected entries"))
-            else:
-                to_pay_partner_id = to_pay_partners.id
+
+            # Caso 1.1: tiene payment pro y solo un partner a pagar, abrimos form payment pro
+            if len(to_pay_partners) <= 1:
+                if not to_pay_move_lines:
+                    partner_type = self.env.context.get("default_partner_type")
+                    to_pay_partner_id = self.env.context.get("default_partner_id")
+                    company_id = self.env.context.get("default_company_id")
+                    if not partner_type or not to_pay_partner_id:
+                        raise UserError(_("Nothing to be paid on selected entries"))
+                else:
+                    to_pay_partner_id = to_pay_partners.id
+
                 partner_type = (
                     "customer" if to_pay_move_lines[0].account_id.account_type == "asset_receivable" else "supplier"
                 )
                 company_id = self.company_id.id
-            to_pay_amount = sum(line.amount_residual for line in to_pay_move_lines)
-            if to_pay_amount > 0:
-                payment_type = "inbound"
-            elif to_pay_amount < 0:
-                payment_type = "outbound"
+
+                to_pay_amount = sum(line.amount_residual for line in to_pay_move_lines)
+                if to_pay_amount > 0:
+                    payment_type = "inbound"
+                elif to_pay_amount < 0:
+                    payment_type = "outbound"
+                else:
+                    payment_type = "inbound" if partner_type == "customer" else "outbound"
+                create_and_new = True if self.env.context.get("create_and_new") else False
+                context = {
+                    "active_model": "account.move.line",
+                    "active_ids": self.ids,
+                    "default_payment_type": payment_type,
+                    "default_partner_type": partner_type,
+                    "default_partner_id": to_pay_partner_id,
+                    "default_amount": abs(to_pay_amount),
+                    "default_amount_exact": abs(to_pay_amount),
+                    "default_to_pay_move_line_ids": to_pay_move_lines.ids,
+                    # We set this because if became from other view and in the context has 'create=False'
+                    # you can't crate payment lines (for ej: subscription)
+                    "create": True,
+                    "create_and_new": create_and_new,
+                    "default_company_id": company_id,
+                }
+                if self.env.context.get("default_l10n_ar_fiscal_position_id") is not None:
+                    context["default_l10n_ar_fiscal_position_id"] = self.env.context.get(
+                        "default_l10n_ar_fiscal_position_id"
+                    )
+                return {
+                    "name": _("Register Payment"),
+                    "res_model": "account.payment",
+                    "view_mode": "form",
+                    "views": [[False, "form"]],
+                    "context": context,
+                    "target": "current",
+                    "type": "ir.actions.act_window",
+                }
+
+            # Caso 1.2: tiene payment pro y más de un partner a pagar, abrimos wizard payment pro
             else:
-                payment_type = "inbound" if partner_type == "customer" else "outbound"
-            create_and_new = True if self.env.context.get("create_and_new") else False
-            context = {
-                "active_model": "account.move.line",
-                "active_ids": self.ids,
-                "default_payment_type": payment_type,
-                "default_partner_type": partner_type,
-                "default_partner_id": to_pay_partner_id,
-                "default_amount": abs(to_pay_amount),
-                "default_amount_exact": abs(to_pay_amount),
-                "default_to_pay_move_line_ids": to_pay_move_lines.ids,
-                # We set this because if became from other view and in the context has 'create=False'
-                # you can't crate payment lines (for ej: subscription)
-                "create": True,
-                "create_and_new": create_and_new,
-                "default_company_id": company_id,
-            }
-            if self.env.context.get("default_l10n_ar_fiscal_position_id") is not None:
-                context["default_l10n_ar_fiscal_position_id"] = self.env.context.get(
-                    "default_l10n_ar_fiscal_position_id"
-                )
-            return {
-                "name": _("Register Payment"),
-                "res_model": "account.payment",
-                "view_mode": "form",
-                "views": [[False, "form"]],
-                "context": context,
-                "target": "current",
-                "type": "ir.actions.act_window",
-            }
+                if not to_pay_move_lines:
+                    raise UserError(_("Nothing to be paid on selected entries"))
+
+                return {
+                    "name": _("Register Payment"),
+                    "type": "ir.actions.act_window",
+                    "res_model": "account.payment.register",
+                    "view_mode": "form",
+                    "views": [[False, "form"]],
+                    "target": "new",
+                    "context": {
+                        "active_model": "account.move.line",
+                        "active_ids": to_pay_move_lines.ids,
+                        "default_company_id": self.company_id.id,
+                        "payment_pro": True,
+                    },
+                }
+        # Caso 2: no tiene payment pro
         else:
             return super().action_register_payment(ctx=ctx)

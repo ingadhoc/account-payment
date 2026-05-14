@@ -1035,10 +1035,11 @@ class AccountPayment(models.Model):
     # We dont set 'is_internal_transfer' as a dependencies as it could leed to recompute to_pay_move_line_ids
     @api.depends("partner_id", "partner_type", "company_id")
     def _compute_to_pay_move_lines(self):
-        # TODO ?
-        # # if payment group is being created from a payment we dont want to compute to_pay_move_lines
-        # if self.env.context.get('created_automatically'):
-        #     return
+        # When creating payments from the bulk payment wizard, we explicitly set
+        # to_pay_move_line_ids to the selected lines only, so we skip auto-computation
+        # to avoid _add_all() adding unrelated lines of different currencies.
+        if self.env.context.get("skip_to_pay_compute"):
+            return
         # Se recomputan las lienas solo si la deuda que esta seleccionada solo si
         # cambio el partner, compania o partner_type
         records = self.filtered(lambda x: x.state == "draft")
