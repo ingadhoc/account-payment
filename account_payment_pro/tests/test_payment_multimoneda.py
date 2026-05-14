@@ -379,6 +379,29 @@ class TestPaymentMultimoneda(TestArCommon):
         )
         self.assertIn(invoice.payment_state, ["paid", "in_payment"])
 
+    def test_internal_transfer_paired_values_keep_manual_rate_after_currency_rounding(self):
+        """El paired de una transferencia interna debe heredar el TC manual exacto."""
+        payment = self._create_payment(
+            self.bank_ars,
+            partner_type="supplier",
+            payment_type="outbound",
+            amount=10_000,
+            is_internal_transfer=True,
+            destination_journal_id=self.bank_usd.id,
+        )
+
+        # TC visual: 1 USD = 1500 ARS. El importe destino redondea a 6.67 USD.
+        payment.counterpart_rate = 1 / 1500.0
+
+        self.assertAlmostEqual(payment.counterpart_currency_amount, 6.67, places=2)
+
+        vals = payment._prepare_paired_payment_values()
+
+        self.assertAlmostEqual(vals["amount"], 6.67, places=2)
+        self.assertAlmostEqual(vals["accounting_rate"], 1 / 1500.0, places=12)
+        self.assertAlmostEqual(1 / vals["accounting_rate"], 1500.0, places=2)
+        self.assertAlmostEqual(vals["counterpart_rate"], 1500.0, places=2)
+
     def test_caso4_venta_de_divisa(self):
         """Caso 4 · USD → ARS → ARS  (venta de divisa)
         Pago en USD para cancelar deuda en ARS. Verifica:

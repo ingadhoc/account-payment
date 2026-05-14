@@ -764,16 +764,23 @@ class AccountPayment(models.Model):
             # inverse durante create, sobreescribiendo amount.
             vals["counterpart_currency_amount"] = self.amount_exact if self.amount_exact else self.amount
 
-            # Fijar accounting_rate del paired para que refleje la tasa implícita
-            # real de la operación (balance_in_c / paired_amount), no la del día.
-            if dest_currency != self.company_currency_id and balance_in_c:
-                vals["accounting_rate"] = paired_amount / balance_in_c
+            # Fijar rates del paired desde las tasas exactas del pago original.
+            # Si los calculamos desde paired_amount, una moneda de 2 decimales
+            # puede convertir un TC manual de 1500 en 10000 / 6.67 = 1499.25.
+            if dest_currency == self.counterpart_currency_id and self.counterpart_rate:
+                vals["accounting_rate"] = self.accounting_rate * self.counterpart_rate
+                vals["counterpart_rate"] = 1.0 / self.counterpart_rate
+            else:
+                # Fijar accounting_rate del paired para que refleje la tasa implícita
+                # real de la operación (balance_in_c / paired_amount), no la del día.
+                if dest_currency != self.company_currency_id and balance_in_c:
+                    vals["accounting_rate"] = paired_amount / balance_in_c
 
-            # Fijar counterpart_rate del paired: la contraparte del paired es la
-            # moneda del journal original (B1_paired = self.currency_id).
-            # rate = original_amount / paired_amount = B1/A del paired.
-            if paired_amount:
-                vals["counterpart_rate"] = (self.amount_exact if self.amount_exact else self.amount) / paired_amount
+                # Fijar counterpart_rate del paired: la contraparte del paired es la
+                # moneda del journal original (B1_paired = self.currency_id).
+                # rate = original_amount / paired_amount = B1/A del paired.
+                if paired_amount:
+                    vals["counterpart_rate"] = (self.amount_exact if self.amount_exact else self.amount) / paired_amount
 
         return vals
 
