@@ -355,4 +355,5 @@ class AccountPayment(models.Model):
 
     @api.onchange("to_pay_move_line_ids")
     def _onchange_amount(self):
-        super(AccountPayment, self.filtered(lambda r: r.payment_method_code != "payment_bundle"))._onchange_amount()
+        payments = self.filtered(lambda r: r.payment_method_code != "payment_bundle" and not r.main_payment_id)
+        super(AccountPayment, payments)._onchange_amount()
