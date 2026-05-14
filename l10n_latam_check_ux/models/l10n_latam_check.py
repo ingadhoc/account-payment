@@ -73,7 +73,7 @@ class l10nLatamAccountPaymentCheck(models.Model):
 
     def _compute_issue_state(self):
         super()._compute_issue_state()
-        for rec in self:
+        for rec in self.filtered(lambda r: r.payment_method_code == "own_checks"):
             account = rec.outstanding_line_id.account_id
             if account and not account.reconcile:
                 rec.issue_state = "debited"
