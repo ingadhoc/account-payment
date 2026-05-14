@@ -3,6 +3,7 @@ import re
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.fields import Command, Domain
+from odoo.tools import SQL
 
 
 class AccountPayment(models.Model):
@@ -402,3 +403,63 @@ class AccountPayment(models.Model):
 
     def _get_mached_payment(self):
         return super()._get_mached_payment() + self.link_payment_ids.ids
+
+    def _auto_init(self):
+        res = super()._auto_init()
+        self.env.cr.execute(
+            SQL(
+                """
+                CREATE UNIQUE INDEX IF NOT EXISTS account_payment_receiptbook_name_uniq
+                ON account_payment (receiptbook_id, name)
+                WHERE receiptbook_id IS NOT NULL AND name != '/'
+                """
+            )
+        )
+        return res
+
+    @api.depends()
+    def _compute_name(self):
+        super()._compute_name()
+        # Pagos con receiptbook pero sin move_id (típicamente main bundle payments que
+        # bypassean la generación de journal entry) no reciben name desde account.move:
+        # los nombramos acá usando la misma fuente que _get_last_sequence.
+        for payment in self.filtered(lambda x: x.receiptbook_id and not x.move_id and x.is_main_payment):
+            if payment.name and payment.name != "/":
+                continue
+            next_name = payment._next_receiptbook_payment_name()
+            if next_name:
+                payment.name = next_name
+
+    def _next_receiptbook_payment_name(self):
+        self.ensure_one()
+        rb = self.receiptbook_id
+        if not rb:
+            return False
+        self.flush_model(["name", "receiptbook_id"])
+        self.env.cr.execute(
+            SQL(
+                r"""
+                SELECT name FROM account_payment
+                WHERE receiptbook_id = %s
+                  AND name ~ '\d+$'
+                  AND id != %s
+                ORDER BY CAST((regexp_match(name, '\d+$'))[1] AS INTEGER) DESC
+                LIMIT 1
+                """,
+                rb.id,
+                self._origin.id or self.id or 0,
+            )
+        )
+        row = self.env.cr.fetchone()
+        last_name = row[0] if row else None
+        if not last_name:
+            doc_prefix = rb.document_type_id.doc_code_prefix if rb.document_type_id else ""
+            if doc_prefix:
+                return "%s %s%08d" % (doc_prefix, rb.prefix or "", rb.initial_sequence)
+            return "%s%08d" % (rb.prefix or "", rb.initial_sequence)
+        match = re.search(r"(\d+)$", last_name)
+        if not match:
+            return False
+        next_num = int(match.group(1)) + 1
+        seq_length = len(match.group(1))
+        return last_name[: match.start()] + str(next_num).zfill(seq_length)
