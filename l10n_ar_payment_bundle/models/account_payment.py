@@ -43,9 +43,10 @@ class AccountPayment(models.Model):
 
     @api.depends("link_payment_ids")
     def _compute_payment_total(self):
-        super()._compute_payment_total()
-        for rec in self:
-            rec.payment_total += sum(rec.link_payment_ids.mapped("payment_total"))
+        main_payments = self.filtered("is_main_payment")
+        super(AccountPayment, self - main_payments)._compute_payment_total()
+        for rec in main_payments:
+            rec.payment_total = sum(rec.link_payment_ids.mapped("payment_total"))
 
     @api.depends("counterpart_currency_amount", "link_payment_ids.counterpart_currency_amount")
     def _compute_bundle_counterpart_currency_amount(self):
@@ -317,8 +318,10 @@ class AccountPayment(models.Model):
             rec.partner_id = rec.main_payment_id.partner_id
 
     def _compute_payment_difference(self):
-        for rec in self.filtered("main_payment_id"):
-            payments = rec.main_payment_id.link_payment_ids
+        bundle_payments = self.filtered(lambda payment: payment.is_main_payment or payment.main_payment_id)
+        for rec in bundle_payments:
+            main_payment = rec.main_payment_id or rec
+            payments = main_payment.link_payment_ids
             amount_outbound = sum(
                 payments.filtered(lambda p: p.payment_type == "outbound").mapped("amount_company_currency_signed")
             )
@@ -326,16 +329,14 @@ class AccountPayment(models.Model):
                 payments.filtered(lambda p: p.payment_type == "inbound").mapped("amount_company_currency_signed")
             )
             amount_payments = abs(amount_inbound + amount_outbound)
-
             rec.payment_difference = (
-                abs(rec.main_payment_id.selected_debt)
+                abs(main_payment.selected_debt)
                 - amount_payments
-                - rec.main_payment_id.withholdings_amount
-                - rec.main_payment_id.write_off_amount
+                - main_payment.withholdings_amount
+                - main_payment.write_off_amount
             )
 
-        for rec in self - self.filtered("main_payment_id"):
-            return super()._compute_payment_difference()
+        super(AccountPayment, self - bundle_payments)._compute_payment_difference()
 
     @api.depends("payment_type", "link_payment_ids.payment_type")
     def _compute_warnings(self):

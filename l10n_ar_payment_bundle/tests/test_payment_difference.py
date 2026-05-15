@@ -358,6 +358,28 @@ class TestPaymentDifference(TransactionCase):
             msg="Payment difference should be 0 when amounts match exactly",
         )
 
+    def test_main_bundle_payment_total_ignores_suggested_amount(self):
+        """Main bundle total should ignore the invoice amount suggested by register payment."""
+        invoice = self._create_invoice(1000000.0)
+        invoice.action_post()
+
+        payment = self.env["account.payment"].new(
+            {
+                "payment_type": "inbound",
+                "partner_type": "customer",
+                "partner_id": self.partner.id,
+                "journal_id": self.bundle_journal.id,
+                "payment_method_line_id": self.payment_method_line.id,
+                "amount": 1000000.0,
+                "to_pay_move_line_ids": [Command.set(invoice.line_ids.filtered("amount_residual").ids)],
+            }
+        )
+        payment._compute_is_main_payment()
+
+        payment._compute_payment_total()
+
+        self.assertAlmostEqual(payment.payment_total, 0.0, places=2)
+
     def test_link_payment_onchange_does_not_override_remaining_amount(self):
         """Linked payments should keep the remaining amount suggested by the x2many context."""
         invoice = self._create_invoice(10511.35)
