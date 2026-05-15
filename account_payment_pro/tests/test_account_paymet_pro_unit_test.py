@@ -169,6 +169,56 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
             msg="Liquidity line balance should still use forced amount after synchronization",
         )
 
+    def test_check_method_does_not_update_amount_from_to_pay_lines(self):
+        """Check payments get their amount from the checks tab, not from selected debts."""
+        check_method_line = self.env["account.payment.method.line"].search(
+            [("code", "=", "in_third_party_checks"), ("company_id", "=", self.company.id)],
+            limit=1,
+        )
+        self.assertTrue(check_method_line)
+
+        invoice = self.env["account.move"].create(
+            {
+                "partner_id": self.partner_ri.id,
+                "invoice_date": self.today,
+                "move_type": "out_invoice",
+                "journal_id": self.company_journal.id,
+                "company_id": self.company.id,
+                "invoice_line_ids": [
+                    Command.create(
+                        {
+                            "product_id": self.env.ref("product.product_product_16").id,
+                            "quantity": 1,
+                            "price_unit": 10511.35,
+                        }
+                    ),
+                ],
+            }
+        )
+        invoice.action_post()
+
+        payment = self.env["account.payment"].create(
+            {
+                "payment_type": "inbound",
+                "partner_type": "customer",
+                "partner_id": self.partner_ri.id,
+                "journal_id": check_method_line.journal_id.id,
+                "payment_method_line_id": check_method_line.id,
+                "amount": 0.0,
+                "to_pay_move_line_ids": [
+                    Command.set(
+                        invoice.line_ids.filtered(
+                            lambda l: l.account_id.account_type in ("asset_receivable", "liability_payable")
+                        ).ids
+                    )
+                ],
+            }
+        )
+
+        payment._onchange_amount()
+
+        self.assertEqual(payment.amount, 0.0)
+
     def test_write_off_line_amounts_company_vs_payment_currency(self):
         """Minimal test: company currency vs payment currency, force company amount and check write-off line balance"""
         # Use existing company and ensure we have a different currency for the payment

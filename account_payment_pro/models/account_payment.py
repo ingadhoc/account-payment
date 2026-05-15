@@ -656,7 +656,17 @@ class AccountPayment(models.Model):
 
     @api.onchange("to_pay_move_line_ids")
     def _onchange_amount(self):
-        for rec in self.filtered(lambda r: r.company_id.use_payment_pro):
+        for rec in self.filtered(
+            lambda r: r.company_id.use_payment_pro
+            and r.payment_method_code
+            not in [
+                "own_checks",
+                "in_third_party_checks",
+                "out_third_party_checks",
+                "return_third_party_checks",
+                "new_third_party_checks",
+            ]
+        ):
             if rec.amount != abs(rec.to_pay_amount):
                 rec.amount = abs(rec.to_pay_amount)
 
