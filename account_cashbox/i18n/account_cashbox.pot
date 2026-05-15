@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-22 20:24+0000\n"
-"PO-Revision-Date: 2026-04-22 20:24+0000\n"
+"POT-Creation-Date: 2026-05-15 13:11+0000\n"
+"PO-Revision-Date: 2026-05-15 13:11+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -788,6 +788,12 @@ msgstr ""
 #. module: account_cashbox
 #: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__website_message_ids
 msgid "Website communication history"
+msgstr ""
+
+#. module: account_cashbox
+#. odoo-python
+#: code:addons/account_cashbox/models/account_cashbox_session.py:0
+msgid "You are not allowed to operate this cashbox."
 msgstr ""
 
 #. module: account_cashbox
