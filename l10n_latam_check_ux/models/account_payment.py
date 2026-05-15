@@ -124,6 +124,7 @@ class AccountPayment(models.Model):
                     )
 
         super().action_draft()
+<<<<<<< 59d46c686fe204f8e927dfe6a8fca4171d2c5d70
 
     def _is_latam_check_transfer(self):
         self.ensure_one()
@@ -246,3 +247,46 @@ class AccountPayment(models.Model):
             )
 
         return vals
+||||||| 3438d0e32ae69acb21abab8af9dfca8dbc31cef0
+=======
+
+    def _is_latam_check_transfer(self):
+        self.ensure_one()
+        return super()._is_latam_check_transfer() or (
+            self.is_internal_transfer
+            and bool(self.l10n_latam_move_check_ids)
+            and self.destination_account_id == self.company_id.transfer_account_id
+        )
+
+    @api.constrains(
+        "is_internal_transfer",
+        "payment_type",
+        "payment_method_line_id",
+        "destination_journal_id",
+        "l10n_latam_move_check_ids",
+    )
+    def _check_inbound_transfer_checks_current_journal(self):
+        """Keep server-side behavior aligned with the wizard domain in Odoo.
+
+        For inbound internal transfers receiving third-party checks, all selected checks
+        must come from the same current journal: the source journal (`destination_journal_id`).
+        """
+        for rec in self.filtered(
+            lambda x: (
+                x.state == "draft"
+                and x.is_internal_transfer
+                and x.payment_type == "inbound"
+                and x.payment_method_line_id.code == "in_third_party_checks"
+                and x.destination_journal_id
+                and x.l10n_latam_move_check_ids
+            )
+        ):
+            invalid_checks = rec.l10n_latam_move_check_ids.filtered(
+                lambda c: c.current_journal_id != rec.destination_journal_id
+            )
+            if invalid_checks:
+                raise ValidationError(
+                    "All selected checks must belong to the source journal (%s)."
+                    % rec.destination_journal_id.display_name
+                )
+>>>>>>> 1dbc372b93140bac05726550161b1ce5841015d2
