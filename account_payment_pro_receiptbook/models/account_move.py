@@ -10,72 +10,83 @@ class AccountMove(models.Model):
     )
 
     def _get_last_sequence_domain(self, relaxed=False):
-        self.ensure_one()
-        is_payment = self.origin_payment_id or self.env.context.get("is_payment")
-
-        if self.receiptbook_id and is_payment:
-            where_string = "WHERE receiptbook_id = %(receiptbook_id)s AND name != '/'"
-            param = {"receiptbook_id": self.receiptbook_id.id}
-            return where_string, param
+        """para transferencias no queremos que se enumere con el ultimo numero de asiento porque podria ser un
+        pago generado por un grupo de pagos y en ese caso el numero viene dado por el talonario de recibo/pago.
+        Para esto creamos campo related stored a receiptbook_id de manera de que un asiento sepa si fue creado
+        o no desde un payment group
+        """
+        if self.journal_id.type in ("cash", "bank", "credit") and not self.receiptbook_id:
+            where_string, param = super(
+                AccountMove, self.with_context(without_receiptbook_id=True)
+            )._get_last_sequence_domain(relaxed)
+            where_string += " AND receiptbook_id is Null"
         else:
-            where_string, param = super()._get_last_sequence_domain(relaxed)
-            where_string += " AND receiptbook_id is Null "
-
+            where_string, param = super(AccountMove, self)._get_last_sequence_domain(relaxed)
         return where_string, param
 
-    def _get_starting_sequence(self):
-        if self.receiptbook_id:
-            if self.receiptbook_id.document_type_id:
-                return "%s %s%08d" % (
-                    self.receiptbook_id.document_type_id.doc_code_prefix,
-                    self.receiptbook_id.prefix,
-                    self.receiptbook_id.initial_sequence - 1,
-                )
-            return "%s%08d" % (self.receiptbook_id.prefix, self.receiptbook_id.initial_sequence - 1)
-        return super()._get_starting_sequence()
-
-    def _get_next_sequence_format(self):
-        if self.receiptbook_id:
-            last_sequence = self._get_last_sequence()
-            new = not last_sequence
-            if new:
-                last_sequence = self._get_last_sequence(relaxed=True) or self._get_starting_sequence()
-
-            format_string, format_values = self._get_sequence_format_param(last_sequence)
-            return format_string, format_values
-        return super()._get_next_sequence_format()
-
     @api.model
-    def _deduce_sequence_number_reset(self, name):
-        if self.receiptbook_id:
-            return "never"
-        return super()._deduce_sequence_number_reset(name)
+    def _search(self, domain, *args, **kwargs):
+        if self.env.context.get("without_receiptbook_id"):
+            domain += [("receiptbook_id", "=", False)]
+        return super()._search(domain, *args, **kwargs)
 
     def _compute_made_sequence_hole(self):
-        with_receiptbook = self.filtered(lambda x: x.receiptbook_id and x.journal_id.type in ("bank", "cash", "credit"))
-        with_receiptbook.made_sequence_hole = False
-        super(AccountMove, self - with_receiptbook)._compute_made_sequence_hole()
+        receiptbook_recs = self.filtered(lambda x: x.receiptbook_id and x.journal_id.type in ("bank", "cash", "credit"))
+        receiptbook_recs.made_sequence_hole = False
+        super(AccountMove, self - receiptbook_recs)._compute_made_sequence_hole()
 
     @api.depends()
     def _compute_name(self):
         super()._compute_name()
         for move in self.filtered(
             lambda x: x.origin_payment_id.receiptbook_id
-            and (x.state == "draft" or x.origin_payment_id.payment_transaction_id)
+            and (
+                x.state == "draft" or x.origin_payment_id.state == "draft" or x.origin_payment_id.payment_transaction_id
+            )
         ):
             move.name = move.origin_payment_id.name
 
     @api.depends("origin_payment_id.receiptbook_id")
     def _compute_l10n_latam_document_type(self):
-        with_receiptbook = self.filtered(lambda x: x.origin_payment_id.receiptbook_id)
-        super(AccountMove, self - with_receiptbook)._compute_l10n_latam_document_type()
+        receiptbook_payments = self.filtered(lambda x: x.origin_payment_id.receiptbook_id)
+        super(AccountMove, self - receiptbook_payments)._compute_l10n_latam_document_type()
 
     @api.depends()
     def _compute_made_sequence_gap(self):
-        use_receiptbook_moves = self.filtered(lambda m: m.receiptbook_id)
-        use_receiptbook_moves.made_sequence_gap = False
-        if other_moves := self - use_receiptbook_moves:
-            super(AccountMove, other_moves)._compute_made_sequence_gap()
+        with_receiptbook = self.filtered(lambda move: move.receiptbook_id)
+        unposted_recceiptbook = with_receiptbook.filtered(
+            lambda move: move.sequence_number != 0 and move.state != "posted"
+        )
+        unposted_recceiptbook.made_sequence_gap = True
+
+        for (receiptbook, prefix), moves in (
+            (with_receiptbook - unposted_recceiptbook).grouped(lambda m: (m.receiptbook_id, m.sequence_prefix)).items()
+        ):
+            previous_numbers = set(
+                self.env["account.move"]
+                .sudo()
+                .search(
+                    [
+                        ("receiptbook_id", "=", receiptbook.id),
+                        ("sequence_prefix", "=", prefix),
+                        (
+                            "sequence_number",
+                            ">=",
+                            min(moves.mapped("sequence_number")) - 1,
+                        ),
+                        (
+                            "sequence_number",
+                            "<=",
+                            max(moves.mapped("sequence_number")) - 1,
+                        ),
+                    ]
+                )
+                .mapped("sequence_number")
+            )
+            for move in moves:
+                move.made_sequence_gap = move.sequence_number > 1 and (move.sequence_number - 1) not in previous_numbers
+
+        super(AccountMove, self - with_receiptbook)._compute_made_sequence_gap()
 
     def _must_check_constrains_date_sequence(self):
         # OVERRIDES sequence.mixin to skip date sequence check for receiptbook moves
@@ -83,7 +94,3 @@ class AccountMove(models.Model):
         if self.receiptbook_id:
             return False
         return super()._must_check_constrains_date_sequence()
-
-    def _set_next_made_sequence_gap(self, made_gap: bool):
-        if other_moves := self.filtered(lambda m: not m.receiptbook_id):
-            super(AccountMove, other_moves)._set_next_made_sequence_gap(made_gap)

@@ -65,6 +65,9 @@ class PaymentRenameWizard(models.TransientModel):
             message_type="notification",
         )
 
+        # Resyncronizamos el ir.sequence del receiptbook para reflejar el rename.
+        self.payment_id.receiptbook_id.action_resync_sequence()
+
         return {
             "type": "ir.actions.client",
             "tag": "reload",

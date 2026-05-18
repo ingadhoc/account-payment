@@ -177,11 +177,6 @@ msgstr ""
 "publicado la cuenta, pago o  grupo relacionado."
 
 #. module: account_payment_pro_receiptbook
-#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__initial_sequence
-msgid "Initial Sequence"
-msgstr "Secuencia inicial"
-
-#. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_l10n_latam_document_type__internal_type
 msgid "Internal Type"
 msgstr "Tipo interno"
@@ -195,11 +190,6 @@ msgstr "Diario"
 #: model:ir.model,name:account_payment_pro_receiptbook.model_account_move
 msgid "Journal Entry"
 msgstr "Asiento Contable"
-
-#. module: account_payment_pro_receiptbook
-#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__last_sequence
-msgid "Last Sequence"
-msgstr "Última secuencia"
 
 #. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__write_uid

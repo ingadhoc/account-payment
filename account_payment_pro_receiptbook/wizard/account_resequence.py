@@ -43,3 +43,7 @@ class AccountResequenceWizard(models.TransientModel):
             self[0].write({"new_values": json.dumps(filtered_moves)})
 
             super().resequence()
+
+        # Después de renumerar moves, los nombres de los account.payment quedan desfasados
+        # respecto a la ir.sequence del receiptbook: resyncronizamos el number_next.
+        original_move_ids.mapped("receiptbook_id").action_resync_sequence()
