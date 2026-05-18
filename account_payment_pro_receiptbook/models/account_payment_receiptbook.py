@@ -41,6 +41,10 @@ class AccountPaymentReceiptbook(models.Model):
         required=True,
         index=True,
     )
+    next_number = fields.Integer(
+        related="sequence_id.number_next_actual",
+        readonly=False,
+    )
     sequence_id = fields.Many2one(
         "ir.sequence",
         "Entry Sequence",
@@ -59,10 +63,6 @@ class AccountPaymentReceiptbook(models.Model):
         "Document Type",
         required=True,
     )
-    last_sequence = fields.Integer(
-        compute="_compute_last_sequence",
-    )
-    initial_sequence = fields.Integer(default=1)
 
     @api.constrains("company_id", "prefix", "document_type_id", "partner_type")
     def _check_unique_receipt(self):
@@ -82,12 +82,98 @@ class AccountPaymentReceiptbook(models.Model):
                     )
                 )
 
-    def _compute_last_sequence(self):
+    def write(self, vals):
+        """
+        If user change prefix we change prefix of sequence.
+        """
+        prefix = vals.get("prefix")
         for rec in self:
-            move_id = self.env["account.move"].search(
-                [("receiptbook_id", "=", rec.id), ("name", "!=", "/")], order="sequence_number DESC", limit=1
+            if prefix and rec.sequence_id:
+                rec.sequence_id.prefix = prefix
+        return super().write(vals)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        recs = super().create(vals_list)
+        for rec in recs.filtered(lambda x: not x.sequence_id):
+            rec.sequence_id = (
+                self.env["ir.sequence"]
+                .sudo()
+                .create(
+                    {
+                        "name": rec.name,
+                        "prefix": rec.prefix,
+                        "padding": 8,
+                        "number_increment": 1,
+                        "company_id": rec.company_id.id,
+                    }
+                )
             )
-            rec.last_sequence = move_id.sequence_number
+        return recs
+
+    def action_resync_sequence(self):
+        """Recompone ``sequence_id`` para los receiptbooks en ``self``:
+
+        - Si no tienen ``sequence_id``, crea un ``ir.sequence`` con el ``prefix``
+          y ``company_id`` del receiptbook (padding=8, increment=1).
+        - Resuelve el último número usado vía un único ``SELECT`` que stripea
+          ``"<doc_code_prefix> "`` y ``<prefix>`` del ``name`` de
+          ``account.payment`` con dos ``REPLACE`` y castea el residuo a
+          ``INTEGER``, devolviendo el ``MAX``.
+        - Setea ``sequence_id.number_next = max(numero) + 1`` para que el
+          próximo payment posteado retome la numeración sin colisiones.
+
+        Sirve como ejecutor de la migración 19.0.2.0.0 y como acción manual de
+        reparación si la numeración se desfasa (deletes, importaciones, etc.).
+        """
+        for rec in self:
+            if not rec.sequence_id:
+                rec.sequence_id = (
+                    self.env["ir.sequence"]
+                    .sudo()
+                    .create(
+                        {
+                            "name": rec.name,
+                            "prefix": rec.prefix,
+                            "padding": 8,
+                            "number_increment": 1,
+                            "company_id": rec.company_id.id,
+                        }
+                    )
+                )
+
+            doc_code_prefix = rec.document_type_id.doc_code_prefix or ""
+            prefix = rec.prefix or ""
+            self.env.cr.execute(
+                """
+                SELECT MAX(CAST(REPLACE(REPLACE(name, %s, ''), %s, '') AS INTEGER))
+                  FROM account_payment
+                 WHERE receiptbook_id = %s
+                   AND name IS NOT NULL
+                   AND name LIKE %s
+                   AND state != 'draft'
+                """,
+                (
+                    doc_code_prefix + " ",
+                    prefix,
+                    rec.id,
+                    # solo cuentan pagos con el formato canónico del receiptbook;
+                    # excluye linked payments de bundles (e.g. "Main (1)").
+                    f"{doc_code_prefix} {prefix}%",
+                ),
+            )
+            last_number = self.env.cr.fetchone()[0] or 0
+            next_number = last_number + 1
+            rec.sequence_id.sudo().number_next = next_number
+
+            _logger.info(
+                "Receiptbook id=%s prefix=%r: último número=%d, ir.sequence id=%s number_next=%d",
+                rec.id,
+                rec.prefix,
+                last_number,
+                rec.sequence_id.id,
+                next_number,
+            )
 
     @api.ondelete(at_uninstall=False)
     def _unlink_except_used(self):
