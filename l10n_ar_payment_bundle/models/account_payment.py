@@ -137,7 +137,7 @@ class AccountPayment(models.Model):
         main_paments.amount = 0.0
         super(AccountPayment, self - main_paments)._compute_amount()
 
-    @api.onchange("to_pay_move_line_ids")
+    @api.onchange("to_pay_move_line_ids", "is_main_payment")
     def _onchange_to_pay_lines_adjust_amount(self):
         """Para pagos principales del bundle, amount siempre debe ser 0; evita que
         la lógica de account_payment_pro intente ajustar el amount y dispare la
