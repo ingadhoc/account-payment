@@ -11,6 +11,7 @@ class AccountPayment(models.Model):
     link_payment_ids = fields.One2many(comodel_name="account.payment", inverse_name="main_payment_id")
     to_pay_move_line_ids = fields.Many2many(recursive=True)
     counterpart_exchange_rate = fields.Float(recursive=True)
+    payment_total = fields.Monetary(recursive=True)
     bundle_counterpart_currency_amount = fields.Monetary(
         currency_field="counterpart_currency_id",
         compute="_compute_bundle_counterpart_currency_amount",
@@ -41,11 +42,19 @@ class AccountPayment(models.Model):
         if self.link_payment_ids:
             self.link_payment_ids = [Command.clear()]
 
-    @api.depends("link_payment_ids")
+    @api.depends(
+        "is_main_payment",
+        "withholdings_amount",
+        "write_off_amount",
+        "link_payment_ids.payment_total",
+    )
     def _compute_payment_total(self):
-        super()._compute_payment_total()
-        for rec in self:
-            rec.payment_total += sum(rec.link_payment_ids.mapped("payment_total"))
+        main_payments = self.filtered("is_main_payment")
+        super(AccountPayment, self - main_payments)._compute_payment_total()
+        for rec in main_payments:
+            rec.payment_total = (
+                rec.withholdings_amount + rec.write_off_amount + sum(rec.link_payment_ids.mapped("payment_total"))
+            )
 
     @api.depends("counterpart_currency_amount", "link_payment_ids.counterpart_currency_amount")
     def _compute_bundle_counterpart_currency_amount(self):
