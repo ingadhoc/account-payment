@@ -67,11 +67,19 @@ class AccountPayment(models.Model):
         if self.link_payment_ids:
             self.link_payment_ids = [Command.clear()]
 
-    @api.depends("link_payment_ids.payment_total")
+    @api.depends(
+        "is_main_payment",
+        "withholdings_amount",
+        "write_off_amount",
+        "link_payment_ids.payment_total",
+    )
     def _compute_payment_total(self):
-        super()._compute_payment_total()
-        for rec in self:
-            rec.payment_total += sum(rec.link_payment_ids.mapped("payment_total"))
+        main_payments = self.filtered("is_main_payment")
+        super(AccountPayment, self - main_payments)._compute_payment_total()
+        for rec in main_payments:
+            rec.payment_total = (
+                rec.withholdings_amount + rec.write_off_amount + sum(rec.link_payment_ids.mapped("payment_total"))
+            )
 
     @api.depends("main_payment_id.payment_difference")
     def _compute_to_pay_amount(self):
