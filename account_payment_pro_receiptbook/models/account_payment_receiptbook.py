@@ -95,7 +95,15 @@ class AccountPaymentReceiptbook(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         recs = super().create(vals_list)
-        for rec in recs.filtered(lambda x: not x.sequence_id):
+        recs.ensure_sequence()
+        return recs
+
+    def ensure_sequence(self):
+        """Crea el ``ir.sequence`` (padding=8, increment=1) para los
+        receiptbooks de ``self`` que no lo tengan asignado. Usa el ``prefix``
+        y ``company_id`` del propio receiptbook. Idempotente.
+        """
+        for rec in self.filtered(lambda x: not x.sequence_id):
             rec.sequence_id = (
                 self.env["ir.sequence"]
                 .sudo()
@@ -109,13 +117,11 @@ class AccountPaymentReceiptbook(models.Model):
                     }
                 )
             )
-        return recs
 
     def action_resync_sequence(self):
         """Recompone ``sequence_id`` para los receiptbooks en ``self``:
 
-        - Si no tienen ``sequence_id``, crea un ``ir.sequence`` con el ``prefix``
-          y ``company_id`` del receiptbook (padding=8, increment=1).
+        - Asegura el ``ir.sequence`` vía :meth:`ensure_sequence` (crea si falta).
         - Resuelve el último número usado vía un único ``SELECT`` que stripea
           ``"<doc_code_prefix> "`` y ``<prefix>`` del ``name`` de
           ``account.payment`` con dos ``REPLACE`` y castea el residuo a
@@ -126,43 +132,12 @@ class AccountPaymentReceiptbook(models.Model):
         Sirve como ejecutor de la migración 19.0.2.0.0 y como acción manual de
         reparación si la numeración se desfasa (deletes, importaciones, etc.).
         """
+        self.ensure_sequence()
+        self.env.flush_all()
         for rec in self:
-            if not rec.sequence_id:
-                rec.sequence_id = (
-                    self.env["ir.sequence"]
-                    .sudo()
-                    .create(
-                        {
-                            "name": rec.name,
-                            "prefix": rec.prefix,
-                            "padding": 8,
-                            "number_increment": 1,
-                            "company_id": rec.company_id.id,
-                        }
-                    )
-                )
-
             doc_code_prefix = rec.document_type_id.doc_code_prefix or ""
             prefix = rec.prefix or ""
-            self.env.cr.execute(
-                """
-                SELECT MAX(CAST(REPLACE(REPLACE(name, %s, ''), %s, '') AS INTEGER))
-                  FROM account_payment
-                 WHERE receiptbook_id = %s
-                   AND name IS NOT NULL
-                   AND name LIKE %s
-                   AND state != 'draft'
-                """,
-                (
-                    doc_code_prefix + " ",
-                    prefix,
-                    rec.id,
-                    # solo cuentan pagos con el formato canónico del receiptbook;
-                    # excluye linked payments de bundles (e.g. "Main (1)").
-                    f"{doc_code_prefix} {prefix}%",
-                ),
-            )
-            last_number = self.env.cr.fetchone()[0] or 0
+            last_number = self._resync_get_last_number(rec, doc_code_prefix, prefix)
             next_number = last_number + 1
             rec.sequence_id.sudo().number_next = next_number
 
@@ -174,6 +149,31 @@ class AccountPaymentReceiptbook(models.Model):
                 rec.sequence_id.id,
                 next_number,
             )
+
+    def _resync_get_last_number(self, rec, doc_code_prefix, prefix):
+        has_main_payment = "main_payment_id" in self.env["account.payment"]._fields
+        child_filter = "AND main_payment_id IS NULL" if has_main_payment else ""
+        self.env.cr.execute(
+            f"""
+            SELECT MAX(CAST(
+                SPLIT_PART(REPLACE(REPLACE(name, %s, ''), %s, ''), ' ', 1)
+                AS INTEGER
+            ))
+              FROM account_payment
+             WHERE receiptbook_id = %s
+               AND name IS NOT NULL
+               AND name LIKE %s
+               {child_filter}
+               AND state != 'draft'
+            """,
+            (
+                doc_code_prefix + " ",
+                prefix,
+                rec.id,
+                f"{doc_code_prefix} {prefix}%",
+            ),
+        )
+        return self.env.cr.fetchone()[0] or 0
 
     @api.ondelete(at_uninstall=False)
     def _unlink_except_used(self):
