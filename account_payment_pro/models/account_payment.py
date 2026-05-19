@@ -149,6 +149,18 @@ class AccountPayment(models.Model):
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
+        # Si se pasa company_id explícitamente por contexto, evitamos que journal_id
+        # proveniente de ir.default (valores predeterminados del usuario) y perteneciente
+        # a otra compañía dispare el precompute _compute_company_id y sobreescriba la
+        # compañía correcta del pago por la compañía principal del entorno.
+        default_company_id = self._context.get("default_company_id")
+        if default_company_id and "journal_id" in res:
+            journal = self.env["account.journal"].browse(res["journal_id"])
+            if journal.company_id.id != default_company_id:
+                res.pop("journal_id")
+        ir_defaults = self.env["ir.default"].with_company(default_company_id)._get_model_defaults(self._name)
+        if "journal_id" in ir_defaults:
+            res["journal_id"] = self.env["account.journal"].browse(ir_defaults["journal_id"]).id
         if "previous_currency_id" in fields_list and "previous_currency_id" not in res:
             currency_id = res.get("currency_id")
             if not currency_id:
