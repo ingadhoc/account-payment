@@ -397,6 +397,12 @@ class AccountPayment(models.Model):
             if not rec.currency_id.is_zero(rec.amount - rec.amount_exact):
                 rec.amount_exact = rec.amount
 
+    def _compute_amount(self):
+        super()._compute_amount()
+        for rec in self:
+            if not rec.currency_id.is_zero(rec.amount - rec.amount_exact):
+                rec.amount_exact = rec.amount
+
     @api.onchange("currency_id")
     def _onchange_currency_recompute_amount(self):
         """Al cambiar la moneda del diario, reconvertir amount a la nueva moneda A."""
@@ -533,7 +539,7 @@ class AccountPayment(models.Model):
             self = self.with_company(self.company_id.id)
         super(AccountPayment, self)._compute_available_journal_ids()
 
-    @api.depends("amount", "counterpart_rate", "counterpart_currency_id", "currency_id")
+    @api.depends("amount", "amount_exact", "counterpart_rate", "counterpart_currency_id", "currency_id")
     def _compute_counterpart_currency_amount(self):
         for rec in self:
             amount = rec.amount_exact or rec.amount
@@ -920,6 +926,7 @@ class AccountPayment(models.Model):
         "counterpart_currency_amount",
         "write_off_amount",
         "amount",
+        "amount_exact",
         "accounting_rate",
         "counterpart_currency_id",
         "destination_currency_id",
@@ -937,7 +944,6 @@ class AccountPayment(models.Model):
                 # Convertir A → C = amount_exact / accounting_rate (usar amount_exact para evitar redondeos)
                 amount_for_calc = rec.amount_exact if rec.amount_exact else rec.amount
                 base_amount = amount_for_calc / rec.accounting_rate if rec.accounting_rate else amount_for_calc
-                base_amount = rec.amount / rec.accounting_rate if rec.accounting_rate else rec.amount
             rec.payment_total = base_amount + rec.write_off_amount
 
     # TODO revisar depends
@@ -1025,6 +1031,7 @@ class AccountPayment(models.Model):
             diff_in_a = rec._get_payment_difference_in_currency_a()
             amount = rec.amount + diff_in_a
             rec.amount = amount if amount > 0 else 0
+            rec.amount_exact = amount if amount > 0 else 0
 
     @api.onchange("l10n_latam_new_check_ids")
     def _onchange_new_check_default_amount(self):
