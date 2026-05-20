@@ -676,7 +676,7 @@ class AccountPayment(models.Model):
 
     @api.onchange("to_pay_move_line_ids")
     def _onchange_amount(self):
-        for rec in self.filtered(lambda r: r.company_id.use_payment_pro):
+        for rec in self.filtered(lambda r: r.company_id.use_payment_pro and not r._is_latam_check_payment()):
             if rec.amount != abs(rec.to_pay_amount):
                 rec.amount = abs(rec.to_pay_amount)
 

@@ -199,6 +199,78 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
         self.assertAlmostEqual(payment.amount_company_currency, accounting_amount, places=2)
         self.assertAlmostEqual(payment.exchange_rate, 1000.0, places=2)
 
+    def test_check_method_does_not_update_amount_from_to_pay_lines(self):
+        """Check payments get their amount from the checks tab, not from selected debts."""
+        check_method_line = self.env["account.payment.method.line"].search(
+            [
+                ("journal_id", "=", self.company_bank_journal.id),
+                ("code", "=", "new_third_party_checks"),
+            ],
+            limit=1,
+        )
+        if not check_method_line:
+            check_method = self.env["account.payment.method"].search([("code", "=", "new_third_party_checks")])
+            self.assertTrue(check_method, "new_third_party_checks payment method is required")
+            check_method_line = self.env["account.payment.method.line"].create(
+                {
+                    "name": "Third Party Checks",
+                    "payment_method_id": check_method.id,
+                    "journal_id": self.company_bank_journal.id,
+                }
+            )
+
+        invoice = self.env["account.move"].create(
+            {
+                "partner_id": self.partner_ri.id,
+                "invoice_date": self.today,
+                "move_type": "out_invoice",
+                "journal_id": self.company_journal.id,
+                "company_id": self.company.id,
+                "invoice_line_ids": [
+                    Command.create(
+                        {
+                            "product_id": self.env.ref("product.product_product_16").id,
+                            "quantity": 1,
+                            "price_unit": 457012.45,
+                        }
+                    ),
+                ],
+            }
+        )
+        invoice.action_post()
+
+        payment = self.env["account.payment"].new(
+            {
+                "payment_type": "inbound",
+                "partner_type": "customer",
+                "partner_id": self.partner_ri.id,
+                "journal_id": self.company_bank_journal.id,
+                "payment_method_line_id": check_method_line.id,
+                "amount": 435599.40,
+                "l10n_latam_new_check_ids": [
+                    Command.create(
+                        {
+                            "name": "CHK-001",
+                            "payment_date": self.today,
+                            "amount": 435599.40,
+                        }
+                    )
+                ],
+                "to_pay_move_line_ids": [
+                    Command.set(
+                        invoice.line_ids.filtered(
+                            lambda l: l.account_id.account_type in ("asset_receivable", "liability_payable")
+                        ).ids
+                    )
+                ],
+            }
+        )
+        payment._compute_amount()
+
+        payment._onchange_amount()
+
+        self.assertAlmostEqual(payment.amount, 435599.40, places=2)
+
     def test_write_off_line_amounts_company_vs_payment_currency(self):
         """Minimal test: company currency vs payment currency, force company amount and check write-off line balance"""
         # Use existing company and ensure we have a different currency for the payment
