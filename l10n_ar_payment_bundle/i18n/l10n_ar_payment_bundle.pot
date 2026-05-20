@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-17 20:04+0000\n"
-"PO-Revision-Date: 2026-04-17 20:04+0000\n"
+"POT-Creation-Date: 2026-05-20 16:31+0000\n"
+"PO-Revision-Date: 2026-05-20 16:31+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -98,6 +98,7 @@ msgstr ""
 #. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_chart_template__display_name
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_journal__display_name
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_move_line__display_name
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__display_name
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment_method__display_name
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment_register__display_name
@@ -116,6 +117,7 @@ msgstr ""
 #. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_chart_template__id
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_journal__id
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_move_line__id
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__id
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment_method__id
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment_register__id
@@ -156,6 +158,11 @@ msgstr ""
 #. odoo-python
 #: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
 msgid "Journal Entry"
+msgstr ""
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model,name:l10n_ar_payment_bundle.model_account_move_line
+msgid "Journal Item"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
