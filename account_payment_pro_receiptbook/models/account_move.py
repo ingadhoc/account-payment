@@ -14,12 +14,12 @@ class AccountMove(models.Model):
         is_payment = self.origin_payment_id or self.env.context.get("is_payment")
 
         if self.receiptbook_id and is_payment:
-            where_string = "WHERE receiptbook_id = %(receiptbook_id)s AND name != '/'"
+            where_string = r"WHERE receiptbook_id = %(receiptbook_id)s AND name != '/'"
             param = {"receiptbook_id": self.receiptbook_id.id}
             return where_string, param
         else:
             where_string, param = super()._get_last_sequence_domain(relaxed)
-            where_string += " AND receiptbook_id is Null "
+            where_string += r" AND receiptbook_id is Null "
 
         return where_string, param
 
