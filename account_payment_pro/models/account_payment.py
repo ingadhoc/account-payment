@@ -676,8 +676,14 @@ class AccountPayment(models.Model):
 
     @api.onchange("to_pay_move_line_ids")
     def _onchange_amount(self):
-        for rec in self.filtered(lambda r: r.company_id.use_payment_pro):
-            if rec.amount != abs(rec.to_pay_amount):
+        for rec in self.filtered(lambda r: r.company_id.use_payment_pro and not r._is_latam_check_payment()):
+            # Sincronizar en dos casos:
+            # 1. Carga inicial (no había líneas antes)
+            # 2. Pago cuadrado (payment_difference == 0, sin personalizaciones ni retenciones)
+            is_initial_load = not rec._origin.to_pay_move_line_ids
+            is_squared = not rec.currency_id or rec.currency_id.is_zero(rec.payment_difference)
+            
+            if is_initial_load or is_squared:
                 rec.amount = abs(rec.to_pay_amount)
 
     @api.onchange("to_pay_amount")
