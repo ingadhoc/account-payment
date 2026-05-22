@@ -1,26 +1,25 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # 	* account_payment_pro_receiptbook
-# 
+#
 # Translators:
 # ADHOC - Bot <transbot@adhoc.com.ar>, 2025
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-12 20:00+0000\n"
+"POT-Creation-Date: 2025-11-25 17:16+0000\n"
 "PO-Revision-Date: 2025-12-26 17:10+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
-"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/"
-"account-payment-19-0/account-payment-19-0-account_payment_pro_receiptbook/es/"
-">\n"
+"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
+"payment-19-0/account-payment-19-0-account_payment_pro_receiptbook/es/>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == 0)"
-" ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == "
+"0) ? 1 : 2);\n"
 "X-Generator: Weblate 5.10.4\n"
 
 #. module: account_payment_pro_receiptbook
@@ -170,8 +169,8 @@ msgstr "ID"
 #. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,help:account_payment_pro_receiptbook.field_account_payment_receiptbook__mail_template_id
 msgid ""
-"If set an email will be sent to the customer when the related "
-"account.payment.group has been posted."
+"If set an email will be sent to the customer when the related account."
+"payment.group has been posted."
 msgstr ""
 "Si se configura, se enviará un correo electrónico al cliente cuando se haya "
 "publicado la cuenta, pago o  grupo relacionado."
@@ -321,8 +320,8 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_payment_pro_receiptbook/__init__.py:0
 msgid ""
-"The sequences of this journal are different for Invoices and Refunds but you"
-" selected some of both types."
+"The sequences of this journal are different for Invoices and Refunds but you "
+"selected some of both types."
 msgstr ""
 "Las secuencias de este diario son diferentes para Facturas y Reembolsos, "
 "pero seleccionó algunos de ambos tipos."
