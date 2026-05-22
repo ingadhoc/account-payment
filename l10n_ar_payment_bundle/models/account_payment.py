@@ -402,3 +402,98 @@ class AccountPayment(models.Model):
 
     def _get_mached_payment(self):
         return super()._get_mached_payment() + self.link_payment_ids.ids
+<<<<<<< 18a0930fd26d9c058b5f35a90539464f03dfae06
+||||||| 0fb612fc5b890a07965bb95107f236e081068511
+
+    @api.depends("main_payment_id.partner_id")
+    def _compute_partner_id(self):
+        super()._compute_partner_id()
+        for rec in self.filtered("main_payment_id"):
+            rec.partner_id = rec.main_payment_id.partner_id
+
+    def _compute_payment_difference(self):
+        for rec in self.filtered("main_payment_id"):
+            payments = rec.main_payment_id.link_payment_ids
+            amount_outbound = sum(
+                payments.filtered(lambda p: p.payment_type == "outbound").mapped("amount_company_currency_signed")
+            )
+            amount_inbound = sum(
+                payments.filtered(lambda p: p.payment_type == "inbound").mapped("amount_company_currency_signed")
+            )
+            amount_payments = abs(amount_inbound + amount_outbound)
+
+            rec.payment_difference = (
+                abs(rec.main_payment_id.selected_debt)
+                - amount_payments
+                - rec.main_payment_id.withholdings_amount
+                - rec.main_payment_id.write_off_amount
+            )
+
+        for rec in self - self.filtered("main_payment_id"):
+            return super()._compute_payment_difference()
+
+    @api.depends("payment_type", "link_payment_ids.payment_type")
+    def _compute_warnings(self):
+        for rec in self:
+            warnings = {}
+            if rec.state == "draft" and rec.is_main_payment and rec.link_payment_ids:
+                linked_types = rec.link_payment_ids.mapped("payment_type")
+                if len(set(linked_types)) > 1 or rec.payment_type not in linked_types:
+                    warnings["payment_type_warning"] = {
+                        "level": "info",
+                        "message": _(
+                            "The payment type of the main payment differs from one or more linked payments. Note that the main payment type only impacts withholdings and write-offs."
+                        ),
+                    }
+
+            rec.warnings = warnings
+
+    @api.onchange("to_pay_move_line_ids")
+    def _onchange_amount(self):
+        payments = self.filtered(lambda r: r.payment_method_code != "payment_bundle" and not r.main_payment_id)
+        super(AccountPayment, payments)._onchange_amount()
+=======
+
+    @api.depends("main_payment_id.partner_id")
+    def _compute_partner_id(self):
+        super()._compute_partner_id()
+        for rec in self.filtered("main_payment_id"):
+            rec.partner_id = rec.main_payment_id.partner_id
+
+    def _compute_payment_difference(self):
+        for rec in self.filtered("main_payment_id"):
+            payments = rec.main_payment_id.link_payment_ids
+            amount_outbound = sum(
+                payments.filtered(lambda p: p.payment_type == "outbound").mapped("amount_company_currency_signed")
+            )
+            amount_inbound = sum(
+                payments.filtered(lambda p: p.payment_type == "inbound").mapped("amount_company_currency_signed")
+            )
+            amount_payments = abs(amount_inbound + amount_outbound)
+
+            rec.payment_difference = (
+                abs(rec.main_payment_id.selected_debt)
+                - amount_payments
+                - rec.main_payment_id.withholdings_amount
+                - rec.main_payment_id.write_off_amount
+            )
+
+        for rec in self - self.filtered("main_payment_id"):
+            return super()._compute_payment_difference()
+
+    @api.depends("payment_type", "link_payment_ids.payment_type")
+    def _compute_warnings(self):
+        for rec in self:
+            warnings = {}
+            if rec.state == "draft" and rec.is_main_payment and rec.link_payment_ids:
+                linked_types = rec.link_payment_ids.mapped("payment_type")
+                if len(set(linked_types)) > 1 or rec.payment_type not in linked_types:
+                    warnings["payment_type_warning"] = {
+                        "level": "info",
+                        "message": _(
+                            "The payment type of the main payment differs from one or more linked payments. Note that the main payment type only impacts withholdings and write-offs."
+                        ),
+                    }
+
+            rec.warnings = warnings
+>>>>>>> 731bdce08aa21b1cf13b69d0d6e0cc56bb6a77fd
