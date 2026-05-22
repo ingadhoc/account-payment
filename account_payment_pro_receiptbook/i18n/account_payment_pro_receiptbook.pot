@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-25 17:16+0000\n"
-"PO-Revision-Date: 2025-11-25 17:16+0000\n"
+"POT-Creation-Date: 2026-05-22 15:24+0000\n"
+"PO-Revision-Date: 2026-05-22 15:24+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -28,6 +28,11 @@ msgstr ""
 #. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__active
 msgid "Active"
+msgstr ""
+
+#. module: account_payment_pro_receiptbook
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__next_number
+msgid "Actual Next Number"
 msgstr ""
 
 #. module: account_payment_pro_receiptbook
@@ -138,6 +143,14 @@ msgid ""
 msgstr ""
 
 #. module: account_payment_pro_receiptbook
+#. odoo-python
+#: code:addons/account_payment_pro_receiptbook/models/account_payment.py:0
+msgid ""
+"Error!. Please define sequence on the receiptbook related documents to this "
+"payment."
+msgstr ""
+
+#. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_chart_template__id
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_journal__id
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_move__id
@@ -191,6 +204,13 @@ msgstr ""
 #. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__name
 msgid "Name"
+msgstr ""
+
+#. module: account_payment_pro_receiptbook
+#: model:ir.model.fields,help:account_payment_pro_receiptbook.field_account_payment_receiptbook__next_number
+msgid ""
+"Next number that will be used. This number can be incremented frequently so "
+"the displayed value might already be obsolete"
 msgstr ""
 
 #. module: account_payment_pro_receiptbook
