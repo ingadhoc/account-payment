@@ -674,12 +674,6 @@ class AccountPayment(models.Model):
         for rec in self:
             rec.to_pay_amount = rec.selected_debt + rec.unreconciled_amount
 
-    @api.onchange("to_pay_move_line_ids")
-    def _onchange_amount(self):
-        for rec in self.filtered(lambda r: r.company_id.use_payment_pro):
-            if rec.amount != abs(rec.to_pay_amount):
-                rec.amount = abs(rec.to_pay_amount)
-
     @api.onchange("to_pay_amount")
     def _inverse_to_pay_amount(self):
         for rec in self:
