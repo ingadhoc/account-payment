@@ -122,9 +122,9 @@ class AccountPaymentReceiptbook(models.Model):
         """Recompone ``sequence_id`` para los receiptbooks en ``self``:
 
         - Asegura el ``ir.sequence`` vía :meth:`ensure_sequence` (crea si falta).
-        - Resuelve el último número usado vía un único ``SELECT`` que stripea
-          ``"<doc_code_prefix> "`` y ``<prefix>`` del ``name`` de
-          ``account.payment`` con dos ``REPLACE`` y castea el residuo a
+        - Resuelve el último número usado vía un único ``SELECT`` que extrae
+          con regex los dígitos finales del ``name`` de ``account.payment``
+          (``SUBSTRING(name FROM '[0-9]+$')``) y castea ese residuo a
           ``INTEGER``, devolviendo el ``MAX``.
         - Setea ``sequence_id.number_next = max(numero) + 1`` para que el
           próximo payment posteado retome la numeración sin colisiones.
@@ -156,7 +156,9 @@ class AccountPaymentReceiptbook(models.Model):
         self.env.cr.execute(
             f"""
             SELECT MAX(CAST(
-                SPLIT_PART(REPLACE(REPLACE(name, %s, ''), %s, ''), ' ', 1)
+                SUBSTRING(
+                    SPLIT_PART(REPLACE(REPLACE(name, %s, ''), %s, ''), ' ', 1)
+                    FROM '[0-9]+$')
                 AS INTEGER
             ))
               FROM account_payment
