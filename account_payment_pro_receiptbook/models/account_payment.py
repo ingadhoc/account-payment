@@ -81,3 +81,7 @@ class AccountPayment(models.Model):
                 and not (x.receiptbook_id and x.payment_transaction_id)
             ),
         )._compute_name()
+
+    def _get_receipt_header_address(self):
+        self.ensure_one()
+        return self.receiptbook_id.report_partner_id or super()._get_receipt_header_address()

@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from odoo import Command, _, api, fields, models
 from odoo.exceptions import ValidationError
 
@@ -1233,3 +1235,28 @@ class AccountPayment(models.Model):
         for rec in self.filtered(lambda x: x.move_id and x.move_id.state not in ["draft", "cancel"]):
             if rec.journal_id != rec.move_id.journal_id:
                 raise ValidationError(_("The payment journal must match the journal of its journal entry."))
+
+    # ── Report helpers ────────────────────────────────────────────────────────
+
+    def _get_receipt_header_address(self):
+        """Return the partner address shown in the receipt header.
+        Override in country/receiptbook modules to customize."""
+        self.ensure_one()
+        return self.company_id.partner_id
+
+    def _get_payment_bundle_key(self):
+        """Key used to group payments into bundles for printing.
+        Base: each payment is its own bundle (key = id)."""
+        return self.id
+
+    def _get_payment_bundles(self):
+        """Return a dict {key: account.payment recordset} grouping self into print bundles."""
+        bundles = defaultdict(lambda: self.env["account.payment"])
+        for rec in self:
+            bundles[rec._get_payment_bundle_key()] += rec
+        return bundles
+
+    def _select_bundle(self, bundles):
+        """Return the bundle recordset for this payment from the bundles dict."""
+        self.ensure_one()
+        return bundles.get(self._get_payment_bundle_key())
