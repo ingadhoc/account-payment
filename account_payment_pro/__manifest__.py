@@ -28,6 +28,7 @@
         "views/account_move.xml",
         "views/account_write_off_type_views.xml",
         "views/res_company_setting.xml",
+        "views/report_payment_receipt_template.xml",
     ],
     "demo": [],
     "post_init_hook": "_post_init_hooks",

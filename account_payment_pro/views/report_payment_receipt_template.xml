@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Inject payment_bundles + payment_bundle into the base receipt loop and route
+         the document template via _get_name_receipt_report so localizations can swap it. -->
+    <template id="report_payment_receipt_inject_bundles" inherit_id="account.report_payment_receipt">
+        <t t-foreach="docs" position="before">
+            <t t-set="payment_bundles" t-value="docs._get_payment_bundles()"/>
+        </t>
+        <t t-call="account.report_payment_receipt_document" position="attributes">
+            <attribute name="t-call">#{o._get_name_receipt_report('account.report_payment_receipt_document')}</attribute>
+        </t>
+        <t t-set="lang" position="after">
+            <t t-set="payment_bundle" t-value="o._select_bundle(payment_bundles)"/>
+        </t>
+    </template>
+
+    <!-- Primary payment receipt document template.
+         Provides the full page structure: partner info, payments table,
+         matching table, and named injection points for localizations.
+         priority=16 beats the default Odoo template. -->
+    <template id="report_payment_receipt_document_pro"
+              inherit_id="account.report_payment_receipt_document"
+              primary="True"
+              priority="16">
+        <t t-set="o" position="after">
+            <!-- Fallback: if payment_bundle was not injected by the outer loop use o alone -->
+            <t t-if="not payment_bundle" t-set="payment_bundle" t-value="o"/>
+            <t t-set="report_date" t-value="o.date"/>
+            <t t-set="report_number" t-value="o.name"/>
+            <t t-set="report_name" t-value="o.payment_type == 'outbound' and _('Payment Order') or _('Receipt')"/>
+        </t>
+        <div class="page" position="replace">
+            <div class="page">
+
+                <!-- ── Partner info ─────────────────────────────────────────────── -->
+                <div id="informations" class="row mt8 mb8">
+                    <div class="col-6" name="partner_info">
+                        <strong>
+                            <span t-if="o.partner_type == 'supplier'">Supplier: </span>
+                            <span t-if="o.partner_type == 'customer'">Customer: </span>
+                        </strong><span t-field="o.partner_id.commercial_partner_id.name"/>
+                        <br/>
+                        <span t-out="o.partner_id" t-options='{"widget": "contact", "fields": ["address"], "no_marker": True, "no_tag_br": True}'/>
+                        <!-- Injection point: country-specific partner attributes (VAT, tax ID, etc.) -->
+                        <span name="partner_info_extra"/>
+                    </div>
+                </div>
+
+                <br/>
+
+                <!-- ── Payments table ───────────────────────────────────────────── -->
+                <table class="table table-sm o_main_table" name="payments_table">
+                    <!--
+                        show_amount_col: show a secondary "native currency" column when any
+                        payment in the bundle uses a currency different from destination_currency_id.
+                        Localizations can override this via xpath targeting show_amount_col_def.
+                    -->
+                    <t name="show_amount_col_def" t-set="show_amount_col" t-value="any(doc.currency_id != o.destination_currency_id for doc in payment_bundle)"/>
+                    <thead>
+                        <tr>
+                            <th><span>Payments</span></th>
+                            <th class="text-right" t-if="show_amount_col"><span>Amount</span></th>
+                            <th class="text-right">
+                                <span>Amount</span><span t-if="show_amount_col"> (<span t-field="o.destination_currency_id.name"/>)</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Check rows -->
+                        <t t-foreach="payment_bundle" t-as="doc">
+                            <t t-foreach="doc._get_latam_checks()" t-as="check">
+                                <tr>
+                                    <td>
+                                        <span t-out="'Cheque nro %s' % (check.name)">Check nro 123456</span>
+                                        <span t-if="check.bank_id" t-out="' - %s' % (check.bank_id.name)"> - Santander Rio</span>
+                                        <span t-out="' (%s)' % (check.payment_method_line_id.name)"> (Electronic checkbook)</span>
+                                        <span t-if="check.payment_date"> - Exp. <span t-field="check.payment_date"/></span>
+                                    </td>
+                                    <td class="text-right" t-if="show_amount_col">
+                                        <!-- Amount in journal currency (A) -->
+                                        <span class="text-nowrap" t-out="check.amount" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                    </td>
+                                    <td class="text-right o_price_total">
+                                        <!-- Amount in destination currency (B2) -->
+                                        <span class="text-nowrap" t-out="doc.destination_currency_id.round(check.amount * (doc.counterpart_rate or 1.0) if doc.counterpart_currency_id == doc.destination_currency_id else (check.amount / doc.accounting_rate if doc.accounting_rate else check.amount))" t-options='{"widget": "monetary", "display_currency": doc.destination_currency_id}'/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+                        <!-- Injection point: country-specific payment rows (e.g. withholdings) -->
+                        <t name="withholding_rows"/>
+                        <!-- Write-off rows -->
+                        <t t-foreach="payment_bundle.filtered('write_off_amount')" t-as="doc">
+                            <tr>
+                                <td>
+                                    <span t-out="doc.write_off_type_id.label or doc.write_off_type_id.name"/>
+                                </td>
+                                <td class="text-right" t-if="show_amount_col">
+                                    <span class="text-nowrap" t-field="doc.write_off_amount"/>
+                                </td>
+                                <td class="text-right o_price_total">
+                                    <span class="text-nowrap" t-field="doc.write_off_amount"/>
+                                </td>
+                            </tr>
+                        </t>
+                        <!-- Regular (non-check) payment rows -->
+                        <t t-set="all_same_type" t-value="len(set(payment_bundle.mapped('payment_type'))) == 1"/>
+                        <t t-foreach="payment_bundle.filtered(lambda x: not x._is_latam_check_payment() and x.amount != 0.0)" t-as="doc" id="payment_bundle_doc">
+                            <t t-set="display_amount_a" t-value="abs(doc.amount_signed) if all_same_type else doc.amount_signed"/>
+                            <t t-set="display_amount_b_raw" t-value="doc.counterpart_currency_amount if doc.counterpart_currency_id == doc.destination_currency_id else (doc.amount / doc.accounting_rate if doc.accounting_rate else doc.amount)"/>
+                            <t t-set="display_amount_b" t-value="abs(display_amount_b_raw) if all_same_type else (display_amount_b_raw if doc.payment_type == 'inbound' else -display_amount_b_raw)"/>
+                            <tr>
+                                <td>
+                                    <span t-field="doc.journal_id.name"/>
+                                    <span t-field="doc.payment_method_line_id.name"/>
+                                </td>
+                                <td class="text-right" t-if="show_amount_col">
+                                    <!-- Amount in journal currency (A) -->
+                                    <span class="text-nowrap"
+                                        t-out="display_amount_a"
+                                        t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                                <td class="text-right o_price_total">
+                                    <!-- Amount in destination currency (B2) -->
+                                    <span class="text-nowrap"
+                                        t-out="display_amount_b"
+                                        t-options='{"widget": "monetary", "display_currency": doc.destination_currency_id}'/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td><strong><span>Total Paid</span></strong></td>
+                            <td t-if="show_amount_col"/>
+                            <td class="text-right">
+                                <strong><span class="text-nowrap" t-field="o.payment_total"/></strong>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <br/>
+
+                <!-- ── Matching (imputed vouchers) table ────────────────────────── -->
+                <t t-set="matched_lines" t-value="payment_bundle.with_context(matched_payment_ids=payment_bundle.ids).mapped('matched_move_line_ids')"/>
+                <table class="table table-sm o_main_table" name="matching_table">
+                    <thead>
+                        <tr>
+                            <th><span>Imputed Vouchers</span></th>
+                            <th class="text-center"><span>Exp. Date</span></th>
+                            <th class="text-right"><span>Original Amount</span></th>
+                            <th class="text-right"><span>Imputed Amount</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="matched_lines" t-as="line">
+                            <tr>
+                                <td><span t-field='line.move_id.display_name'/></td>
+                                <td class="text-center">
+                                    <span class="text-nowrap" t-field="line.date_maturity"/>
+                                </td>
+                                <td class="text-right o_price_total">
+                                    <!-- Original amount in line's currency -->
+                                    <span class="text-nowrap" t-out="(o.payment_type == 'outbound' and -1.0 or 1.0) * line.amount_currency" t-options='{"widget": "monetary", "display_currency": line.currency_id}'/>
+                                </td>
+                                <td class="text-right o_price_total">
+                                    <!-- Matched amount in destination currency (B2) -->
+                                    <span class="text-nowrap" t-out="(o.payment_type == 'outbound' and -1.0 or 1.0) * line.payment_matched_amount" t-options='{"widget": "monetary", "display_currency": line.payment_matched_currency_id}'/>
+                                </td>
+                            </tr>
+                            <t class="reversal_move_lines"/>
+                        </t>
+                        <tr t-if="sum(payment_bundle.mapped('unmatched_amount'))">
+                            <td>On account</td>
+                            <td class="text-center"/>
+                            <td class="text-right o_price_total"/>
+                            <td class="text-right o_price_total">
+                                <span class="text-nowrap" t-out="sum(payment_bundle.mapped('unmatched_amount'))" t-options="{'widget': 'monetary', 'display_currency': o.destination_currency_id}"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3"><strong><span>Total Imputed</span></strong></td>
+                            <td class="text-right">
+                                <strong><span class="text-nowrap" t-out="o.matched_amount + o.unmatched_amount" t-options='{"widget": "monetary", "display_currency": o.destination_currency_id}'/></strong>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <br/>
+
+                <!-- Injection point: country-specific extra tables (e.g. pending receivables) -->
+                <span name="pending_table"/>
+
+                <!-- Injection point: receipt footer (signature, memo, etc.) -->
+                <span name="payment_footer"/>
+
+            </div>
+        </div>
+    </template>
+
+</odoo>
