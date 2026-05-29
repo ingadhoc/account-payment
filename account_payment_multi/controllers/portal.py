@@ -65,7 +65,9 @@ class PaymentPortal(payment_portal.PaymentPortal):
         company = first_invoice.company_id
         currency = first_invoice.currency_id
 
-        if any(invoice.partner_id != partner for invoice in selected_invoices):
+        if not selected_invoices.env.context.get("skip_selected_invoices_validation") and any(
+            invoice.partner_id != partner for invoice in selected_invoices
+        ):
             raise ValidationError(_("Selected invoices should share the same partner."))
         if any(invoice.company_id != company for invoice in selected_invoices):
             raise ValidationError(_("Selected invoices should share the same company."))
