@@ -24,15 +24,17 @@ class AccountCashboxRoundingAdjustment(models.TransientModel):
         Create journal entries to adjust the rounding differences in the cashbox session.
         """
 
+        company = self.cashbox_session_id.company_id
+
         # Create journal entries for each line with a rounding difference
         for line in self.cashbox_session_id.line_ids.filtered(
             lambda x: x.balance_difference != 0 and x.require_cash_control
         ):
-            currency = line.journal_id.currency_id or self.cashbox_session_id.company_id.currency_id
+            currency = line.journal_id.currency_id or company.currency_id
             if self.force_rate and self.forced_rate:
                 negative_amount = abs(min(line.balance_difference, 0.0)) * self.forced_rate
                 positive_amount = max(line.balance_difference, 0.0) * self.forced_rate
-            elif currency != self.cashbox_session_id.company_id.currency_id:
+            elif currency != company.currency_id:
                 negative_amount = abs(min(line.balance_difference, 0.0)) / currency.rate
                 positive_amount = max(line.balance_difference, 0.0) / currency.rate
             else:
@@ -43,7 +45,7 @@ class AccountCashboxRoundingAdjustment(models.TransientModel):
                 "journal_id": line.journal_id.id,
                 "date": fields.Date.today(),
                 "cashbox_session_id": self.cashbox_session_id.id,
-                "company_id": self.cashbox_session_id.company_id.id,
+                "company_id": company.id,
                 "line_ids": [
                     (
                         0,
@@ -75,7 +77,7 @@ class AccountCashboxRoundingAdjustment(models.TransientModel):
                     ),
                 ],
             }
-            move = self.env["account.move"].create(move_vals)
+            move = self.env["account.move"].with_company(company).create(move_vals)
             move.action_post()
 
         self.cashbox_session_id.write({"state": "closed"})
