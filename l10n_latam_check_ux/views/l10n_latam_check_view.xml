@@ -5,6 +5,24 @@
         <field name="model">l10n_latam.check</field>
         <field name="inherit_id" ref="l10n_latam_check.l10n_latam_check_view_form" />
         <field name="arch" type="xml">
+            <form  position="attributes">
+                <attribute name="edit">True</attribute>
+            </form>
+            <field name="amount" position="attributes">
+                <attribute name="readonly">True</attribute>
+            </field>
+            <field name="name" position="attributes">
+                <attribute name="readonly">not user_can_write</attribute>
+            </field>
+            <field name="issuer_vat" position="attributes">
+                <attribute name="readonly">not user_can_write</attribute>
+            </field>
+            <field name="payment_date" position="attributes">
+                <attribute name="readonly">not user_can_write</attribute>
+            </field>
+            <field name="bank_id" position="attributes">
+                <attribute name="readonly">not user_can_write</attribute>
+            </field>
             <xpath expr="//button[@name='action_void']" position="after">
                 <field name="check_add_debit_button" invisible="1"/>
                 <field name="can_reject" invisible="1"/>
