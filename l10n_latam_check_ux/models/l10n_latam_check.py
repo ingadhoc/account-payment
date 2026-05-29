@@ -6,6 +6,11 @@ class l10nLatamAccountPaymentCheck(models.Model):
 
     _unique = models.UniqueIndex("(name, payment_method_line_id) WHERE issue_state IS NOT NULL")
 
+    name = fields.Char(tracking=True)
+    issuer_vat = fields.Char(tracking=True)
+    payment_date = fields.Date(tracking=True)
+    bank_id = fields.Many2one(tracking=True)
+
     check_add_debit_button = fields.Boolean(related="original_journal_id.check_add_debit_button", readonly=True)
     can_reject = fields.Boolean(
         compute="_compute_can_reject",
@@ -21,6 +26,13 @@ class l10nLatamAccountPaymentCheck(models.Model):
     )
     operation_ids = fields.Many2many(check_company=False)
     outstanding_line_id = fields.Many2one(check_company=False)
+    user_can_write = fields.Boolean(
+        compute="_compute_user_can_write",
+    )
+
+    def _compute_user_can_write(self):
+        for rec in self:
+            rec.user_can_write = rec.env.user.has_group("account.group_account_user")
 
     @api.depends("operation_ids.state", "payment_id.state")
     def _compute_company_id(self):
