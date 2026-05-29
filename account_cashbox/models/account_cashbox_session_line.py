@@ -74,7 +74,7 @@ class PopSessionJournalControl(models.Model):
     @api.depends("journal_id")
     def _compute_curency(self):
         for rec in self:
-            rec.currency_id = rec.journal_id.currency_id or rec.journal_id.company_id.currency_id
+            rec.currency_id = rec.journal_id.currency_id or rec.journal_id.sudo().company_id.currency_id
 
     def action_session_payments(self):
         return self.with_context(

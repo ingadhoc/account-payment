@@ -11,6 +11,7 @@ class AccountCashbox(models.Model):
     _name = "account.cashbox"
     _description = "Cashbox"
     _check_company_auto = True
+    _check_company_domain = models.check_company_domain_parent_of
 
     name = fields.Char(
         required=True,

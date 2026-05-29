@@ -4,13 +4,13 @@
     <record id="cashbox_company_rule" model="ir.rule">
         <field name="name">Cashbox multi-company</field>
         <field name="model_id" ref="model_account_cashbox"/>
-        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="domain_force">[('company_id', 'parent_of', company_ids)]</field>
     </record>
 
     <record id="cashbox_session_company_rule" model="ir.rule">
         <field name="name">Cashbox Session multi-company</field>
         <field name="model_id" ref="model_account_cashbox_session"/>
-        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="domain_force">[('company_id', 'parent_of', company_ids)]</field>
     </record>
 
     <record id="cashbox_user" model="ir.rule">

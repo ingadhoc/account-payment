@@ -192,7 +192,7 @@ class AccountPayment(models.Model):
                 journal_id = res.get("journal_id")
                 if journal_id:
                     journal = self.env["account.journal"].browse(journal_id)
-                    currency_id = (journal.currency_id or journal.company_id.currency_id).id
+                    currency_id = (journal.currency_id or journal.sudo().company_id.currency_id).id
             if currency_id:
                 res["previous_currency_id"] = currency_id
         return res

@@ -47,6 +47,17 @@ class AccountPayment(models.Model):
         else:
             self.destination_cashbox_session_id = False
 
+    @api.depends("journal_id")
+    def _compute_company_id(self):
+        # journal_id puede pertenecer a la empresa padre (shared_to_branches=True) y el usuario
+        # de sucursal no tiene acceso de lectura a ese res.company (res_company_rule_employee).
+        # Usamos sudo() para evaluar la jerarquía sin disparar AccessError.
+        for payment in self:
+            if payment.journal_id.sudo().company_id not in payment.company_id.sudo().parent_ids:
+                payment.company_id = (payment.journal_id.sudo().company_id or self.env.company)._accessible_branches()[
+                    :1
+                ]
+
     @api.depends_context("uid")
     # dummy depends para que se compute(no estamos seguros porque solo con el depends_context no computa)
     @api.depends("partner_id")
