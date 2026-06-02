@@ -847,11 +847,11 @@ class AccountPayment(models.Model):
                 debit_moves = debit_moves.filtered(lambda x: x.move_id not in exchange_move_ids)
                 credit_moves = credit_moves.filtered(lambda x: x.move_id not in exchange_move_ids)
 
-            debit_lines_sorted = debit_moves.filtered(lambda x: x.date_maturity != False).sorted(
-                key=lambda x: (x.date_maturity, x.move_id.name)
+            debit_lines_sorted = debit_moves.filtered(lambda x: x.date_maturity).sorted(
+                key=lambda x: (x.date_maturity, x.move_id.name or "")
             )
-            credit_lines_sorted = credit_moves.filtered(lambda x: x.date_maturity != False).sorted(
-                key=lambda x: (x.date_maturity, x.move_id.name)
+            credit_lines_sorted = credit_moves.filtered(lambda x: x.date_maturity).sorted(
+                key=lambda x: (x.date_maturity, x.move_id.name or "")
             )
             debit_lines_without_date_maturity = debit_moves - debit_lines_sorted
             credit_lines_without_date_maturity = credit_moves - credit_lines_sorted
