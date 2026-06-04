@@ -400,7 +400,7 @@ class AccountPayment(models.Model):
     def _compute_amount(self):
         super()._compute_amount()
         for rec in self:
-            if not rec.currency_id.is_zero(rec.amount - rec.amount_exact):
+            if rec.currency_id and not rec.currency_id.is_zero(rec.amount - rec.amount_exact):
                 rec.amount_exact = rec.amount
 
     @api.onchange("currency_id")
