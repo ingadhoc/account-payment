@@ -41,6 +41,20 @@ class AccountPayment(models.Model):
             if rec.l10n_latam_check_warning_msg:
                 raise ValidationError("%s" % rec.l10n_latam_check_warning_msg)
             rec.l10n_latam_move_check_ids_operation_date = fields.Datetime.now()
+
+        # Detectar cheques de terceros existentes usados más de una vez dentro del mismo
+        # batch de confirmación (ej: bundle confirma dos pagos hijos en draft que tienen
+        # el mismo cheque, sin que ninguno lo haya bloqueado antes de postear).
+        seen = self.env["l10n_latam.check"]
+        for rec in self.filtered("l10n_latam_move_check_ids"):
+            repeated = rec.l10n_latam_move_check_ids & seen
+            if repeated:
+                raise ValidationError(
+                    "The same check cannot be confirmed in two payments at the same time: %s"
+                    % ", ".join(repeated.mapped("display_name"))
+                )
+            seen |= rec.l10n_latam_move_check_ids
+
         super().action_post()
 
     def _create_paired_internal_transfer_payment(self):
