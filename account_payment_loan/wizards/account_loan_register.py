@@ -114,7 +114,11 @@ class AccountLoanRegister(models.TransientModel):
             res["amount"] = loan_move_ids._get_total_debit() + sum(amls.mapped("amount_residual"))
 
         elif self.env.context.get("active_ids"):
-            amls = self.env["account.move.line"].browse(self.env.context.get("active_ids", [])).filtered("debit")
+            amls = (
+                self.env["account.move.line"]
+                .browse(self.env.context.get("active_ids", []))
+                .filtered(lambda x: x.debit and x.account_id.account_type == "asset_receivable")
+            )
             res["move_line_ids"] = [Command.set(amls.ids)]
             res["amount"] = sum(amls.mapped("amount_residual"))
         if not res.get("move_line_ids") or res.get("amount", 0) <= 0:
