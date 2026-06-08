@@ -384,9 +384,18 @@ class AccountPayment(models.Model):
         self.ensure_one()
         if self.is_main_payment:
             move_ids = self.move_id | self.link_payment_ids.mapped("move_id")
-            return move_ids._get_records_action(
-                name=_("Journal Entry"),
-            )
+            if len(move_ids) == 1:
+                return move_ids._get_records_action(name=_("Journal Entry"))
+            list_view = self.env.ref("l10n_ar_payment_bundle.view_account_move_bundle_list")
+            return {
+                "name": _("Journal Entry"),
+                "type": "ir.actions.act_window",
+                "res_model": "account.move",
+                "view_mode": "list,form",
+                "domain": [("id", "in", move_ids.ids)],
+                "views": [(list_view.id, "list"), (False, "form")],
+                "context": {"create": False},
+            }
         return super().button_open_journal_entry()
 
     @api.depends()
