@@ -264,8 +264,15 @@ class AccountPayment(models.Model):
         return res
 
     def action_draft(self):
+<<<<<<< ee2ffaab20c2ee10e6e63ab8203c06b1d4b69756
         active_links = self.link_payment_ids.filtered(lambda p: p.state != "cancel")
         res = super(AccountPayment, self + active_links).action_draft()
+||||||| 998eb3700a49a9514d7e772a6f45fcd0ae489db7
+        res = super(AccountPayment, self + self.link_payment_ids).action_draft()
+=======
+        active_links = self.link_payment_ids.filtered(lambda p: p.state != "canceled")
+        res = super(AccountPayment, self + active_links).action_draft()
+>>>>>>> 99cfec559c9aa898e50c5910f8e70480c97f6436
         if self.main_payment_id:
             return {
                 "type": "ir.actions.act_window",
