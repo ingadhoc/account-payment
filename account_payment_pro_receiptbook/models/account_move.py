@@ -39,9 +39,13 @@ class AccountMove(models.Model):
     def _compute_name(self):
         super()._compute_name()
         for move in self.filtered(
-            lambda x: x.origin_payment_id.receiptbook_id
-            and (
-                x.state == "draft" or x.origin_payment_id.state == "draft" or x.origin_payment_id.payment_transaction_id
+            lambda x: (
+                x.origin_payment_id.receiptbook_id
+                and (
+                    x.state == "draft"
+                    or x.origin_payment_id.state == "draft"
+                    or x.origin_payment_id.payment_transaction_id
+                )
             )
         ):
             move.name = move.origin_payment_id.name
@@ -94,3 +98,9 @@ class AccountMove(models.Model):
         if self.receiptbook_id:
             return False
         return super()._must_check_constrains_date_sequence()
+
+    def _update_sequence_made_gap(self, invalidate_current=False):
+        receiptbook_moves = self.filtered(lambda m: m.receiptbook_id)
+        receiptbook_moves.made_sequence_gap = False
+        if other_moves := self - receiptbook_moves:
+            super(AccountMove, other_moves)._update_sequence_made_gap(invalidate_current=invalidate_current)
