@@ -190,7 +190,7 @@ class AccountPayment(models.Model):
             payments = rec.main_payment_id.link_payment_ids
             total_linked_in_b = sum(payments.mapped("payment_total"))
             rec.payment_difference = (
-                abs(rec.main_payment_id.selected_debt)
+                abs(rec.main_payment_id.to_pay_amount)
                 - total_linked_in_b
                 - rec.main_payment_id.withholdings_amount
                 - rec.main_payment_id.write_off_amount
