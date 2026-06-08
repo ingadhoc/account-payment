@@ -416,7 +416,7 @@ class AccountPayment(models.Model):
                 old_currency = rec.company_currency_id
             # Actualizar para el próximo onchange antes de cualquier continue
             rec.previous_currency_id = new_currency
-            if rec.state != "draft" or not rec.amount:
+            if rec.state != "draft":
                 continue
 
             old_amount = rec.amount_exact or rec.amount
