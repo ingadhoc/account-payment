@@ -177,7 +177,8 @@ class AccountPayment(models.Model):
         return res
 
     def action_draft(self):
-        res = super(AccountPayment, self + self.link_payment_ids).action_draft()
+        active_links = self.link_payment_ids.filtered(lambda p: p.state != "canceled")
+        res = super(AccountPayment, self + active_links).action_draft()
         if self.main_payment_id:
             return {
                 "type": "ir.actions.act_window",
