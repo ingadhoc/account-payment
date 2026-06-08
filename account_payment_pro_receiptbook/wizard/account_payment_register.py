@@ -21,6 +21,7 @@ class AccountPaymentRegister(models.TransientModel):
             if rec["batch"]:
                 if receiptbook := self._get_receiptbook(rec["batch"]["payment_values"]["partner_type"]):
                     name = receiptbook.with_context(ir_sequence_date=self.payment_date).sequence_id.next_by_id()
-                    rec["create_vals"]["name"] = "%s %s" % (receiptbook.document_type_id.doc_code_prefix, name)
-            rec["create_vals"]["name"] = rec["create_vals"].get("name", "/")
+                    prefix = receiptbook.document_type_id.doc_code_prefix
+                    rec["create_vals"]["name"] = ("%s %s" % (prefix, name)) if prefix else name
+            rec["create_vals"]["name"] = rec["create_vals"].get("name") or "/"
         return super()._init_payments(to_process, edit_mode=edit_mode)
