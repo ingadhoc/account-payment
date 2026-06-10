@@ -6,14 +6,19 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-27 11:36+0000\n"
-"PO-Revision-Date: 2026-04-27 11:36+0000\n"
+"POT-Creation-Date: 2026-06-10 13:33+0000\n"
+"PO-Revision-Date: 2026-06-10 13:33+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
+msgid "(Electronic checkbook)"
+msgstr ""
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
@@ -28,6 +33,16 @@ msgstr ""
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid "+ Debit Note"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
+msgid "- Exp."
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
+msgid "- Santander Rio"
 msgstr ""
 
 #. module: account_payment_pro
@@ -53,6 +68,46 @@ msgstr ""
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "<span>=</span>"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
+msgid "<span>Amount</span>"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
+msgid "<span>Exp. Date</span>"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
+msgid "<span>Imputed Amount</span>"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
+msgid "<span>Imputed Vouchers</span>"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
+msgid "<span>Original Amount</span>"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
+msgid "<span>Payments</span>"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
+msgid "<strong><span>Total Imputed</span></strong>"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
+msgid "<strong><span>Total Paid</span></strong>"
 msgstr ""
 
 #. module: account_payment_pro
@@ -188,6 +243,11 @@ msgid "Cancel"
 msgstr ""
 
 #. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
+msgid "Check nro 123456"
+msgstr ""
+
+#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__commercial_partner_id
 msgid "Commercial Entity"
 msgstr ""
@@ -264,6 +324,11 @@ msgstr ""
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__currency_id
 msgid "Currency"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
+msgid "Customer:"
 msgstr ""
 
 #. module: account_payment_pro
@@ -499,6 +564,11 @@ msgid "Nothing to be paid on selected entries"
 msgstr ""
 
 #. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
+msgid "On account"
+msgstr ""
+
+#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_bank_statement_line__open_move_line_ids
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_move__open_move_line_ids
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__open_move_line_ids
@@ -644,6 +714,11 @@ msgstr ""
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "Send the pending difference to write-off"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
+msgid "Supplier:"
 msgstr ""
 
 #. module: account_payment_pro
