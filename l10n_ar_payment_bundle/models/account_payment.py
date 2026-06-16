@@ -213,6 +213,18 @@ class AccountPayment(models.Model):
 
             rec.warnings = warnings
 
+    def _get_bundle_payment_total(self, payment_bundle):
+        # main_payment.payment_total already accumulates all link_payment_ids via
+        # _compute_payment_total; summing the full bundle would double-count the links.
+        if self.is_main_payment:
+            return self.payment_total
+        return super()._get_bundle_payment_total(payment_bundle)
+
+    def _get_bundle_imputed_total(self, payment_bundle):
+        if self.is_main_payment:
+            return self.matched_amount + self.unmatched_amount
+        return super()._get_bundle_imputed_total(payment_bundle)
+
     def _get_payment_bundles(self):
         main_payments = self.filtered("is_main_payment")
         bundles = super(AccountPayment, self - main_payments)._get_payment_bundles()
