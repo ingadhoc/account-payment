@@ -112,6 +112,32 @@ msgid "Customer Receipts"
 msgstr "Recibos de Cliente"
 
 #. module: account_payment_pro_receiptbook
+#: model:ir.model.fields,help:account_payment_pro_receiptbook.field_account_payment_receiptbook__implementation
+msgid ""
+"Defines how the sequence assigns numbers:\n"
+"* Standard: numbers are drawn from a PostgreSQL sequence. It is fast, but the "
+"numbering may have gaps (for example if a draft payment is deleted or two "
+"payments are posted concurrently).\n"
+"* No gap: guarantees a strictly consecutive numbering, because a number is "
+"only assigned once the previous one has been assigned. Use it when the legal/"
+"fiscal numbering must not skip values. It is slower than the standard "
+"implementation: to keep numbers consecutive it locks the sequence on every "
+"assignment, so concurrent payments are serialized and have to wait for each "
+"other, which can cause noticeable delays when posting many payments at once."
+msgstr ""
+"Define cómo la secuencia asigna los números:\n"
+"* Estándar: los números se obtienen de una secuencia de PostgreSQL. Es "
+"rápido, pero la numeración puede tener huecos (por ejemplo, si se elimina un "
+"pago en borrador o se confirman dos pagos de forma concurrente).\n"
+"* Sin hueco: garantiza una numeración estrictamente consecutiva, porque un "
+"número solo se asigna una vez que se asignó el anterior. Úsela cuando la "
+"numeración legal/fiscal no deba saltear valores. Es más lenta que la "
+"implementación estándar: para mantener los números consecutivos bloquea la "
+"secuencia en cada asignación, por lo que los pagos concurrentes se serializan "
+"y deben esperarse entre sí, lo que puede provocar demoras notables al "
+"confirmar muchos pagos a la vez."
+
+#. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_chart_template__display_name
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_journal__display_name
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_move__display_name
@@ -187,6 +213,11 @@ msgid ""
 msgstr ""
 "Si se configura, se enviará un correo electrónico al cliente cuando se haya "
 "publicado la cuenta, pago o  grupo relacionado."
+
+#. module: account_payment_pro_receiptbook
+#: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__implementation
+msgid "Implementation"
+msgstr "Implementación"
 
 #. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_l10n_latam_document_type__internal_type

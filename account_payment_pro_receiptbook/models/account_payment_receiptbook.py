@@ -45,6 +45,19 @@ class AccountPaymentReceiptbook(models.Model):
         related="sequence_id.number_next_actual",
         readonly=False,
     )
+    implementation = fields.Selection(
+        related="sequence_id.implementation",
+        readonly=False,
+        help="Defines how the sequence assigns numbers:\n"
+        "* Standard: numbers are drawn from a PostgreSQL sequence. It is fast, but the numbering "
+        "may have gaps (for example if a draft payment is deleted or two payments are posted "
+        "concurrently).\n"
+        "* No gap: guarantees a strictly consecutive numbering, because a number is only assigned "
+        "once the previous one has been assigned. Use it when the legal/fiscal numbering must not "
+        "skip values. It is slower than the standard implementation: to keep numbers consecutive it "
+        "locks the sequence on every assignment, so concurrent payments are serialized and have to "
+        "wait for each other, which can cause noticeable delays when posting many payments at once.",
+    )
     sequence_id = fields.Many2one(
         "ir.sequence",
         "Entry Sequence",
