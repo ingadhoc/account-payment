@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-10 13:33+0000\n"
+"POT-Creation-Date: 2026-06-17 14:05+0000\n"
 "PO-Revision-Date: 2026-04-23 18:41+0000\n"
 "Last-Translator: julia elizondo <jue@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
@@ -169,6 +169,11 @@ msgid "Journal"
 msgstr "Diario"
 
 #. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_move_bundle_list
+msgid "Journal Entries"
+msgstr ""
+
+#. module: l10n_ar_payment_bundle
 #. odoo-python
 #: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
 msgid "Journal Entry"
@@ -224,6 +229,11 @@ msgstr "Pagos múltiples"
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__new_name
 msgid "New Name"
 msgstr "Nuevo Nombre"
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_move_bundle_list
+msgid "Number"
+msgstr ""
 
 #. module: l10n_ar_payment_bundle
 #. odoo-python
@@ -397,6 +407,7 @@ msgid "To Pay Lines"
 msgstr "Líneas a Pagar"
 
 #. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_move_bundle_list
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
 msgid "Total"
 msgstr "Total"
@@ -441,3 +452,9 @@ msgid ""
 msgstr ""
 "No puede resecuenciar movimientos vinculados a un pago múltiple. Por favor "
 "resecuencie el pago en su lugar."
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
+msgid "id"
+msgstr ""
