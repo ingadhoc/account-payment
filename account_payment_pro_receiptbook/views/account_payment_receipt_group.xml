@@ -54,6 +54,7 @@
                             <field name="prefix"/>
                             <field name="sequence_id"/>
                             <field name="next_number"/>
+                            <field name="implementation"/>
                             <field name="company_id" widget="selection" groups="base.group_multi_company"/>
                         </group>
                     </group>
