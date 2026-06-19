@@ -265,7 +265,7 @@ msgstr "Métodos de Pago"
 #. module: l10n_ar_payment_bundle
 #: model:ir.actions.report,name:l10n_ar_payment_bundle.action_report_receipt_bundle
 msgid "Payment Receipt bundled"
-msgstr ""
+msgstr "Recibo de Pago agrupado"
 
 #. module: l10n_ar_payment_bundle
 #: model:ir.model,name:l10n_ar_payment_bundle.model_payment_rename_wizard

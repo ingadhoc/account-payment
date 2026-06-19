@@ -81,42 +81,42 @@ msgstr "<span>=</span>"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
 msgid "<span>Amount</span>"
-msgstr ""
+msgstr "<span>Importe</span>"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
 msgid "<span>Exp. Date</span>"
-msgstr ""
+msgstr "<span>Fecha Venc.</span>"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
 msgid "<span>Imputed Amount</span>"
-msgstr ""
+msgstr "<span>Importe Imputado</span>"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
 msgid "<span>Imputed Vouchers</span>"
-msgstr ""
+msgstr "<span>Comprobantes Imputados</span>"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
 msgid "<span>Original Amount</span>"
-msgstr ""
+msgstr "<span>Importe Original</span>"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
 msgid "<span>Payments</span>"
-msgstr ""
+msgstr "<span>Pagos</span>"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
 msgid "<strong><span>Total Imputed</span></strong>"
-msgstr ""
+msgstr "<strong><span>Total Imputado</span></strong>"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
 msgid "<strong><span>Total Paid</span></strong>"
-msgstr ""
+msgstr "<strong><span>Total Pagado</span></strong>"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__account_id
@@ -346,7 +346,7 @@ msgstr "Moneda"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
 msgid "Customer:"
-msgstr ""
+msgstr "Cliente:"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
@@ -598,7 +598,7 @@ msgstr "Nada por pagar de los asientos seleccionados"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
 msgid "On account"
-msgstr ""
+msgstr "A cuenta"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_bank_statement_line__open_move_line_ids
@@ -756,7 +756,7 @@ msgstr ""
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
 msgid "Supplier:"
-msgstr ""
+msgstr "Proveedor:"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__tax_ids
