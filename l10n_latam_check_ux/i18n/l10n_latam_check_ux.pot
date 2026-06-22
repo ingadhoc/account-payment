@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-12 17:26+0000\n"
-"PO-Revision-Date: 2026-05-12 17:26+0000\n"
+"POT-Creation-Date: 2026-06-22 12:29+0000\n"
+"PO-Revision-Date: 2026-06-22 12:29+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -124,6 +124,11 @@ msgstr ""
 msgid ""
 "At least one check is in a journal where the 'Add Debit Date' option is not "
 "enabled."
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__bank_id
+msgid "Bank"
 msgstr ""
 
 #. module: l10n_latam_check_ux
@@ -356,6 +361,11 @@ msgid ""
 msgstr ""
 
 #. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__issuer_vat
+msgid "Issuer Vat"
+msgstr ""
+
+#. module: l10n_latam_check_ux
 #: model:ir.model,name:l10n_latam_check_ux.model_account_journal
 msgid "Journal"
 msgstr ""
@@ -435,6 +445,11 @@ msgid "No se pudo determinar el importe a debitar para el cheque %s."
 msgstr ""
 
 #. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__name
+msgid "Number"
+msgstr ""
+
+#. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
 msgid "Número"
 msgstr ""
@@ -452,6 +467,11 @@ msgstr ""
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__outstanding_line_id
 msgid "Outstanding Line"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__payment_date
+msgid "Payment Date"
 msgstr ""
 
 #. module: l10n_latam_check_ux
@@ -545,6 +565,11 @@ msgstr ""
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.view_account_own_check_tree
 msgid "Total"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__user_can_write
+msgid "User Can Write"
 msgstr ""
 
 #. module: l10n_latam_check_ux
