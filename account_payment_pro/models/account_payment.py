@@ -22,6 +22,7 @@ class AccountPayment(models.Model):
         compute="_compute_counterpart_currency_id",
         store=True,
         readonly=False,
+        copy=False,
     )
     destination_currency_id = fields.Many2one(
         "res.currency",
@@ -172,6 +173,20 @@ class AccountPayment(models.Model):
     multi_currency_debt = fields.Boolean(
         compute="_compute_multi_currency_debt",
     )
+    partner_multi_currency_debt = fields.Boolean(
+        compute="_compute_partner_multi_currency_debt",
+        help="True cuando el contacto tiene deuda abierta en más de una moneda. "
+        "A diferencia de multi_currency_debt (que mira las líneas ya seleccionadas, "
+        "que el default filtra a una sola moneda), este mira la deuda TOTAL del partner.",
+    )
+    multi_currency_warning_dismissed = fields.Boolean(
+        compute="_compute_multi_currency_warning_dismissed",
+        store=True,
+        readonly=False,
+        copy=False,
+        help="El usuario descartó el aviso de deuda multi-moneda con la cruz. "
+        "Se resetea solo si cambia el contacto o la compañía.",
+    )
 
     @api.model
     def default_get(self, fields_list):
@@ -207,6 +222,32 @@ class AccountPayment(models.Model):
                 continue
             currencies = rec.to_pay_move_line_ids.mapped("currency_id")
             rec.multi_currency_debt = len(currencies) > 1
+
+    @api.depends("partner_id", "company_id", "partner_type", "company_id.reconcile_on_company_currency")
+    def _compute_partner_multi_currency_debt(self):
+        for rec in self:
+            if rec.company_id.reconcile_on_company_currency or not rec.partner_id:
+                rec.partner_multi_currency_debt = False
+                continue
+            # Miramos la deuda total abierta del contacto (no las líneas ya filtradas
+            # por el default de moneda). Reutilizamos el dominio canónico sin el filtro
+            # por moneda (force_currency_domain no está en este contexto).
+            currencies = self.env["account.move.line"].search(rec._get_to_pay_move_lines_domain()).mapped("currency_id")
+            rec.partner_multi_currency_debt = len(currencies) > 1
+
+    @api.depends("partner_id", "company_id")
+    def _compute_multi_currency_warning_dismissed(self):
+        # Reseteamos el descarte cuando cambia el contacto o la compañía: la deuda
+        # cambió de contexto y el aviso vuelve a ser relevante. El campo es
+        # readonly=False, así que action_dismiss_multi_currency_warning lo puede pisar
+        # a True y ese valor persiste hasta el próximo cambio de partner/compañía.
+        for rec in self:
+            rec.multi_currency_warning_dismissed = False
+
+    def action_dismiss_multi_currency_warning(self):
+        """Cruz del aviso de deuda multi-moneda: lo descarta para este pago.
+        Solo tiene sentido en borrador, que es donde se ve el aviso y se elige la deuda."""
+        self.filtered(lambda p: p.state == "draft").multi_currency_warning_dismissed = True
 
     @api.depends(
         "destination_account_id",
@@ -263,8 +304,14 @@ class AccountPayment(models.Model):
                 if len(currencies) == 1:
                     rec.counterpart_currency_id = currencies
                 else:
-                    # Múltiples monedas: ask user to edit
-                    rec.counterpart_currency_id = False
+                    # Múltiples monedas: default a moneda de compañía y descartar
+                    # las líneas ya seleccionadas que no son de esa moneda.
+                    # Filtramos en memoria (no _add_all) para no re-buscar en DB
+                    # dentro de un compute que depende de to_pay_move_line_ids.
+                    rec.counterpart_currency_id = company_currency
+                    rec.to_pay_move_line_ids = rec.to_pay_move_line_ids.filtered(
+                        lambda line: line.currency_id == company_currency
+                    )
             elif not rec.counterpart_currency_id:
                 # Sin deuda seleccionada: default moneda de la compañía
                 rec.counterpart_currency_id = company_currency
@@ -486,6 +533,21 @@ class AccountPayment(models.Model):
             if "amount" in vals and "amount_exact" not in vals:
                 vals["amount_exact"] = vals["amount"]
         return super().create(vals_list)
+
+    def copy(self, default=None):
+        # On copy, to_pay_move_line_ids (copy=False) is recomputed via _add_all,
+        # which pulls all the partner's open debt without filtering by currency. If
+        # the partner has debt in several currencies, that triggers
+        # _check_to_pay_lines_currency. We propagate the counterpart currency chosen
+        # on the source record as a filter, just like action_add_all, so the copy
+        # ends up with a single currency.
+        new_records = self.browse()
+        for rec in self:
+            ctx = {}
+            if rec.counterpart_currency_id and not rec.company_id.reconcile_on_company_currency:
+                ctx["force_currency_domain"] = rec.counterpart_currency_id.id
+            new_records += super(AccountPayment, rec.with_context(**ctx)).copy(default)
+        return new_records
 
     def write(self, vals):
         if "amount" in vals and "amount_exact" not in vals:

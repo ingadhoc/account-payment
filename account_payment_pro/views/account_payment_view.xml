@@ -165,10 +165,15 @@
     <field name="arch" type="xml">
         <page name="latam_checks_page" position="before">
             <page string="Debts" name="debts" invisible="state != 'draft' or is_internal_transfer or not use_payment_pro">
-                <div class="alert alert-warning" role="alert"
-                    invisible="not multi_currency_debt or not use_payment_pro">
-                    La deuda seleccionada tiene múltiples monedas.
-                    Seleccione la moneda de cancelación para filtrar las líneas.
+                <div class="alert alert-warning d-flex align-items-center justify-content-between" role="alert"
+                    invisible="not partner_multi_currency_debt or multi_currency_warning_dismissed">
+                    <span>
+                        El contacto tiene deuda en múltiples monedas. Se priorizó la moneda de la compañía;
+                        podés cambiar la moneda de cancelación para filtrar las líneas a pagar.
+                    </span>
+                    <button name="action_dismiss_multi_currency_warning" type="object"
+                        class="btn-close ms-2" aria-label="Cerrar"
+                        title="No volver a mostrar este aviso para este pago"/>
                 </div>
                 <group >
                     <group>
