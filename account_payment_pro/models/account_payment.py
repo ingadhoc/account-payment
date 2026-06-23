@@ -384,7 +384,7 @@ class AccountPayment(models.Model):
             if (
                 rec.env.context.get("default_amount")
                 and rec.currency_id == rec.company_currency_id
-                and rec.amount_exact == rec._origin.amount_exact
+                and rec.currency_id.is_zero(rec._origin.amount_exact)
                 and not rec.currency_id.is_zero(amount - rec.env.context.get("default_amount"))
             ):
                 amount = rec.env.context.get("default_amount")
