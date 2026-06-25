@@ -24,10 +24,25 @@ class AccountMove(models.Model):
     def _compute_open_move_lines(self):
         for rec in self:
             rec.open_move_line_ids = rec.line_ids.filtered(
-                lambda r: not r.reconciled
-                and r.parent_state == "posted"
-                and r.account_id.account_type in self.env["account.payment"]._get_valid_payment_account_types()
+                lambda r: (
+                    not r.reconciled
+                    and r.parent_state == "posted"
+                    and r.account_id.account_type in self.env["account.payment"]._get_valid_payment_account_types()
+                )
             )
+
+    def _get_payment_receipt_voucher_name(self):
+        """Name for the 'imputed vouchers' column of our payment receipt format.
+
+        Our format prints ``move_id.display_name``, which embeds the reference shortened to
+        ~50 chars and cut with ``[...]``. When the company enables ``payment_receipt_full_ref`` we
+        print the full reference instead.
+        """
+        self.ensure_one()
+        if not self.company_id.payment_receipt_full_ref:
+            return self.display_name
+        name = self._get_move_display_name(show_ref=False)
+        return name + (f" ({self.ref})" if self.ref else "")
 
     # Map explícito move_type → (payment_type, partner_type).
     # Se usa en pay_now() para setear el payment_type correcto desde el create,
@@ -43,10 +58,12 @@ class AccountMove(models.Model):
 
     def pay_now(self):
         for rec in self.filtered(
-            lambda x: x.pay_now_journal_id
-            and x.state == "posted"
-            and x.payment_state in ("not_paid", "partial")
-            and x.move_type in self._PAY_NOW_TYPE_MAP
+            lambda x: (
+                x.pay_now_journal_id
+                and x.state == "posted"
+                and x.payment_state in ("not_paid", "partial")
+                and x.move_type in self._PAY_NOW_TYPE_MAP
+            )
         ):
             pay_journal = rec.pay_now_journal_id
             payment_type, partner_type = self._PAY_NOW_TYPE_MAP[rec.move_type]

@@ -14,6 +14,11 @@
                         y sugerencias de diferencia de cambio">
                         <field name="use_payment_pro"/>
                     </setting>
+                    <setting id="payment_receipt_full_ref" string="Show full reference on imputed vouchers"
+                        company_dependent="1"
+                        help="On the payment receipt / payment order report, show the full reference of the imputed vouchers instead of the shortened version that cuts long references with '[...]'.">
+                        <field name="payment_receipt_full_ref"/>
+                    </setting>
                 </setting>
                   <!-- supplier payments section -->
                 <xpath expr="//block[@id='print_vendor_checks_setting_container']" position="inside">
