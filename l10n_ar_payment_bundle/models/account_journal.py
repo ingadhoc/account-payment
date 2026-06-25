@@ -35,8 +35,22 @@ class AccountJournal(models.Model):
         return journals
 
     def write(self, vals):
+        touches_method_lines = "inbound_payment_method_line_ids" in vals or "outbound_payment_method_line_ids" in vals
+        if not touches_method_lines:
+            return super().write(vals)
+        # Invalidamos el cache (operación global cross-worker) solo si las líneas
+        # de método de pago efectivamente cambiaron, no en writes idempotentes.
+        before = {
+            j.id: (tuple(j.inbound_payment_method_line_ids.ids), tuple(j.outbound_payment_method_line_ids.ids))
+            for j in self
+        }
         res = super().write(vals)
-        if "inbound_payment_method_line_ids" in vals or "outbound_payment_method_line_ids" in vals:
+        changed = any(
+            before[j.id]
+            != (tuple(j.inbound_payment_method_line_ids.ids), tuple(j.outbound_payment_method_line_ids.ids))
+            for j in self
+        )
+        if changed:
             self.env.registry.clear_cache()
         return res
 
