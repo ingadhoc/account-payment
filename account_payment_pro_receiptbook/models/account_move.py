@@ -30,11 +30,6 @@ class AccountMove(models.Model):
             domain += [("receiptbook_id", "=", False)]
         return super()._search(domain, *args, **kwargs)
 
-    def _compute_made_sequence_hole(self):
-        receiptbook_recs = self.filtered(lambda x: x.receiptbook_id and x.journal_id.type in ("bank", "cash", "credit"))
-        receiptbook_recs.made_sequence_hole = False
-        super(AccountMove, self - receiptbook_recs)._compute_made_sequence_hole()
-
     @api.depends()
     def _compute_name(self):
         super()._compute_name()
@@ -55,43 +50,6 @@ class AccountMove(models.Model):
         receiptbook_payments = self.filtered(lambda x: x.origin_payment_id.receiptbook_id)
         super(AccountMove, self - receiptbook_payments)._compute_l10n_latam_document_type()
 
-    @api.depends()
-    def _compute_made_sequence_gap(self):
-        with_receiptbook = self.filtered(lambda move: move.receiptbook_id)
-        unposted_recceiptbook = with_receiptbook.filtered(
-            lambda move: move.sequence_number != 0 and move.state != "posted"
-        )
-        unposted_recceiptbook.made_sequence_gap = True
-
-        for (receiptbook, prefix), moves in (
-            (with_receiptbook - unposted_recceiptbook).grouped(lambda m: (m.receiptbook_id, m.sequence_prefix)).items()
-        ):
-            previous_numbers = set(
-                self.env["account.move"]
-                .sudo()
-                .search(
-                    [
-                        ("receiptbook_id", "=", receiptbook.id),
-                        ("sequence_prefix", "=", prefix),
-                        (
-                            "sequence_number",
-                            ">=",
-                            min(moves.mapped("sequence_number")) - 1,
-                        ),
-                        (
-                            "sequence_number",
-                            "<=",
-                            max(moves.mapped("sequence_number")) - 1,
-                        ),
-                    ]
-                )
-                .mapped("sequence_number")
-            )
-            for move in moves:
-                move.made_sequence_gap = move.sequence_number > 1 and (move.sequence_number - 1) not in previous_numbers
-
-        super(AccountMove, self - with_receiptbook)._compute_made_sequence_gap()
-
     def _must_check_constrains_date_sequence(self):
         # OVERRIDES sequence.mixin to skip date sequence check for receiptbook moves
         self.ensure_one()
@@ -100,7 +58,55 @@ class AccountMove(models.Model):
         return super()._must_check_constrains_date_sequence()
 
     def _update_sequence_made_gap(self, invalidate_current=False):
+        # OVERRIDE: en el core ``made_sequence_gap`` ya no es computado; se fija
+        # imperativamente acá agrupando por journal + prefijo. Los asientos de
+        # talonario se numeran por receiptbook (cada uno con su ``ir.sequence``),
+        # así que esa lógica journal-based da falsos positivos. Acotamos la
+        # detección de huecos al receiptbook + prefijo.
         receiptbook_moves = self.filtered(lambda m: m.receiptbook_id)
-        receiptbook_moves.made_sequence_gap = False
+        if receiptbook_moves:
+            receiptbook_moves._update_receiptbook_made_sequence_gap()
         if other_moves := self - receiptbook_moves:
             super(AccountMove, other_moves)._update_sequence_made_gap(invalidate_current=invalidate_current)
+
+    def _update_receiptbook_made_sequence_gap(self):
+        """Fija ``made_sequence_gap`` según la continuidad dentro del propio
+        receiptbook + prefijo (no del journal).
+
+        Un asiento posteado hace hueco cuando falta el número inmediatamente
+        anterior en el mismo receiptbook. Los no posteados que ya tomaron número
+        se marcan siempre. Además de ``self`` se re-evalúa el asiento siguiente
+        de cada uno, porque agregar/quitar un asiento cambia si el que sigue es
+        o no un hueco.
+        """
+        records = self.sudo()
+        AccountMove = records.env["account.move"]
+
+        moves_to_check = records
+        for (receiptbook, prefix), moves in records.grouped(lambda m: (m.receiptbook_id, m.sequence_prefix)).items():
+            moves_to_check |= AccountMove.search(
+                [
+                    ("receiptbook_id", "=", receiptbook.id),
+                    ("sequence_prefix", "=", prefix),
+                    ("sequence_number", "in", [n + 1 for n in moves.mapped("sequence_number")]),
+                ]
+            )
+
+        unposted = moves_to_check.filtered(lambda m: m.sequence_number != 0 and m.state != "posted")
+        unposted.made_sequence_gap = True
+
+        for (receiptbook, prefix), moves in (
+            (moves_to_check - unposted).grouped(lambda m: (m.receiptbook_id, m.sequence_prefix)).items()
+        ):
+            existing_numbers = set(
+                AccountMove.search(
+                    [
+                        ("receiptbook_id", "=", receiptbook.id),
+                        ("sequence_prefix", "=", prefix),
+                        ("sequence_number", ">=", min(moves.mapped("sequence_number")) - 1),
+                        ("sequence_number", "<=", max(moves.mapped("sequence_number")) - 1),
+                    ]
+                ).mapped("sequence_number")
+            )
+            for move in moves:
+                move.made_sequence_gap = move.sequence_number > 1 and (move.sequence_number - 1) not in existing_numbers
