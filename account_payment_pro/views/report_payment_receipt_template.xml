@@ -148,7 +148,7 @@
                 <table class="table table-sm o_main_table" name="matching_table">
                     <thead>
                         <tr>
-                            <th><span>Imputed Vouchers</span></th>
+                            <th style="width: 50%;"><span>Imputed Vouchers</span></th>
                             <th class="text-center"><span>Exp. Date</span></th>
                             <th class="text-right"><span>Original Amount</span></th>
                             <th class="text-right"><span>Imputed Amount</span></th>
@@ -157,7 +157,7 @@
                     <tbody>
                         <t t-foreach="matched_lines" t-as="line">
                             <tr>
-                                <td><span t-field='line.move_id.display_name'/></td>
+                                <td style="word-break: break-all;"><span t-out='line.move_id._get_payment_receipt_voucher_name()'/></td>
                                 <td class="text-center">
                                     <span class="text-nowrap" t-field="line.date_maturity"/>
                                 </td>

@@ -9,6 +9,11 @@ class ResConfigSettings(models.TransientModel):
         readonly=False,
     )
 
+    payment_receipt_full_ref = fields.Boolean(
+        related="company_id.payment_receipt_full_ref",
+        readonly=False,
+    )
+
     group_pay_now_customer_invoices = fields.Boolean(
         "Allow pay now on customer invoices?",
         implied_group="account_payment_pro.group_pay_now_customer_invoices",

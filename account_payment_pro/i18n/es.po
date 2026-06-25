@@ -946,6 +946,25 @@ msgstr ""
 msgid "account.write_off.type"
 msgstr "Tipo de Write Off"
 
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_res_company__payment_receipt_full_ref
+#: model:ir.model.fields,help:account_payment_pro.field_res_config_settings__payment_receipt_full_ref
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
+msgid ""
+"On the payment receipt / payment order report, show the full reference of "
+"the imputed vouchers instead of the shortened version that cuts long "
+"references with '[...]'."
+msgstr ""
+"En el informe de recibo de pago / orden de pago, muestra la referencia "
+"completa de los comprobantes imputados en lugar de la versión acortada que "
+"recorta las referencias largas con '[...]'."
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_res_company__payment_receipt_full_ref
+#: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__payment_receipt_full_ref
+msgid "Show full reference on imputed vouchers"
+msgstr "Mostrar la referencia completa en los comprobantes imputados"
+
 #~ msgid "Customer Bank Account"
 #~ msgstr "Cuenta Bancaria"
 
