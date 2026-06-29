@@ -22,8 +22,10 @@ Rates de referencia:
     USD → EUR (transitividad) = 1320/1200 = 1.1
 """
 
+from datetime import timedelta
+
 from odoo.addons.account_payment_pro.tests.test_payment_multimoneda import TestPaymentMultimoneda
-from odoo.tests import tagged
+from odoo.tests import Form, tagged
 
 
 @tagged("post_install", "-at_install")
@@ -263,13 +265,16 @@ class TestInternalTransferMultimoneda(TestPaymentMultimoneda):
             msg="Balance ARS en cuenta puente debe coincidir",
         )
 
-        # Paired counterpart: B1=USD (dest_journal=USD), amount_original=1.000
+        # Paired counterpart: B1=USD (dest_journal=USD), rate fijo EUR→USD.
+        # El amount del paired está redondeado en EUR, pero la tasa no debe
+        # recalcularse como original_amount / paired_amount.
         self.assertEqual(paired.counterpart_currency_id, self.usd)
+        expected_counterpart_rate = self._get_rate(self.eur, self.usd)
         self.assertAlmostEqual(
             paired.counterpart_rate,
-            1_000 / expected_paired,
+            expected_counterpart_rate,
             places=6,
-            msg="Counterpart rate del paired = original_amount / paired_amount",
+            msg="Counterpart rate del paired = tasa fija EUR→USD",
         )
         self.assertAlmostEqual(
             paired.counterpart_currency_amount,
@@ -355,3 +360,86 @@ class TestInternalTransferMultimoneda(TestPaymentMultimoneda):
             msg="Counterpart rate del paired = original_amount / paired_amount",
         )
         self.assertAlmostEqual(paired.counterpart_currency_amount, 500, places=2)
+
+    # ==================================================================
+    # IT.7 — ARS → USD con rate que no divide exacto (regresión tarea 65829)
+    # ==================================================================
+
+    def test_it7_ars_to_usd_rounding_keeps_origin_amount(self):
+        """IT.7 · Regresión tarea 65829 — el redondeo no debe pisar el importe origen.
+
+        Carli reportó (video 17/06) que al transferir 100.000 ARS a USD con tasa
+        1 USD = 1.400 ARS, tras confirmar el *importe visual* del pago saltaba a
+        100.002 (= round(100.000/1.400)=71,43 USD × 1.400), mientras el asiento
+        quedaba correcto en 100.000.
+
+        Causa: al crear el paired se sincronizaba el rate, y el bounce de la
+        sincronización recalculaba ``amount`` del origen desde el paired ya
+        redondeado, pisando el importe ingresado por el usuario.
+
+        Comportamiento esperado: el importe en ARS se mantiene en 100.000 y el
+        redondeo se absorbe en el paired USD (71,43) / la tasa, NO en el origen.
+
+        Se usa ``Form`` para reproducir la cadena de onchange/sync de la UI;
+        un ``create()`` plano no dispara la sincronización entre pagos.
+        """
+        # Tasa 1 USD = 1.400 ARS en una fecha dedicada (no pisa el 1.200 del setUp)
+        rate_date = self.today - timedelta(days=1)
+        self.env["res.currency.rate"].create(
+            {
+                "name": rate_date,
+                "currency_id": self.usd.id,
+                "company_id": self.company.id,
+                "inverse_company_rate": 1400.0,
+            }
+        )
+
+        with Form(
+            self.env["account.payment"].with_context(
+                default_payment_type="outbound",
+                default_is_internal_transfer=True,
+            )
+        ) as form:
+            form.journal_id = self.bank_ars
+            form.destination_journal_id = self.bank_usd
+            form.date = rate_date
+            form.amount = 100_000
+        payment = form.record
+
+        self.assertEqual(payment.currency_id, self.ars)
+        self.assertAlmostEqual(payment.amount, 100_000, places=2)
+
+        payment.action_post()
+
+        # El importe del origen NO debe driftar a 100.002 por el redondeo del paired
+        self.assertAlmostEqual(
+            payment.amount,
+            100_000,
+            places=2,
+            msg="El importe en ARS del origen debe mantenerse en 100.000 (no 100.002)",
+        )
+        self.assertAlmostEqual(
+            payment.amount_exact,
+            100_000,
+            places=2,
+            msg="amount_exact del origen también debe preservar 100.000",
+        )
+
+        # El redondeo se refleja en el paired USD: 100.000/1.400 = 71,4285… → 71,43
+        paired = payment.paired_internal_transfer_payment_id
+        self.assertTrue(paired, "Debe existir paired payment")
+        self.assertEqual(paired.currency_id, self.usd)
+        self.assertAlmostEqual(paired.amount, 71.43, places=2)
+
+        # El "Amount in ARS" (counterpart_currency_amount) del paired NO debe driftar:
+        # amount_exact conserva la precisión (71,4285…), no el 71,43 redondeado.
+        self.assertAlmostEqual(
+            paired.counterpart_currency_amount,
+            100_000,
+            places=2,
+            msg="El 'Amount in ARS' del paired debe ser 100.000 (no 100.002 por redondeo de amount_exact)",
+        )
+
+        # El asiento del origen sigue cuadrando en 100.000 ARS
+        transfer_lines = payment.move_id.line_ids.filtered(lambda l: l.account_id == payment.destination_account_id)
+        self.assertAlmostEqual(abs(sum(transfer_lines.mapped("balance"))), 100_000, places=2)
