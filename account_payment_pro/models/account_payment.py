@@ -759,10 +759,9 @@ class AccountPayment(models.Model):
                 balance_in_c = amount_for_calc
 
             if dest_currency == self.counterpart_currency_id and self.counterpart_currency_amount:
-                # counterpart_currency_id coincide con la moneda destino (caso habitual
-                # en transferencias internas). Usamos counterpart_currency_amount que
-                # respeta cualquier cotización cruzada editada por el usuario.
-                paired_amount = abs(self.counterpart_currency_amount)
+                # Sin redondear: el counterpart_currency_amount ya viene redondeado a la
+                # moneda destino y le quitaba precisión a amount_exact (drift 100.002).
+                paired_amount = abs(amount_for_calc * self.counterpart_rate)
             elif dest_currency == self.company_currency_id:
                 paired_amount = balance_in_c
             else:
@@ -773,7 +772,7 @@ class AccountPayment(models.Model):
                     self.company_id,
                     self.date or fields.Date.context_today(self),
                 )
-                paired_amount = dest_currency.round(balance_in_c * dest_rate)
+                paired_amount = balance_in_c * dest_rate
 
             vals["amount_exact"] = paired_amount
             vals["amount"] = paired_amount
