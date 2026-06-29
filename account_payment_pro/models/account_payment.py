@@ -819,10 +819,14 @@ class AccountPayment(models.Model):
         conciliacion de deuda de un asiento normal no lo muestra)
         """
         stored_payments = self.filtered("id")
+        # _get_valid_payment_account_types() does not depend on the filtered
+        # line, so we compute it once instead of on every line. Otherwise it
+        # triggers an N+1: account_balance_import overrides it to call
+        # company.get_unaffected_earnings_account(), which runs an uncached
+        # search on account.account once per evaluated line.
+        valid_payment_account_types = self._get_valid_payment_account_types()
         for rec in stored_payments:
-            payment_lines = rec.move_id.line_ids.filtered(
-                lambda x: x.account_type in self._get_valid_payment_account_types()
-            )
+            payment_lines = rec.move_id.line_ids.filtered(lambda x: x.account_type in valid_payment_account_types)
             debit_moves = payment_lines.mapped("matched_debit_ids.debit_move_id")
             credit_moves = payment_lines.mapped("matched_credit_ids.credit_move_id")
 
