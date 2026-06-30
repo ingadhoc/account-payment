@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-10 13:33+0000\n"
-"PO-Revision-Date: 2026-06-10 13:33+0000\n"
+"POT-Creation-Date: 2026-06-30 16:01+0000\n"
+"PO-Revision-Date: 2026-06-30 16:01+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -569,6 +569,16 @@ msgid "On account"
 msgstr ""
 
 #. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_res_company__payment_receipt_full_ref
+#: model:ir.model.fields,help:account_payment_pro.field_res_config_settings__payment_receipt_full_ref
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
+msgid ""
+"On the payment receipt / payment order report, show the full reference of "
+"the imputed vouchers instead of the shortened version that cuts long "
+"references with '[...]'."
+msgstr ""
+
+#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_bank_statement_line__open_move_line_ids
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_move__open_move_line_ids
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__open_move_line_ids
@@ -714,6 +724,13 @@ msgstr ""
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "Send the pending difference to write-off"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_res_company__payment_receipt_full_ref
+#: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__payment_receipt_full_ref
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
+msgid "Show full reference on imputed vouchers"
 msgstr ""
 
 #. module: account_payment_pro
