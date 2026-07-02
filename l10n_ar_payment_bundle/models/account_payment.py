@@ -174,6 +174,10 @@ class AccountPayment(models.Model):
         if draft_linked:
             draft_linked.action_post()
 
+        # Envío diferido del recibo del main: acá los vinculados ya imputaron, así el
+        # PDF sale con los comprobantes y no "A cuenta" (receiptbook lo saltea en el post).
+        self.filtered("is_main_payment")._send_receiptbook_mail()
+
         return res
 
     def action_draft(self):
