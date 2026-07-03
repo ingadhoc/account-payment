@@ -22,28 +22,27 @@ class AccountPayment(models.Model):
 
     @api.depends("date", "to_pay_move_line_ids", "state")
     def _compute_loan_surcharge(self):
-        for rec in self.filtered(lambda x: x.state == "draft"):
+        for rec in self:
+            if rec.state != "draft":
+                rec.loan_surcharge = 0.0
+                continue
+
             loan_surcharge = 0.0
-            late_payment_interest = rec.company_id.late_payment_interest
-            daily_interest = late_payment_interest / 30
+            daily_interest = rec.company_id.late_payment_interest / 30
             loan_account_id = rec.company_id.loan_journal_id.default_account_id
-            for loan_id in rec.to_pay_move_line_ids.filtered(lambda x: x.account_id == loan_account_id).mapped(
-                "move_id"
-            ):
-                for line_id in loan_id.line_ids.filtered(
-                    lambda x: x.date_maturity and x.date_maturity < rec.date and x.amount_residual
-                ):
-                    last_interest_date_calculation = (
-                        max(line_id.date_maturity, line_id.move_id.last_interest_date_calculation)
-                        if line_id.move_id.last_interest_date_calculation
-                        else line_id.date_maturity
-                    )
-                    diff_days = (
-                        (rec.date - last_interest_date_calculation).days
-                        if (rec.date - last_interest_date_calculation).days > 0
-                        else 0
-                    )
-                    loan_surcharge += daily_interest * diff_days * line_id.amount_residual
+
+            lines = rec.to_pay_move_line_ids.filtered(
+                lambda l: l.account_id == loan_account_id
+                and l.date_maturity
+                and l.date_maturity < rec.date
+                and l.amount_residual
+            )
+
+            for line in lines:
+                last_calc = line.move_id.last_interest_date_calculation
+                base_date = max(line.date_maturity, last_calc) if last_calc else line.date_maturity
+                diff_days = max((rec.date - base_date).days, 0)
+                loan_surcharge += daily_interest * diff_days * line.amount_residual
 
             rec.loan_surcharge = loan_surcharge
 
