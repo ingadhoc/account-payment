@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Wizard form view -->
+    <record id="view_payment_rename_wizard_form" model="ir.ui.view">
+        <field name="name">payment.rename.wizard.form</field>
+        <field name="model">payment.rename.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Rename Payment">
+                <group>
+                    <field name="payment_id" readonly="1"/>
+                    <field name="current_name"/>
+                    <field name="new_name" placeholder="Enter new payment name..."/>
+                </group>
+                <footer>
+                    <button name="action_rename_payment" type="object" string="Rename" class="btn-primary" data-hotkey="q"/>
+                    <button special="cancel" string="Cancel" class="btn-secondary" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Window action to open the wizard -->
+    <record id="action_payment_rename_wizard" model="ir.actions.act_window">
+        <field name="name">Rename Payment</field>
+        <field name="res_model">payment.rename.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>
