@@ -972,8 +972,8 @@ class AccountPayment(models.Model):
                 continue
             diff_in_a = rec._get_payment_difference_in_currency_a()
             amount = rec.amount_exact + diff_in_a
-            # No permitir valores negativos, pero mantener el valor actual si el ajuste resulta negativo
-            if amount > 0:
+            # Permitir cero (ej. "Remove All" con monto cargado), pero no negativos
+            if amount >= 0:
                 rec.amount_exact = amount
                 rec.amount = amount
 
@@ -1020,15 +1020,27 @@ class AccountPayment(models.Model):
         """Ajustar amount para que payment_total cubra to_pay_amount a la tasa de hoy.
         Cuando action_register_payment envía default_amount basado en amount_residual,
         ese monto usa la tasa original de la factura, no la de hoy. Esto genera un
-        payment_difference que debe corregirse ajustando amount.
+        payment_difference positivo (deuda > pago) que debe corregirse ajustando amount.
+        Solo aplica cuando payment_difference > 0: si el usuario ingresó un monto mayor
+        que la deuda seleccionada (diferencia negativa), no se sobreescribe su monto.
         Aplica a todos los tipos de pago (clientes y proveedores).
+
+        Además, la corrección solo aplica a la carga inicial del pago (registro nuevo, con
+        las líneas que llegan por default de action_register_payment a la tasa original de
+        la factura). Una vez guardado el pago, respetamos el importe y solo se muestra la
+        diferencia: si el usuario lo fijó a mano, no se pisa al quitar líneas de deuda
+        aunque la deuda restante sea mayor que el importe.
         """
         for rec in self:
             if not rec.use_payment_pro or rec.state != "draft":
                 continue
+            if rec._origin.id:
+                continue
             if not rec.to_pay_move_line_ids:
                 continue
             if not rec.payment_difference or not rec.currency_id:
+                continue
+            if rec.payment_difference <= 0:
                 continue
             diff_in_a = rec._get_payment_difference_in_currency_a()
             amount = rec.amount + diff_in_a
