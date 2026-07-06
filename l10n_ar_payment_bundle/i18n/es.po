@@ -3,8 +3,16 @@
 # 	* l10n_ar_payment_bundle
 #
 # Translators:
+<<<<<<< 8be1185b7e06b1df2ccbb18a22192ee2d2920a60
 # ADHOC - Bot <transbot@adhoc.com.ar>, 2025
 #
+||||||| 72a9ba0ce57af6cbdd07099e3eb745b36c14b96a
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2025
+# 
+=======
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2025
+#
+>>>>>>> 22df653f8ced539657ef982011e42b2aaf1466be
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
@@ -63,6 +71,11 @@ msgid "Checks Mass Transfers"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_payment_rename_wizard_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: l10n_ar_payment_bundle
 #: model:ir.model,name:l10n_ar_payment_bundle.model_res_company
 msgid "Companies"
 msgstr "Empresas"
@@ -88,11 +101,17 @@ msgid "Current Name"
 msgstr "Nombre Actual"
 
 #. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__current_name
+msgid "Current Name"
+msgstr "Nombre Actual"
+
+#. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__partner_id
 msgid "Customer/Vendor"
 msgstr "Cliente/Proveedor"
 
 #. module: l10n_ar_payment_bundle
+<<<<<<< 8be1185b7e06b1df2ccbb18a22192ee2d2920a60
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_l10n_latam_payment_mass_transfer__destination_journal_id
 msgid "Destination Journal"
 msgstr ""
@@ -136,6 +155,14 @@ msgid "ID"
 msgstr "ID"
 
 #. module: l10n_ar_payment_bundle
+||||||| 72a9ba0ce57af6cbdd07099e3eb745b36c14b96a
+=======
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_payment_rename_wizard_form
+msgid "Enter new payment name..."
+msgstr "Ingresar nuevo nombre del pago..."
+
+#. module: l10n_ar_payment_bundle
+>>>>>>> 22df653f8ced539657ef982011e42b2aaf1466be
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_from_bundle_form
 msgid ""
 "IMPORTANT: Linked draft validation must be done from main receipt. Draft "
@@ -236,6 +263,11 @@ msgid "Number"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__new_name
+msgid "New Name"
+msgstr "Nuevo Nombre"
+
+#. module: l10n_ar_payment_bundle
 #. odoo-python
 #: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
 msgid "Paid Bills"
@@ -258,11 +290,17 @@ msgid "Payment"
 msgstr "Pago"
 
 #. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__payment_id
+msgid "Payment"
+msgstr "Pago"
+
+#. module: l10n_ar_payment_bundle
 #: model:ir.model,name:l10n_ar_payment_bundle.model_account_payment_method
 msgid "Payment Methods"
 msgstr "Métodos de Pago"
 
 #. module: l10n_ar_payment_bundle
+<<<<<<< 8be1185b7e06b1df2ccbb18a22192ee2d2920a60
 #: model:ir.actions.report,name:l10n_ar_payment_bundle.action_report_receipt_bundle
 msgid "Payment Receipt bundled"
 msgstr "Recibo de Pago agrupado"
@@ -283,6 +321,18 @@ msgstr "Total Pago"
 msgid ""
 "Payment bundle method requires Payment PRO to be enabled in the company "
 "configuration."
+||||||| 72a9ba0ce57af6cbdd07099e3eb745b36c14b96a
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
+msgid "Payment Total (SC)"
+=======
+#: model:ir.model,name:l10n_ar_payment_bundle.model_payment_rename_wizard
+msgid "Payment Rename Wizard"
+msgstr "Asistente para Renombrar Pago"
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
+msgid "Payment Total (SC)"
+>>>>>>> 22df653f8ced539657ef982011e42b2aaf1466be
 msgstr ""
 "El método de pago agrupado requiere que Payment PRO esté habilitado en la "
 "configuración de la compañía."
@@ -300,6 +350,12 @@ msgid "Payment name changed from '%s' to '%s'"
 msgstr "El nombre del pago cambió de '%s' a '%s'"
 
 #. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/wizard/payment_rename.py:0
+msgid "Payment name changed from '%s' to '%s'"
+msgstr "El nombre del pago cambió de '%s' a '%s'"
+
+#. module: l10n_ar_payment_bundle
 #: model:ir.model,name:l10n_ar_payment_bundle.model_account_payment
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
@@ -307,6 +363,7 @@ msgid "Payments"
 msgstr "Pagos"
 
 #. module: l10n_ar_payment_bundle
+<<<<<<< 8be1185b7e06b1df2ccbb18a22192ee2d2920a60
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
 msgid "Payments Amount"
 msgstr "Importe de Pagos"
@@ -316,6 +373,38 @@ msgstr "Importe de Pagos"
 #: code:addons/l10n_ar_payment_bundle/wizard/payment_rename.py:0
 msgid "Please enter a new name for the payment."
 msgstr "Por favor ingrese un nuevo nombre para el pago."
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model,name:l10n_ar_payment_bundle.model_account_resequence_wizard
+msgid "Remake the sequence of Journal Entries."
+msgstr "Rehaga la secuencia de los asientos contables."
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_payment_rename_wizard_form
+msgid "Rename"
+msgstr "Renombrar"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.actions.act_window,name:l10n_ar_payment_bundle.action_payment_rename_wizard
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_payment_rename_wizard_form
+msgid "Rename Payment"
+msgstr "Renombrar Pago"
+||||||| 72a9ba0ce57af6cbdd07099e3eb745b36c14b96a
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
+msgid "Rate"
+msgstr ""
+=======
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/wizard/payment_rename.py:0
+msgid "Please enter a new name for the payment."
+msgstr "Por favor ingrese un nuevo nombre para el pago."
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
+msgid "Rate"
+msgstr ""
+>>>>>>> 22df653f8ced539657ef982011e42b2aaf1466be
 
 #. module: l10n_ar_payment_bundle
 #: model:ir.model,name:l10n_ar_payment_bundle.model_account_resequence_wizard
@@ -458,3 +547,13 @@ msgstr ""
 #: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
 msgid "id"
 msgstr ""
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/wizard/account_resequence.py:0
+msgid ""
+"You cannot resequence moves linked to a bundle payment. Please resequence "
+"the payment instead."
+msgstr ""
+"No puede resecuenciar asientos vinculados a un pago agrupado. En su lugar, "
+"resecuencie el pago."

@@ -130,6 +130,7 @@ class AccountPaymentReceiptbook(models.Model):
                     }
                 )
             )
+<<<<<<< 8be1185b7e06b1df2ccbb18a22192ee2d2920a60
 
     def action_resync_sequence(self):
         """Recompone ``sequence_id`` para los receiptbooks en ``self``:
@@ -189,6 +190,69 @@ class AccountPaymentReceiptbook(models.Model):
             ),
         )
         return self.env.cr.fetchone()[0] or 0
+||||||| 72a9ba0ce57af6cbdd07099e3eb745b36c14b96a
+        return recs
+=======
+
+    def action_resync_sequence(self):
+        """Recompone ``sequence_id`` para los receiptbooks en ``self``:
+
+        - Asegura el ``ir.sequence`` vía :meth:`ensure_sequence` (crea si falta).
+        - Resuelve el último número usado vía un único ``SELECT`` que extrae
+          con regex los dígitos finales del ``name`` de ``account.payment``
+          (``SUBSTRING(name FROM '[0-9]+$')``) y castea ese residuo a
+          ``INTEGER``, devolviendo el ``MAX``.
+        - Setea ``sequence_id.number_next = max(numero) + 1`` para que el
+          próximo payment posteado retome la numeración sin colisiones.
+
+        Se usa como acción manual de reparación si la numeración se desfasa
+        (deletes, importaciones, resecuenciación de recibos, etc.).
+        """
+        self.ensure_sequence()
+        self.env.flush_all()
+        for rec in self:
+            doc_code_prefix = rec.document_type_id.doc_code_prefix or ""
+            prefix = rec.prefix or ""
+            last_number = self._resync_get_last_number(rec, doc_code_prefix, prefix)
+            next_number = last_number + 1
+            rec.sequence_id.sudo().number_next = next_number
+
+            _logger.info(
+                "Receiptbook id=%s prefix=%r: último número=%d, ir.sequence id=%s number_next=%d",
+                rec.id,
+                rec.prefix,
+                last_number,
+                rec.sequence_id.id,
+                next_number,
+            )
+
+    def _resync_get_last_number(self, rec, doc_code_prefix, prefix):
+        has_main_payment = "main_payment_id" in self.env["account.payment"]._fields
+        child_filter = "AND main_payment_id IS NULL" if has_main_payment else ""
+        self.env.cr.execute(
+            f"""
+            SELECT MAX(CAST(
+                SUBSTRING(
+                    SPLIT_PART(REPLACE(REPLACE(name, %s, ''), %s, ''), ' ', 1)
+                    FROM '[0-9]+$')
+                AS INTEGER
+            ))
+              FROM account_payment
+             WHERE receiptbook_id = %s
+               AND name IS NOT NULL
+               AND name LIKE %s
+               {child_filter}
+               AND state != 'draft'
+            """,
+            (
+                doc_code_prefix + " ",
+                prefix,
+                rec.id,
+                f"{doc_code_prefix} {prefix}%",
+            ),
+        )
+        return self.env.cr.fetchone()[0] or 0
+>>>>>>> 22df653f8ced539657ef982011e42b2aaf1466be
 
     @api.ondelete(at_uninstall=False)
     def _unlink_except_used(self):

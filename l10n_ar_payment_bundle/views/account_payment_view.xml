@@ -122,6 +122,14 @@
                         invisible="not is_main_payment or state not in ['in_process', 'paid']"
                         groups="base.group_no_one"/>
             </button>
+            <button name="action_draft" position="after">
+                <button name="%(l10n_ar_payment_bundle.action_payment_rename_wizard)d"
+                        type="action"
+                        string="Rename"
+                        class="btn-secondary"
+                        invisible="not is_main_payment or state not in ['in_process', 'paid']"
+                        groups="base.group_no_one"/>
+            </button>
             <field name="counterpart_currency_id" position="attributes">
                 <attribute name="readonly" separator=" or " add="main_payment_id"/>
             </field>
