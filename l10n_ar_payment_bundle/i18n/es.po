@@ -1,10 +1,10 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # 	* l10n_ar_payment_bundle
-# 
+#
 # Translators:
 # Juan José Scarafía <scarafia.juanjose@gmail.com>, 2025
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0+e\n"
@@ -50,6 +50,11 @@ msgid "Bundle Counterpart Currency Amount"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_payment_rename_wizard_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: l10n_ar_payment_bundle
 #: model:ir.model,name:l10n_ar_payment_bundle.model_res_company
 msgid "Companies"
 msgstr "Compañías"
@@ -60,9 +65,19 @@ msgid "Counterpart Exchange Rate"
 msgstr "Tasa de Imputación"
 
 #. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__current_name
+msgid "Current Name"
+msgstr "Nombre Actual"
+
+#. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__partner_id
 msgid "Customer/Vendor"
 msgstr "Cliente/Proveedor"
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_payment_rename_wizard_form
+msgid "Enter new payment name..."
+msgstr "Ingresar nuevo nombre del pago..."
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_from_bundle_form
@@ -123,6 +138,11 @@ msgid "Multiple payments"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__new_name
+msgid "New Name"
+msgstr "Nuevo Nombre"
+
+#. module: l10n_ar_payment_bundle
 #. odoo-python
 #: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
 msgid "Paid Bills"
@@ -135,9 +155,19 @@ msgid "Paid Invoices"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__payment_id
+msgid "Payment"
+msgstr "Pago"
+
+#. module: l10n_ar_payment_bundle
 #: model:ir.model,name:l10n_ar_payment_bundle.model_account_payment_method
 msgid "Payment Methods"
 msgstr "Métodos de pago"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model,name:l10n_ar_payment_bundle.model_payment_rename_wizard
+msgid "Payment Rename Wizard"
+msgstr "Asistente para Renombrar Pago"
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
@@ -151,6 +181,12 @@ msgid "Payment multiple"
 msgstr ""
 
 #. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/wizard/payment_rename.py:0
+msgid "Payment name changed from '%s' to '%s'"
+msgstr "El nombre del pago cambió de '%s' a '%s'"
+
+#. module: l10n_ar_payment_bundle
 #: model:ir.model,name:l10n_ar_payment_bundle.model_account_payment
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
@@ -158,9 +194,32 @@ msgid "Payments"
 msgstr "Pagos"
 
 #. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/wizard/payment_rename.py:0
+msgid "Please enter a new name for the payment."
+msgstr "Por favor ingrese un nuevo nombre para el pago."
+
+#. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
 msgid "Rate"
 msgstr ""
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model,name:l10n_ar_payment_bundle.model_account_resequence_wizard
+msgid "Remake the sequence of Journal Entries."
+msgstr "Rehaga la secuencia de los asientos contables."
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_payment_rename_wizard_form
+msgid "Rename"
+msgstr "Renombrar"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.actions.act_window,name:l10n_ar_payment_bundle.action_payment_rename_wizard
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_payment_rename_wizard_form
+msgid "Rename Payment"
+msgstr "Renombrar Pago"
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
@@ -207,3 +266,13 @@ msgid ""
 "You cannot assign a currency to journals that use the payment bundle payment"
 " method."
 msgstr ""
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/wizard/account_resequence.py:0
+msgid ""
+"You cannot resequence moves linked to a bundle payment. Please resequence "
+"the payment instead."
+msgstr ""
+"No puede resecuenciar asientos vinculados a un pago agrupado. En su lugar, "
+"resecuencie el pago."
