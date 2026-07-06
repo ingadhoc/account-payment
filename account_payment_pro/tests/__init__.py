@@ -5,6 +5,7 @@ from . import (
     test_exchange_difference_edge_cases,
     test_exchange_difference_partial,
     test_internal_transfer_multimoneda,
+    test_manual_amount_on_debt_change,
     test_own_check_currency,
     test_partner_ledger_sign,
     test_pay_now,
