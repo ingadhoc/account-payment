@@ -55,6 +55,26 @@ class AccountCashboxSession(models.Model):
         "El nombre de esta sesión de caja debe ser único!",
     )
 
+    @api.model
+    def _get_available_domain(self, company):
+        """Dominio de sesiones abiertas operables por el usuario actual desde `company`.
+
+        Desde una sucursal (company.parent_id) solo son elegibles las sesiones de la
+        propia empresa o las de la empresa padre cuyos diarios estén compartidos a
+        sucursales. Reusa el criterio canónico de account.journal._check_company_domain.
+        """
+        domain = [
+            ("state", "=", "opened"),
+            ("company_id", "parent_of", company.id),
+            "|",
+            ("user_ids", "=", self.env.uid),
+            ("user_ids", "=", False),
+        ]
+        if company.parent_id:
+            journal_domain = self.env["account.journal"]._check_company_domain(company)
+            domain += [("cashbox_id.journal_ids", "any", journal_domain)]
+        return domain
+
     @api.depends("cashbox_id")
     def _compute_user_ids(self):
         for rec in self:
