@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-15 13:11+0000\n"
+"POT-Creation-Date: 2026-07-08 13:26+0000\n"
 "PO-Revision-Date: 2026-04-22 20:26+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
@@ -141,6 +141,12 @@ msgstr "Monto"
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__message_attachment_count
 msgid "Attachment Count"
 msgstr "Contar Adjunto"
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_payment__available_cashbox_session_ids
+#: model:ir.model.fields,field_description:account_cashbox.field_account_payment_register__available_cashbox_session_ids
+msgid "Available Cashbox Session"
+msgstr ""
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_payment_import__available_journal_ids
