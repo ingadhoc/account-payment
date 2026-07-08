@@ -8,6 +8,9 @@ class ReSequenceWizard(models.TransientModel):
     _inherit = "account.resequence.wizard"
 
     def resequence(self):
+        # receiptbook logic only applies to payment moves
+        if not self.move_ids.receiptbook_id:
+            return super().resequence()
         if self.ordering == "keep":
             new_names = [v["new_by_name"] for v in json.loads(self[0]["new_values"]).values()]
         else:
