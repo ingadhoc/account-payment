@@ -140,6 +140,13 @@ class AccountPayment(models.Model):
         readonly=False,
         check_company=True,
     )
+    skip_to_pay_autofill = fields.Boolean(
+        default=False,
+        copy=False,
+        help="Payments created only to register a movement (e.g. third-party check rejection) that "
+        "must not reconcile existing debt. When set, to_pay_move_line_ids is left empty instead of "
+        "auto-filled with the partner's open lines.",
+    )
     matched_move_line_ids = fields.Many2many(
         "account.move.line",
         compute="_compute_matched_move_line_ids",
@@ -1053,7 +1060,7 @@ class AccountPayment(models.Model):
             self.remove_all()
 
     # We dont set 'is_internal_transfer' as a dependencies as it could leed to recompute to_pay_move_line_ids
-    @api.depends("partner_id", "partner_type", "company_id")
+    @api.depends("partner_id", "partner_type", "company_id", "skip_to_pay_autofill")
     def _compute_to_pay_move_lines(self):
         # TODO ?
         # # if payment group is being created from a payment we dont want to compute to_pay_move_lines
@@ -1062,6 +1069,14 @@ class AccountPayment(models.Model):
         # Se recomputan las lienas solo si la deuda que esta seleccionada solo si
         # cambio el partner, compania o partner_type
         records = self.filtered(lambda x: x.state == "draft")
+        # Hay pagos que solo registran un movimiento (ej. rechazo de cheques de terceros) y no
+        # concilian deuda existente. En esos casos el autollenado de la deuda del partner no
+        # corresponde y ademas, con conciliacion en moneda original y deuda multimoneda,
+        # romperia _check_to_pay_lines_currency. La intencion se persiste en skip_to_pay_autofill
+        # (esta en @api.depends) para que el valor almacenado no dependa del contexto.
+        skip = records.filtered("skip_to_pay_autofill")
+        skip.remove_all()
+        records -= skip
         internal_transfers = records.filtered(lambda x: x.is_internal_transfer)
 
         with_payment_pro = self._get_filter_payments(records, ["direct_debit_mandate_id", "pos_session_id"])
