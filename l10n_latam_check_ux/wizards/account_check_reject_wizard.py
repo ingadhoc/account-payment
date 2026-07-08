@@ -114,6 +114,18 @@ class AccountCheckRejectWizard(models.TransientModel):
         if operation_dates:
             customer_payment.l10n_latam_move_check_ids_operation_date = max(operation_dates) + timedelta(seconds=3)
 
+    def _rejection_payment_vals(self):
+        """Extra vals common to the payments created to register the check movement.
+
+        account_payment_pro (an optional dependency, not in this module's manifest) auto-fills
+        to_pay_move_line_ids on new payments with the partner's open debt. These payments only
+        register the check movement and must not reconcile existing debt, so we opt out via
+        skip_to_pay_autofill. The field only exists when account_payment_pro is installed.
+        """
+        if "skip_to_pay_autofill" in self.env["account.payment"]._fields:
+            return {"skip_to_pay_autofill": True}
+        return {}
+
     def _create_endorsed_recovery_payment(self, check):
         """Case A: Create inbound payment in rejected_journal to recover the check from the endorsee (vendor)."""
         inbound_method = self.rejected_journal_id._get_available_payment_method_lines("inbound").filtered(
@@ -144,6 +156,7 @@ class AccountCheckRejectWizard(models.TransientModel):
                 "payment_method_line_id": inbound_method.id,
                 "memo": memo,
                 "l10n_latam_move_check_ids": [Command.link(check.id)],
+                **self._rejection_payment_vals(),
             }
         )
 
@@ -188,6 +201,7 @@ class AccountCheckRejectWizard(models.TransientModel):
                 "payment_method_line_id": out_method.id,
                 "memo": memo,
                 "l10n_latam_move_check_ids": [Command.link(check.id)],
+                **self._rejection_payment_vals(),
             }
         )
 
@@ -214,13 +228,13 @@ class AccountCheckRejectWizard(models.TransientModel):
                 "amount": check.amount,
                 "currency_id": check.currency_id.id,
                 "partner_id": customer.id,
-                "to_pay_move_line_ids": False,
                 "payment_type": "outbound",
                 "partner_type": "customer",
                 "journal_id": self.rejected_journal_id.id,
                 "payment_method_line_id": return_method.id,
                 "memo": memo,
                 "l10n_latam_move_check_ids": [Command.link(check.id)],
+                **self._rejection_payment_vals(),
             }
         )
 
