@@ -80,20 +80,84 @@ class AccountPaymentReceiptbook(models.Model):
     @api.constrains("company_id", "prefix", "document_type_id", "partner_type")
     def _check_unique_receipt(self):
         for rec in self:
+            # Uniqueness spans the whole branch tree: a branch shares the parent
+            # journals, so a duplicated prefix collides on the payment move name.
+            # For a company without branches root_id is itself, so child_of
+            # resolves to that single company (same as the previous check).
+            # sudo() to see parent/sibling receiptbooks regardless of the active
+            # companies of the current user.
             domain = [
                 ("id", "!=", rec.id),
-                ("company_id", "=", rec.company_id.id),
+                ("company_id", "child_of", rec.company_id.root_id.id),
                 ("prefix", "=", rec.prefix),
                 ("document_type_id", "=", rec.document_type_id.id),
                 ("partner_type", "=", rec.partner_type),
             ]
-            if self.search(domain):
+            if self.sudo().search(domain):
                 raise UserError(
                     _(
-                        "The combination of Company, Prefix, Document Type and Partner Type must be unique. "
-                        "There is already a receiptbook with these values."
+                        "The combination of Prefix, Document Type and Partner Type must be unique "
+                        "across a company and its branches. There is already a receiptbook with these values."
                     )
                 )
+
+    @api.model
+    def _get_free_prefix(self, company, document_type, partner_type):
+        """Return the first free '000N-' prefix within the company branch tree
+        for the given document type and partner type. Keeps '0001-' for the
+        first receiptbook and bumps branches to '0002-', '0003-', ..."""
+        used = set(
+            self.sudo()
+            .with_context(active_test=False)
+            .search(
+                [
+                    ("company_id", "child_of", company.root_id.id),
+                    ("document_type_id", "=", document_type.id),
+                    ("partner_type", "=", partner_type),
+                ]
+            )
+            .mapped("prefix")
+        )
+        number = 1
+        while "%04d-" % number in used:
+            number += 1
+        return "%04d-" % number
+
+    @api.model
+    def _resolve_branch_prefix_collisions(self):
+        """Reassign a free prefix to branch receiptbooks that collide with
+        another receiptbook of the same tree (same prefix/document_type/
+        partner_type), keeping the one highest in the tree, then resync the
+        numbering. Executor of migration 19.0.2.5.0 and manual repair action.
+        """
+        Company = self.env["res.company"].with_context(active_test=False)
+        roots = Company.search([("parent_id", "!=", False)]).mapped("root_id")
+        reassigned = self.browse()
+        for root in roots:
+            tree = Company.search([("id", "child_of", root.id)])
+            receiptbooks = self.with_context(active_test=False).search([("company_id", "in", tree.ids)])
+            # Shallow companies first so the root keeps its prefix as keeper.
+            receiptbooks = receiptbooks.sorted(key=lambda r: (len((r.company_id.parent_path or "").split("/")), r.id))
+            seen = set()
+            for rec in receiptbooks:
+                key = (rec.prefix, rec.document_type_id.id, rec.partner_type)
+                if key not in seen:
+                    seen.add(key)
+                    continue
+                new_prefix = self._get_free_prefix(rec.company_id, rec.document_type_id, rec.partner_type)
+                _logger.info(
+                    "Receiptbook id=%s company=%s: prefix %r -> %r (branch collision)",
+                    rec.id,
+                    rec.company_id.name,
+                    rec.prefix,
+                    new_prefix,
+                )
+                rec.prefix = new_prefix
+                seen.add((new_prefix, rec.document_type_id.id, rec.partner_type))
+                reassigned |= rec
+        if reassigned:
+            reassigned.action_resync_sequence()
+        return reassigned
 
     def write(self, vals):
         """

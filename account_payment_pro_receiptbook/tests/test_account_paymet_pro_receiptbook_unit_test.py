@@ -2,9 +2,11 @@ import json
 
 from odoo import Command, fields
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
+from odoo.tests import tagged
 
 
+@tagged("post_install", "-at_install")
 class TestAccountPaymentProReceiptbookUnitTest(AccountTestInvoicingCommon):
     @classmethod
     def setUpClass(cls):
@@ -219,3 +221,74 @@ class TestAccountPaymentProReceiptbookUnitTest(AccountTestInvoicingCommon):
         with self.assertRaises(ValidationError) as cm:
             resequence_wizard.resequence()
         self.assertIn("already exist", str(cm.exception))
+
+    def _create_branch(self):
+        """Minimal branch under the test AR company (reuses its chart)."""
+        return self.env["res.company"].create({"name": "Test Branch", "parent_id": self.company.id})
+
+    def test_branch_prefix_constraint(self):
+        """A branch cannot reuse a receiptbook prefix of its parent tree."""
+        RB = self.env["account.payment.receiptbook"]
+        branch = self._create_branch()
+        doc_type = self.receiptbook.document_type_id
+        # Same prefix/document_type/partner_type as the parent 0001- receiptbook -> blocked.
+        with self.assertRaises(UserError):
+            RB.create(
+                {
+                    "name": "Branch dup",
+                    "partner_type": "customer",
+                    "company_id": branch.id,
+                    "document_type_id": doc_type.id,
+                    "prefix": self.receiptbook.prefix,
+                }
+            )
+        # A free prefix is accepted.
+        rb = RB.create(
+            {
+                "name": "Branch ok",
+                "partner_type": "customer",
+                "company_id": branch.id,
+                "document_type_id": doc_type.id,
+                "prefix": "0099-",
+            }
+        )
+        self.assertTrue(rb.id)
+
+    def test_branch_default_prefix(self):
+        """Auto-created branch receiptbooks pick the first free prefix in the tree."""
+        branch = self._create_branch()
+        self.env["account.chart.template"]._create_receiptbooks(branch)
+        branch_rb = self.env["account.payment.receiptbook"].search(
+            [("company_id", "=", branch.id), ("partner_type", "=", "customer")], limit=1
+        )
+        # Parent keeps 0001-, so the branch bumps to 0002-.
+        self.assertEqual(branch_rb.prefix, "0002-")
+
+    def test_branch_prefix_collision_migration(self):
+        """_resolve_branch_prefix_collisions reassigns the branch and keeps the root."""
+        RB = self.env["account.payment.receiptbook"]
+        branch = self._create_branch()
+        branch_rb = RB.create(
+            {
+                "name": "Branch cust",
+                "partner_type": "customer",
+                "company_id": branch.id,
+                "document_type_id": self.receiptbook.document_type_id.id,
+                "prefix": "0050-",
+            }
+        )
+        # Force a legacy collision with the parent prefix, bypassing the constraint.
+        self.env.cr.execute(
+            "UPDATE account_payment_receiptbook SET prefix=%s WHERE id=%s",
+            (self.receiptbook.prefix, branch_rb.id),
+        )
+        self.env.invalidate_all()
+        self.assertEqual(branch_rb.prefix, self.receiptbook.prefix)
+
+        reassigned = RB._resolve_branch_prefix_collisions()
+        self.assertIn(branch_rb, reassigned)
+        self.assertNotEqual(branch_rb.prefix, self.receiptbook.prefix)
+        self.assertEqual(self.receiptbook.prefix, "0001-")
+        self.assertEqual(branch_rb.sequence_id.prefix, branch_rb.prefix)
+        # Idempotent: a second run reassigns nothing.
+        self.assertFalse(RB._resolve_branch_prefix_collisions())
