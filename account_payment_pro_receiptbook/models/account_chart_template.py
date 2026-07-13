@@ -37,12 +37,15 @@ class AccountChartTemplate(models.AbstractModel):
             )
             if not document_type:
                 continue
+            # Pick the first free prefix in the branch tree so a branch does not
+            # reuse the parent prefix (root company keeps "0001-").
+            prefix = self.env["account.payment.receiptbook"]._get_free_prefix(company, document_type, partner_type)
             vals = {
                 "name": partner_type_name_map[partner_type],
                 "partner_type": partner_type,
                 "company_id": company.id,
                 "document_type_id": document_type.id,
-                "prefix": "0001-",
+                "prefix": prefix,
             }
             # sudo() is used to bypass access restrictions during the initial creation
             # of receiptbooks when creating an argentine company,
