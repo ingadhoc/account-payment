@@ -16,6 +16,14 @@ class AccountPayment(models.Model):
         currency_field="destination_currency_id",
         compute="_compute_link_payments_total",
     )
+    # payment_total firmado según la dirección del pago principal: las líneas opuestas
+    # (devoluciones/vueltos) se muestran en negativo para que la columna de la solapa
+    # "Pagos" (y su total) netee, igual que el total del bundle (ticket 121656).
+    payment_total_signed = fields.Monetary(
+        currency_field="destination_currency_id",
+        compute="_compute_payment_total_signed",
+        string="Payment Total (signed)",
+    )
     partner_id = fields.Many2one(recursive=True)
 
     show_move_button = fields.Boolean(compute="_compute_show_move_button")
@@ -67,11 +75,29 @@ class AccountPayment(models.Model):
         if self.link_payment_ids:
             self.link_payment_ids = [Command.clear()]
 
-    @api.depends("link_payment_ids.payment_total")
+    @api.depends("payment_total", "payment_type", "main_payment_id.payment_type")
+    def _compute_payment_total_signed(self):
+        """payment_total firmado según la dirección del pago principal.
+
+        payment_total es una magnitud sin signo (en B2/destination_currency_id). Firmamos
+        las líneas linkeadas: las que van en la dirección del principal suman y las opuestas
+        (devoluciones/vueltos) restan. Es la única fuente de signo del bundle — todas las
+        agregaciones netean sumando este campo. En v18 el neteo salía "gratis" porque
+        payment_total era firmado; en v19 pasó a ser magnitud y se perdió, haciendo que una
+        devolución sumara en vez de restar (regresión, ticket 121656). No reusamos
+        amount_company_currency_signed para no romper multimoneda.
+        """
+        for rec in self:
+            if rec.main_payment_id and rec.payment_type != rec.main_payment_id.payment_type:
+                rec.payment_total_signed = -rec.payment_total
+            else:
+                rec.payment_total_signed = rec.payment_total
+
+    @api.depends("link_payment_ids.payment_total_signed")
     def _compute_payment_total(self):
         super()._compute_payment_total()
         for rec in self:
-            rec.payment_total += sum(rec.link_payment_ids.mapped("payment_total"))
+            rec.payment_total += sum(rec.link_payment_ids.mapped("payment_total_signed"))
 
     @api.depends("main_payment_id.payment_difference")
     def _compute_to_pay_amount(self):
@@ -79,7 +105,7 @@ class AccountPayment(models.Model):
             rec.to_pay_amount = rec.main_payment_id.payment_difference
         super(AccountPayment, self - self.filtered("main_payment_id"))._compute_to_pay_amount()
 
-    @api.depends("link_payment_ids.payment_total")
+    @api.depends("link_payment_ids.payment_total_signed")
     def _compute_link_payments_total(self):
         """
         We added this computed field because we cannot modify counterpart_currency_amount,
@@ -88,7 +114,7 @@ class AccountPayment(models.Model):
         main_payment_ids = self.filtered("is_main_payment")
         (self - main_payment_ids).link_payments_total = False
         for rec in main_payment_ids:
-            rec.link_payments_total = sum(rec.link_payment_ids.mapped("payment_total"))
+            rec.link_payments_total = sum(rec.link_payment_ids.mapped("payment_total_signed"))
 
     @api.depends("use_payment_pro", "main_payment_id", "is_internal_transfer")
     def _compute_available_journal_ids(self):
@@ -181,14 +207,10 @@ class AccountPayment(models.Model):
     def _compute_payment_difference(self):
         linked = self.filtered("main_payment_id")
         for rec in linked:
-            # Usamos payment_total de cada linked (en B2/destination_currency_id) para que la
-            # comparación con selected_debt y withholdings_amount —que también están en B2— sea
-            # siempre en la misma moneda.  Cuando B1==B2 (caso normal), payment_total ==
-            # counterpart_currency_amount, por lo que no hay regresión.  Cuando B1≠B2
-            # (reconcile_on_company_currency), counterpart_currency_amount está en B1 y mezclaría
-            # monedas; payment_total ya convierte A→C correctamente en ese branch.
-            payments = rec.main_payment_id.link_payment_ids
-            total_linked_in_b = sum(payments.mapped("payment_total"))
+            # Neteo de los linkeados vía payment_total_signed (una devolución resta, no suma).
+            # payment_total viene en B2/destination_currency_id, misma moneda que selected_debt
+            # y withholdings_amount.
+            total_linked_in_b = sum(rec.main_payment_id.link_payment_ids.mapped("payment_total_signed"))
             rec.payment_difference = (
                 abs(rec.main_payment_id.to_pay_amount)
                 - total_linked_in_b
