@@ -213,7 +213,11 @@ class AccountCashboxSession(models.Model):
                     "target": "new",
                 }
 
-        self.write({"state": "closed"})
+        values = {"state": "closed"}
+        if not self.closing_date:
+            # ensure closing date is always stamped, even without cash-control journals
+            values["closing_date"] = fields.Datetime.now()
+        self.write(values)
 
     def _check_session_balance(self):
         differences = []
