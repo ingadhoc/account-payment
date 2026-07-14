@@ -210,7 +210,7 @@
                 <field name="payment_method_id"/>
                 <field name="payment_type" optional="hide"/>
                 <field name="amount" string="Amount (JC)" help="Amount on journal currency" optional="hide"/>
-                <field name="payment_total" string="Amount" sum="Total"/>
+                <field name="payment_total_signed" string="Amount" sum="Total"/>
                 <field name="counterpart_currency_amount" string="Amount (DC)" sum="Total" help="Amount in Debt Currency" optional="hide" column_invisible="parent.destination_currency_id == parent.counterpart_currency_id"/>
                 <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'in_process'" decoration-success="state == 'paid'"/>
             </list>

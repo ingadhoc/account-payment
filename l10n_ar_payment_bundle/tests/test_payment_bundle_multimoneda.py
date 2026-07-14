@@ -709,3 +709,111 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         )
         wth_ml = self._wth_move_lines(main)
         self.assertAlmostEqual(abs(wth_ml.balance), 36_000, places=0)
+
+    # ==================================================================
+    # B.8 — Bundle con línea de devolución (direcciones mixtas)
+    # ==================================================================
+
+    def test_b8_bundle_con_devolucion_neteada(self):
+        """B.8 · Regresión ticket 121656. Se paga de más y se registra la
+        diferencia como devolución (línea en sentido opuesto).
+
+        Deuda 12 100. Bundle: se paga 13 100 (outbound) y se recibe de vuelta
+        1 000 (inbound, el "vuelto"). El neto pagado es 12 100 → payment_difference = 0.
+
+        Antes del fix, payment_difference sumaba ambas líneas (13 100 + 1 000)
+        y daba -2 000: la devolución se duplicaba en vez de restar.
+        """
+        invoice = self._create_invoice(10_000, self.ars)
+        self.assertAlmostEqual(invoice.amount_total, 12_100, places=2)
+
+        main = self._create_main_payment(
+            invoice,
+            fiscal_position=False,
+            l10n_ar_fiscal_position_id=False,
+        )
+
+        # Línea de pago (misma dirección que el main) por 13 100: paga de más.
+        linked_pay = self._add_linked_payment(main, self.bank_ars, 13_100)
+        # Línea de devolución (dirección opuesta) por 1 000: el vuelto.
+        linked_refund = self._add_linked_payment(main, self.cash_ars, 1_000, payment_type="inbound")
+
+        self.assertEqual(linked_pay.payment_type, "outbound")
+        self.assertEqual(linked_refund.payment_type, "inbound", "La devolución va en sentido opuesto")
+
+        # Los totales del header del pago principal netean la devolución: 13 100 - 1 000.
+        # Antes del fix sumaban (14 100) y payment_difference daba -2 000.
+        self.assertAlmostEqual(main.payment_total, 12_100, places=2, msg="Payment Total neteado")
+        self.assertAlmostEqual(main.link_payments_total, 12_100, places=2, msg="Payments Amount neteado")
+        self.assertAlmostEqual(main.payment_difference, 0, places=2, msg="difference = to_pay(12100) - neto(12100) = 0")
+
+        # payment_difference del linkeado también netea: 12 100 - (13 100 - 1 000) = 0.
+        self.assertAlmostEqual(
+            linked_pay.payment_difference,
+            0,
+            places=2,
+            msg="La devolución debe restar (12100 - (13100 - 1000) = 0), no sumar",
+        )
+
+        # Columna "Amount" de la solapa Pagos (payment_total_signed): la devolución en negativo,
+        # y la suma de la columna netea a link_payments_total.
+        self.assertAlmostEqual(linked_pay.payment_total_signed, 13_100, places=2)
+        self.assertAlmostEqual(linked_refund.payment_total_signed, -1_000, places=2, msg="Devolución en negativo")
+        self.assertAlmostEqual(
+            linked_pay.payment_total_signed + linked_refund.payment_total_signed,
+            main.link_payments_total,
+            places=2,
+            msg="La suma de la columna debe coincidir con el total neteado",
+        )
+
+        # Post: cada linked balancea (el asiento ya era correcto aun con el bug).
+        main.action_post()
+        for linked in (linked_pay, linked_refund):
+            self.assertIn(linked.state, ("paid", "in_process"), "Linked payment debe estar posteado")
+            self.assertAlmostEqual(
+                sum(linked.move_id.line_ids.mapped("balance")),
+                0,
+                places=2,
+                msg="Partida doble en linked",
+            )
+
+    # ==================================================================
+    # B.9 — Neteo preserva el signo (dirección opuesta domina)
+    # ==================================================================
+
+    def test_b9_bundle_devolucion_mayor_al_pago(self):
+        """B.9 · Guarda que el neteo preserva el signo relativo al pago principal.
+
+        Caso degenerado en un bundle outbound (deuda 12 100): se paga solo 1 000
+        (outbound) y se recibe 13 100 (inbound). El neto real es -12 100 (recibiste
+        de más), por lo que payment_difference debe CRECER: 12 100 - (1 000 - 13 100)
+        = 24 200.
+
+        Con abs() el neto quedaría en 12 100 y payment_difference daría 0
+        (deuda saldada), enmascarando el signo. Este test falla si se vuelve a abs().
+        """
+        invoice = self._create_invoice(10_000, self.ars)
+        self.assertAlmostEqual(invoice.amount_total, 12_100, places=2)
+
+        main = self._create_main_payment(
+            invoice,
+            fiscal_position=False,
+            l10n_ar_fiscal_position_id=False,
+        )
+        self.assertEqual(main.payment_type, "outbound")
+
+        # Pago chico (dirección del main) + devolución grande (dirección opuesta).
+        self._add_linked_payment(main, self.bank_ars, 1_000)
+        linked_refund = self._add_linked_payment(main, self.cash_ars, 13_100, payment_type="inbound")
+
+        # net = outbound - inbound = 1000 - 13100 = -12100.
+        # Los totales del header quedan negativos (recibiste neto) y difference crece.
+        self.assertAlmostEqual(main.payment_total, -12_100, places=2, msg="Payment Total negativo (neto)")
+        self.assertAlmostEqual(main.link_payments_total, -12_100, places=2)
+        self.assertAlmostEqual(
+            main.payment_difference,
+            24_200,
+            places=2,
+            msg="difference = 12100 - (-12100) = 24200 (con abs daría 0, enmascarando el signo)",
+        )
+        self.assertAlmostEqual(linked_refund.payment_difference, 24_200, places=2)
