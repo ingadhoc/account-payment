@@ -44,7 +44,11 @@ def migrate(cr, version):
         "write_off_amount",
         "unreconciled_amount",
     ):
-        if openupgrade.column_exists(cr, "account_payment", col):
+        # Saltear si el backup ya existe: los x_bkp_ son write-once, así un
+        # reintento nunca pisa el valor original que lee el post-migrate.
+        if openupgrade.column_exists(cr, "account_payment", col) and not openupgrade.column_exists(
+            cr, "account_payment", f"x_bkp_{col}"
+        ):
             columns_to_backup.append((col, f"x_bkp_{col}", None))
 
     if columns_to_backup:
