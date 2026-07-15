@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-13 16:53+0000\n"
-"PO-Revision-Date: 2026-07-13 16:53+0000\n"
+"POT-Creation-Date: 2026-07-15 14:03+0000\n"
+"PO-Revision-Date: 2026-07-15 14:03+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -53,6 +53,15 @@ msgstr ""
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "<i class=\"fa fa-arrow-left\"/> Write-off"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid ""
+"<span>\n"
+"                        El contacto tiene deuda en múltiples monedas. Se priorizó la moneda de la compañía;\n"
+"                        podés cambiar la moneda de cancelación para filtrar las líneas a pagar.\n"
+"                    </span>"
 msgstr ""
 
 #. module: account_payment_pro
@@ -243,6 +252,11 @@ msgid "Cancel"
 msgstr ""
 
 #. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid "Cerrar"
+msgstr ""
+
+#. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
 msgid "Check nro 123456"
 msgstr ""
@@ -386,6 +400,13 @@ msgid "Document Type"
 msgstr ""
 
 #. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__multi_currency_warning_dismissed
+msgid ""
+"El usuario descartó el aviso de deuda multi-moneda con la cruz. Se resetea "
+"solo si cambia el contacto o la compañía."
+msgstr ""
+
+#. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__amount_exact
 msgid ""
 "Exact value of amount with full precision, used internally for conversions "
@@ -495,13 +516,6 @@ msgid "Journal must have manual method!"
 msgstr ""
 
 #. module: account_payment_pro
-#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
-msgid ""
-"La deuda seleccionada tiene múltiples monedas.\n"
-"                    Seleccione la moneda de cancelación para filtrar las líneas."
-msgstr ""
-
-#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__label
 msgid "Label"
 msgstr ""
@@ -553,8 +567,18 @@ msgid "Multi Currency Debt"
 msgstr ""
 
 #. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__multi_currency_warning_dismissed
+msgid "Multi Currency Warning Dismissed"
+msgstr ""
+
+#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__name
 msgid "Name"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
+msgid "No volver a mostrar este aviso para este pago"
 msgstr ""
 
 #. module: account_payment_pro
@@ -593,6 +617,11 @@ msgstr ""
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_with_matched_tree
 msgid "Paid Amount"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__partner_multi_currency_debt
+msgid "Partner Multi Currency Debt"
 msgstr ""
 
 #. module: account_payment_pro
@@ -820,6 +849,14 @@ msgstr ""
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
 msgid "Total debt amount in company currency"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__partner_multi_currency_debt
+msgid ""
+"True cuando el contacto tiene deuda abierta en más de una moneda. A "
+"diferencia de multi_currency_debt (que mira las líneas ya seleccionadas, que"
+" el default filtra a una sola moneda), este mira la deuda TOTAL del partner."
 msgstr ""
 
 #. module: account_payment_pro
