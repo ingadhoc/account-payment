@@ -11,22 +11,22 @@ msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-07-15 14:03+0000\n"
-"PO-Revision-Date: 2026-04-07 15:01+0000\n"
+"PO-Revision-Date: 2026-07-16 16:54+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
-"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
-"payment-19-0/account-payment-19-0-account_payment_pro/es/>\n"
+"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/"
+"account-payment-19-0/account-payment-19-0-account_payment_pro/es/>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == "
-"0) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == 0)"
+" ? 1 : 2);\n"
 "X-Generator: Weblate 5.10.4\n"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
 msgid "(Electronic checkbook)"
-msgstr ""
+msgstr "(Chequera electrónica)"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
@@ -46,22 +46,22 @@ msgstr "+ Nota de Débito"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
 msgid "- Exp."
-msgstr ""
+msgstr "- Exp."
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
 msgid "- Santander Rio"
-msgstr ""
+msgstr "- Santander Rio"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "<i class=\"fa fa-arrow-left\"/> Amount"
-msgstr ""
+msgstr "<i class=\"fa fa-arrow-left\"/> Importe"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "<i class=\"fa fa-arrow-left\"/> Write-off"
-msgstr ""
+msgstr "<i class=\"fa fa-arrow-left\"/> Ajuste"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
@@ -73,6 +73,12 @@ msgid ""
 "las líneas a pagar.\n"
 "                    </span>"
 msgstr ""
+"<span>\n"
+"                        El contacto tiene deuda en múltiples monedas. Se "
+"priorizó la moneda de la compañía;\n"
+"                        podés cambiar la moneda de cancelación para filtrar "
+"las líneas a pagar.\n"
+"                    </span>"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
@@ -162,7 +168,7 @@ msgstr "Añadir Todo / Refrescar"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "Add the pending difference to the payment amount"
-msgstr ""
+msgstr "Agrega la diferencia pendiente al importe del pago"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__unreconciled_amount
@@ -237,7 +243,7 @@ msgstr "Monto"
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__amount_exact
 msgid "Amount (Exact)"
-msgstr ""
+msgstr "Importe (exacto)"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
@@ -273,12 +279,12 @@ msgstr "Cancelar"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid "Cerrar"
-msgstr ""
+msgstr "Cerrar"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
 msgid "Check nro 123456"
-msgstr ""
+msgstr "Cheque nro 123456"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__commercial_partner_id
@@ -425,6 +431,8 @@ msgid ""
 "El usuario descartó el aviso de deuda multi-moneda con la cruz. Se resetea "
 "solo si cambia el contacto o la compañía."
 msgstr ""
+"El usuario descartó el aviso de deuda multi-moneda con la cruz. Se resetea "
+"solo si cambia el contacto o la compañía."
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__amount_exact
@@ -432,6 +440,8 @@ msgid ""
 "Exact value of amount with full precision, used internally for conversions "
 "to avoid rounding errors."
 msgstr ""
+"Valor exacto de la cantidad con precisión total, utilizado internamente para "
+"conversiones a fin de evitar errores de redondeo."
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__exchange_diff_move_ids
@@ -447,7 +457,7 @@ msgstr "Cantidad de Asientos de Diferencia de Cambio"
 #. odoo-python
 #: code:addons/account_payment_pro/models/account_payment.py:0
 msgid "Exchange Differences"
-msgstr ""
+msgstr "Diferencias de cambio"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__exchange_diff_move_ids
@@ -480,7 +490,7 @@ msgstr "Contiene cuenta de cobro/pago Pendiente"
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_company__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__id
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment_invoice_wizard__use_documents
@@ -602,7 +612,7 @@ msgstr "Deuda Multimoneda"
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__multi_currency_warning_dismissed
 msgid "Multi Currency Warning Dismissed"
-msgstr ""
+msgstr "Aviso de multidivisa descartado"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__name
@@ -612,7 +622,7 @@ msgstr "Nombre"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid "No volver a mostrar este aviso para este pago"
-msgstr ""
+msgstr "No volver a mostrar este aviso para este pago"
 
 #. module: account_payment_pro
 #. odoo-python
@@ -658,7 +668,7 @@ msgstr "Importe Pagado"
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__partner_multi_currency_debt
 msgid "Partner Multi Currency Debt"
-msgstr ""
+msgstr "Deuda multidivisa del contacto"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_bank_statement_line__pay_now_journal_id
@@ -690,6 +700,11 @@ msgid ""
 "pierden algunas funcionalidades nativas como descuento por pronto "
 "pago                         y sugerencias de diferencia de cambio"
 msgstr ""
+"Payment Pro incorpora funcionalidades que permiten llevar un flujo de "
+"cobros                         y pagos con retenciones, especificamente "
+"utilizado en Argentina. Al activarlo a                         ​su ​vez, se "
+"pierden algunas funcionalidades nativas como descuento por pronto "
+"pago                         y sugerencias de diferencia de cambio"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__payment_total
@@ -738,6 +753,10 @@ msgid ""
 "to_pay_move_line_ids is left empty instead of auto-filled with the partner's "
 "open lines."
 msgstr ""
+"Pagos creados únicamente para registrar un movimiento (por ej., el rechazo "
+"de un cheque de terceros) que no deben conciliarse con una deuda existente. "
+"Al configurarlos de este modo, el campo to_pay_move_line_ids queda vacío en "
+"lugar de completarse automáticamente con las líneas pendientes del contacto."
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__previous_currency_id
@@ -803,7 +822,7 @@ msgstr "Deuda Seleccionada"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "Send the pending difference to write-off"
-msgstr ""
+msgstr "Enviar la diferencia pendiente a Ajuste"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_company__payment_receipt_full_ref
@@ -899,6 +918,9 @@ msgid ""
 "diferencia de multi_currency_debt (que mira las líneas ya seleccionadas, que "
 "el default filtra a una sola moneda), este mira la deuda TOTAL del partner."
 msgstr ""
+"True cuando el contacto tiene deuda abierta en más de una moneda. A "
+"diferencia de multi_currency_debt (que mira las líneas ya seleccionadas, que "
+"el default filtra a una sola moneda), este mira la deuda TOTAL del contacto."
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__counterpart_rate_inverted
@@ -906,6 +928,8 @@ msgid ""
 "True si el rate teórico A→B1 < 1.0 (B1 es la moneda fuerte). Determina la "
 "dirección de visualización de user_counterpart_rate."
 msgstr ""
+"True si el rate teórico A→B1 < 1.0 (B1 es la moneda fuerte). Determina la "
+"dirección de visualización de user_counterpart_rate."
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__accounting_rate_inverted
@@ -913,6 +937,8 @@ msgid ""
 "True si el rate teórico A→C < 1.0 (C es la moneda fuerte). Determina la "
 "dirección de visualización de user_accounting_rate."
 msgstr ""
+"True si el rate teórico A→C < 1.0 (C es la moneda fuerte). Determina la "
+"dirección de visualización de user_accounting_rate."
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__counterpart_currency_editable
