@@ -473,8 +473,17 @@ class AccountPayment(models.Model):
             w_balance = sum(line["balance"] for line in write_off_line_vals)
             w_amount_currency = sum(line["amount_currency"] for line in write_off_line_vals)
             if res.get("counterpart_lines"):
-                res["counterpart_lines"][0]["balance"] -= w_balance
-                res["counterpart_lines"][0]["amount_currency"] -= w_amount_currency
+                # Cuando hay retenciones, el core descarta el write-off y l10n_ar_tax vuelve a
+                # armar la contrapartida en bruto (neto + retenciones). En ese flujo la línea de
+                # ajuste (write-off) termina del mismo lado que la contrapartida en vez de
+                # compensarla, así que el asiento descuadra en 2x el ajuste: el balanceo automático
+                # manda ese importe a la cuenta puente y lo deja sin conciliar en la cuenta
+                # corriente del partner (bug ticket 121602, visible en pagos con retención).
+                # Por eso, con retenciones compensamos en sentido inverso para que la línea de
+                # ajuste quede como contrapartida y el asiento cierre sin residual.
+                sign = 1 if res.get("withholding_lines") else -1
+                res["counterpart_lines"][0]["balance"] += sign * w_balance
+                res["counterpart_lines"][0]["amount_currency"] += sign * w_amount_currency
 
         if not self.company_id.use_payment_pro and not self.is_internal_transfer:
             return res
