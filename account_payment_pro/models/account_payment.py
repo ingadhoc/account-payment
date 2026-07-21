@@ -468,6 +468,24 @@ class AccountPayment(models.Model):
 
         res = super()._prepare_move_lines_per_type(write_off_line_vals=write_off_line_vals, force_balance=force_balance)
 
+        # FX sign-symmetry (odoo PR 248296): on a plain conversion, convert the
+        # absolute amount and re-apply the sign so rounding is symmetric. No-op
+        # on a patched core; skips forced/withholding cases (liquidity would not
+        # hold the full payment amount).
+        if (
+            not force_balance
+            and not self.force_amount_company_currency
+            and self.currency_id != self.company_id.currency_id
+        ):
+            for line in res.get("liquidity_lines", []):
+                amount_currency = line.get("amount_currency") or 0.0
+                if self.currency_id.compare_amounts(abs(amount_currency), self.amount) != 0:
+                    continue
+                sign = 1 if amount_currency > 0 else -1
+                line["balance"] = sign * self.currency_id._convert(
+                    abs(amount_currency), self.company_id.currency_id, self.company_id, self.date
+                )
+
         if self.company_id.use_payment_pro and write_off_line_vals and not res.get("write_off_lines"):
             res["write_off_lines"] = write_off_line_vals
             w_balance = sum(line["balance"] for line in write_off_line_vals)
