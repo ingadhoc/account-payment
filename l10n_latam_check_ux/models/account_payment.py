@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from odoo import api, fields, models
+from odoo import Command, _, api, fields, models
 from odoo.exceptions import ValidationError
 
 
@@ -152,3 +152,77 @@ class AccountPayment(models.Model):
                     "All selected checks must belong to the source journal (%s)."
                     % rec.destination_journal_id.display_name
                 )
+
+    # One liquidity line per own check (replaces core's post-hoc split move).
+    def _prepare_move_liquidity_lines(self, default_values):
+        self.ensure_one()
+        check_ids = self.l10n_latam_new_check_ids | self.l10n_latam_move_check_ids
+        if (
+            self.payment_method_code == "own_checks"
+            and self.payment_type == "outbound"
+            and len(self.l10n_latam_new_check_ids) >= 1
+            and check_ids
+        ):
+            company_currency = self.company_id.currency_id
+            amount_currency_total = 0.0
+            balance_total = 0.0
+            line_vals = []
+            for check in check_ids:
+                if check == self.l10n_latam_new_check_ids[-1]:
+                    # last check absorbs rounding
+                    liquidity_amount_currency = self.currency_id.round(
+                        abs(default_values["amount_currency"]) - amount_currency_total
+                    )
+                    liquidity_balance = company_currency.round(abs(default_values["balance"]) - balance_total)
+                else:
+                    # check.amount is in the payment currency
+                    liquidity_amount_currency = self.currency_id.round(check.amount)
+                    liquidity_balance = self.currency_id._convert(
+                        liquidity_amount_currency, company_currency, self.company_id, self.date
+                    )
+                    amount_currency_total += liquidity_amount_currency
+                    balance_total += liquidity_balance
+
+                line_vals.append(
+                    {
+                        "name": _(
+                            "Check %(check_number)s - %(suffix)s",
+                            check_number=check.name,
+                            suffix="".join([item[1] for item in self._get_aml_default_display_name_list()]),
+                        ),
+                        "date_maturity": check.payment_date,
+                        "partner_id": self.partner_id.id,
+                        "account_id": self.outstanding_account_id.id,
+                        "currency_id": check.currency_id.id,
+                        "balance": -liquidity_balance,
+                        "amount_currency": -liquidity_amount_currency,
+                        "l10n_latam_check_ids": [Command.link(check.id)],
+                    }
+                )
+            return line_vals
+
+        return super()._prepare_move_liquidity_lines(default_values)
+
+    # Split move no longer used: liquidity lines are built per check above.
+    def _l10n_latam_check_split_move(self):
+        return
+
+    # No split move to unlink on draft: own-check liquidity lines live in the
+    # payment move itself, so keep the checks linked (matches patched core).
+    def _l10n_latam_check_unlink_split_move(self):
+        return
+
+    def _synchronize_to_moves(self, changed_fields):
+        # Own checks legitimately post several liquidity lines (one per check).
+        # Base only blocks them through the "amount + multiple liquidity lines"
+        # guard; its line mapping already handles N liquidity lines. So we just
+        # drop 'amount' from the trigger set for those payments and let base do
+        # the actual sync (no copied mapping -> upstream changes are inherited).
+        own_multi = self.filtered(
+            lambda p: p.payment_method_code == "own_checks"
+            and p.payment_type == "outbound"
+            and len(p.l10n_latam_new_check_ids) > 1
+        )
+        super(AccountPayment, self - own_multi)._synchronize_to_moves(changed_fields)
+        if own_multi:
+            super(AccountPayment, own_multi)._synchronize_to_moves(tuple(f for f in changed_fields if f != "amount"))
