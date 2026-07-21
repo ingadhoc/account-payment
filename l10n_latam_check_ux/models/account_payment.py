@@ -189,7 +189,7 @@ class AccountPayment(models.Model):
             )
         ):
             invalid_checks = rec.l10n_latam_move_check_ids.filtered(
-                lambda c: c.current_journal_id != rec.destination_journal_id
+                lambda c: c.current_journal_id and c.current_journal_id != rec.destination_journal_id
             )
             if invalid_checks:
                 raise ValidationError(
