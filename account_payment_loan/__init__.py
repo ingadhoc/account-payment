@@ -14,7 +14,7 @@ def post_init_hook(env):
             ChartTemplate._load_data({"account.journal": journals_to_create})
 
         account_loan_journal_id = env.ref(f"account.{company.id}_account_loan_journal")
-        account_loan_journal_id.default_account_id = env.ref(f"account.{company.id}_account_loan_account").id
         company.loan_journal_id = account_loan_journal_id.id
+        company.loan_account_id = env.ref(f"account.{company.id}_account_loan_account").id
         company.account_late_payment_interest = env.ref(f"account.{company.id}_account_loan_interest_account").id
         company.account_loan_extra_charges = env.ref(f"account.{company.id}_account_loan_extra_charges").id

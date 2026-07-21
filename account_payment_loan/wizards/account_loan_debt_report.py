@@ -33,7 +33,7 @@ class accountLoanDebtDeport(models.TransientModel):
     @api.depends("partner_id")
     def _compute_available_loan_move_ids(self):
         for rec in self:
-            loan_account_id = self.env.company.loan_journal_id.default_account_id
+            loan_account_id = self.env.company.loan_account_id
             loan_line_ids = self.env["account.move.line"].search(
                 [
                     ("company_id", "=", self.env.company.id),

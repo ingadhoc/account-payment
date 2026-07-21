@@ -127,7 +127,7 @@ class AccountLoanRegister(models.TransientModel):
 
     def _prepare_loan_move_data(self):
         amount_total = self.amount * self.installment_id.surcharge_coefficient
-        loan_account = self.company_id.loan_journal_id.default_account_id
+        loan_account = self.company_id.loan_account_id
         move_names = ", ".join(filter(None, self.move_line_ids.mapped("move_id.name")))
         if not self.refinancial_loan_move_ids:
             ref = _("Loan of %s") % move_names if move_names else _("Loan")
@@ -199,7 +199,7 @@ class AccountLoanRegister(models.TransientModel):
             loan_move_data["line_ids"].append(
                 Command.create(
                     {
-                        "account_id": self.env.ref(f"account.{self.company_id.id}_account_loan_account").id,
+                        "account_id": loan_account.id,
                         "balance": credit_total - debit_total,
                         "name": _("Rounding"),
                         "currency_id": self.currency_id.id,

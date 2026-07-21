@@ -24,7 +24,7 @@ class accountLoanExtraCharges(models.TransientModel):
     @api.depends("partner_id")
     def _compute_available_loan_move_ids(self):
         for rec in self:
-            loan_account_id = self.env.company.loan_journal_id.default_account_id
+            loan_account_id = self.env.company.loan_account_id
             loan_line_ids = self.env["account.move.line"].search(
                 [
                     ("company_id", "=", self.env.company.id),
@@ -37,7 +37,7 @@ class accountLoanExtraCharges(models.TransientModel):
             rec.available_loan_move_ids = [(6, 0, loan_line_ids.mapped("move_id").ids)]
 
     def action_add_extra_charges(self):
-        loan_account_id = self.company_id.loan_journal_id.default_account_id
+        loan_account_id = self.company_id.loan_account_id
         extra_charges_account_id = self.company_id.account_loan_extra_charges
         if self.loan_move_id:
             base_loan_move_ids = self.loan_move_id.ids

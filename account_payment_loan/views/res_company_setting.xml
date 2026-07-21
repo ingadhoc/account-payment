@@ -17,6 +17,16 @@
                         </div>
                     </setting>
 
+                    <setting string="Loan Account:" company_dependent="1"
+                            help="Account used to identify and record loan receivable lines.">
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label for="loan_account_id" class="col-lg-5 o_light_label"/>
+                                <field name="loan_account_id" domain="[('company_ids', '=', company_id)]"/>
+                            </div>
+                        </div>
+                    </setting>
+
                     <setting string="Late Payment Interest" company_dependent="1"
                             help="Monthly interest rate for late payments (e.g. 0.10 = 10%). This is prorated to a daily rate.">
                         <div class="content-group">

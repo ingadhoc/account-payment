@@ -10,6 +10,12 @@ class ResConfigSettings(models.TransientModel):
         help="Journal to be used for registering loan transactions.",
     )
 
+    loan_account_id = fields.Many2one(
+        related="company_id.loan_account_id",
+        readonly=False,
+        help="Account used to identify and record loan receivable lines.",
+    )
+
     late_payment_interest = fields.Float(
         related="company_id.late_payment_interest",
         readonly=False,

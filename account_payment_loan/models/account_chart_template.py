@@ -46,8 +46,8 @@ class AccountChartTemplate(models.AbstractModel):
         company = get_first_parent(company or self.env.company)
 
         account_loan_journal_id = self.env.ref(f"account.{company.id}_account_loan_journal")
-        account_loan_journal_id.default_account_id = self.env.ref(f"account.{company.id}_account_loan_account").id
 
         company.loan_journal_id = account_loan_journal_id.id
+        company.loan_account_id = self.env.ref(f"account.{company.id}_account_loan_account").id
         company.account_late_payment_interest = self.env.ref(f"account.{company.id}_account_loan_interest_account").id
         company.account_loan_extra_charges = self.env.ref(f"account.{company.id}_account_loan_extra_charges").id
