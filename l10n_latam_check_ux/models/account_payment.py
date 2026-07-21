@@ -57,8 +57,10 @@ class AccountPayment(models.Model):
         # Who already create both payments at once in the _create_payments method.)
         if not self.env.context.get("check_deposit_transfer"):
             third_party_checks = self.filtered(
-                lambda x: x.payment_method_line_id.code
-                in ["in_third_party_checks", "out_third_party_checks", "return_third_party_checks"]
+                lambda x: (
+                    x.payment_method_line_id.code
+                    in ["in_third_party_checks", "out_third_party_checks", "return_third_party_checks"]
+                )
             )
             for rec in third_party_checks:
                 dest_payment_method_code = (
@@ -145,7 +147,7 @@ class AccountPayment(models.Model):
             )
         ):
             invalid_checks = rec.l10n_latam_move_check_ids.filtered(
-                lambda c: c.current_journal_id != rec.destination_journal_id
+                lambda c: c.current_journal_id and c.current_journal_id != rec.destination_journal_id
             )
             if invalid_checks:
                 raise ValidationError(
