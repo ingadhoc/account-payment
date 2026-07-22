@@ -45,6 +45,11 @@ class AccountChartTemplate(models.AbstractModel):
         super()._post_load_data(template_code, company, template_data)
         company = get_first_parent(company or self.env.company)
 
+        # Settle the account_type recompute (scheduled when `code` was set) while the account is
+        # not yet a journal default. Otherwise a later flush triggers _check_account_is_bank_journal_bank_account
+        # on the already-linked receivable account and raises.
+        self.env["account.account"].flush_model(["account_type"])
+
         account_loan_journal_id = self.env.ref(f"account.{company.id}_account_loan_journal")
         account_loan_journal_id.default_account_id = self.env.ref(f"account.{company.id}_account_loan_account").id
 
