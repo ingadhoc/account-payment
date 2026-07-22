@@ -13,6 +13,11 @@ def post_init_hook(env):
         if journals_to_create := ChartTemplate._get_personal_loan_journal(template_code):
             ChartTemplate._load_data({"account.journal": journals_to_create})
 
+        # Settle the account_type recompute (scheduled when `code` was set) while the account is
+        # not yet a journal default. Otherwise a later flush triggers _check_account_is_bank_journal_bank_account
+        # on the already-linked receivable account and raises during install.
+        env["account.account"].flush_model(["account_type"])
+
         account_loan_journal_id = env.ref(f"account.{company.id}_account_loan_journal")
         account_loan_journal_id.default_account_id = env.ref(f"account.{company.id}_account_loan_account").id
         company.loan_journal_id = account_loan_journal_id.id
