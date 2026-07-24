@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-17 14:49+0000\n"
-"PO-Revision-Date: 2026-06-17 14:49+0000\n"
+"POT-Creation-Date: 2026-07-24 14:31+0000\n"
+"PO-Revision-Date: 2026-07-24 14:31+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -316,8 +316,9 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_payment_pro_receiptbook/models/account_payment_receiptbook.py:0
 msgid ""
-"The combination of Company, Prefix, Document Type and Partner Type must be "
-"unique. There is already a receiptbook with these values."
+"The combination of Prefix, Document Type and Partner Type must be unique "
+"across a company and its branches. There is already a receiptbook with these"
+" values."
 msgstr ""
 
 #. module: account_payment_pro_receiptbook
