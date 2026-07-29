@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from odoo import api, fields, models
+from odoo import Command, _, api, fields, models
 from odoo.exceptions import ValidationError
 
 
@@ -215,6 +215,62 @@ class AccountPayment(models.Model):
                     % rec.destination_journal_id.display_name
                 )
 
+    def _l10n_latam_check_liquidity_lines(self):
+        """Una línea de liquidez por cheque, con su nominal, su vencimiento y su link (tarea 70884).
+
+        Relocaliza lo que hace `l10n_latam_check` cuando la imagen mergea el PR odoo#248741, para
+        que el asiento salga igual con un core sin parchear. El balance queda a la cotización del
+        pago; la revaluación de abajo lo ajusta a la del asiento.
+        """
+        check_suffix = "".join([item[1] for item in self._get_aml_default_display_name_list()])
+        line_common_vals = {
+            "currency_id": self.currency_id.id,
+            "partner_id": self.partner_id.id,
+            "account_id": self.outstanding_account_id.id,
+        }
+        liquidity_vals = []
+        for check in self.l10n_latam_new_check_ids | self.l10n_latam_move_check_ids:
+            liquidity_amount = check.amount if self.payment_type == "inbound" else -check.amount
+            liquidity_vals.append(
+                {
+                    "name": _("Check %(check_number)s - %(suffix)s", check_number=check.name, suffix=check_suffix),
+                    "date_maturity": check.payment_date,
+                    "amount_currency": liquidity_amount,
+                    "balance": self.currency_id._convert(
+                        liquidity_amount, self.company_currency_id, self.company_id, self.date
+                    ),
+                    "l10n_latam_check_ids": [Command.set(check.ids)],
+                    **line_common_vals,
+                }
+            )
+        return liquidity_vals
+
+    def _l10n_latam_check_split_move(self):
+        """No-op: las líneas de liquidez de arriba reemplazan al split move."""
+        return
+
+    def _l10n_latam_check_unlink_split_move(self):
+        """Solo desarma el split move de los pagos posteados antes de este cambio: si no queda
+        posteado y huérfano, con el importe del cheque en la cuenta outstanding."""
+        self.ensure_one()
+        for check in self.l10n_latam_new_check_ids:
+            if not check.outstanding_line_id or self.move_id == check.outstanding_line_id.move_id:
+                continue
+            check.outstanding_line_id.move_id.button_draft()
+            check.outstanding_line_id.move_id.unlink()
+
+    def _synchronize_to_moves(self, changed_fields):
+        """Base bloquea escribir ``amount`` cuando el asiento tiene más de una línea de liquidez, y
+        los pagos con cheques tienen una por cheque: se saca del set y el mapeo lo sigue haciendo
+        base. Si ``amount`` es el único campo escrito no se re-sincroniza nada, inocuo porque se
+        recalcula desde los cheques."""
+        with_checks = self.filtered(lambda x: x.l10n_latam_new_check_ids or x.l10n_latam_move_check_ids)
+        super(AccountPayment, self - with_checks)._synchronize_to_moves(changed_fields)
+        if with_checks:
+            super(AccountPayment, with_checks)._synchronize_to_moves(
+                tuple(field for field in changed_fields if field != "amount")
+            )
+
     def _prepare_paired_payment_values(self):
         """Override to validate check payment method combinations on internal transfers.
 
@@ -346,8 +402,13 @@ class AccountPayment(models.Model):
         decidiendo dónde cae el resto del redondeo, así que no es un borrado a ciegas.
         """
         lines = super()._prepare_move_liquidity_lines(default_values)
+        if not lines[0].get("l10n_latam_check_ids") and (
+            self.l10n_latam_new_check_ids | self.l10n_latam_move_check_ids
+        ):
+            # core sin parchear: las armamos nosotros (tarea 70884)
+            lines = self._l10n_latam_check_liquidity_lines()
         if not lines[0].get("l10n_latam_check_ids") or not self.amount:
-            # no las armó `l10n_latam_check`: no hay una línea por cheque que revaluar
+            # no hay una línea por cheque que revaluar
             return lines
 
         balance = default_values["balance"]
