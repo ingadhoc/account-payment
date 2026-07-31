@@ -40,7 +40,7 @@ class AccountPayment(models.Model):
         for rec in self:
             if rec.l10n_latam_check_warning_msg:
                 raise ValidationError("%s" % rec.l10n_latam_check_warning_msg)
-            rec.l10n_latam_move_check_ids_operation_date = fields.Datetime.now()
+            rec.l10n_latam_move_check_ids_operation_date = rec.create_date if rec.create_date else fields.Datetime.now()
 
         # Detectar cheques de terceros existentes usados más de una vez dentro del mismo
         # batch de confirmación (ej: bundle confirma dos pagos hijos en draft que tienen
