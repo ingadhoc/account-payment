@@ -120,7 +120,11 @@ class AccountPaymentInvoiceWizard(models.TransientModel):
         else:
             taxes = self.product_id.taxes_id
         company = self.company_id or self.env.company
-        taxes = taxes.filtered(lambda r: r.company_id == company)
+        # account.tax ya define _check_company_domain = check_company_domain_parent_of,
+        # así que un impuesto de la compañía padre es válido para este wizard. El
+        # exact match de acá abajo era más estricto que esa constraint: si el producto
+        # tiene impuestos configurados en la padre, una sucursal no los veía nunca.
+        taxes = taxes.filtered_domain(self.env["account.tax"]._check_company_domain(company))
         self.tax_ids = self.payment_id.partner_id.with_company(company).property_account_position_id.map_tax(taxes)
 
     @api.onchange("amount_untaxed", "tax_ids")

@@ -351,3 +351,53 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
 
         self.assertIn(payment.state, ["paid", "in_process"], "El pago invertido debe poder postearse")
         self.assertIn(credit_note.payment_state, ["paid", "in_payment"], "La nota de crédito debe quedar pagada")
+
+    def test_change_product_includes_parent_company_taxes(self):
+        """El wizard de factura debe incluir impuestos configurados en la compañía padre
+        (branches): antes filtraba por company_id == company exacto, sin considerar
+        jerarquía, y una sucursal nunca veía los impuestos de la casa central."""
+        branch = self.env["res.company"].create({"name": "Branch WizardTest", "parent_id": self.company.id})
+        branch_journal = self.env["account.journal"].create(
+            {"name": "Branch Sale", "type": "sale", "company_id": branch.id}
+        )
+        parent_tax = self.env["account.tax"].create(
+            {
+                "name": "Parent Tax 21%",
+                "amount": 21,
+                "amount_type": "percent",
+                "type_tax_use": "sale",
+                "company_id": self.company.id,
+            }
+        )
+        product = self.env.ref("product.product_product_16")
+        product.with_company(branch).write({"taxes_id": [Command.set(parent_tax.ids)]})
+
+        payment = self.env["account.payment"].create(
+            {
+                "amount": 100,
+                "payment_type": "inbound",
+                "partner_type": "customer",
+                "partner_id": self.partner_ri.id,
+                "journal_id": self.company_bank_journal.id,
+                "date": self.today,
+                "company_id": branch.id,
+            }
+        )
+        wizard = (
+            self.env["account.payment.invoice.wizard"]
+            .with_context(active_id=payment.id)
+            .create(
+                {
+                    "payment_id": payment.id,
+                    "journal_id": branch_journal.id,
+                    "product_id": product.id,
+                    "amount_total": 100,
+                }
+            )
+        )
+        wizard.change_product()
+        self.assertIn(
+            parent_tax,
+            wizard.tax_ids,
+            "El impuesto de la compañía padre debería estar disponible para la sucursal.",
+        )
