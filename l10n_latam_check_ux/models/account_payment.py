@@ -115,6 +115,18 @@ class AccountPayment(models.Model):
 
         super().action_draft()
 
+    def _get_reconciled_checks_error(self):
+        """Odoo bloquea cancelar o reabrir un pago si algún cheque está debitado o anulado, para no
+        romper la conciliación del débito. Cuando la cuenta de cheques no permite conciliación
+        forzamos issue_state = 'debited' (ver l10n_latam.check._compute_issue_state) porque el
+        residual de la línea es 0 por definición, no porque exista un débito conciliado. En ese caso
+        no hay conciliación que romper y el pago debe poder volver a borrador o cancelarse.
+        """
+        payments = self.filtered(
+            lambda x: any(check.outstanding_line_id.account_id.reconcile for check in x.l10n_latam_new_check_ids)
+        )
+        return super(AccountPayment, payments)._get_reconciled_checks_error()
+
     def _is_latam_check_transfer(self):
         self.ensure_one()
         return super()._is_latam_check_transfer() or (
