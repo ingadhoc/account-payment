@@ -56,7 +56,8 @@ class AccountLoanRegister(models.TransientModel):
         for divisor in range(1, self.installment_id.divisor + 1):
             date_maturity = fields.Date.today() + relativedelta(months=divisor)
             if self.card_id.loan_due_method == "next_day_number":
-                date_maturity = date_maturity.replace(day=self.card_id.due_day)
+                last_day = (date_maturity + relativedelta(day=31)).day
+                date_maturity = date_maturity.replace(day=min(self.card_id.due_day, last_day))
             installments.append(
                 {
                     "divisor": divisor,
