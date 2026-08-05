@@ -31,7 +31,7 @@ class AccountCheckRejectWizard(models.TransientModel):
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
-        checks = self.env["l10n_latam.check"].browse(self._context.get("active_ids", []))
+        checks = self.env["l10n_latam.check"].browse(self.env.context.get("active_ids", []))
         for check in checks:
             if not check.can_reject:
                 raise UserError(
@@ -62,7 +62,7 @@ class AccountCheckRejectWizard(models.TransientModel):
             rec.case_description = "  ".join(parts) if parts else False
 
     def _get_checks(self):
-        return self.env["l10n_latam.check"].browse(self._context.get("active_ids", []))
+        return self.env["l10n_latam.check"].browse(self.env.context.get("active_ids", []))
 
     def _get_case_type(self, check):
         """Return 'endorsed' if the check was given to a supplier, 'deposited' if it is in a bank journal."""
