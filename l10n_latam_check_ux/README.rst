@@ -18,6 +18,7 @@ This module extends the standard functionality of Odoo's l10n_latam_check module
 
 * Debit checks from payments: Adds a button in the check record to perform the debit action, streamlining check management.
 * Check number in PDF documents: Includes the check number when printing the receipt and payment PDFs, improving traceability.
+* Journal entry protection: The journal entry of a payment with checks cannot be deleted while the payment is confirmed, because deleting it and posting the payment again leaves the check with the wrong current journal. The payment has to be reset to draft to adjust its journal entry.
 
 Installation
 ============
