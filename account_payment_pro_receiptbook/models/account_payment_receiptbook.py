@@ -77,6 +77,24 @@ class AccountPaymentReceiptbook(models.Model):
         required=True,
     )
 
+    @api.depends("name", "company_id")
+    @api.depends_context("allowed_company_ids")
+    def _compute_display_name(self):
+        """Disambiguate receiptbooks of a branch tree by suffixing the company.
+
+        Same idea as account.tax / project.project in core: only when the user
+        has more than one active company, and only if the tree actually has
+        branches (otherwise the suffix is noise for single-company databases).
+        """
+        super()._compute_display_name()
+        if len(self.env.context.get("allowed_company_ids") or []) <= 1:
+            return
+        for rec in self:
+            # sudo: child_ids is filtered by the res.company record rule, so
+            # without it the suffix would show up only for some users.
+            if rec.company_id.sudo().root_id.child_ids:
+                rec.display_name = f"{rec.display_name} - {rec.company_id.name}"
+
     @api.constrains("company_id", "prefix", "document_type_id", "partner_type")
     def _check_unique_receipt(self):
         for rec in self:
