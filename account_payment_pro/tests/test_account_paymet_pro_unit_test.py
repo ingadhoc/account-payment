@@ -1,37 +1,18 @@
 from datetime import timedelta
 
-from odoo import Command, fields
-from odoo.tests import common, tagged
+from odoo import Command
+from odoo.tests import tagged
+
+from .common import PaymentProCommon
 
 
 @tagged("post_install", "-at_install")
-class TestAccountPaymentProUnitTest(common.TransactionCase):
+class TestAccountPaymentProUnitTest(PaymentProCommon):
     @classmethod
     def setUpClass(cls):
-        super(TestAccountPaymentProUnitTest, cls).setUpClass()
-        cls.today = fields.Date.today()
-        cls.ar = ar = cls.env.ref("base.ar")
-
-        cls.company = cls.env.company
-        cls.company_bank_journal = cls.env["account.journal"].search(
-            [("company_id", "=", cls.company.id), ("type", "=", "bank")], limit=1
-        )
-        # Configurar cuentas outstanding en el diario de banco para que al postear
-        # se genere asiento contable (sin esto Odoo no crea journal entry)
-        outstanding_account = cls.env["account.account"].search(
-            [("company_ids", "=", cls.company.id), ("account_type", "=", "asset_current")], limit=1
-        )
-        if outstanding_account:
-            for pml in cls.company_bank_journal.inbound_payment_method_line_ids:
-                if not pml.payment_account_id:
-                    pml.payment_account_id = outstanding_account
-            for pml in cls.company_bank_journal.outbound_payment_method_line_ids:
-                if not pml.payment_account_id:
-                    pml.payment_account_id = outstanding_account
-        cls.company_journal = cls.env["account.journal"].search(
-            [("company_id", "=", cls.company.id), ("type", "=", "sale")], limit=1
-        )
-        cls.company.use_payment_pro = True
+        super().setUpClass()
+        # Tasas históricas de EUR: escenario propio de esta suite (congelamiento
+        # de accounting_rate), no de la Common
         cls.eur_currency = cls.env["res.currency"].with_context(active_test=False).search([("name", "=", "EUR")])
         cls.eur_currency.active = True
         cls.rates = cls.env["res.currency.rate"].create(
@@ -50,32 +31,12 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
                 },
             ]
         )
-        cls.partner_ri = cls.env["res.partner"].create(dict(name="RI Partner", vat="34278580484", country_id=ar.id))
 
     def test_create_payment_with_a_date_rate_then_change_rate(self):
-        invoice = self.env["account.move"].create(
-            {
-                "partner_id": self.partner_ri.id,
-                "invoice_date": self.today - timedelta(days=14),
-                "move_type": "out_invoice",
-                "journal_id": self.company_journal.id,
-                "company_id": self.company.id,
-                "currency_id": self.eur_currency.id,
-                "invoice_line_ids": [
-                    Command.create(
-                        {
-                            "product_id": self.env.ref("product.product_product_16").id,
-                            "quantity": 1,
-                            "price_unit": 100,
-                        }
-                    ),
-                ],
-            }
-        )
-        invoice.action_post()
+        invoice = self._create_invoice(currency=self.eur_currency, date=self.today - timedelta(days=14))
 
         vals = {
-            "journal_id": self.company_bank_journal.id,
+            "journal_id": self.bank_journal.id,
             "amount": invoice.amount_total,
             "currency_id": self.eur_currency.id,
             "date": self.today - timedelta(days=1),
@@ -121,30 +82,11 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
 
     def test_action_draft_unreconciles_payment(self):
         """Test that action_draft removes partial reconciliations when going back to draft"""
-        # Create invoice
-        invoice = self.env["account.move"].create(
-            {
-                "partner_id": self.partner_ri.id,
-                "invoice_date": self.today,
-                "move_type": "out_invoice",
-                "journal_id": self.company_journal.id,
-                "company_id": self.company.id,
-                "invoice_line_ids": [
-                    Command.create(
-                        {
-                            "product_id": self.env.ref("product.product_product_16").id,
-                            "quantity": 1,
-                            "price_unit": 100,
-                        }
-                    ),
-                ],
-            }
-        )
-        invoice.action_post()
+        invoice = self._create_invoice()
 
         # Create and post payment
         vals = {
-            "journal_id": self.company_bank_journal.id,
+            "journal_id": self.bank_journal.id,
             "amount": invoice.amount_total,
             "date": self.today,
         }
@@ -159,7 +101,6 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
         partials_before = payment_lines.mapped("matched_debit_ids") | payment_lines.mapped("matched_credit_ids")
 
         # Verify that partial reconciliations exist
-        # TODO improve. for this to work, saas_client_adhoc is needed to be installed (For setup of journal)
         self.assertTrue(partials_before, "There should be partial reconciliations after posting the payment")
         self.assertTrue(payment.move_id.posted_before, "posted_before should be True after posting")
 
@@ -199,35 +140,14 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
         """Pago de tipo inbound + supplier (nota de crédito de proveedor / reembolso).
         selected_debt, to_pay_amount y payment_difference deben calcularse
         correctamente con valores positivos."""
-        purchase_journal = self.env["account.journal"].search(
-            [("company_id", "=", self.company.id), ("type", "=", "purchase")], limit=1
-        )
-        # Crear nota de crédito de proveedor (in_refund genera débito en AP → amount_residual > 0)
-        credit_note = self.env["account.move"].create(
-            {
-                "partner_id": self.partner_ri.id,
-                "invoice_date": self.today,
-                "move_type": "in_refund",
-                "journal_id": purchase_journal.id,
-                "company_id": self.company.id,
-                "invoice_line_ids": [
-                    Command.create(
-                        {
-                            "product_id": self.env.ref("product.product_product_16").id,
-                            "quantity": 1,
-                            "price_unit": 500,
-                        }
-                    ),
-                ],
-            }
-        )
-        credit_note.action_post()
+        # Nota de crédito de proveedor (in_refund genera débito en AP → amount_residual > 0)
+        credit_note = self._create_invoice(move_type="in_refund", amount=500)
 
         # payment_type=inbound con partner_type=supplier (caso invertido)
-        debt_lines = credit_note.line_ids.filtered(lambda l: l.account_id.account_type == "liability_payable")
+        debt_lines = self._get_debt_lines(credit_note, "liability_payable")
         payment = self.env["account.payment"].create(
             {
-                "journal_id": self.company_bank_journal.id,
+                "journal_id": self.bank_journal.id,
                 "partner_id": self.partner_ri.id,
                 "partner_type": "supplier",
                 "payment_type": "inbound",
@@ -257,32 +177,14 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
         """Pago de tipo outbound + customer (nota de crédito a cliente / reembolso).
         selected_debt, to_pay_amount y payment_difference deben calcularse
         correctamente con valores positivos."""
-        # Crear nota de crédito de cliente (genera crédito en AR → amount_residual < 0)
-        credit_note = self.env["account.move"].create(
-            {
-                "partner_id": self.partner_ri.id,
-                "invoice_date": self.today,
-                "move_type": "out_refund",
-                "journal_id": self.company_journal.id,
-                "company_id": self.company.id,
-                "invoice_line_ids": [
-                    Command.create(
-                        {
-                            "product_id": self.env.ref("product.product_product_16").id,
-                            "quantity": 1,
-                            "price_unit": 300,
-                        }
-                    ),
-                ],
-            }
-        )
-        credit_note.action_post()
+        # Nota de crédito de cliente (genera crédito en AR → amount_residual < 0)
+        credit_note = self._create_invoice(move_type="out_refund", amount=300)
 
         # payment_type=outbound con partner_type=customer (caso invertido)
-        debt_lines = credit_note.line_ids.filtered(lambda l: l.account_id.account_type == "asset_receivable")
+        debt_lines = self._get_debt_lines(credit_note, "asset_receivable")
         payment = self.env["account.payment"].create(
             {
-                "journal_id": self.company_bank_journal.id,
+                "journal_id": self.bank_journal.id,
                 "partner_id": self.partner_ri.id,
                 "partner_type": "customer",
                 "payment_type": "outbound",
@@ -311,34 +213,13 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
     def test_reversed_payment_type_post(self):
         """Verificar que pagos con payment_type invertido se pueden postear
         y concilian la deuda correctamente."""
-        purchase_journal = self.env["account.journal"].search(
-            [("company_id", "=", self.company.id), ("type", "=", "purchase")], limit=1
-        )
         # Nota de crédito de proveedor (in_refund genera débito en AP → amount_residual > 0)
-        credit_note = self.env["account.move"].create(
-            {
-                "partner_id": self.partner_ri.id,
-                "invoice_date": self.today,
-                "move_type": "in_refund",
-                "journal_id": purchase_journal.id,
-                "company_id": self.company.id,
-                "invoice_line_ids": [
-                    Command.create(
-                        {
-                            "product_id": self.env.ref("product.product_product_16").id,
-                            "quantity": 1,
-                            "price_unit": 1000,
-                        }
-                    ),
-                ],
-            }
-        )
-        credit_note.action_post()
+        credit_note = self._create_invoice(move_type="in_refund", amount=1000)
 
-        debt_lines = credit_note.line_ids.filtered(lambda l: l.account_id.account_type == "liability_payable")
+        debt_lines = self._get_debt_lines(credit_note, "liability_payable")
         payment = self.env["account.payment"].create(
             {
-                "journal_id": self.company_bank_journal.id,
+                "journal_id": self.bank_journal.id,
                 "partner_id": self.partner_ri.id,
                 "partner_type": "supplier",
                 "payment_type": "inbound",

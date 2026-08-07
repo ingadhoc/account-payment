@@ -30,6 +30,8 @@
         "views/res_company_setting.xml",
         "views/report_payment_receipt_template.xml",
     ],
-    "demo": [],
+    "demo": [
+        "demo/account_payment_pro_demo.xml",
+    ],
     "post_init_hook": "_post_init_hooks",
 }
