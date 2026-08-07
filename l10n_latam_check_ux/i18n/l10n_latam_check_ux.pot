@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-22 12:29+0000\n"
-"PO-Revision-Date: 2026-06-22 12:29+0000\n"
+"POT-Creation-Date: 2026-08-07 11:54+0000\n"
+"PO-Revision-Date: 2026-08-07 11:54+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -298,6 +298,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_reject_wizard__display_name
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__display_name
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_journal__display_name
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_move__display_name
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_payment__display_name
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_payment_method_line__display_name
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__display_name
@@ -332,6 +333,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_reject_wizard__id
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__id
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_journal__id
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_move__id
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_payment__id
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_payment_method_line__id
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__id
@@ -368,6 +370,11 @@ msgstr ""
 #. module: l10n_latam_check_ux
 #: model:ir.model,name:l10n_latam_check_ux.model_account_journal
 msgid "Journal"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model,name:l10n_latam_check_ux.model_account_move
+msgid "Journal Entry"
 msgstr ""
 
 #. module: l10n_latam_check_ux
@@ -570,6 +577,15 @@ msgstr ""
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__user_can_write
 msgid "User Can Write"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/models/account_move.py:0
+msgid ""
+"You cannot delete the journal entry of a payment with checks while the payment is confirmed. If you need to adjust the journal entry, reset the payment to draft first.\n"
+"Payments:\n"
+"%s"
 msgstr ""
 
 #. module: l10n_latam_check_ux
