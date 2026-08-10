@@ -185,7 +185,14 @@ class TestChecksPaymentPro(TestArCommon):
         self.assertEqual(len(counterpart), 1, "One counterpart line regardless of the number of checks")
         self.assertEqual(abs(counterpart.balance), abs(sum(lines.mapped("balance"))))
 
-        manual = self._own_check_payment([20, 30, 70], ["00031101", "00031102", "00031103"], currency=self.usd)
+        # diferidos a proposito: la cotizacion tipeada (1000) tiene que ganarle a la de la tabla al
+        # vencimiento (2400), que es la que usaria `l10n_latam_check` por su cuenta
+        manual = self._own_check_payment(
+            [20, 30, 70],
+            ["00031101", "00031102", "00031103"],
+            currency=self.usd,
+            check_dates=[fields.Date.add(self.today, days=30)] * 3,
+        )
         manual.accounting_rate = 1 / 1000.0
         manual.action_post()
 
@@ -225,6 +232,12 @@ class TestChecksPaymentPro(TestArCommon):
             abs(counterpart.balance),
             "En moneda de compañía el nominal y el balance son la misma cifra",
         )
+        self.assertEqual(
+            payment.counterpart_currency_amount,
+            abs(counterpart.amount_currency),
+            "El importe que muestra el pago es el mismo que su línea contable",
+        )
+        self.assertEqual(payment.amount, 79435.42, "Y alinearlo no corre el importe del pago")
 
         # Misma operación con la contrapartida en la moneda del pago en vez de la de
         # compañía: el otro camino por el que se desbalanceaba (B1 == A, counterpart_rate 1).

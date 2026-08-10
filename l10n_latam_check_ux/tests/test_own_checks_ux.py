@@ -14,6 +14,8 @@ kept commented out: they belong to the relocation PR, which is where each of
 them either flips or is deleted.
 """
 
+from unittest.mock import patch
+
 from odoo import Command, fields
 from odoo.exceptions import UserError, ValidationError
 from odoo.tests import tagged
@@ -86,25 +88,114 @@ class TestOwnChecksMulticurrency(LatamCheckCommon):
         expected_total = self.foreign_currency._convert(120, self.company_currency, self.company, payment.date)
         self.assertEqual(abs(sum(lines.mapped("balance"))), expected_total)
 
-    # def test_deferred_checks_fx_entry_is_unbalanced_today(self):
-    #     """EQUIVALENCE (task 70884, BUG-2: deferred FX).
-    #
-    #     Pins what the patched core does today, which the relocation must
-    #     reproduce: each check is converted at ``check.payment_date`` while the
-    #     counterpart keeps the conversion at ``payment.date``, so a deferred check
-    #     with a moving rate makes the entry unbalanced and posting is rejected.
-    #
-    #     It is a known defect (fixing it means converting at the payment date),
-    #     but fixing it is a separate PR: this assertion flips there, not here.
-    #     """
-    #     payment = self._create_own_check_payment(
-    #         [20, 30, 70],
-    #         numbers=["00001201", "00001202", "00001203"],
-    #         currency=self.foreign_currency,
-    #         check_dates=[fields.Date.add(self.today, days=40)] * 3,
-    #     )
-    #     with self.assertRaisesRegex(UserError, "not balanced"):
-    #         payment.action_post()
+    def _create_payment_at_an_odd_rate(self, numbers):
+        """Dos cheques iguales a una cotización que no divide exacto, para que el resto exista.
+
+        Con la del fixture (100) la conversión da al centavo y no habría resto que repartir.
+        """
+        odd_date = fields.Date.add(self.today, days=60)
+        self.env["res.currency.rate"].create(
+            {
+                "name": odd_date,
+                "currency_id": self.foreign_currency.id,
+                "company_id": self.company.id,
+                "rate": 1 / 40.189,
+            }
+        )
+        return self._create_own_check_payment(
+            [39717.71, 39717.71], numbers=numbers, currency=self.foreign_currency, date=odd_date
+        )
+
+    def test_all_checks_take_the_rate_the_entry_already_used(self):
+        """Ticket 123832: todos los cheques se valúan a la cotización que el asiento dio por buena.
+
+        Vencimientos distintos a propósito: la cotización del fixture pasa de 100 a 200 entre ambas
+        fechas, así que valuando cada cheque a la fecha de SU vencimiento uno valdría el doble que
+        el otro y el asiento no cerraría. Con el cheque diferido de este mismo test alcanza: nunca
+        hicieron falta dos o más, aunque el ticket se reportó así.
+        """
+        payment = self._create_own_check_payment(
+            [50, 50],
+            numbers=["00001401", "00001402"],
+            currency=self.foreign_currency,
+            check_dates=[self.today, fields.Date.add(self.today, days=30)],
+        )
+        payment.action_post()
+
+        self.assert_move_balanced(payment.move_id)
+        self.assertEqual(
+            [abs(line.balance) for line in self._check_lines(payment)],
+            [5000.0, 5000.0],
+            "Mismo importe, mismo valor, aunque venzan en fechas con cotización distinta",
+        )
+
+    def test_the_counterpart_keeps_the_rounding_residue(self):
+        """El resto de redondear cada cheque por separado queda en la contrapartida.
+
+        Las cifras se afirman explícitamente, porque que el asiento cierre no dice DÓNDE quedó el
+        resto.
+        """
+        payment = self._create_payment_at_an_odd_rate(["00001501", "00001502"])
+        payment.action_post()
+
+        self.assert_move_balanced(payment.move_id)
+        self.assertEqual(
+            [abs(line.balance) for line in self._check_lines(payment)],
+            [1596215.05, 1596215.05],
+            "Cada cheque: 39.717,71 x 40,189 redondeado",
+        )
+        self.assertEqual(
+            abs(self._counterpart_lines(payment).balance), 3192430.10, "La contrapartida se queda con el centavo"
+        )
+        # convertir el total de una sola vez daría 3.192.430,09: ese centavo es el resto que la
+        # contrapartida se queda, y es lo que se afirma arriba
+
+    def test_write_off_does_not_leave_the_residue_homeless(self):
+        """Con write-off la contrapartida igual absorbe el resto: si no, el centavo del redondeo por
+        línea queda sin dueño y el asiento no cierra."""
+        payment = self._create_payment_at_an_odd_rate(["00001801", "00001802"])
+        write_off = [
+            {
+                "name": "ajuste",
+                "account_id": self.deferred_check_account.id,
+                "currency_id": self.company_currency.id,
+                "amount_currency": -100.0,
+                "balance": -100.0,
+            }
+        ]
+        res = payment._prepare_move_lines_per_type(write_off_line_vals=write_off)
+
+        self.assertEqual(
+            self.company_currency.round(sum(line["balance"] for lines in res.values() for line in lines)),
+            0.0,
+            "El asiento cierra con el write-off adentro",
+        )
+
+    def test_a_netted_amount_recovers_the_payment_rate(self):
+        """Si el importe llega neteado (retenciones), la cotización se recupera igual.
+
+        El core le resta la retención al balance de liquidez, así que se la sumamos de vuelta —
+        siempre en moneda de compañía, sin mezclar — y los cheques quedan a la cotización del pago
+        como cualquier otro pago. Acá se simula el neteo pasando un `balance` ya restado; la
+        cobertura de punta a punta vive fuera de este archivo y hay que correrla junto con esta
+        suite: `account_payment_pro:TestPaymentChecks` (mismo repo, cheques con Pagos Pro) y
+        `l10n_ar_tax:TestPaymentChecksWithholding` (retenciones + cheques, otro repo — o sea que el
+        CI de este repo no ve el caso neteado de punta a punta).
+        """
+        payment = self._create_own_check_payment(
+            [50, 50], numbers=["00001601", "00001602"], currency=self.foreign_currency
+        )
+        # el core entrega el balance ya neteado: 100 x 100 = 10.000 menos 2.000 de retención, y el
+        # nominal también neteado. La retención se simula acá porque su fixture vive en `l10n_ar_tax`.
+        with patch.object(type(payment), "_prepare_move_withholding_lines", return_value=[{"balance": -2000.0}]):
+            lines = payment._prepare_move_liquidity_lines(
+                {"name": "test", "amount_currency": -80.0, "balance": -8000.0}
+            )
+        self.assertEqual(
+            [line["balance"] for line in lines],
+            [-5000.0, -5000.0],
+            "Devolviendo la retención: (8.000 + 2.000) / 100 = 100, la cotización del pago",
+        )
 
 
 @tagged("post_install", "-at_install")
