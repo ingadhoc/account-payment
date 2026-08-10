@@ -194,6 +194,78 @@ class TestChecksPaymentPro(TestArCommon):
         for line in self._liquidity_lines(manual):
             self.assertEqual(abs(line.balance), abs(line.amount_currency) * 1000)
 
+    def test_multi_checks_with_a_rate_that_does_not_divide_exactly(self):
+        """Ticket 123832: dos cheques y una tasa cuya división deja fracciones de
+        centavo. Cada cifra del asiento se redondea por separado, así que el balance
+        de la contrapartida y su nominal tienen que derivar de los balances ya
+        redondeados de las líneas de cheque; si alguno se calcula solo, ``action_post``
+        explota con "El asiento no está balanceado".
+        """
+        rate = 0.024841017488076312  # 1 USD = 40,256; la division no da exacta
+        payment = self._own_check_payment([39717.71, 39717.71], ["00031301", "00031302"], currency=self.usd)
+        payment.accounting_rate = rate
+        payment.action_post()
+
+        self.assert_balanced(payment)
+        lines = self._liquidity_lines(payment)
+        self.assertEqual(
+            [abs(line.balance) for line in lines],
+            [1598876.13, 1598876.13],
+            "Cheques iguales tienen que valer lo mismo: cada uno es su propia conversión",
+        )
+        self.assertEqual(len(payment.move_id.line_ids), 3, "Sin líneas de ajuste extra en el asiento")
+        counterpart = self._counterpart_line(payment)
+        self.assertEqual(
+            abs(counterpart.balance),
+            3197752.26,
+            "La contrapartida absorbe el residuo: es la suma de las conversiones de cada cheque",
+        )
+        self.assertEqual(
+            abs(counterpart.amount_currency),
+            abs(counterpart.balance),
+            "En moneda de compañía el nominal y el balance son la misma cifra",
+        )
+
+        # Misma operación con la contrapartida en la moneda del pago en vez de la de
+        # compañía: el otro camino por el que se desbalanceaba (B1 == A, counterpart_rate 1).
+        in_payment_currency = self._own_check_payment([39717.71, 39717.71], ["00031303", "00031304"], currency=self.usd)
+        in_payment_currency.counterpart_currency_id = self.usd
+        in_payment_currency.accounting_rate = rate
+        in_payment_currency.action_post()
+
+        self.assert_balanced(in_payment_currency)
+        counterpart = self._counterpart_line(in_payment_currency)
+        self.assertEqual(counterpart.currency_id, self.usd)
+        self.assertEqual(
+            abs(counterpart.balance),
+            3197752.26,
+            "También acá la contrapartida es la suma de las conversiones de cada cheque",
+        )
+        self.assertEqual(abs(counterpart.amount_currency), 79435.42)
+        self.assertEqual(
+            [abs(line.balance) for line in self._liquidity_lines(in_payment_currency)],
+            [1598876.13, 1598876.13],
+            "Cheques iguales, valores iguales, sea cual sea la moneda de la contrapartida",
+        )
+
+    def test_single_check_derives_its_balance_from_amount_exact(self):
+        """Con una sola línea de liquidez el balance deriva de ``amount_exact``, no del
+        nominal redondeado a la moneda del cheque."""
+        payment = self._own_check_payment([1000.02], ["00031401"], currency=self.usd)
+        payment.accounting_rate = 1 / 1247.35
+        payment.amount_exact = 1000.0234567
+        payment.action_post()
+
+        self.assert_balanced(payment)
+        line = self._liquidity_lines(payment)
+        self.assertEqual(len(line), 1)
+        self.assertEqual(abs(line.amount_currency), 1000.02, "El nominal se redondea a la moneda del cheque")
+        self.assertEqual(
+            abs(line.balance),
+            self.company.currency_id.round(1000.0234567 * 1247.35),
+            "El balance sale de amount_exact, no del nominal redondeado",
+        )
+
     def test_deferred_checks_in_foreign_currency_stay_balanced(self):
         """Deferred checks (payment_date well after the payment date).
 
