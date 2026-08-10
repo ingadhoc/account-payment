@@ -113,6 +113,7 @@ B1→ A:  amount_A = amount_B / counterpart_rate
 - Write-off line: `destination_currency_id` with conversion to C via `_convert()`.
 - When `force_balance` is set (paired internal transfer), the liquidity balance is **not** recalculated from `accounting_rate` to avoid rounding discrepancies in cross-currency transfers (e.g. USD → EUR).
 - **Write-off + withholding coexistence:** Base Odoo discards `write_off_lines` when `withholding_lines` exist. The override re-injects write-off lines and rebalances the counterpart.
+- **Check payments (ticket 123832):** with `l10n_latam_check_ux` installed — it is `auto_install` — that module also overrides this method and, being the outer one in the MRO, it has the last word on the counterpart balance whenever the liquidity lines were built one per check. It applies the same formula as here — including when the amount arrives netted by withholdings, where it recovers the rate by adding the withholding back. If this formula changes, both places change.
 
 ### Internal transfers
 

@@ -695,17 +695,22 @@ class AccountPayment(models.Model):
                 super(AccountPayment, rec)._compute_destination_account_id()
 
     def _prepare_move_lines_per_type(self, write_off_line_vals=None, force_balance=None):
+        """La cotización baja como `force_balance` y las líneas las arma quien corresponda.
+
+        Pasándola por ese canal el balance llega ya convertido a las hooks de abajo, así que el
+        reparto entre varias líneas de liquidez —el caso de los cheques— vive en su módulo
+        (`l10n_latam_check_ux`, ticket 123832) en vez de estar duplicado acá.
+        """
+        if self.accounting_rate and self.currency_id != self.company_currency_id and force_balance is None:
+            amount_for_calc = self.amount_exact if self.amount_exact else self.amount
+            force_balance = amount_for_calc / self.accounting_rate  # A/C → monto en C
+
         if not self.company_id.use_payment_pro:
-            # Para pagos sin ppro que tengan accounting rate, forzamos el balance
-            # para que no haya diferencias en el asiento
-            if self.accounting_rate and self.currency_id != self.company_currency_id and force_balance is None:
-                amount_for_calc = self.amount_exact if self.amount_exact else self.amount
-                force_balance = amount_for_calc / self.accounting_rate  # A/C → monto en C
             return super()._prepare_move_lines_per_type(
                 write_off_line_vals=write_off_line_vals, force_balance=force_balance
             )
 
-        # Write-off en moneda B2 (destination_currency_id)
+        # Write-off propio de ppro, en moneda B2 (destination_currency_id)
         write_off_line_vals = []
         if self.write_off_amount and self.write_off_type_id:
             wo_sign = 1 if self.payment_type == "inbound" else -1
@@ -724,47 +729,21 @@ class AccountPayment(models.Model):
                 }
             )
 
-        res = super()._prepare_move_lines_per_type(write_off_line_vals=write_off_line_vals, force_balance=force_balance)
-
-        # ── Re-inyectar write-off si base Odoo lo descartó ────────────────────────
-        # Base Odoo (L342-345) descarta write_off_lines cuando hay withholding_lines
-        # porque asume que las retenciones se pasan como write-off en _synchronize_to_moves.
-        # En payment_pro las retenciones y el write-off son conceptos separados, así que
-        # re-inyectamos las write-off lines que nosotros construimos.
-        if write_off_line_vals and not res.get("write_off_lines"):
-            res["write_off_lines"] = write_off_line_vals
+        res = super()._prepare_move_lines_per_type(force_balance=force_balance)
 
         liquidity_lines = res.get("liquidity_lines", [])
         counterpart_lines = res.get("counterpart_lines", [])
-
         if not liquidity_lines or not counterpart_lines:
             return res
 
-        # ── Ajuste de las líneas de LIQUIDEZ ──────────────────────────────────────
-        # accounting_rate = A/C (formato Odoo nativo, ej: 0.000667 p/USD→ARS)
-        # balance_en_C = amount_en_A / accounting_rate
-        # Se itera sobre TODAS las líneas (puede haber N cuando se usan cheques)
-        # Cuando force_balance está definido, el balance ya fue forzado por base Odoo
-        # (ej: paired payment de transferencia interna) y NO debe recalcularse.
-        if self.accounting_rate and self.currency_id != self.company_currency_id and force_balance is None:
-            # Con una sola línea de liquidez el nominal sale de amount_exact, que conserva la
-            # precisión completa del importe. Solo fija el nominal: el balance lo deriva el loop de
-            # abajo, así que ese loop tiene que quedar DESPUÉS de este if.
-            if len(liquidity_lines) == 1 and self.amount_exact and self.amount_exact != self.amount:
-                liq_sign = 1 if liquidity_lines[0]["amount_currency"] >= 0 else -1
-                liquidity_lines[0]["amount_currency"] = liq_sign * abs(self.amount_exact)
-            # El balance se redondea por línea porque así lo va a persistir el ORM y la
-            # contrapartida se arma más abajo con la suma: sin redondear acá,
-            # sum(round(línea)) != round(sum(líneas)) y el asiento cierra con centavos de
-            # diferencia por cada línea de más (ticket 123832).
-            for liq_line in liquidity_lines:
-                liq_line["balance"] = self.company_currency_id.round(liq_line["amount_currency"] / self.accounting_rate)
-
-        # ── Recalcular balance de CONTRAPARTIDA para cerrar el asiento ────────────
-        write_off_balance = sum(line["balance"] for line in res.get("write_off_lines", []))
-        withholding_balance = sum(line["balance"] for line in res.get("withholding_lines", []))
-        total_liq_balance = sum(line["balance"] for line in liquidity_lines)
-        counterpart_lines[0]["balance"] = -total_liq_balance - write_off_balance - withholding_balance
+        if write_off_line_vals:
+            # El write-off propio se inyecta acá y no se le pasa al core: si el core ve líneas de
+            # write-off descarta el `force_balance`, y con él la cotización del pago que este método
+            # acaba de bajar. La contrapartida se ajusta por ese importe. El write-off que llega de
+            # afuera (wizard de registro) sigue yendo por el camino del core, como antes: ahí la
+            # cotización tipeada no se propaga, y reenviárselo acá rompe el resync con retenciones.
+            res["write_off_lines"] = write_off_line_vals
+            counterpart_lines[0]["balance"] -= sum(line["balance"] for line in write_off_line_vals)
 
         # ── Ajuste de MONEDA en la línea de CONTRAPARTIDA ─────────────────────────
         if self.is_internal_transfer:
@@ -787,7 +766,10 @@ class AccountPayment(models.Model):
                 if self.write_off_amount and self.destination_currency_id == self.counterpart_currency_id:
                     counterpart_amt += abs(self.write_off_amount)
                 counterpart_lines[0]["amount_currency"] = cp_sign * counterpart_amt
-        # Si A == B1: la moneda ya es correcta (A), solo el balance se actualizó arriba
+        elif write_off_line_vals:
+            # A == B1 y la moneda ya es correcta: el core armó el nominal sin ver el write-off,
+            # así que hay que sumárselo para que la contrapartida cubra el total de la deuda.
+            counterpart_lines[0]["amount_currency"] -= sum(line["amount_currency"] for line in write_off_line_vals)
 
         # Cualquiera de las ramas anteriores puede dejar la contrapartida en moneda de
         # compañía, y ahí el nominal y el balance son la misma cifra por definición: tiene
