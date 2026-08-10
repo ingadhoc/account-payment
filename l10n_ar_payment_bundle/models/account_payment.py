@@ -301,6 +301,38 @@ class AccountPayment(models.Model):
 
         return res
 
+    def _reconcile_after_post(self):
+        """Conciliamos las contrapartidas del bundle entre sí, además de contra la deuda.
+
+        El super concilia pago por pago: la contrapartida de cada pago contra las
+        to_pay_move_line_ids que todavía estén sin conciliar. Cuando una línea del bundle va
+        en sentido opuesto al resto (típico: el ajuste por redondeo, o un cheque rechazado que
+        se paga en el momento con efectivo), el primer pago cubre toda la deuda y queda con
+        residuo, y esa línea de sentido opuesto ya no encuentra deuda libre: sólo podía
+        compensarse contra el residuo del hermano, que no está en to_pay_move_line_ids. Queda
+        entonces una conciliación parcial con dos apuntes abiertos que netean cero.
+        """
+        res = super()._reconcile_after_post()
+        valid_account_types = self._get_valid_payment_account_types()
+        bundles = (self.mapped("main_payment_id") | self.filtered("is_main_payment")).filtered(
+            lambda x: x.company_id.use_payment_pro and not x.is_internal_transfer
+        )
+        for main in bundles:
+            amls = (main | main.link_payment_ids).move_id.line_ids.filtered(
+                lambda x: (
+                    not x.reconciled
+                    and x.move_id.state == "posted"
+                    and x.account_id.account_type in valid_account_types
+                )
+            )
+            for account in amls.account_id:
+                for partner in amls.partner_id:
+                    lines = amls.filtered(lambda x: x.account_id == account and x.partner_id == partner)
+                    residuals = lines.mapped("amount_residual")
+                    if any(residual > 0 for residual in residuals) and any(residual < 0 for residual in residuals):
+                        lines.reconcile()
+        return res
+
     def action_draft(self):
         active_links = self.link_payment_ids.filtered(lambda p: p.state != "cancel")
         res = super(AccountPayment, self + active_links).action_draft()
