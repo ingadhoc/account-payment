@@ -1,6 +1,6 @@
 from odoo import Command, fields
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 from odoo.tests.common import tagged
 
 
@@ -152,6 +152,23 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
         payment.action_post()
         return payment.l10n_latam_new_check_ids
 
+    def _create_branch(self, name="Branch", parent=None):
+        """Sucursal que comparte el plan de cuentas de su padre.
+
+        Las propiedades company dependent del partner hay que setearlas para la sucursal
+        para poder postear pagos en ella.
+        """
+        parent = parent or self.company
+        branch = self.env["res.company"].create({"name": name, "parent_id": parent.id})
+        self.partner_a.with_company(branch).write(
+            {
+                "property_account_receivable_id": self.company_data["default_account_receivable"].id,
+                "property_account_payable_id": self.company_data["default_account_payable"].id,
+            }
+        )
+        branch.transfer_account_id = self.company.transfer_account_id
+        return branch
+
     def test_deposit_third_party_check_to_bank(self):
         check = self._create_third_party_check(self.third_party_check_journal, "UX-DEP-0001")
         bank_journal = self.company_bank_journal
@@ -173,16 +190,7 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
         Las operaciones de la sucursal de origen tienen que seguir visibles en el historial del
         cheque después de transferirlo a un diario de la compañía padre.
         """
-        branch = self.env["res.company"].create({"name": "Branch", "parent_id": self.company.id})
-        # the branch shares the parent chart of accounts, but the company dependent properties of
-        # the partner have to be set for it so the receipt can be posted
-        self.partner_a.with_company(branch).write(
-            {
-                "property_account_receivable_id": self.company_data["default_account_receivable"].id,
-                "property_account_payable_id": self.company_data["default_account_payable"].id,
-            }
-        )
-        branch.transfer_account_id = self.company.transfer_account_id
+        branch = self._create_branch()
         self.assertTrue(branch.transfer_account_id, "An internal transfer account is required to run this test")
         branch_journal = self._create_check_journal("Branch Third Party Checks", "BTPC", company=branch)
         check = self._create_third_party_check(branch_journal, "UX-BRANCH-0001")
@@ -303,3 +311,21 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
                     "amount": 200.0,
                 }
             )
+
+    def test_partner_check_credit_includes_branch_checks(self):
+        """El crédito por cheques tiene que abarcar el árbol de compañías, como el de core.
+
+        `_credit_debit_get` de core agrega los apuntes con `child_of` sobre la raíz, así que
+        sumar los cheques de una sola compañía deja el total inconsistente: la casa central ve
+        las facturas de la sucursal pero no sus cheques.
+        """
+        branch = self._create_branch()
+        branch_journal = self._create_check_journal("Branch Third Party Checks", "BTPC1", company=branch)
+        self._create_third_party_check(branch_journal, "UX-CREDIT-0001")
+
+        partner_from_parent = self.partner_a.with_company(self.company)
+        partner_from_parent.add_check_credit = False
+        credit_without_checks = partner_from_parent.credit
+        partner_from_parent.add_check_credit = True
+
+        self.assertEqual(partner_from_parent.credit - credit_without_checks, 100.0)
