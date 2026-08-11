@@ -348,3 +348,28 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
         )
 
         self.assertEqual(wizard.main_company_id, self.company)
+
+    def test_reject_wizard_requires_a_journal_of_the_check_company(self):
+        """Rechazar contra un diario de otra compañía migraría el cheque de compañía.
+
+        `check_company` no lo frena porque en branches Odoo acepta registros de la compañía
+        padre sobre una hija, así que la validación tiene que ser explícita.
+        """
+        check = self._create_third_party_check(self.third_party_check_journal, "UX-REJ-COMP-0001")
+        self.env["l10n_latam.payment.mass.transfer"].with_context(
+            active_model="l10n_latam.check",
+            active_ids=check.ids,
+        ).create({"destination_journal_id": self.company_bank_journal.id})._create_payments()
+
+        branch = self._create_branch()
+        branch_rejected_journal = self._create_check_journal("Branch Rejected Checks", "BRJC", company=branch)
+
+        wizard = (
+            self.env["account.check.reject.wizard"]
+            .with_context(active_model="l10n_latam.check", active_ids=check.ids)
+            .create({"rejected_journal_id": branch_rejected_journal.id})
+        )
+
+        self.assertEqual(wizard.company_id, self.company)
+        with self.assertRaisesRegex(UserError, "belongs to"):
+            wizard.action_confirm()
