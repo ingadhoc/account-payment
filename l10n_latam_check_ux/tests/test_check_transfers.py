@@ -339,3 +339,13 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
         )
 
         self.assertEqual(wizard.main_company_id, self.company)
+
+    def test_mass_transfer_view_exposes_the_fields_of_the_destination_domain(self):
+        """El desplegable del diario destino queda vacío si la vista no trae `main_company_id`.
+
+        El dominio de `destination_journal_id` lo lee, y el cliente web evalúa los dominios solo
+        con los campos que la vista carga: sin el campo, `main_company_id` es False, el `child_of`
+        no matchea ninguna compañía y el usuario no puede elegir ningún diario.
+        """
+        view = self.env["l10n_latam.payment.mass.transfer"].get_view()
+        self.assertIn("main_company_id", view["models"]["l10n_latam.payment.mass.transfer"])
