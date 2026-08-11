@@ -8,6 +8,9 @@
             <field name="destination_journal_id" position="after">
                 <field name="split_payment"/>
                 <field name="company_id"/>
+                <!-- the domain of destination_journal_id reads main_company_id: without the field in
+                     the view the client evaluates it as False and the dropdown lists nothing -->
+                <field name="main_company_id" invisible="1"/>
             </field>
         </field>
     </record>
