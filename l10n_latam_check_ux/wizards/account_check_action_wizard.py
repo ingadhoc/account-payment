@@ -48,8 +48,15 @@ class AccountCheckActionWizard(models.TransientModel):
                     .create(new_mv_line_dicts)
                 )
                 wizard.reconcile()
+                # El label repite el número de cheque, que puede existir en más de una
+                # sucursal: sin el filtro de compañía el link podría apuntar al asiento de otra.
                 debit_move = self.env["account.move"].search(
-                    [("line_ids.name", "=", label), ("date", "=", self.date)], limit=1
+                    [
+                        ("line_ids.name", "=", label),
+                        ("date", "=", self.date),
+                        ("company_id", "=", check.company_id.id),
+                    ],
+                    limit=1,
                 )
             else:
                 amount = abs(sum(check.outstanding_line_id.mapped("balance")))
