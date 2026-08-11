@@ -38,7 +38,9 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
     @api.depends("company_id")
     def _compute_main_company(self):
         for rec in self:
-            rec.main_company_id = rec.company_id.parent_id or rec.company_id
+            # root_id and not parent_id: with a hierarchy deeper than two levels, parent_id
+            # stops at the intermediate company and leaves the rest of the tree out.
+            rec.main_company_id = rec.company_id.root_id
 
     @api.depends("destination_journal_id")
     def _compute_available_destination_payment_method_line_ids(self):
