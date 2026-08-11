@@ -6,6 +6,7 @@
             <field name="arch" type="xml">
                 <form string="Cheques a Fecha">
                     <group>
+                        <field name="company_id" invisible="1"/>
                         <field name="to_date"/>
                         <field name="journal_id"/>
                     </group>
