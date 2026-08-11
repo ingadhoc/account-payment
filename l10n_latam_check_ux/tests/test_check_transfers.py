@@ -1,6 +1,6 @@
 from odoo import Command, fields
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 from odoo.tests.common import tagged
 
 
@@ -151,6 +151,23 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
         )
         payment.action_post()
         return payment.l10n_latam_new_check_ids
+
+    def _create_branch(self, name="Branch", parent=None):
+        """Sucursal que comparte el plan de cuentas de su padre.
+
+        Las propiedades company dependent del partner hay que setearlas para la sucursal
+        para poder postear pagos en ella.
+        """
+        parent = parent or self.company
+        branch = self.env["res.company"].create({"name": name, "parent_id": parent.id})
+        self.partner_a.with_company(branch).write(
+            {
+                "property_account_receivable_id": self.company_data["default_account_receivable"].id,
+                "property_account_payable_id": self.company_data["default_account_payable"].id,
+            }
+        )
+        branch.transfer_account_id = self.company.transfer_account_id
+        return branch
 
     def test_deposit_third_party_check_to_bank(self):
         check = self._create_third_party_check(self.third_party_check_journal, "UX-DEP-0001")
@@ -303,3 +320,28 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
                     "amount": 200.0,
                 }
             )
+
+    def test_reject_wizard_requires_a_journal_of_the_check_company(self):
+        """Rechazar contra un diario de otra compañía migraría el cheque de compañía.
+
+        `check_company` no lo frena porque en branches Odoo acepta registros de la compañía
+        padre sobre una hija, así que la validación tiene que ser explícita.
+        """
+        check = self._create_third_party_check(self.third_party_check_journal, "UX-REJ-COMP-0001")
+        self.env["l10n_latam.payment.mass.transfer"].with_context(
+            active_model="l10n_latam.check",
+            active_ids=check.ids,
+        ).create({"destination_journal_id": self.company_bank_journal.id})._create_payments()
+
+        branch = self._create_branch()
+        branch_rejected_journal = self._create_check_journal("Branch Rejected Checks", "BRJC", company=branch)
+
+        wizard = (
+            self.env["account.check.reject.wizard"]
+            .with_context(active_model="l10n_latam.check", active_ids=check.ids)
+            .create({"rejected_journal_id": branch_rejected_journal.id})
+        )
+
+        self.assertEqual(wizard.company_id, self.company)
+        with self.assertRaisesRegex(UserError, "belongs to"):
+            wizard.action_confirm()
