@@ -16,11 +16,16 @@ class AccountCheckRejectWizard(models.TransientModel):
         default=fields.Date.context_today,
         required=True,
     )
+    company_id = fields.Many2one(
+        "res.company",
+        compute="_compute_company_id",
+        help="Company of the checks being rejected. The rejection is always processed within it.",
+    )
     rejected_journal_id = fields.Many2one(
         "account.journal",
         string="Rejected Checks Journal",
         required=True,
-        domain=[("type", "in", ("bank", "cash"))],
+        domain="[('type', 'in', ('bank', 'cash')), ('company_id', '=', company_id)]",
         help="Journal used for rejected third-party checks (e.g. 'Cheques de Terceros Rechazados').",
     )
     case_description = fields.Char(
@@ -39,6 +44,11 @@ class AccountCheckRejectWizard(models.TransientModel):
                     % check.name
                 )
         return res
+
+    @api.depends_context("active_ids")
+    def _compute_company_id(self):
+        for rec in self:
+            rec.company_id = rec._get_checks().company_id[:1]
 
     @api.depends("rejected_journal_id")
     def _compute_case_description(self):
@@ -74,6 +84,24 @@ class AccountCheckRejectWizard(models.TransientModel):
         checks = self._get_checks()
         if not checks:
             raise UserError(_("No checks selected."))
+
+        # The rejection must stay within the company that holds the check: creating the
+        # payments in another company of the branch tree silently moves the check there
+        # (company_id is computed from its last operation) and books the customer debt in
+        # the wrong company. check_company does not catch it because Odoo accepts records
+        # of a parent company on a branch.
+        companies = checks.company_id
+        if len(companies) > 1:
+            raise UserError(_("All selected checks must belong to the same company."))
+        if self.rejected_journal_id.company_id != companies:
+            raise UserError(
+                _("The journal '%(journal)s' belongs to '%(journal_company)s' but the check belongs to '%(company)s'.")
+                % {
+                    "journal": self.rejected_journal_id.display_name,
+                    "journal_company": self.rejected_journal_id.company_id.display_name,
+                    "company": companies.display_name,
+                }
+            )
 
         for check in checks:
             last_operation = check._get_last_operation()
