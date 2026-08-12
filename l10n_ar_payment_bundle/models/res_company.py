@@ -14,7 +14,16 @@ class ResCompany(models.Model):
             if not template_code:
                 continue
 
-            chart_template = self.env["account.chart.template"].with_company(company)
+            # skip_suspense_outstanding_check: el diario y sus cuentas se arman en varios
+            # pasos dentro de esta misma transacción, así que un estado intermedio puede
+            # dejar la cuenta pendiente igual a la transitoria de la compañía. Sin esto la
+            # constraint de account_ux aborta la instalación entera del módulo. La edición
+            # manual del diario no lleva este contexto y sigue validada.
+            chart_template = (
+                self.env["account.chart.template"]
+                .with_company(company)
+                .with_context(skip_suspense_outstanding_check=True)
+            )
             journals_to_create = chart_template._get_payment_bundle_account_journal(template_code)
             if journals_to_create:
                 chart_template._load_data({"account.journal": journals_to_create})
