@@ -128,6 +128,24 @@ class AccountPayment(models.Model):
                     rec.paired_internal_transfer_payment_id.payment_method_line_id = correct_dest_payment_method
             super(AccountPayment, self - third_party_checks)._create_paired_internal_transfer_payment()
 
+    def _get_reconciled_checks_error(self):
+        """No bloquear los cheques propios con débito automático.
+
+        Cuando la cuenta del método de pago de cheques propios no es conciliable (típicamente
+        porque es la misma cuenta del diario de liquidez, es decir el banco debita el cheque al
+        emitirlo), el cheque nace en ``debited`` y nunca va a salir de ese estado: no hay
+        conciliación que lo mueva (ver ``l10n_latam.check._compute_issue_state``). La restricción
+        del core existe para no romper la conciliación que debitó o anuló el cheque, así que en
+        este caso no aplica y el pago se puede restablecer a borrador o cancelar.
+        """
+        payments_with_reconciled_checks = self.filtered(
+            lambda payment: payment.l10n_latam_new_check_ids.filtered(
+                lambda check: check.issue_state in ("debited", "voided")
+                and check.outstanding_line_id.account_id.reconcile
+            )
+        )
+        return super(AccountPayment, payments_with_reconciled_checks)._get_reconciled_checks_error()
+
     def action_draft(self):
         for rec in self:
             for check in rec.mapped("l10n_latam_move_check_ids") + rec.mapped("l10n_latam_new_check_ids"):
