@@ -84,6 +84,7 @@ Validation & Constraints
 * Debit checks from payments: Adds a button in the check record to perform the debit action, streamlining check management.
 * Check number in PDF documents: Includes the check number when printing the receipt and payment PDFs, improving traceability.
 * Journal entry protection: The journal entry of a payment with checks cannot be deleted while the payment is confirmed, because deleting it and posting the payment again leaves the check with the wrong current journal. The payment has to be reset to draft to adjust its journal entry.
+* Own checks with automatic debit: when the account configured on the own checks payment method is not reconcilable (typically the liquidity account of the journal itself, i.e. the bank debits the check as soon as it is issued), the check is always in debited state and no reconciliation can ever move it. Those payments can be reset to draft and cancelled: the core restriction protects the reconciliation that debited or voided the check, and here there is none.
 
 Installation
 ============
