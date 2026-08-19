@@ -15,12 +15,18 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
 
     @api.depends("journal_id", "company_id")
     def _compute_destination_journal_domain(self):
-        """Exclude bundle journals from destination journal selection."""
+        """Exclude bundle journals from destination journal selection.
+
+        `main_company_id` (l10n_latam_check_ux) already resolves the root of the company
+        hierarchy so branches with more than two levels reach the whole tree; fall back to
+        `company_id` when that module isn't installed.
+        """
         for rec in self:
+            main_company = getattr(rec, "main_company_id", False) or rec.company_id
             base_domain = [
                 ("type", "in", ("bank", "cash")),
                 ("id", "!=", rec.journal_id.id),
-                ("company_id", "=", rec.company_id.id),
+                ("company_id", "child_of", main_company.id),
             ]
 
             # Exclude both inbound and outbound bundle journals
