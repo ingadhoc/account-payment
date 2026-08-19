@@ -53,7 +53,7 @@ class AccountPayment(models.Model):
 
     @api.depends("journal_id")
     def _compute_company_id(self):
-        # journal_id puede pertenecer a la empresa padre (shared_to_branches=True) y el usuario
+        # journal_id puede pertenecer a la empresa padre (compartido a sucursales) y el usuario
         # de sucursal no tiene acceso de lectura a ese res.company (res_company_rule_employee).
         # Usamos sudo() para evaluar la jerarquía sin disparar AccessError.
         for payment in self:
