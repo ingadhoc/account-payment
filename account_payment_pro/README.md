@@ -13,6 +13,7 @@ This module is the foundation for managing Argentine withholdings — install `l
 - **Editable exchange rates:** `accounting_rate` (A↔C) and `counterpart_rate` (A↔B) are stored and user-editable; the UI shows rates in the most readable direction automatically.
 - **Multi-currency internal transfers:** supports transfers between journals in different currencies (ARS→USD, USD→EUR, etc.) with proper bridge-account reconciliation.
 - **Pay Now on invoices:** instant payment creation from the invoice form.
+- **Debt of the whole legal entity:** the debt offered to be paid is the one of every company that is the same legal entity as the payment's, limited to the companies the user has selected — so a branch sees the debt of its parent and the other way round, instead of only its own. Companies of another legal entity are never listed, and the payment stays in the company where it was made.
 
 ## Dependencies
 
