@@ -360,6 +360,14 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
         branch_journal = self.env["account.journal"].create(
             {"name": "Branch Sale", "type": "sale", "company_id": branch.id}
         )
+        # El pago va en un diario de banco de la sucursal, y no en el de la padre: el de la
+        # padre solo sirve si esta compartido a sucursales, y eso es un valor almacenado que
+        # se calculo cuando se creo el diario. En una base creada sin --test-enable los
+        # diarios de banco quedan sin compartir, y el chequeo de compañias rechazaba el pago
+        # por un motivo que no tiene nada que ver con lo que este test verifica.
+        branch_bank_journal = self.env["account.journal"].create(
+            {"name": "Branch Bank", "code": "BBWT", "type": "bank", "company_id": branch.id}
+        )
         parent_tax = self.env["account.tax"].create(
             {
                 "name": "Parent Tax 21%",
@@ -378,7 +386,7 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
                 "payment_type": "inbound",
                 "partner_type": "customer",
                 "partner_id": self.partner_ri.id,
-                "journal_id": self.company_bank_journal.id,
+                "journal_id": branch_bank_journal.id,
                 "date": self.today,
                 "company_id": branch.id,
             }
