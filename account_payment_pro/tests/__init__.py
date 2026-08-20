@@ -14,3 +14,4 @@ from . import (
     test_reset_cycle,
     test_write_off_and_rounding,
 )
+from . import test_receipt_debt_legal_entity
