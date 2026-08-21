@@ -766,10 +766,27 @@ class AccountPayment(models.Model):
                 if self.write_off_amount and self.destination_currency_id == self.counterpart_currency_id:
                     counterpart_amt += abs(self.write_off_amount)
                 counterpart_lines[0]["amount_currency"] = cp_sign * counterpart_amt
+        elif self.destination_currency_id == self.company_currency_id and self.counterpart_currency_id != (
+            self.company_currency_id
+        ):
+            # A == B1 ≠ C con B2 == C (reconcile_on_company_currency): la moneda ya es la
+            # correcta (B1, igual que A), pero el nominal que trae base Odoo no sirve, porque
+            # suma el amount_currency del write-off — que va en B2 == C — contra el de
+            # liquidez, que va en A. Mezcla monedas y puede salir con el signo opuesto al
+            # balance recalculado arriba, que revienta contra
+            # _check_amount_currency_balance_sign (ticket 126046).
+            # Se recalcula entero (no como delta sobre el nominal del core, que acá viene
+            # contaminado) desde payment_total — que está en B2 == C — llevado a B1 con el
+            # accounting_rate del propio pago, el mismo que usa la línea de liquidez, para no
+            # introducir una cotización distinta a la de la operación.
+            cp_sign = -1 if counterpart_lines[0]["balance"] < 0 else 1
+            counterpart_amt = abs(self.counterpart_currency_id.round(self.payment_total * self.accounting_rate))
+            counterpart_lines[0]["amount_currency"] = cp_sign * counterpart_amt
         elif write_off_line_vals:
             # A == B1 y la moneda ya es correcta: el core armó el nominal sin ver el write-off,
             # así que hay que sumárselo para que la contrapartida cubra el total de la deuda.
             counterpart_lines[0]["amount_currency"] -= sum(line["amount_currency"] for line in write_off_line_vals)
+        # Si A == B1 == B2 y sin write-off: la moneda ya es correcta (A), solo el balance cambió
 
         # Cualquiera de las ramas anteriores puede dejar la contrapartida en moneda de
         # compañía, y ahí el nominal y el balance son la misma cifra por definición: tiene
