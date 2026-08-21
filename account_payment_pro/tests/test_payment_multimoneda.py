@@ -766,6 +766,102 @@ class TestPaymentMultimoneda(TestArCommon):
         finally:
             self.company.reconcile_on_company_currency = False
 
+    def test_caso9_spec_b1_forzada_usd(self):
+        """Caso 9 de la spec · USD / USD / ARS / ARS  ("Pago USD de Deuda ARS")
+
+        Deuda contable en ARS (cuenta sin moneda), pago en USD, y el usuario fuerza el
+        apunte AP/AR a USD. Es la combinación que la spec numera 9 y que DESIGN.md
+        transcribe como "USD / B1=USD / B2=ARS"; el test_caso9_pago_usd_deuda_ars
+        implementado cubre otra (ahí B1 queda en ARS por default), así que este
+        escenario no estaba cubierto.
+
+        Sin write-off el nominal de la contrapartida coincide con el monto del pago, de
+        modo que este caso pasa con o sin el fix de _prepare_move_lines_per_type: cubre
+        la spec, no la regresión. La regresión la cubre el test de acá abajo.
+        """
+        self.company.reconcile_on_company_currency = True
+        self.account_receivable.currency_id = False
+        try:
+            expected_debt_ars = 1_000 / self._get_rate(self.ars, self.usd)  # 1 000 USD → 1 200 000 ARS
+            invoice = self._create_invoice(expected_debt_ars, self.ars)
+            payment = self._create_payment(
+                self.bank_usd,
+                amount=1_000,
+                to_pay_move_line_ids=[Command.set(self._get_debt_lines(invoice).ids)],
+            )
+            # Con el flag el default de B1 es C: el usuario la fuerza a USD desde la vista
+            payment.counterpart_currency_id = self.usd
+
+            self._assert_currencies(payment, A=self.usd, B1=self.usd, B2=self.ars, C=self.ars)
+
+            payment.action_post()
+
+            self._assert_move_lines(
+                payment,
+                {
+                    "liquidity": {"currency": self.usd, "amt_currency": 1_000, "balance": expected_debt_ars},
+                    "counterpart": {"currency": self.usd, "amt_currency": -1_000, "balance": -expected_debt_ars},
+                },
+            )
+            self.assertIn(invoice.payment_state, ["paid", "in_payment"])
+        finally:
+            self.company.reconcile_on_company_currency = False
+
+    def test_caso9_spec_b1_forzada_usd_con_write_off(self):
+        """Caso 9 de la spec + write-off · USD / USD / ARS / ARS
+
+        Igual que el test de arriba pero con ajuste. La spec no especifica el asiento de
+        los casos con reconcile (la columna "Detalle Técnico" está vacía en las filas
+        8/9/10) y no trae ningún ejemplo con write-off, así que el asiento esperado sigue
+        el patrón de los casos sin reconcile: importe en B1, balance en C.
+
+        Es el caso que rompía. La contrapartida se queda en B1 (DESIGN.md §Journal entry
+        generation) y lo que hay que recalcular es el nominal: el que trae base Odoo suma
+        el amount_currency del write-off (que va en B2 == C) contra el de liquidez (que va
+        en A), y sale con el signo opuesto al balance, que revienta contra
+        _check_amount_currency_balance_sign (ticket 126046).
+        """
+        self.company.reconcile_on_company_currency = True
+        self.account_receivable.currency_id = False
+        try:
+            invoice = self._create_invoice(117_600, self.ars)
+            debt_lines = self._get_debt_lines(invoice)
+            payment = self._create_payment(
+                self.bank_usd,
+                amount=99,
+                to_pay_move_line_ids=[Command.set(debt_lines.ids)],
+                write_off_type_id=self.write_off_type.id,
+                write_off_amount=-1_200,
+            )
+            # Con el flag el default de B1 es C: el usuario la fuerza a USD desde la vista
+            payment.counterpart_currency_id = self.usd
+
+            self._assert_currencies(payment, A=self.usd, B1=self.usd, B2=self.ars, C=self.ars)
+
+            expected_liq_balance = 99 / self._get_rate(self.ars, self.usd)  # 99 USD → 118 800 ARS
+            # Balance de contrapartida: -118 800 - (-1 200) = -117 600 ARS
+            # Nominal en B1 (USD): payment_total (117 600 ARS) * accounting_rate = 98 USD
+            expected_cp_balance = -(expected_liq_balance + (-1_200))
+            expected_cp_amount = expected_cp_balance * payment.accounting_rate
+
+            payment.action_post()
+
+            self._assert_move_lines(
+                payment,
+                {
+                    "liquidity": {"currency": self.usd, "amt_currency": 99, "balance": expected_liq_balance},
+                    "counterpart": {
+                        "currency": self.usd,
+                        "amt_currency": expected_cp_amount,
+                        "balance": expected_cp_balance,
+                    },
+                    "write_off": {"currency": self.ars, "amt_currency": -1_200, "balance": -1_200},
+                },
+            )
+            self.assertIn(invoice.payment_state, ["paid", "in_payment"])
+        finally:
+            self.company.reconcile_on_company_currency = False
+
     # ==================================================================
     # TESTS DE MECÁNICA INTERNA
     # ==================================================================

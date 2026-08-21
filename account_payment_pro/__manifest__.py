@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 {
     "name": "Account Payment Super Power",
-    "version": "19.0.2.11.0",
+    "version": "19.0.2.11.1",
     "category": "Payment",
     "website": "www.adhoc.com.ar",
     "author": "ADHOC SA",
