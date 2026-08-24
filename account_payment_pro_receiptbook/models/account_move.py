@@ -93,7 +93,7 @@ class AccountMove(models.Model):
             )
 
         unposted = moves_to_check.filtered(lambda m: m.sequence_number != 0 and m.state != "posted")
-        unposted.made_sequence_gap = True
+        gap_ids = set(unposted.ids)
 
         for (receiptbook, prefix), moves in (
             (moves_to_check - unposted).grouped(lambda m: (m.receiptbook_id, m.sequence_prefix)).items()
@@ -108,5 +108,19 @@ class AccountMove(models.Model):
                     ]
                 ).mapped("sequence_number")
             )
-            for move in moves:
-                move.made_sequence_gap = move.sequence_number > 1 and (move.sequence_number - 1) not in existing_numbers
+            gap_ids.update(
+                move.id
+                for move in moves
+                if move.sequence_number > 1 and (move.sequence_number - 1) not in existing_numbers
+            )
+
+        # ``made_sequence_gap`` es stored, así que cada asignación es un ``write``
+        # sobre ``account.move`` y arrastra los overrides de todos los módulos
+        # instalados (Purchase, por ejemplo, mapea
+        # ``line_ids.purchase_line_id.order_id`` asiento por asiento). Escribimos
+        # como mucho dos veces, y solo sobre lo que realmente cambia — mismo
+        # criterio que ``_update_sequence_made_gap`` del core.
+        if to_set := moves_to_check.filtered(lambda m: m.id in gap_ids and not m.made_sequence_gap):
+            to_set.made_sequence_gap = True
+        if to_unset := moves_to_check.filtered(lambda m: m.id not in gap_ids and m.made_sequence_gap):
+            to_unset.made_sequence_gap = False
