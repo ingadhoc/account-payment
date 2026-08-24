@@ -1,4 +1,5 @@
 import json
+from unittest.mock import patch
 
 from odoo import Command, fields
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
@@ -221,6 +222,132 @@ class TestAccountPaymentProReceiptbookUnitTest(AccountTestInvoicingCommon):
         with self.assertRaises(ValidationError) as cm:
             resequence_wizard.resequence()
         self.assertIn("already exist", str(cm.exception))
+
+    def _enable_payment_accounts(self, journal):
+        """Payments need an outstanding account on the journal's method lines."""
+        (journal.outbound_payment_method_line_ids + journal.inbound_payment_method_line_ids).write(
+            {"payment_account_id": journal.default_account_id.id}
+        )
+
+    def _post_receipt(self, receiptbook=None, amount=100):
+        """Post a payment on ``receiptbook`` and return its journal entry."""
+        payment = self.env["account.payment"].create(
+            {
+                "amount": amount,
+                "payment_type": "inbound",
+                "partner_id": self.partner_ri.id,
+                "journal_id": self.company_bank_journal.id,
+                "date": self.today,
+                "company_id": self.company.id,
+                "receiptbook_id": (receiptbook or self.receiptbook).id,
+            }
+        )
+        payment.action_post()
+        payment.filtered(lambda p: not p.move_id)._generate_journal_entry()
+        return payment.move_id
+
+    def test_made_sequence_gap_within_receiptbook(self):
+        """A hole in the receiptbook numbering flags the move that follows it.
+
+        Numbers are asserted relative to each other: ``ir.sequence`` is backed by
+        a postgres sequence, which is not rolled back with the test transaction,
+        so the receiptbook does not necessarily start at 1 on every run.
+        """
+        self._enable_payment_accounts(self.company_bank_journal)
+        first, second, third = (self._post_receipt() for _ in range(3))
+        self.assertEqual(second.sequence_number, first.sequence_number + 1)
+        self.assertEqual(third.sequence_number, second.sequence_number + 1)
+
+        (first + second + third)._update_receiptbook_made_sequence_gap()
+        # A move whose predecessor exists makes no gap. Nothing is asserted about
+        # `first`: the numbers below it were consumed by other runs.
+        self.assertFalse(second.made_sequence_gap)
+        self.assertFalse(third.made_sequence_gap)
+
+        # Removing the middle entry frees its number, so the next one makes the gap.
+        second.button_draft()
+        second.with_context(force_delete=True).unlink()
+
+        third._update_receiptbook_made_sequence_gap()
+        self.assertTrue(third.made_sequence_gap, "the move after the hole should be flagged")
+
+    def test_made_sequence_gap_scoped_to_receiptbook(self):
+        """The detection is scoped to the receiptbook, not to the journal.
+
+        Both receiptbooks number their moves in the same bank journal, so a hole
+        in one of them must not flag the moves of the other.
+        """
+        self._enable_payment_accounts(self.company_bank_journal)
+        other_receiptbook = self.env["account.payment.receiptbook"].create(
+            {
+                "name": "Other Customer Receipts",
+                "partner_type": "customer",
+                "company_id": self.company.id,
+                "document_type_id": self.receiptbook.document_type_id.id,
+                "prefix": "0099-",
+            }
+        )
+        first, second = (self._post_receipt() for _ in range(2))
+        other_first, other_second = (self._post_receipt(receiptbook=other_receiptbook) for _ in range(2))
+        self.assertNotEqual(first.sequence_prefix, other_first.sequence_prefix)
+        self.assertEqual(other_second.sequence_number, other_first.sequence_number + 1)
+
+        # Free the first number of the main receiptbook: only its own successor
+        # makes a gap, the other receiptbook is untouched.
+        first.button_draft()
+        first.with_context(force_delete=True).unlink()
+
+        (second + other_second)._update_receiptbook_made_sequence_gap()
+        self.assertTrue(second.made_sequence_gap)
+        self.assertFalse(
+            other_second.made_sequence_gap,
+            "a hole in one receiptbook must not flag the moves of another one",
+        )
+
+    def test_made_sequence_gap_writes_only_on_change(self):
+        """``made_sequence_gap`` is only written on the moves whose value changes.
+
+        Every assignment is a ``write`` on ``account.move`` and drags the
+        overrides of the installed modules, so recomputing an already consistent
+        set of moves must not write at all, and correcting stale values must take
+        a couple of grouped writes instead of one per move.
+        """
+        self._enable_payment_accounts(self.company_bank_journal)
+        moves = self.env["account.move"].browse()
+        for _i in range(5):
+            moves |= self._post_receipt()
+        moves._update_receiptbook_made_sequence_gap()
+        expected = {move.id: move.made_sequence_gap for move in moves}
+
+        AccountMove = type(self.env["account.move"])
+        origin = AccountMove.write
+        written = []
+
+        def spy(records, vals):
+            if "made_sequence_gap" in vals:
+                written.append((set(records.ids), vals["made_sequence_gap"]))
+            return origin(records, vals)
+
+        # Nothing changed: the recompute must not write at all.
+        with patch.object(AccountMove, "write", spy):
+            moves._update_receiptbook_made_sequence_gap()
+        self.assertFalse(written, "recomputing a consistent set of moves should not write")
+
+        # Flip every stored value bypassing the ORM, then recompute.
+        self.env.cr.execute(
+            "UPDATE account_move SET made_sequence_gap = NOT COALESCE(made_sequence_gap, FALSE) WHERE id IN %s",
+            (tuple(moves.ids),),
+        )
+        self.env.invalidate_all()
+        with patch.object(AccountMove, "write", spy):
+            moves._update_receiptbook_made_sequence_gap()
+
+        self.assertEqual({move.id: move.made_sequence_gap for move in moves}, expected)
+        self.assertLessEqual(
+            len(written),
+            2,
+            "correcting %d moves should take at most two grouped writes, got %d" % (len(moves), len(written)),
+        )
 
     def _create_branch(self):
         """Minimal branch under the test AR company (reuses its chart)."""
