@@ -29,18 +29,24 @@ class AccountPayment(models.Model):
 
     def _compute_cashbox_session_id(self):
         for rec in self:
-            session_ids = self.env["account.cashbox.session"].search(
-                [
-                    ("state", "=", "opened"),
-                    "|",
-                    ("user_ids", "=", self.env.uid),
-                    ("user_ids", "=", False),
-                ]
-            )
+            # solo sesiones operables para este pago: mismo criterio que el dominio de la vista,
+            # la compañia del pago y una caja que maneje el diario del pago
+            domain = [
+                ("state", "=", "opened"),
+                ("company_id", "=", rec.company_id.id),
+                "|",
+                ("user_ids", "=", self.env.uid),
+                ("user_ids", "=", False),
+            ]
+            if rec.journal_id:
+                domain += [("cashbox_id.journal_ids", "in", rec.journal_id.ids)]
+            session_ids = self.env["account.cashbox.session"].search(domain)
             if len(session_ids) == 1:
                 rec.cashbox_session_id = session_ids.id
             elif len(session_ids) > 1:
-                rec.cashbox_session_id = self.env.user.default_cashbox_id.current_session_id
+                # la caja por defecto del usuario sirve solo si su sesion esta entre las operables
+                default_session = self.env.user.default_cashbox_id.current_session_id
+                rec.cashbox_session_id = default_session if default_session in session_ids else False
             else:
                 rec.cashbox_session_id = False
 
@@ -73,8 +79,8 @@ class AccountPayment(models.Model):
             ):
                 raise UserError(
                     _(
-                        """Your user is required to use a payment session for each payment,
-                        but no default cashbox is assigned or no session is open for the user."""
+                        "Your user is required to use a payment session for each payment, but there is no open "
+                        "session for the payment journal and company (or the default cashbox does not manage them)."
                     )
                 )
 
