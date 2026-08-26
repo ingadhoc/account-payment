@@ -27,17 +27,21 @@ class AccountPaymentRegister(models.TransientModel):
     )
 
     @api.depends_context("uid")
-    # dummy depends para que se compute(no estamos seguros porque solo con el depends_context no computa)
-    @api.depends("journal_id")
     def _compute_requiere_account_cashbox_session(self):
-        self.requiere_account_cashbox_session = self.env.user.requiere_account_cashbox_session
+        for rec in self:
+            rec.requiere_account_cashbox_session = self.env.user.requiere_account_cashbox_session
 
-    @api.depends("company_id")
+    @api.depends("company_id", "journal_id")
     def _compute_available_cashbox_session_ids(self):
         Session = self.env["account.cashbox.session"]
         for rec in self:
-            rec.available_cashbox_session_ids = Session.search(Session._get_available_domain(rec.company_id))
+            rec.available_cashbox_session_ids = Session.search(
+                Session._get_available_domain(rec.company_id, journal=rec.journal_id)
+            )
 
+    # a diferencia del pago, acá sí lleva depends: el wizard no tiene un action_post que
+    # recalcule, y sin esto el compute puede correr antes de que journal_id tenga valor.
+    @api.depends("available_cashbox_session_ids")
     def _compute_cashbox_session_id(self):
         for rec in self:
             session_ids = rec.available_cashbox_session_ids

@@ -56,12 +56,15 @@ class AccountCashboxSession(models.Model):
     )
 
     @api.model
-    def _get_available_domain(self, company):
+    def _get_available_domain(self, company, journal=None):
         """Dominio de sesiones abiertas operables por el usuario actual desde `company`.
 
         Desde una sucursal (company.parent_id) solo son elegibles las sesiones de la
         propia empresa o las de la empresa padre cuyos diarios estén compartidos a
         sucursales. Reusa el criterio canónico de account.journal._check_company_domain.
+
+        Con `journal`, solo las sesiones de cajas que manejen ese diario: es el diario
+        el que ata un pago a una caja, y una sesión de otra caja no mueve su saldo.
         """
         domain = [
             ("state", "=", "opened"),
@@ -73,6 +76,8 @@ class AccountCashboxSession(models.Model):
         if company.parent_id:
             journal_domain = self.env["account.journal"]._check_company_domain(company)
             domain += [("cashbox_id.journal_ids", "any", journal_domain)]
+        if journal:
+            domain += [("cashbox_id.journal_ids", "in", journal.ids)]
         return domain
 
     @api.depends("cashbox_id")
