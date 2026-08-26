@@ -30,9 +30,18 @@ class AccountPaymentRegister(models.TransientModel):
 
     def _compute_cashbox_session_id(self):
         for rec in self:
-            session_ids = self.env["account.cashbox.session"].search(
-                [("state", "=", "opened"), "|", ("user_ids", "=", self.env.uid), ("user_ids", "=", False)]
-            )
+            # mismo criterio que en account.payment: la sesion tiene que ser de la compañia del
+            # pago y de una caja que maneje el diario
+            domain = [
+                ("state", "=", "opened"),
+                ("company_id", "=", rec.company_id.id),
+                "|",
+                ("user_ids", "=", self.env.uid),
+                ("user_ids", "=", False),
+            ]
+            if rec.journal_id:
+                domain += [("cashbox_id.journal_ids", "in", rec.journal_id.ids)]
+            session_ids = self.env["account.cashbox.session"].search(domain)
             if len(session_ids) == 1:
                 rec.cashbox_session_id = session_ids.id
             else:
