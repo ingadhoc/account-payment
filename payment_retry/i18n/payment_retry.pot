@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-21 10:25+0000\n"
-"PO-Revision-Date: 2025-11-21 10:25+0000\n"
+"POT-Creation-Date: 2026-08-26 12:30+0000\n"
+"PO-Revision-Date: 2026-08-26 12:30+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -57,6 +57,11 @@ msgid "Company"
 msgstr ""
 
 #. module: payment_retry
+#: model:ir.model,name:payment_retry.model_electronic_payment_pending_confirm
+msgid "Confirm a manual payment while an electronic payment is on course"
+msgstr ""
+
+#. module: payment_retry
 #: model_terms:ir.ui.view,arch_db:payment_retry.payment_transaction_retry_view_form
 msgid "Create payments"
 msgstr ""
@@ -67,12 +72,14 @@ msgid "Create payments without check"
 msgstr ""
 
 #. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_electronic_payment_pending_confirm__create_uid
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__create_uid
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__create_uid
 msgid "Created by"
 msgstr ""
 
 #. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_electronic_payment_pending_confirm__create_date
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__create_date
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__create_date
 msgid "Created on"
@@ -84,12 +91,14 @@ msgid "Currency"
 msgstr ""
 
 #. module: payment_retry
+#: model_terms:ir.ui.view,arch_db:payment_retry.electronic_payment_pending_confirm_view_form
 #: model_terms:ir.ui.view,arch_db:payment_retry.payment_transaction_retry_view_form
 msgid "Discard"
 msgstr ""
 
 #. module: payment_retry
 #: model:ir.model.fields,field_description:payment_retry.field_account_move__display_name
+#: model:ir.model.fields,field_description:payment_retry.field_electronic_payment_pending_confirm__display_name
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction__display_name
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__display_name
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__display_name
@@ -97,9 +106,15 @@ msgid "Display Name"
 msgstr ""
 
 #. module: payment_retry
-#: model:ir.model.fields.selection,name:payment_retry.selection__account_move__payment_state__electronic_pending
 #: model:ir.model.fields.selection,name:payment_retry.selection__account_move__status_in_payment__electronic_pending
 msgid "Electronic payment"
+msgstr ""
+
+#. module: payment_retry
+#. odoo-python
+#: code:addons/payment_retry/models/account_move.py:0
+#: model_terms:ir.ui.view,arch_db:payment_retry.electronic_payment_pending_confirm_view_form
+msgid "Electronic payment on course"
 msgstr ""
 
 #. module: payment_retry
@@ -114,7 +129,14 @@ msgid "Error al enviar request tx id %i: %s"
 msgstr ""
 
 #. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_account_bank_statement_line__has_pending_transaction
+#: model:ir.model.fields,field_description:payment_retry.field_account_move__has_pending_transaction
+msgid "Has Pending Transaction"
+msgstr ""
+
+#. module: payment_retry
 #: model:ir.model.fields,field_description:payment_retry.field_account_move__id
+#: model:ir.model.fields,field_description:payment_retry.field_electronic_payment_pending_confirm__id
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction__id
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__id
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__id
@@ -140,12 +162,14 @@ msgid "Journal Entry"
 msgstr ""
 
 #. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_electronic_payment_pending_confirm__write_uid
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__write_uid
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__write_uid
 msgid "Last Updated by"
 msgstr ""
 
 #. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_electronic_payment_pending_confirm__write_date
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__write_date
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__write_date
 msgid "Last Updated on"
@@ -167,6 +191,11 @@ msgid "Message"
 msgstr ""
 
 #. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_electronic_payment_pending_confirm__move_ids
+msgid "Move"
+msgstr ""
+
+#. module: payment_retry
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__partner_id
 msgid "Partner"
 msgstr ""
@@ -175,12 +204,6 @@ msgstr ""
 #. odoo-python
 #: code:addons/payment_retry/wizards/payment_transaction_retry.py:0
 msgid "Partner(s) should have an email address."
-msgstr ""
-
-#. module: payment_retry
-#: model:ir.model.fields,field_description:payment_retry.field_account_bank_statement_line__payment_state
-#: model:ir.model.fields,field_description:payment_retry.field_account_move__payment_state
-msgid "Payment Status"
 msgstr ""
 
 #. module: payment_retry
@@ -205,6 +228,11 @@ msgid "Percentage:"
 msgstr ""
 
 #. module: payment_retry
+#: model_terms:ir.ui.view,arch_db:payment_retry.electronic_payment_pending_confirm_view_form
+msgid "Register payment anyway"
+msgstr ""
+
+#. module: payment_retry
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__retry_id
 msgid "Retry"
 msgstr ""
@@ -224,6 +252,29 @@ msgstr ""
 #: model:ir.model.fields,field_description:payment_retry.field_account_bank_statement_line__status_in_payment
 #: model:ir.model.fields,field_description:payment_retry.field_account_move__status_in_payment
 msgid "Status In Payment"
+msgstr ""
+
+#. module: payment_retry
+#: model:ir.model.fields,help:payment_retry.field_account_bank_statement_line__has_pending_transaction
+#: model:ir.model.fields,help:payment_retry.field_account_move__has_pending_transaction
+msgid ""
+"Technical field to know if there is an electronic payment on course for this"
+" invoice."
+msgstr ""
+
+#. module: payment_retry
+#. odoo-python
+#: code:addons/payment_retry/wizards/electronic_payment_pending_confirm.py:0
+msgid ""
+"The payment is being registered manually while the electronic payment %s is "
+"still on course."
+msgstr ""
+
+#. module: payment_retry
+#: model_terms:ir.ui.view,arch_db:payment_retry.electronic_payment_pending_confirm_view_form
+msgid ""
+"There is an electronic payment on course for this invoice. If the customer ends up\n"
+"                        paying it online, that payment will be registered too and the invoice will be paid twice."
 msgstr ""
 
 #. module: payment_retry
