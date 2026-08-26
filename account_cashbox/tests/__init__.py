@@ -1,1 +1,5 @@
-from . import test_internal_transfer_cashbox_session, test_cashbox_allowed_users_view_payments
+from . import (
+    test_internal_transfer_cashbox_session,
+    test_cashbox_allowed_users_view_payments,
+    test_cashbox_session_assignment,
+)
