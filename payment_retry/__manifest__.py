@@ -3,7 +3,7 @@
     "author": "ADHOC SA",
     "website": "https://www.adhoc.inc",
     "category": "Payment",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "depends": ["account_payment"],
     "license": "LGPL-3",
     "images": [],
@@ -12,5 +12,6 @@
         "security/ir.model.access.csv",
         "data/ir_cron.xml",
         "wizards/payment_transaction_retry.xml",
+        "wizards/electronic_payment_pending_confirm.xml",
     ],
 }
