@@ -3,7 +3,7 @@
     "author": "ADHOC SA",
     "website": "https://www.adhoc.inc",
     "category": "Payment",
-    "version": "19.0.1.1.0",
+    "version": "19.0.1.2.0",
     "depends": ["account_payment"],
     "license": "LGPL-3",
     "images": [],
