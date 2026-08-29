@@ -5,18 +5,18 @@
 """Own checks: journal entry shape, lifecycle and border cases.
 
 Part of the harness of task 70884: it pins the behaviour of the core check patch
-the ADHOC image carries, so relocating that patch into our modules can be proven
-equivalent.
+the ADHOC image carries, now relocated into our modules.
 
 Tests whose name ends in ``_today`` pin a side effect of the patch on purpose -
-they are not the desired behaviour, and the task documents each one. They are
-kept commented out: they belong to the relocation PR, which is where each of
-them either flips or is deleted.
+they are not the desired behaviour, and the task documents each one. They assert
+the relocation is equivalent; fixing any of them is a separate PR, which is where
+the assertion flips.
 """
 
 from unittest.mock import patch
 
 from odoo import Command, fields
+from odoo.addons.l10n_latam_check.models.account_payment import AccountPayment as CoreCheckPayment
 from odoo.exceptions import UserError, ValidationError
 from odoo.tests import tagged
 from odoo.tools import mute_logger
@@ -60,6 +60,28 @@ class TestOwnChecksEntry(LatamCheckCommon):
             [("line_ids.account_id", "=", self.deferred_check_account.id), ("company_id", "=", self.company.id)]
         )
         self.assertEqual(moves, payment.move_id, "Only the payment move should touch the deferred checks account")
+
+    def test_the_lines_are_built_here_when_the_core_does_not(self):
+        """Con un core sin parchear el modulo arma las N lineas por su cuenta (tarea 70884).
+
+        Se simula parcheando ``l10n_latam_check`` para que devuelva una sola linea de liquidez, que
+        es lo que hace el core vanilla. Sin esto la relocalizacion no tiene cobertura: con la imagen
+        parcheada -y en runbot- las lineas las arma el core y nunca se entra por esta rama.
+        """
+        payment = self._create_own_check_payment([20, 30], numbers=["00000301", "00000302"])
+        default_vals = {"name": "test", "amount_currency": -50.0, "balance": -50.0}
+        with patch.object(CoreCheckPayment, "_prepare_move_liquidity_lines", lambda self, vals: [dict(vals)]):
+            lines = payment._prepare_move_liquidity_lines(default_vals)
+
+        self.assertEqual([line["amount_currency"] for line in lines], [-20.0, -30.0])
+        self.assertEqual([line["balance"] for line in lines], [-20.0, -30.0])
+        self.assertEqual(
+            [line["date_maturity"] for line in lines], payment.l10n_latam_new_check_ids.mapped("payment_date")
+        )
+        for line, check in zip(lines, payment.l10n_latam_new_check_ids):
+            self.assertEqual(line["account_id"], payment.outstanding_account_id.id)
+            self.assertIn(check.name, line["name"])
+            self.assertEqual(line["l10n_latam_check_ids"], [Command.set(check.ids)])
 
 
 @tagged("post_install", "-at_install")
@@ -202,35 +224,35 @@ class TestOwnChecksMulticurrency(LatamCheckCommon):
 class TestOwnChecksLifecycle(LatamCheckCommon):
     """Draft / post / cancel / reset-to-draft and issue_state transitions."""
 
-    # def test_draft_check_is_debited_and_blocks_cancel_today(self):
-    #     """EQUIVALENCE (task 70884, BUG-1: draft issue_state).
-    #
-    #     Pins what the patched core does today, which the relocation must
-    #     reproduce: ``_compute_issue_state`` decides by ``payment_method_code``
-    #     instead of by ``outstanding_line_id``, so a draft own check -one that was
-    #     never handed out- comes out as 'debited'; and as a consequence the draft
-    #     payment cannot be cancelled.
-    #
-    #     It is a known defect; fixing it is a separate PR.
-    #     """
-    #     payment = self._create_own_check_payment([100], numbers=["00002101"])
-    #
-    #     self.assertEqual(payment.l10n_latam_new_check_ids.issue_state, "debited")
-    #     with self.assertRaises(UserError):
-    #         payment.action_cancel()
+    def test_draft_check_is_debited_today(self):
+        """EQUIVALENCE (task 70884, BUG-1: draft issue_state).
 
-    # @mute_logger("odoo.sql_db")
-    # def test_two_draft_payments_cannot_repeat_a_number_today(self):
-    #     """EQUIVALENCE (task 70884, BUG-1: draft issue_state).
-    #
-    #     Same root cause, pinned so the relocation reproduces it: the ux unique
-    #     index covers checks with an issue_state, and since drafts now get one,
-    #     two *draft* payments sharing a number already hit the database
-    #     constraint, which should only happen for handed checks. Separate PR.
-    #     """
-    #     self._create_own_check_payment([100], numbers=["00002301"])
-    #     with self.assertRaises(IntegrityError), self.cr.savepoint():
-    #         self._create_own_check_payment([100], numbers=["00002301"])
+        Un cheque propio en borrador -que nunca se entrego- sale 'debited', porque el estado se
+        decide por metodo de pago y su linea de liquidez todavia no existe. Es un defecto conocido y
+        arreglarlo es otro PR.
+
+        Cancelar el pago SI funciona: el guard de ``_get_reconciled_checks_error`` mira la cuenta de
+        la linea, que en borrador no hay.
+        """
+        payment = self._create_own_check_payment([100], numbers=["00002101"])
+
+        self.assertEqual(payment.l10n_latam_new_check_ids.issue_state, "debited")
+        self.assertFalse(payment.l10n_latam_new_check_ids.outstanding_line_id)
+        payment.action_cancel()
+        self.assertEqual(payment.state, "canceled")
+
+    @mute_logger("odoo.sql_db")
+    def test_two_draft_payments_cannot_repeat_a_number_today(self):
+        """EQUIVALENCE (task 70884, BUG-1: draft issue_state).
+
+        Same root cause, pinned because the relocation reproduces it: the ux
+        unique index covers checks with an issue_state, and since drafts now get
+        one, two *draft* payments sharing a number already hit the database
+        constraint, which should only happen for handed checks. Separate PR.
+        """
+        self._create_own_check_payment([100], numbers=["00002301"])
+        with self.assertRaises(IntegrityError), self.cr.savepoint():
+            self._create_own_check_payment([100], numbers=["00002301"])
 
     @mute_logger("odoo.sql_db")
     def test_check_number_is_unique_per_payment_method_line(self):
@@ -271,6 +293,35 @@ class TestOwnChecksLifecycle(LatamCheckCommon):
         payment.action_post()
         self.assert_move_balanced(payment.move_id)
         self.assert_check_lines_match(payment)
+
+    def test_legacy_split_move_is_still_unlinked(self):
+        """Un pago posteado antes de este cambio apunta a un asiento de split aparte, y al volver a
+        borrador se sigue desarmando. Se llama al metodo directo porque su gancho -``button_draft``
+        de ``account.move``- solo existe con el core sin parchear.
+        """
+        payment = self._create_own_check_payment([100], numbers=["00002601"])
+        payment.action_post()
+        check = payment.l10n_latam_new_check_ids
+        split_move = self.env["account.move"].create(
+            {
+                "journal_id": payment.journal_id.id,
+                "line_ids": [
+                    Command.create(
+                        {"name": "legacy split", "account_id": self.deferred_check_account.id, "debit": 100.0}
+                    ),
+                    Command.create(
+                        {"name": "legacy split", "account_id": self.deferred_check_account.id, "credit": 100.0}
+                    ),
+                ],
+            }
+        )
+        split_move.action_post()
+        check.outstanding_line_id = split_move.line_ids[0]
+
+        payment._l10n_latam_check_unlink_split_move()
+
+        self.assertFalse(split_move.exists(), "The legacy split move must be dropped")
+        self.assertTrue(payment.move_id.exists(), "The payment move is not the split move")
 
     def test_void_affects_only_its_check_and_blocks_reset_to_draft(self):
         """Anular 1 de 3 cheques: el cheque queda anulado y su linea conciliada

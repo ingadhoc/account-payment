@@ -334,45 +334,51 @@ class TestChecksPaymentPro(TestArCommon):
         self.assertEqual(len(self._liquidity_lines(payment)), 3, "Reposting keeps one line per check")
         self.assertEqual(len(payment.move_id.line_ids), 4)
 
-    # def test_writing_amount_on_two_payments_at_once_crashes_today(self):
-    #     """EQUIVALENCE (task 70884, BUG-3).
-    #
-    #     Pins what the patched core does today: it classifies the new lines with
-    #     ``self.outstanding_account_id`` instead of ``pay.outstanding_account_id``
-    #     inside its own ``for pay in self`` loop, so writing a trigger field on
-    #     several payments whose moves are in draft and whose outstanding accounts
-    #     differ raises ``Expected singleton``. It is not check specific: any
-    #     payment reset to draft is affected.
-    #
-    #     Whether the relocation reproduces it depends on how
-    #     ``_synchronize_to_moves`` is ported: copying the patched method verbatim
-    #     keeps the crash, delegating to ``super()`` fixes it - and then this
-    #     assertion has to be inverted in that same PR.
-    #     """
-    #     other_account = self.env["account.account"].create(
-    #         {
-    #             "name": "Test Deferred Checks 2",
-    #             "code": "TPPDEFCHK2",
-    #             "account_type": "asset_current",
-    #             "reconcile": True,
-    #             "company_ids": [Command.set(self.company.ids)],
-    #         }
-    #     )
-    #     other_line = self.env["account.payment.method.line"].create(
-    #         {
-    #             "payment_method_id": self.own_checks_line.payment_method_id.id,
-    #             "name": "Own Checks 2",
-    #             "payment_account_id": other_account.id,
-    #             "journal_id": self.bank_journal.id,
-    #         }
-    #     )
-    #     first = self._own_check_payment([20, 30], ["00032301", "00032302"])
-    #     second = self._own_check_payment([20, 30], ["00032303", "00032304"])
-    #     second.payment_method_line_id = other_line
-    #     payments = first + second
-    #     payments.action_post()
-    #     payments.action_draft()
-    #     self.assertNotEqual(first.outstanding_account_id, second.outstanding_account_id)
-    #
-    #     with self.assertRaisesRegex(ValueError, "Expected singleton"):
-    #         payments.write({"amount": 50})
+    def test_writing_amount_on_two_payments_at_once(self):
+        """The patched core crashed here (task 70884, BUG-3): it classified the
+        new lines with ``self.outstanding_account_id`` instead of
+        ``pay.outstanding_account_id`` inside its own ``for pay in self`` loop, so
+        writing a trigger field on several payments whose moves are in draft and
+        whose outstanding accounts differ raised ``Expected singleton``. It was
+        not check specific: any payment reset to draft was affected.
+
+        The relocation delegates ``_synchronize_to_moves`` to ``super()`` instead
+        of copying the patched method, so the crash is gone. Each payment keeps
+        its own outstanding account and its own line per check.
+        """
+        other_account = self.env["account.account"].create(
+            {
+                "name": "Test Deferred Checks 2",
+                "code": "TPPDEFCHK2",
+                "account_type": "asset_current",
+                "reconcile": True,
+                "company_ids": [Command.set(self.company.ids)],
+            }
+        )
+        other_line = self.env["account.payment.method.line"].create(
+            {
+                "payment_method_id": self.own_checks_line.payment_method_id.id,
+                "name": "Own Checks 2",
+                "payment_account_id": other_account.id,
+                "journal_id": self.bank_journal.id,
+            }
+        )
+        first = self._own_check_payment([20, 30], ["00032301", "00032302"])
+        second = self._own_check_payment([20, 30], ["00032303", "00032304"])
+        second.payment_method_line_id = other_line
+        payments = first + second
+        payments.action_post()
+        payments.action_draft()
+        self.assertNotEqual(first.outstanding_account_id, second.outstanding_account_id)
+
+        payments.write({"amount": 50})
+
+        for payment in payments:
+            self.assert_balanced(payment)
+            lines = self._liquidity_lines(payment)
+            self.assertEqual(len(lines), 2, "Each payment keeps one liquidity line per check")
+            self.assertEqual(
+                lines.account_id,
+                payment.outstanding_account_id,
+                "Each payment's lines must use its own outstanding account, not the first one's",
+            )
