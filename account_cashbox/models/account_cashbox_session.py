@@ -121,13 +121,13 @@ class AccountCashboxSession(models.Model):
                 for journal in rec.cashbox_id.journal_ids
             ]
 
-            @api.constrains("user_ids", "cashbox_id")
-            def _check_user_ids_allowed(self):
-                for rec in self:
-                    if rec.cashbox_id.restrict_users and rec.user_ids:
-                        allowed = set(rec.cashbox_id.allowed_res_users_ids.ids)
-                        if not set(rec.user_ids.ids).issubset(allowed):
-                            raise ValidationError(_("All session users must be allowed on the cashbox."))
+    @api.constrains("user_ids", "cashbox_id")
+    def _check_user_ids_allowed(self):
+        for rec in self:
+            if rec.cashbox_id.restrict_users and rec.user_ids:
+                allowed = set(rec.cashbox_id.allowed_res_users_ids.ids)
+                if not set(rec.user_ids.ids).issubset(allowed):
+                    raise ValidationError(_("All session users must be allowed on the cashbox."))
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -226,11 +226,15 @@ class AccountCashboxSession(models.Model):
                 # if amounts are the same do not check
                 if rec.company_id.currency_id.compare_amounts(line.balance_end, line.balance_end_real) == 0:
                     continue
-                max_diff_in_currency = line.cashbox_session_id.cashbox_id.max_diff
-                if line.journal_id.currency_id:
-                    max_diff_in_currency = line.journal_id.currency_id._convert(
-                        line.cashbox_session_id.cashbox_id.max_diff,
-                        line.cashbox_session_id.cashbox_id.company_id.currency_id,
+                max_diff_in_currency = rec.cashbox_id.max_diff
+                if line.journal_id.currency_id and line.journal_id.currency_id != rec.company_id.currency_id:
+                    # max_diff se configura en la moneda de la compañía (ver help del campo) y la
+                    # diferencia de la línea viene en la moneda del diario: el tope se lleva a esa moneda.
+                    max_diff_in_currency = rec.company_id.currency_id._convert(
+                        rec.cashbox_id.max_diff,
+                        line.journal_id.currency_id,
+                        rec.company_id,
+                        fields.Date.context_today(rec),
                     )
 
                 diff = abs(line.balance_end - line.balance_end_real)
