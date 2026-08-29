@@ -152,6 +152,23 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
         payment.action_post()
         return payment.l10n_latam_new_check_ids
 
+    def _create_branch(self, name="Branch", parent=None):
+        """Sucursal que comparte el plan de cuentas de su padre.
+
+        Las propiedades company dependent del partner hay que setearlas para la sucursal
+        para poder postear pagos en ella.
+        """
+        parent = parent or self.company
+        branch = self.env["res.company"].create({"name": name, "parent_id": parent.id})
+        self.partner_a.with_company(branch).write(
+            {
+                "property_account_receivable_id": self.company_data["default_account_receivable"].id,
+                "property_account_payable_id": self.company_data["default_account_payable"].id,
+            }
+        )
+        branch.transfer_account_id = self.company.transfer_account_id
+        return branch
+
     def test_deposit_third_party_check_to_bank(self):
         check = self._create_third_party_check(self.third_party_check_journal, "UX-DEP-0001")
         bank_journal = self.company_bank_journal
@@ -303,3 +320,32 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
                     "amount": 200.0,
                 }
             )
+
+    def test_mass_transfer_destination_domain_reaches_the_root_company(self):
+        """El dominio del diario destino se arma sobre la raíz, no sobre el padre inmediato.
+
+        Con una jerarquía de más de dos niveles, `parent_id` se queda en la compañía
+        intermedia y deja afuera del dominio a la casa central y a las otras ramas.
+        """
+        branch = self._create_branch()
+        sub_branch = self._create_branch(name="Sub branch", parent=branch)
+        sub_branch_journal = self._create_check_journal("Sub Branch Checks", "SBC", company=sub_branch)
+        check = self._create_third_party_check(sub_branch_journal, "UX-ROOT-0001")
+
+        wizard = (
+            self.env["l10n_latam.payment.mass.transfer"]
+            .with_context(active_model="l10n_latam.check", active_ids=check.ids)
+            .create({})
+        )
+
+        self.assertEqual(wizard.main_company_id, self.company)
+
+    def test_mass_transfer_view_exposes_the_fields_of_the_destination_domain(self):
+        """El desplegable del diario destino queda vacío si la vista no trae `main_company_id`.
+
+        El dominio de `destination_journal_id` lo lee, y el cliente web evalúa los dominios solo
+        con los campos que la vista carga: sin el campo, `main_company_id` es False, el `child_of`
+        no matchea ninguna compañía y el usuario no puede elegir ningún diario.
+        """
+        view = self.env["l10n_latam.payment.mass.transfer"].get_view()
+        self.assertIn("main_company_id", view["models"]["l10n_latam.payment.mass.transfer"])
