@@ -61,9 +61,26 @@ def migrate(cr, version):
     # ── 2. Renombrar counterpart_exchange_rate → counterpart_rate ─────────────
     # Evita que el ORM cree la columna como campo nuevo y encole recompute.
     # Los valores quedan en formato viejo; el post-migrate los transforma.
-    if openupgrade.column_exists(cr, "account_payment", "counterpart_exchange_rate"):
+    has_old = openupgrade.column_exists(cr, "account_payment", "counterpart_exchange_rate")
+    has_new = openupgrade.column_exists(cr, "account_payment", "counterpart_rate")
+
+    if has_old and not has_new:
+        # Caso normal: renombrar
         openupgrade.rename_columns(cr, {"account_payment": [("counterpart_exchange_rate", "counterpart_rate")]})
         _logger.info("account_payment_pro: renamed counterpart_exchange_rate → counterpart_rate")
+    elif has_old and has_new:
+        # Ejecución parcial previa: copiar datos y eliminar columna vieja
+        cr.execute("UPDATE account_payment SET counterpart_rate = counterpart_exchange_rate ")
+        updated_rows = cr.rowcount
+        cr.execute("ALTER TABLE account_payment DROP COLUMN counterpart_exchange_rate")
+        _logger.info(
+            "account_payment_pro: migrated data from counterpart_exchange_rate to counterpart_rate "
+            "and dropped old column (rows updated: %s)",
+            updated_rows,
+        )
+    else:
+        # Instalación nueva: ninguna columna existe, el ORM la creará
+        _logger.info("account_payment_pro: neither counterpart_exchange_rate nor counterpart_rate exist (new install)")
 
     # ── 3. Pre-crear accounting_rate ──────────────────────────────────────────
     # Campo nuevo store=True. Crear la columna evita que el ORM la registre como
