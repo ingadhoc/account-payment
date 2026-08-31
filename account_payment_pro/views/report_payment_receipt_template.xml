@@ -60,8 +60,8 @@
                     <thead>
                         <tr>
                             <th><span>Payments</span></th>
-                            <th class="text-right" t-if="show_amount_col"><span>Amount</span></th>
-                            <th class="text-right">
+                            <th class="text-end" t-if="show_amount_col"><span>Amount</span></th>
+                            <th class="text-end pe-2">
                                 <span>Amount</span><span t-if="show_amount_col"> (<span t-field="o.destination_currency_id.name"/>)</span>
                             </th>
                         </tr>
@@ -77,11 +77,11 @@
                                         <span t-out="' (%s)' % (check.payment_method_line_id.name)"> (Electronic checkbook)</span>
                                         <span t-if="check.payment_date"> - Exp. <span t-field="check.payment_date"/></span>
                                     </td>
-                                    <td class="text-right" t-if="show_amount_col">
+                                    <td class="text-end" t-if="show_amount_col">
                                         <!-- Amount in journal currency (A) -->
                                         <span class="text-nowrap" t-out="check.amount" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
                                     </td>
-                                    <td class="text-right o_price_total">
+                                    <td class="text-end pe-2 o_price_total">
                                         <!-- Amount in destination currency (B2) -->
                                         <span class="text-nowrap" t-out="doc.destination_currency_id.round(check.amount * (doc.counterpart_rate or 1.0) if doc.counterpart_currency_id == doc.destination_currency_id else (check.amount / doc.accounting_rate if doc.accounting_rate else check.amount))" t-options='{"widget": "monetary", "display_currency": doc.destination_currency_id}'/>
                                     </td>
@@ -96,10 +96,10 @@
                                 <td>
                                     <span t-out="doc.write_off_type_id.label or doc.write_off_type_id.name"/>
                                 </td>
-                                <td class="text-right" t-if="show_amount_col">
+                                <td class="text-end" t-if="show_amount_col">
                                     <span class="text-nowrap" t-field="doc.write_off_amount"/>
                                 </td>
-                                <td class="text-right o_price_total">
+                                <td class="text-end pe-2 o_price_total">
                                     <span class="text-nowrap" t-field="doc.write_off_amount"/>
                                 </td>
                             </tr>
@@ -115,13 +115,13 @@
                                     <span t-field="doc.journal_id.name"/>
                                     <span t-field="doc.payment_method_line_id.name"/>
                                 </td>
-                                <td class="text-right" t-if="show_amount_col">
+                                <td class="text-end" t-if="show_amount_col">
                                     <!-- Amount in journal currency (A) -->
                                     <span class="text-nowrap"
                                         t-out="display_amount_a"
                                         t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
                                 </td>
-                                <td class="text-right o_price_total">
+                                <td class="text-end pe-2 o_price_total">
                                     <!-- Amount in destination currency (B2) -->
                                     <span class="text-nowrap"
                                         t-out="display_amount_b"
@@ -134,7 +134,7 @@
                         <tr>
                             <td><strong><span>Total Paid</span></strong></td>
                             <td t-if="show_amount_col"/>
-                            <td class="text-right">
+                            <td class="text-end pe-2">
                                 <strong><span class="text-nowrap" t-field="o.payment_total"/></strong>
                             </td>
                         </tr>
@@ -144,14 +144,14 @@
                 <br/>
 
                 <!-- ── Matching (imputed vouchers) table ────────────────────────── -->
-                <t t-set="matched_lines" t-value="payment_bundle.with_context(matched_payment_ids=payment_bundle.ids).mapped('matched_move_line_ids')"/>
+                <t t-set="matched_lines" t-value="payment_bundle.with_context(matched_payment_ids=payment_bundle.ids).mapped('matched_move_line_ids').sorted(key=lambda l: (l.date_maturity or l.date, l.id))"/>
                 <table class="table table-sm o_main_table" name="matching_table">
                     <thead>
                         <tr>
                             <th style="width: 50%;"><span>Imputed Vouchers</span></th>
                             <th class="text-center"><span>Exp. Date</span></th>
-                            <th class="text-right"><span>Original Amount</span></th>
-                            <th class="text-right"><span>Imputed Amount</span></th>
+                            <th class="text-end"><span>Original Amount</span></th>
+                            <th class="text-end pe-2"><span>Imputed Amount</span></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -161,11 +161,11 @@
                                 <td class="text-center">
                                     <span class="text-nowrap" t-field="line.date_maturity"/>
                                 </td>
-                                <td class="text-right o_price_total">
+                                <td class="text-end o_price_total">
                                     <!-- Original amount in line's currency -->
                                     <span class="text-nowrap" t-out="(o.payment_type == 'outbound' and -1.0 or 1.0) * line.amount_currency" t-options='{"widget": "monetary", "display_currency": line.currency_id}'/>
                                 </td>
-                                <td class="text-right o_price_total">
+                                <td class="text-end pe-2 o_price_total">
                                     <!-- Matched amount in destination currency (B2) -->
                                     <span class="text-nowrap" t-out="(o.payment_type == 'outbound' and -1.0 or 1.0) * line.payment_matched_amount" t-options='{"widget": "monetary", "display_currency": line.payment_matched_currency_id}'/>
                                 </td>
@@ -175,8 +175,8 @@
                         <tr t-if="sum(payment_bundle.mapped('unmatched_amount'))">
                             <td>On account</td>
                             <td class="text-center"/>
-                            <td class="text-right o_price_total"/>
-                            <td class="text-right o_price_total">
+                            <td class="text-end o_price_total"/>
+                            <td class="text-end pe-2 o_price_total">
                                 <span class="text-nowrap" t-out="sum(payment_bundle.mapped('unmatched_amount'))" t-options="{'widget': 'monetary', 'display_currency': o.destination_currency_id}"/>
                             </td>
                         </tr>
@@ -184,7 +184,7 @@
                     <tfoot>
                         <tr>
                             <td colspan="3"><strong><span>Total Imputed</span></strong></td>
-                            <td class="text-right">
+                            <td class="text-end pe-2">
                                 <strong><span class="text-nowrap" t-out="o.matched_amount + o.unmatched_amount" t-options='{"widget": "monetary", "display_currency": o.destination_currency_id}'/></strong>
                             </td>
                         </tr>
