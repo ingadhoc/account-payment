@@ -36,6 +36,11 @@
                         type="action"
                         class="oe_highlight"/>
             </xpath>
+            <!-- Con una línea de liquidez por cheque el asiento ya no es 1:1 con outstanding_line_id
+                 (task 70884): el botón deja de tener sentido, igual que lo saca el parche de core
+                 que este módulo reemplaza (odoo/odoo#248741). -->
+            <xpath expr="//button[@name='action_show_journal_entry']" position="replace"/>
+            <field name="outstanding_line_id" position="replace"/>
         </field>
     </record>
 
