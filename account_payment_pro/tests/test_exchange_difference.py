@@ -1,10 +1,11 @@
 from odoo import Command
+from odoo.addons.account_ux.tests.invariants import AccountInvariantsMixin
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
 @tagged("post_install", "-at_install")
-class TestExchangeDifference(TransactionCase):
+class TestExchangeDifference(AccountInvariantsMixin, TransactionCase):
     """Diferencia de cambio automática al cobrar/pagar una factura en moneda
     extranjera a un TC distinto del de la factura.
 
@@ -115,6 +116,7 @@ class TestExchangeDifference(TransactionCase):
         debt = invoice.line_ids.filtered(lambda line: line.account_id.account_type == "asset_receivable")
         payment = self._pay(self.customer, "customer", "inbound", debt, "2026-02-01")
         payment.action_post()
+        self.assert_payment_invariants(payment, "cobro con TC mayor")
 
         with self.subTest("el importe en pesos es al TC del cobro"):
             liquidity = payment.move_id.line_ids.filtered(
@@ -138,6 +140,7 @@ class TestExchangeDifference(TransactionCase):
         debt = invoice.line_ids.filtered(lambda line: line.account_id.account_type == "asset_receivable")
         payment = self._pay(self.customer, "customer", "inbound", debt, "2026-02-15")
         payment.action_post()
+        self.assert_payment_invariants(payment, "cobro con TC menor")
 
         liquidity = payment.move_id.line_ids.filtered(lambda line: line.account_id == payment.outstanding_account_id)
         self.assertEqual(liquidity.balance, 900000.0)
@@ -156,6 +159,7 @@ class TestExchangeDifference(TransactionCase):
         debt = invoice.line_ids.filtered(lambda line: line.account_id.account_type == "asset_receivable")
         payment = self._pay(self.customer, "customer", "inbound", debt, "2026-02-01", accounting_rate=1.0 / 1050.0)
         payment.action_post()
+        self.assert_payment_invariants(payment, "TC manual")
 
         liquidity = payment.move_id.line_ids.filtered(lambda line: line.account_id == payment.outstanding_account_id)
         self.assertEqual(liquidity.balance, 1050000.0, "el TC manual manda, no el automático de la fecha")
@@ -175,6 +179,7 @@ class TestExchangeDifference(TransactionCase):
         debt = invoice.line_ids.filtered(lambda line: line.account_id.account_type == "asset_receivable")
         payment = self._pay(self.customer, "customer", "inbound", debt, "2026-02-01")
         payment.action_post()
+        self.assert_payment_invariants(payment, "cobro con cotización posterior ya cargada")
 
         fx_lines = self._fx_lines(payment)
         self.assertEqual(
@@ -191,6 +196,7 @@ class TestExchangeDifference(TransactionCase):
         debt = bill.line_ids.filtered(lambda line: line.account_id.account_type == "liability_payable")
         payment = self._pay(self.vendor, "supplier", "outbound", debt, "2026-02-01")
         payment.action_post()
+        self.assert_payment_invariants(payment, "pago a proveedor con TC mayor")
 
         liquidity = payment.move_id.line_ids.filtered(lambda line: line.account_id == payment.outstanding_account_id)
         self.assertEqual(liquidity.balance, -1100000.0)

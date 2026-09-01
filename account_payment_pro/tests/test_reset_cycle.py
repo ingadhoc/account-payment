@@ -1,10 +1,11 @@
 from odoo import Command
+from odoo.addons.account_ux.tests.invariants import AccountInvariantsMixin
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
 @tagged("post_install", "-at_install")
-class TestResetCycle(TransactionCase):
+class TestResetCycle(AccountInvariantsMixin, TransactionCase):
     """Ciclo de restablecer a borrador de un pago confirmado y conciliado.
 
     FCP-R09: volver a borrador un pago daba error, o volvía dejando el estado
@@ -85,6 +86,7 @@ class TestResetCycle(TransactionCase):
         bill = self._make_bill(50000.0)
         payment = self._make_payment(self._debt_lines(bill), 50000.0)
         payment.action_post()
+        self.assert_payment_invariants(payment, "pago inicial")
         move_before = payment.move_id
 
         with self.subTest("confirmado y conciliado: la factura queda pagada"):
@@ -105,6 +107,7 @@ class TestResetCycle(TransactionCase):
 
         payment.date = "2026-02-05"
         payment.action_post()
+        self.assert_payment_invariants(payment, "pago re-confirmado")
 
         with self.subTest("re-confirmado: la factura queda pagada contra ese mismo pago"):
             self.assertEqual(bill.payment_state, "paid")
@@ -131,12 +134,14 @@ class TestResetCycle(TransactionCase):
         payment.write_off_type_id = self.write_off_type
         payment.action_adjust_writeoff_for_difference()
         payment.action_post()
+        self.assert_payment_invariants(payment, "pago con write-off inicial")
 
         payment.action_draft()
         with self.subTest("en borrador el ajuste sigue declarado, no se pierde"):
             self.assertEqual(payment.write_off_amount, 100.0)
 
         payment.action_post()
+        self.assert_payment_invariants(payment, "pago con write-off re-confirmado")
         with self.subTest("una sola línea de ajuste, por el importe original"):
             write_off_lines = payment.move_id.line_ids.filtered(
                 lambda line: line.account_id == self.write_off_type.account_id
@@ -162,6 +167,7 @@ class TestResetCycle(TransactionCase):
         bill_b = self._make_bill(20000.0)
         payment = self._make_payment(self._debt_lines(bill_a + bill_b), 50000.0)
         payment.action_post()
+        self.assert_payment_invariants(payment, "pago de dos facturas")
 
         with self.subTest("confirmado: las dos facturas quedan pagadas"):
             self.assertEqual(bill_a.payment_state, "paid")
@@ -175,6 +181,7 @@ class TestResetCycle(TransactionCase):
             self.assertEqual(bill_b.amount_residual, 20000.0)
 
         payment.action_post()
+        self.assert_payment_invariants(payment, "pago de dos facturas re-confirmado")
         with self.subTest("re-confirmado: las dos vuelven a pagada contra el mismo pago"):
             self.assertEqual(bill_a.payment_state, "paid")
             self.assertEqual(bill_b.payment_state, "paid")
@@ -192,6 +199,7 @@ class TestResetCycle(TransactionCase):
         bill_b = self._make_bill(20000.0)
         payment = self._make_payment(self._debt_lines(bill_a + bill_b), 50000.0)
         payment.action_post()
+        self.assert_payment_invariants(payment, "pago antes de eliminarlo")
         payment.action_draft()
         payment.unlink()
 

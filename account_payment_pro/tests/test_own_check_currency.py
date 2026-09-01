@@ -1,10 +1,11 @@
 from odoo import Command
+from odoo.addons.account_ux.tests.invariants import AccountInvariantsMixin
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
 @tagged("post_install", "-at_install")
-class TestOwnCheckCurrency(TransactionCase):
+class TestOwnCheckCurrency(AccountInvariantsMixin, TransactionCase):
     """Cheque propio emitido en la misma moneda que la factura que paga.
 
     FCP-R08-E4: cruce de moneda del cheque, del asiento y del débito. Lo que
@@ -121,6 +122,7 @@ class TestOwnCheckCurrency(TransactionCase):
             }
         )
         payment.action_post()
+        self.assert_payment_invariants(payment, "cheque propio en la misma moneda que la factura")
 
         with self.subTest("la factura queda saldada (en proceso de pago hasta que se debite el cheque)"):
             self.assertEqual(bill.payment_state, "in_payment")

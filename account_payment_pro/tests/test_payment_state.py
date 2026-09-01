@@ -1,10 +1,11 @@
 from odoo import Command
+from odoo.addons.account_ux.tests.invariants import AccountInvariantsMixin
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
 @tagged("post_install", "-at_install")
-class TestPaymentState(TransactionCase):
+class TestPaymentState(AccountInvariantsMixin, TransactionCase):
     """El estado de pago de la factura es uno solo y explícito en cada etapa.
 
     FCP-R06: la factura totalmente conciliada con su cobro seguía figurando "en
@@ -97,6 +98,7 @@ class TestPaymentState(TransactionCase):
         )
         payment.amount = amount
         payment.action_post()
+        self.assert_payment_invariants(payment, "cobro %s" % invoice.name)
         return payment
 
     def _outstanding_line(self, payment):
@@ -283,6 +285,7 @@ class TestPaymentState(TransactionCase):
         )
         payment.amount = 1000.0
         payment.action_post()
+        self.assert_payment_invariants(payment, "cobro con diferencia de cambio")
 
         with self.subTest("transitoria abierta: en proceso de pago, saldo 0 en ambas monedas"):
             self.assertEqual(invoice.payment_state, "in_payment")

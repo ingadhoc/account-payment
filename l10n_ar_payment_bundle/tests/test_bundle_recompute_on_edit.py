@@ -2,12 +2,13 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from odoo import Command
+from odoo.addons.account_ux.tests.invariants import AccountInvariantsMixin
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
 @tagged("post_install", "-at_install")
-class TestBundleRecomputeOnEdit(TransactionCase):
+class TestBundleRecomputeOnEdit(AccountInvariantsMixin, TransactionCase):
     """Alta y baja de líneas de medios de pago en un bundle, antes de confirmar.
 
     FCP-R02: al pagar con dos medios en el mismo comprobante (efectivo + banco), el total
@@ -129,6 +130,11 @@ class TestBundleRecomputeOnEdit(TransactionCase):
             self.assertEqual(main.payment_difference, 0.0)
 
         main.action_post()
+        # el "main" del bundle no tiene asiento propio acá (sin write-off ni
+        # retenciones); las invariantes valen sobre los pagos vinculados,
+        # que son los que efectivamente asientan.
+        for payment in (cash_payment, bank_payment):
+            self.assert_payment_invariants(payment, "medio de pago del bundle")
         with self.subTest("cada medio tiene su propia línea de liquidez, sin una tercera por el total"):
             liquidity_lines = (cash_payment.move_id | bank_payment.move_id).line_ids.filtered(
                 lambda line: line.account_id.account_type in ("asset_cash", "asset_current", "liability_credit_card")

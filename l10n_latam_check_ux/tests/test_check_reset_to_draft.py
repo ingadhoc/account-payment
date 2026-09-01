@@ -39,6 +39,7 @@ class TestCheckResetToDraft(LatamCheckCommon):
         """
         receipt = self._receive_third_party_checks([20000.0], numbers=["00000901"])
         receipt.action_post()
+        self.assert_payment_invariants(receipt, "cobro del cheque")
         check = receipt.l10n_latam_new_check_ids
 
         with self.subTest("recién cobrado, el cheque está en la cartera del cobro"):
@@ -53,6 +54,7 @@ class TestCheckResetToDraft(LatamCheckCommon):
             self.assertFalse(check.current_journal_id)
 
         receipt.action_post()
+        self.assert_payment_invariants(receipt, "cobro re-confirmado")
         check.invalidate_recordset()
 
         with self.subTest("re-confirmado, el cheque vuelve a la misma cartera"):
@@ -69,6 +71,7 @@ class TestCheckResetToDraft(LatamCheckCommon):
         """
         payment = self._create_own_check_payment([50000.0], numbers=["00000902"])
         payment.action_post()
+        self.assert_payment_invariants(payment, "emisión del cheque propio")
         check = payment.l10n_latam_new_check_ids
 
         self.env["account.check.action.wizard"].with_context(
@@ -76,6 +79,9 @@ class TestCheckResetToDraft(LatamCheckCommon):
         ).create({"date": self.today}).action_confirm()
         check.invalidate_recordset()
         self.assertEqual(check.issue_state, "debited")
+        debit_move = self.env["account.move.line"].search([("name", "=", f"Débito cheque nro {check.name}")]).move_id
+        self.assert_no_automatic_balancing_line(debit_move, "débito del cheque %s" % check.name)
+        self.assert_no_zero_lines(debit_move, "débito del cheque %s" % check.name)
 
         with self.assertRaisesRegex(UserError, check.name):
             payment.action_draft()
@@ -91,11 +97,18 @@ class TestCheckResetToDraft(LatamCheckCommon):
         other_journal = self._create_third_party_journal("Test Reset Other Wallet", "TROW")
         receipt = self._receive_third_party_checks([20000.0], numbers=["00000903"])
         receipt.action_post()
+        self.assert_payment_invariants(receipt, "cobro del cheque")
         check = receipt.l10n_latam_new_check_ids
 
-        self.env["l10n_latam.payment.mass.transfer"].with_context(
-            active_model="l10n_latam.check", active_ids=check.ids
-        ).create({"destination_journal_id": other_journal.id})._create_payments()
+        outbound = (
+            self.env["l10n_latam.payment.mass.transfer"]
+            .with_context(active_model="l10n_latam.check", active_ids=check.ids)
+            .create({"destination_journal_id": other_journal.id})
+            ._create_payments()
+        )
+        # el pase es dos apuntes (outbound + su inbound emparejado); ambos tienen que ser sanos
+        for payment in outbound + outbound.paired_internal_transfer_payment_id:
+            self.assert_payment_invariants(payment, "pase de cartera")
         check.invalidate_recordset()
         with self.subTest("el cheque quedó en la cartera destino del pase"):
             self.assertEqual(check.current_journal_id, other_journal)

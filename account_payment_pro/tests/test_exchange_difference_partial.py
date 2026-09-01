@@ -1,10 +1,11 @@
 from odoo import Command
+from odoo.addons.account_ux.tests.invariants import AccountInvariantsMixin
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
 @tagged("post_install", "-at_install")
-class TestExchangeDifferencePartial(TransactionCase):
+class TestExchangeDifferencePartial(AccountInvariantsMixin, TransactionCase):
     """Diferencia de cambio proporcional en cobros parciales, control negativo, y
     el excedente de un pago de más que no se pierde al convertir.
 
@@ -99,6 +100,7 @@ class TestExchangeDifferencePartial(TransactionCase):
         self.assertEqual(payment.to_pay_amount, 400.0)
         payment.amount = 400.0
         payment.action_post()
+        self.assert_payment_invariants(payment, "cobro parcial")
 
         self.assertEqual(invoice.amount_residual, 600.0, "el resto queda abierto en USD")
         fx_lines = self._fx_lines(payment)
@@ -127,6 +129,7 @@ class TestExchangeDifferencePartial(TransactionCase):
         )
         payment_1.amount = 400.0
         payment_1.action_post()
+        self.assert_payment_invariants(payment_1, "primer cobro parcial")
 
         debt_remaining = invoice.line_ids.filtered(
             lambda line: line.account_id.account_type == "asset_receivable" and not line.reconciled
@@ -145,6 +148,7 @@ class TestExchangeDifferencePartial(TransactionCase):
         self.assertEqual(payment_2.to_pay_amount, 600.0)
         payment_2.amount = 600.0
         payment_2.action_post()
+        self.assert_payment_invariants(payment_2, "segundo cobro parcial")
 
         with self.subTest("cada cobro tiene su propia diferencia, con signos opuestos"):
             fx_1 = self._fx_lines(payment_1)
@@ -188,6 +192,7 @@ class TestExchangeDifferencePartial(TransactionCase):
         )
         payment.amount = 1000.0
         payment.action_post()
+        self.assert_payment_invariants(payment, "control negativo, misma moneda mismo TC")
 
         self.assertFalse(payment.exchange_diff_move_ids)
         self.assertEqual(invoice.amount_residual, 0.0)
@@ -215,6 +220,7 @@ class TestExchangeDifferencePartial(TransactionCase):
         payment.amount = 1100.0
         self.assertEqual(payment.payment_difference, -100.0)
         payment.action_post()
+        self.assert_payment_invariants(payment, "pago de más en moneda extranjera")
 
         self.assertEqual(bill.amount_residual, 0.0)
         open_lines = self.env["account.move.line"].search(

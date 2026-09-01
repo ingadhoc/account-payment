@@ -1,10 +1,11 @@
 from odoo import Command
+from odoo.addons.account_ux.tests.invariants import AccountInvariantsMixin
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
 @tagged("post_install", "-at_install")
-class TestPartnerLedgerSign(TransactionCase):
+class TestPartnerLedgerSign(AccountInvariantsMixin, TransactionCase):
     """El signo del mayor del partner al cobrar/pagar con el pago múltiple.
 
     FCP-R03: se registraba un cobro de cliente y la deuda AUMENTABA en vez de bajar
@@ -74,6 +75,7 @@ class TestPartnerLedgerSign(TransactionCase):
             self.assertEqual(debt.amount_residual, 30000.0, "saldo a cobrar antes del pago")
             payment = self._make_payment(self.customer, "customer", "inbound", debt, amount=30000.0)
             payment.action_post()
+            self.assert_payment_invariants(payment, "cobro de cliente")
             self.assertEqual(invoice.amount_residual, 0.0)
             self.assertEqual(invoice.payment_state, "in_payment", "paid recién al conciliar la cuenta pendiente")
             liquidity = payment.move_id.line_ids.filtered(
@@ -90,6 +92,7 @@ class TestPartnerLedgerSign(TransactionCase):
             self.assertEqual(debt.amount_residual, -30000.0, "saldo a pagar antes del pago")
             payment = self._make_payment(self.vendor, "supplier", "outbound", debt, amount=30000.0)
             payment.action_post()
+            self.assert_payment_invariants(payment, "pago a proveedor")
             self.assertEqual(bill.amount_residual, 0.0)
             self.assertEqual(bill.payment_state, "in_payment", "paid recién al conciliar la cuenta pendiente")
             liquidity = payment.move_id.line_ids.filtered(
@@ -113,6 +116,7 @@ class TestPartnerLedgerSign(TransactionCase):
         payment = self._make_payment(self.customer, "customer", "inbound", debt, amount=20000.0)
         self.assertEqual(payment.to_pay_amount, 20000.0, "la NC ya resta en el total a cobrar")
         payment.action_post()
+        self.assert_payment_invariants(payment, "cobro que imputa factura y NC")
 
         self.assertEqual(invoice.amount_residual, 0.0)
         self.assertEqual(credit_note.amount_residual, 0.0)
@@ -127,6 +131,7 @@ class TestPartnerLedgerSign(TransactionCase):
         customer = self.env["res.partner"].create({"name": "Test Ledger Sign Customer E4"})
         advance = self._make_payment(customer, "customer", "inbound", debt_lines=None, amount=5000.0)
         advance.action_post()
+        self.assert_payment_invariants(advance, "cobro a cuenta previo")
         advance_line = advance.move_id.line_ids.filtered(
             lambda line: line.account_id.account_type == "asset_receivable"
         )
@@ -137,6 +142,7 @@ class TestPartnerLedgerSign(TransactionCase):
 
         payment = self._make_payment(customer, "customer", "inbound", debt | advance_line, amount=25000.0)
         payment.action_post()
+        self.assert_payment_invariants(payment, "cobro que aplica el saldo a favor previo")
 
         self.assertEqual(invoice.amount_residual, 0.0)
         self.assertEqual(advance_line.amount_residual, 0.0, "el saldo a favor previo quedó aplicado, no duplicado")
@@ -152,6 +158,7 @@ class TestPartnerLedgerSign(TransactionCase):
         customer = self.env["res.partner"].create({"name": "Test Ledger Sign Customer E5"})
         previous_payment = self._make_payment(customer, "customer", "inbound", debt_lines=None, amount=10000.0)
         previous_payment.action_post()
+        self.assert_payment_invariants(previous_payment, "pago a cuenta previo")
         previous_line = previous_payment.move_id.line_ids.filtered(
             lambda line: line.account_id.account_type == "asset_receivable"
         )
@@ -161,6 +168,7 @@ class TestPartnerLedgerSign(TransactionCase):
 
         payment = self._make_payment(customer, "customer", "inbound", debt | previous_line, amount=20000.0)
         payment.action_post()
+        self.assert_payment_invariants(payment, "cobro que imputa factura y OP previa")
 
         with self.subTest("la factura queda saldada"):
             self.assertEqual(invoice.amount_residual, 0.0)

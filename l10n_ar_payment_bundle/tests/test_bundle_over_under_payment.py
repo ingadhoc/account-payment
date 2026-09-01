@@ -2,12 +2,13 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from odoo import Command
+from odoo.addons.account_ux.tests.invariants import AccountInvariantsMixin
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
 @tagged("post_install", "-at_install")
-class TestBundleOverUnderPayment(TransactionCase):
+class TestBundleOverUnderPayment(AccountInvariantsMixin, TransactionCase):
     """Un bundle que paga de menos, de más, o sin deuda seleccionada.
 
     FCP-R02-E6/E7/E8: los medios de pago no tienen por qué sumar exactamente la deuda
@@ -127,6 +128,13 @@ class TestBundleOverUnderPayment(TransactionCase):
             }
         )
 
+    def _assert_bundle_invariants(self, main, msg=""):
+        """Cada medio de pago del bundle tiene su propio asiento (el
+        ``main`` agrupa y solo tiene asiento propio si hay write-off o
+        retenciones); se verifican todos, no solo el principal."""
+        for payment in main | main.link_payment_ids:
+            self.assert_payment_invariants(payment, msg)
+
     def test_paying_less_than_the_debt_leaves_it_partial_without_an_automatic_write_off(self):
         """Efectivo $20.000 + banco $20.000 sobre una deuda de $50.000: la diferencia de
         $10.000 queda declarada (no absorbida por un write-off que nadie pidió) y la
@@ -145,6 +153,7 @@ class TestBundleOverUnderPayment(TransactionCase):
             self.assertEqual(main.write_off_amount, 0.0)
 
         main.action_post()
+        self._assert_bundle_invariants(main, "bundle pagando de menos")
         with self.subTest("la factura queda en pago parcial con el saldo declarado"):
             self.assertEqual(bill.payment_state, "partial")
             self.assertEqual(bill.amount_residual, 10000.0)
@@ -167,6 +176,7 @@ class TestBundleOverUnderPayment(TransactionCase):
             self.assertEqual(main.payment_difference, -10000.0)
 
         main.action_post()
+        self._assert_bundle_invariants(main, "bundle pagando de más")
         with self.subTest("la factura seleccionada queda saldada"):
             self.assertEqual(bill.amount_residual, 0.0)
         with self.subTest("una factura vieja sin relación con este pago no se toca"):
@@ -193,6 +203,7 @@ class TestBundleOverUnderPayment(TransactionCase):
         self._create_linked_payment(main, 25000.0, self.bank_journal, self.bank_manual)
 
         main.action_post()
+        self._assert_bundle_invariants(main, "bundle a cuenta sin deuda seleccionada")
 
         with self.subTest("el pago a cuenta postea sin exigir deuda"):
             self.assertEqual(main.state, "paid")

@@ -1,10 +1,11 @@
 from odoo import Command
+from odoo.addons.account_ux.tests.invariants import AccountInvariantsMixin
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
 @tagged("post_install", "-at_install")
-class TestWriteOffAndRounding(TransactionCase):
+class TestWriteOffAndRounding(AccountInvariantsMixin, TransactionCase):
     """Write-off real, saldo abierto por redondeo, y combinaciones de documentos.
 
     FCP-R04: en un pago por el importe exacto de la deuda, el sistema generaba igual
@@ -82,6 +83,7 @@ class TestWriteOffAndRounding(TransactionCase):
             self.assertEqual(payment.payment_difference, 0.0)
 
         payment.action_post()
+        self.assert_payment_invariants(payment, "pago con write-off real")
         with self.subTest("la línea de ajuste está en la cuenta que eligió el usuario"):
             write_off_line = payment.move_id.line_ids.filtered(
                 lambda line: line.account_id == self.write_off_type.account_id
@@ -93,6 +95,7 @@ class TestWriteOffAndRounding(TransactionCase):
 
         payment.action_draft()
         payment.action_post()
+        self.assert_payment_invariants(payment, "pago con write-off tras reset")
         with self.subTest("tras el reset, sigue una sola línea de ajuste, no duplicada ni en cero"):
             write_off_lines = payment.move_id.line_ids.filtered(
                 lambda line: line.account_id == self.write_off_type.account_id
@@ -113,6 +116,7 @@ class TestWriteOffAndRounding(TransactionCase):
         self.assertEqual(payment.payment_difference, 100.0)
 
         payment.action_post()
+        self.assert_payment_invariants(payment, "diferencia real sin ajuste")
         with self.subTest("la factura queda en pago parcial con el saldo abierto"):
             self.assertEqual(bill.payment_state, "partial")
             self.assertEqual(bill.amount_residual, 100.0)
@@ -135,6 +139,7 @@ class TestWriteOffAndRounding(TransactionCase):
             payment = self._make_payment(debt, 100.0)
             self.assertEqual(payment.payment_difference, 0.01)
             payment.action_post()
+            self.assert_payment_invariants(payment, "redondeo sin write-off")
             self.assertEqual(bill.payment_state, "partial")
             self.assertEqual(bill.amount_residual, 0.01)
             self.assertFalse(
@@ -149,6 +154,7 @@ class TestWriteOffAndRounding(TransactionCase):
             payment_wo.write_off_type_id = self.write_off_type
             payment_wo.action_adjust_writeoff_for_difference()
             payment_wo.action_post()
+            self.assert_payment_invariants(payment_wo, "redondeo con write-off de un centavo")
             self.assertEqual(bill_wo.amount_residual, 0.0)
             write_off_line = payment_wo.move_id.line_ids.filtered(
                 lambda line: line.account_id == self.write_off_type.account_id
@@ -168,6 +174,7 @@ class TestWriteOffAndRounding(TransactionCase):
 
         self.assertEqual(payment.payment_difference, 0.0)
         payment.action_post()
+        self.assert_payment_invariants(payment, "pago exacto de dos facturas")
 
         self.assertEqual(bill_1.amount_residual, 0.0)
         self.assertEqual(bill_2.amount_residual, 0.0)
@@ -195,6 +202,7 @@ class TestWriteOffAndRounding(TransactionCase):
         self.assertEqual(payment.payment_difference, 0.0)
 
         payment.action_post()
+        self.assert_payment_invariants(payment, "pago con factura y NC combinadas")
         self.assertEqual(bill.amount_residual, 0.0)
         self.assertEqual(credit_note.amount_residual, 0.0)
         self.assertFalse(
@@ -203,7 +211,7 @@ class TestWriteOffAndRounding(TransactionCase):
 
 
 @tagged("post_install", "-at_install")
-class TestWriteOffMulticurrency(TransactionCase):
+class TestWriteOffMulticurrency(AccountInvariantsMixin, TransactionCase):
     """Write-off + diferencia de cambio en la misma operación: dos mecanismos que
     se confunden a mano (D3, D5). Usa como "moneda extranjera" una distinta de
     la de la compañía activa (``env.company``), sea cual sea esa compañía.
@@ -286,6 +294,7 @@ class TestWriteOffMulticurrency(TransactionCase):
         payment.write_off_type_id = self.write_off_type
         payment.action_adjust_writeoff_for_difference()
         payment.action_post()
+        self.assert_payment_invariants(payment, "pago con write-off y diferencia de cambio")
 
         with self.subTest("el write-off es 1 USD al TC del pago, en su propia línea"):
             write_off_line = payment.move_id.line_ids.filtered(

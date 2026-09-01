@@ -2,12 +2,13 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from odoo import Command
+from odoo.addons.account_ux.tests.invariants import AccountInvariantsMixin
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
 @tagged("post_install", "-at_install")
-class TestBundleTwoCurrencies(TransactionCase):
+class TestBundleTwoCurrencies(AccountInvariantsMixin, TransactionCase):
     """Medios de pago de un bundle en dos monedas distintas.
 
     FCP-R02-E5: banco USD 20 (TC 1.000) + efectivo ARS $30.000 sobre una deuda de $50.000 —
@@ -170,6 +171,10 @@ class TestBundleTwoCurrencies(TransactionCase):
             self.assertEqual(main.payment_difference, 0.0)
 
         main.action_post()
+        # el "main" del bundle no tiene asiento propio acá (sin write-off ni
+        # retenciones); las invariantes valen sobre los pagos vinculados.
+        for payment in (cash_payment, usd_payment):
+            self.assert_payment_invariants(payment, "medio de pago del bundle en dos monedas")
         with self.subTest("sin diferencia de cambio espuria: solo hay las dos líneas de liquidez esperadas"):
             liquidity_lines = (cash_payment.move_id | usd_payment.move_id).line_ids.filtered(
                 lambda line: line.account_id != debt.account_id

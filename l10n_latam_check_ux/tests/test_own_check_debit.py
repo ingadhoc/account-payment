@@ -29,6 +29,7 @@ class TestOwnCheckDebit(LatamCheckCommon):
         payment = self._create_own_check_payment(amounts, numbers=numbers, check_dates=check_dates)
         debt_line = self._create_debt_move(sum(amounts), account=payment.destination_account_id)
         payment.action_post()
+        self.assert_payment_invariants(payment, "emisión de cheques propios")
         (self._counterpart_lines(payment) + debt_line).reconcile()
         self.assert_check_lines_match(payment)
         return payment
@@ -38,6 +39,11 @@ class TestOwnCheckDebit(LatamCheckCommon):
             active_model="l10n_latam.check", active_ids=check.ids
         ).create({"date": date or self.today}).action_confirm()
         check.invalidate_recordset()
+        # el débito genera un account.move suelto (no un account.payment): se
+        # valida con las invariantes de asiento directo, no con las de pago.
+        debit_move = self.env["account.move.line"].search([("name", "=", f"Débito cheque nro {check.name}")]).move_id
+        self.assert_no_automatic_balancing_line(debit_move, "débito del cheque %s" % check.name)
+        self.assert_no_zero_lines(debit_move, "débito del cheque %s" % check.name)
 
     def _open_check_lines(self):
         """Apuntes de cheques a pagar todavía sin cancelar: es lo que el usuario

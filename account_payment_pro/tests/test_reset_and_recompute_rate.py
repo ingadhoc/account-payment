@@ -1,10 +1,11 @@
 from odoo import Command
+from odoo.addons.account_ux.tests.invariants import AccountInvariantsMixin
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
 @tagged("post_install", "-at_install")
-class TestResetAndRecomputeRate(TransactionCase):
+class TestResetAndRecomputeRate(AccountInvariantsMixin, TransactionCase):
     """Pago en moneda extranjera vuelto a borrador y re-confirmado a otra fecha
     (otro TC): la diferencia de cambio anterior se revierte y se recalcula al
     TC nuevo, sin quedar las dos.
@@ -99,13 +100,17 @@ class TestResetAndRecomputeRate(TransactionCase):
         )
         payment.amount = 1000.0
         payment.action_post()
+        self.assert_payment_invariants(payment, "pago inicial al TC 1.100")
 
         first_fx_lines = self._fx_lines(payment)
         self.assertEqual(first_fx_lines.balance, 100000.0, "diferencia al TC 1.100")
 
+        # reset a borrador: paso transitorio sin asiento, no hay nada que
+        # verificar hasta que se vuelva a confirmar
         payment.action_draft()
         payment.date = "2026-03-01"
         payment.action_post()
+        self.assert_payment_invariants(payment, "pago reconfirmado al TC 1.200")
 
         with self.subTest("una sola diferencia de cambio, recalculada al TC nuevo"):
             self.assertEqual(len(payment.exchange_diff_move_ids), 1)

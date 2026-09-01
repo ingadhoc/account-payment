@@ -1,10 +1,11 @@
 from odoo import Command
+from odoo.addons.account_ux.tests.invariants import AccountInvariantsMixin
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
 @tagged("post_install", "-at_install")
-class TestExchangeDifferenceEdgeCases(TransactionCase):
+class TestExchangeDifferenceEdgeCases(AccountInvariantsMixin, TransactionCase):
     """Diferencia de cambio: diario en la misma moneda, combinación de documentos,
     y una tercera moneda de por medio.
 
@@ -105,6 +106,7 @@ class TestExchangeDifferenceEdgeCases(TransactionCase):
         )
         payment.amount = 1000.0
         payment.action_post()
+        self.assert_payment_invariants(payment, "pago sin cambio de cotización")
 
         self.assertFalse(payment.exchange_diff_move_ids, "sin cotización distinta, no hay nada que revaluar")
         self.assertEqual(bill.amount_residual, 0.0)
@@ -140,6 +142,7 @@ class TestExchangeDifferenceEdgeCases(TransactionCase):
         self.assertEqual(payment.to_pay_amount, 800.0, "la NC ya resta del neto en USD")
         payment.amount = 800.0
         payment.action_post()
+        self.assert_payment_invariants(payment, "pago del neto factura+NC a distinto TC cada una")
 
         self.assertEqual(bill.amount_residual, 0.0)
         self.assertEqual(credit_note.amount_residual, 0.0)
@@ -179,6 +182,12 @@ class TestExchangeDifferenceEdgeCases(TransactionCase):
             payment.to_pay_amount, payment.currency_id, self.company, payment.date
         )
         payment.action_post()
+        # tercera moneda: la línea del banco (EUR) no cierra contra la del
+        # comprobante (USD) sin pasar por la de compañía, así que
+        # assert_payment_invariants se salta closes_in_both_currencies acá
+        # (más de una moneda extranjera en juego) — el residuo cero ya lo
+        # verifican los asserts de abajo.
+        self.assert_payment_invariants(payment, "pago en una tercera moneda")
 
         self.assertEqual(bill.amount_residual, 0.0, "sin residuo en USD")
         self.assertEqual(payment.payment_difference, 0.0, "la conversión se hizo una sola vez, sin sobrar ni faltar")
