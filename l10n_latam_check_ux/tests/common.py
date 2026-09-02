@@ -3,23 +3,22 @@
 # directory
 ##############################################################################
 from odoo import Command, fields
+from odoo.addons.account_ux.tests.invariants import AccountInvariantsMixin
 from odoo.tests import TransactionCase
 
 
-class LatamCheckCommon(TransactionCase):
+class LatamCheckCommon(AccountInvariantsMixin, TransactionCase):
     """Self-contained check setup for the l10n_latam_check_ux suites.
 
-    Builds its own journals, payment method lines and outstanding accounts on
-    ``env.company`` with ``.create()``, so the suite does not depend on a
-    localization being installed nor on demo data.
+    Builds its own journals, payment method lines and outstanding accounts
+    with ``.create()``, so it doesn't depend on a localization or demo data.
 
-    The core ``l10n_latam_check`` tests cannot be reused: their common calls
-    ``setup_other_company(country_id=base.ar)`` twice, and creating an extra
-    Argentine company is rejected on OBA databases by
-    ``saas_client_account._check_country_currency`` ("You cannot select a
-    currency that is different from the country's currency"), so they error out
-    at ``setUpClass``. Inheriting ``AccountTestInvoicingCommon`` on its own is
-    fine - what breaks is the extra company.
+    Mounts ``AccountInvariantsMixin`` so every suite here can call
+    ``assert_payment_invariants`` without inheriting it per class.
+
+    Can't reuse the core ``l10n_latam_check`` tests: their common creates a
+    second Argentine company, rejected on OBA databases by
+    ``saas_client_account._check_country_currency``.
     """
 
     @classmethod
@@ -33,8 +32,7 @@ class LatamCheckCommon(TransactionCase):
         cls.partner = cls.env["res.partner"].create({"name": "Check Test Partner", "vat": "30710158254"})
         cls.bank = cls.env["res.bank"].search([], limit=1) or cls.env["res.bank"].create({"name": "Test Bank"})
 
-        # Accounts: one reconcilable outstanding account per check type + a
-        # non-reconcilable one to exercise the ux issue_state override.
+        # one reconcilable outstanding account per check type + a non-reconcilable one for issue_state
         cls.deferred_check_account = cls._create_account("TDEFCHK", "Test Deferred Checks", reconcile=True)
         cls.third_party_account = cls._create_account("TTPCHK", "Test Third Party Checks", reconcile=True)
         cls.manual_outstanding_account = cls._create_account("TOUTMAN", "Test Outstanding Manual", reconcile=True)
@@ -45,13 +43,10 @@ class LatamCheckCommon(TransactionCase):
             "TRECV", "Test Receivable", account_type="asset_receivable", reconcile=True
         )
         cls.expense_account = cls._create_account("TEXP", "Test Expense", account_type="expense")
-        # internal transfers need it and it is not set on every database
         if not cls.company.transfer_account_id:
             cls.company.transfer_account_id = cls._create_account("TTRANSF", "Test Internal Transfer", reconcile=True)
 
-        # payment_pro rewrites the liquidity/counterpart balances of every payment
-        # when enabled, which would hide what these tests are about (the core +
-        # l10n_latam_check_ux mechanism). Its own suite covers the combination.
+        # payment_pro rewrites every payment's balances; its own suite covers the combination
         if "use_payment_pro" in cls.env["res.company"]._fields:
             cls.company.use_payment_pro = False
 
@@ -63,7 +58,6 @@ class LatamCheckCommon(TransactionCase):
         cls.manual_out_method = cls.env.ref("account.account_payment_method_manual_out")
         cls.manual_in_method = cls.env.ref("account.account_payment_method_manual_in")
 
-        # Bank journal issuing own checks (+ manual method, needed by the debit wizard).
         cls.bank_journal = cls.env["account.journal"].create(
             {
                 "name": "Test Checks Bank",
@@ -85,16 +79,12 @@ class LatamCheckCommon(TransactionCase):
             cls.bank_journal, cls.return_third_party_method, "Return Third Party Checks", cls.third_party_account
         )
 
-        # Two third party check journals (a regular one and the rejected one).
         cls.third_party_journal = cls._create_third_party_journal("Test Third Party Checks", "TTPC")
         cls.rejected_journal = cls._create_third_party_journal("Test Rejected Checks", "TRJC")
         cls.new_third_party_line = cls._get_method_line(cls.third_party_journal, "new_third_party_checks")
         cls.in_third_party_line = cls._get_method_line(cls.third_party_journal, "in_third_party_checks")
         cls.out_third_party_line = cls._get_method_line(cls.third_party_journal, "out_third_party_checks")
 
-        # Foreign currency with a rate on the payment date and a *different* rate
-        # 30 days later, so deferred checks (payment_date > date) can tell apart
-        # a conversion done at the payment date from one done at the check date.
         cls.foreign_currency = cls._setup_foreign_currency()
 
     # ------------------------------------------------------------------
@@ -150,14 +140,9 @@ class LatamCheckCommon(TransactionCase):
 
     @classmethod
     def _setup_foreign_currency(cls):
-        """Currency other than the company one, created instead of reused.
-
-        Which currencies exist and which are active depends on the database (a
-        ``search`` here silently returns nothing when the candidates are
-        archived), and the rates have to be exactly these two: one today and a
-        different one 30 days later, so a deferred check can tell apart a
-        conversion made at the payment date from one made at the check date.
-        """
+        """Created, not searched — active currencies depend on the database.
+        Two rates 30 days apart, so a deferred check can tell a conversion
+        made at the payment date from one made at the check date."""
         currency = cls.env["res.currency"].create(
             {
                 "name": "TCK",
@@ -197,10 +182,9 @@ class LatamCheckCommon(TransactionCase):
     ):
         """Outbound payment issuing one own check per amount.
 
-        ``method_line`` (and its journal) is set at create time on purpose: the
-        unique index on the check covers ``payment_method_line_id``, so moving a
-        payment to another checkbook afterwards would leave the check colliding
-        with its siblings until the write lands.
+        ``method_line`` is set at create time on purpose: the check's unique
+        index covers ``payment_method_line_id``, so moving the payment later
+        would collide with siblings until the write lands.
         """
         numbers = numbers or [None] * len(amounts)
         check_dates = check_dates or [date or self.today] * len(amounts)
@@ -242,17 +226,22 @@ class LatamCheckCommon(TransactionCase):
             }
         )
 
-    def _deliver_third_party_checks(self, checks, date=None):
-        """Outbound payment endorsing existing third party checks to a vendor."""
+    def _deliver_third_party_checks(self, checks, date=None, journal=None):
+        """Outbound payment endorsing checks to a vendor.
+
+        Journal defaults to where the checks are *today*, not the original
+        one: a transferred check is endorsed from its current wallet.
+        """
+        journal = journal or checks.current_journal_id or self.third_party_journal
         return self.env["account.payment"].create(
             {
                 "payment_type": "outbound",
                 "partner_type": "supplier",
                 "partner_id": self.partner.id,
-                "journal_id": self.third_party_journal.id,
+                "journal_id": journal.id,
                 "company_id": self.company.id,
                 "date": date or self.today,
-                "payment_method_line_id": self.out_third_party_line.id,
+                "payment_method_line_id": self._get_method_line(journal, "out_third_party_checks").id,
                 "l10n_latam_move_check_ids": [Command.set(checks.ids)],
             }
         )
@@ -295,6 +284,8 @@ class LatamCheckCommon(TransactionCase):
         )
 
     def assert_move_balanced(self, move, msg=""):
+        """Not part of the shared invariants battery: the ORM completes
+        unbalanced entries, so balance can't go red there."""
         self.assertEqual(
             move.company_currency_id.round(sum(move.line_ids.mapped("balance"))),
             0.0,
@@ -302,14 +293,9 @@ class LatamCheckCommon(TransactionCase):
         )
 
     def assert_check_lines_match(self, payment, msg=""):
-        """Every check has its own liquidity line, on the outstanding account,
-        holding its nominal amount, maturing on its own date, labelled with its
-        number and reachable back from the check.
-
-        Everything a check line must satisfy lives here on purpose: every suite
-        calling this helper gets the full contract instead of each test
-        re-asserting a slice of it.
-        """
+        """Every check has its own liquidity line: right account, nominal
+        amount, maturity date, number in the label, and points back to the
+        check."""
         checks = payment.l10n_latam_new_check_ids or payment.l10n_latam_move_check_ids
         lines = self._check_lines(payment)
         self.assertEqual(len(lines), len(checks), "One liquidity line per check expected. %s" % msg)
