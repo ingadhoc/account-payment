@@ -1165,6 +1165,27 @@ class AccountPayment(models.Model):
 
         return records
 
+    def _get_to_pay_companies(self):
+        """Las compañías cuya deuda puede pagar este pago: su entidad fiscal, acotada a lo
+        que el usuario tiene seleccionado.
+
+        La deuda de una entidad fiscal se cobra desde cualquiera de sus compañías, así que
+        el recibo tiene que listarla toda y no solo la de la compañía del pago —que era lo
+        que hacía, y por eso una sucursal no veía la deuda de su padre ni al revés—. Se
+        acota a ``env.companies`` porque el criterio acordado es "toda la deuda compatible
+        con las compañías que el usuario tiene seleccionadas, ni más ni menos": lo que el
+        usuario no tildó no entra.
+
+        El pago sigue quedando en la compañía donde se hizo, aunque la deuda sea de otra
+        sucursal de la entidad; lo que lo permite es el ``_check_company_domain`` de
+        ``account.move.line`` en ``account_ux``, que acepta la entidad fiscal completa.
+        """
+        self.ensure_one()
+        if not self.company_id:
+            return self.env["res.company"]
+        legal_entity = self.company_id._get_legal_entity_companies()
+        return (legal_entity & self.env.companies) or self.company_id
+
     def _get_to_pay_move_lines_domain(self):
         self.ensure_one()
         # Cuando se llama desde action_add_all (manual), permitir líneas sin partner
@@ -1174,7 +1195,7 @@ class AccountPayment(models.Model):
 
         domain = [
             ("partner_id", "=", self.partner_id.commercial_partner_id.id),
-            ("company_id", "=", self.company_id.id),
+            ("company_id", "in", self._get_to_pay_companies().ids),
             ("move_id.state", "=", "posted"),
             ("account_id.reconcile", "=", True),
             ("reconciled", "=", False),
