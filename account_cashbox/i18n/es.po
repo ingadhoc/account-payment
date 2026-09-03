@@ -873,13 +873,23 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_cashbox/models/account_payment.py:0
 msgid ""
-"Your user is required to use a payment session for each payment,\n"
-"                        but no default cashbox is assigned or no session is "
-"open for the user."
+"Your user is required to use a payment session for each payment, but the "
+"payment journal (%s) is not managed by any cashbox for this company."
 msgstr ""
-"Su usuario debe usar una sesión de pago para cada pago,\n"
-"                        pero no tiene una caja predeterminada asignada ni "
-"ninguna sesión abierta para el usuario."
+"Su usuario debe utilizar una sesión de caja en cada pago, pero el diario de "
+"pago (%s) no está gestionado por ninguna caja de esta compañía."
+
+#. module: account_cashbox
+#. odoo-python
+#: code:addons/account_cashbox/models/account_payment.py:0
+msgid ""
+"Your user is required to use a payment session for each payment, but there "
+"is no open session for the payment journal and company (or the default "
+"cashbox does not manage them)."
+msgstr ""
+"Su usuario debe utilizar una sesión de caja en cada pago, pero no hay "
+"ninguna sesión de caja abierta para el diario y la compañía de este pago (o "
+"la caja por defecto de su usuario no los maneja)."
 
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__require_cash_control
