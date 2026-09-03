@@ -24,7 +24,7 @@ class LatamCheckCommon(AccountInvariantsMixin, TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.today = fields.Date.today()
+        cls.today = fields.Date.context_today(cls)
         cls.company = cls.env.company
         cls.company_currency = cls.company.currency_id
         cls.env = cls.env(context=dict(cls.env.context, allowed_company_ids=cls.company.ids))
