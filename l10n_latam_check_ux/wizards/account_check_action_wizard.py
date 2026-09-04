@@ -51,6 +51,10 @@ class AccountCheckActionWizard(models.TransientModel):
                 [("line_ids.name", "=", label), ("date", "=", self.date)], limit=1
             )
             if debit_move:
+                # Vinculamos el asiento al pago que emitió el cheque. Sin esto sus apuntes nacen sin
+                # payment_id y el filtro "Cliente/Proveedor" del tablero de conciliación los esconde:
+                # para las cuentas de pagos pendientes ese filtro exige payment_id distinto de vacío.
+                debit_move.origin_payment_id = check.payment_id
                 check.message_post(
                     body=f'El cheque nro "{check.name}" ha sido debitado. ' + debit_move._get_html_link()
                 )
