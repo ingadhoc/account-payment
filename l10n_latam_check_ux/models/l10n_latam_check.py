@@ -18,7 +18,13 @@ class l10nLatamAccountPaymentCheck(models.Model):
     date = fields.Date(related="payment_id.date")
     memo = fields.Char(related="payment_id.memo")
     company_id = fields.Many2one(
-        compute="_compute_company_id", store=True, compute_sudo=True, comodel_name="res.company"
+        # related=False is load-bearing: the core field is related to the payment's company and,
+        # without dropping it, the related compute wins and _compute_company_id never runs.
+        related=False,
+        compute="_compute_company_id",
+        store=True,
+        compute_sudo=True,
+        comodel_name="res.company",
     )
     payment_state = fields.Selection(
         related="payment_id.state",
