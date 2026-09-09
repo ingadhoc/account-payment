@@ -9,7 +9,7 @@ class AccountPayment(models.Model):
 
     l10n_latam_move_check_ids_operation_date = fields.Datetime(
         string="Operation Date",
-        default=fields.Datetime.now(),
+        default=fields.Datetime.now,
     )
 
     @api.constrains("l10n_latam_move_check_ids_operation_date", "state")
@@ -40,6 +40,7 @@ class AccountPayment(models.Model):
         for rec in self:
             if rec.l10n_latam_check_warning_msg:
                 raise ValidationError("%s" % rec.l10n_latam_check_warning_msg)
+<<<<<<< a3f81348550003aa947eaa810f8c3c38a1d760bc
             rec.l10n_latam_move_check_ids_operation_date = rec.create_date if rec.create_date else fields.Datetime.now()
 
         # Detectar cheques de terceros existentes usados más de una vez dentro del mismo
@@ -55,7 +56,35 @@ class AccountPayment(models.Model):
                 )
             seen |= rec.l10n_latam_move_check_ids
 
+||||||| 137dd78e0df2826e98277500a3fba313615ce4e5
+            rec.l10n_latam_move_check_ids_operation_date = rec.create_date if rec.create_date else fields.Datetime.now()
+=======
+            rec.l10n_latam_move_check_ids_operation_date = rec._get_check_operation_date()
+>>>>>>> a62cc06aad283ead3b6c6e331d0849f36d860012
         super().action_post()
+
+    def _get_check_operation_date(self):
+        """Fecha que deja a este pago al final de la cadena de operaciones de sus cheques.
+
+        El orden de la cadena de un cheque —quien es su "ultima operacion"— sale de
+        ``l10n_latam_move_check_ids_operation_date``, y de ahi dependen el diario actual del cheque
+        (``_compute_current_journal``) y el bloqueo para restablecer un pago a borrador
+        (``action_draft``).
+
+        Anclar ese valor a una fecha suelta ordena mal en los dos sentidos: con la fecha de
+        confirmacion, re-confirmar un pago viejo lo manda al final de la cadena; con la fecha de
+        creacion, un borrador creado antes que el resto queda al principio aunque se confirme
+        ultimo, y ahi el cheque entregado sigue figurando en cartera. Por eso partimos de
+        ``create_date`` pero garantizamos que confirmar nunca deje al pago antes de una operacion
+        ya confirmada del mismo cheque.
+        """
+        self.ensure_one()
+        operation_date = self.create_date or fields.Datetime.now()
+        for check in self.l10n_latam_move_check_ids | self.l10n_latam_new_check_ids:
+            last_operation_date = check._get_last_operation().l10n_latam_move_check_ids_operation_date
+            if last_operation_date:
+                operation_date = max(operation_date, last_operation_date + timedelta(seconds=1))
+        return operation_date
 
     def _create_paired_internal_transfer_payment(self):
         """
