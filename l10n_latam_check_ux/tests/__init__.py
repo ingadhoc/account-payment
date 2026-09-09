@@ -8,3 +8,4 @@ from . import test_third_party_check_lifecycle
 from . import test_check_outstanding_consumers
 from . import test_own_check_automatic_debit
 from . import test_own_check_debit
+from . import test_check_branch_company
