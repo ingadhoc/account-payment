@@ -260,6 +260,19 @@ msgid "Exchange Rate"
 msgstr "Tipo de Cambio"
 
 #. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__exchange_rate
+msgid ""
+"If you enter the Amount in secondary currency and do not complete the Amount in company currency, "
+"the system will take the closest exchange rate to the date and perform the conversion automatically. "
+"However, if you want to specify a custom exchange rate, you must complete both amounts "
+"(secondary currency and company currency), and the system will calculate the Exchange Rate from those values."
+msgstr ""
+"Si se ingresa el Importe en moneda secundaria y no se completa el Importe en moneda de la empresa, "
+"el sistema tomará el Tipo de cambio más próximo a la fecha y realizará la conversión automáticamente. "
+"En cambio, si se desea indicar un tipo de cambio propio, deberán completarse ambos importes "
+"(moneda secundaria y moneda de la empresa), y el sistema calculará el Tipo de cambio a partir de esos valores."
+
+#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__force_amount_company_currency
 msgid "Forced Amount on Company Currency"
 msgstr "Forzar importe en moneda de la Compañía"
