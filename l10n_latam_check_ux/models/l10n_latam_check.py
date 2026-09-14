@@ -85,8 +85,22 @@ class l10nLatamAccountPaymentCheck(models.Model):
         if payment_method_change or partner_id_change:
             super()._compute_issuer_vat()
 
+    @api.depends("outstanding_line_id.amount_residual")
     def _compute_issue_state(self):
+        """Solo los cheques propios tienen estado de emisión (tarea 70884).
+
+        Con una línea de liquidez por cheque los de terceros también tienen ``outstanding_line_id``,
+        así que base les daría un estado y entrarían al índice único de abajo, donde el mismo número
+        de dos libradores distintos es válido.
+
+        El ``@api.depends`` no se puede sacar: el ORM lee las dependencias del método más derivado
+        del MRO. Efecto colateral pinneado por los tests ``_today``: un cheque propio en borrador
+        queda 'debited', porque su línea todavía no tiene residual.
+        """
         super()._compute_issue_state()
+        self.filtered(lambda r: r.payment_method_code != "own_checks").issue_state = False
+
+        # si la cuenta no es conciliable no queda nada por debitar
         for rec in self.filtered(lambda r: r.payment_method_code == "own_checks"):
             account = rec.outstanding_line_id.account_id
             if account and not account.reconcile:
