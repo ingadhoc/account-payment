@@ -120,8 +120,11 @@ class AccountPayment(models.Model):
                 # If the journal belongs to the third-party checks journal, posting the move was incorrectly removing the checks,
                 # even though the payment method line is for checks.
                 # To fix this, we replicate the same behavior as in Odoo's "transfer check" wizard by setting the proper payment method.
-                correct_dest_payment_method = rec.destination_journal_id.inbound_payment_method_line_ids.filtered(
-                    lambda x: x.code == "in_third_party_checks"
+                # An explicit choice by the user wins over this default.
+                correct_dest_payment_method = rec.destination_payment_method_line_id or (
+                    rec.destination_journal_id.inbound_payment_method_line_ids.filtered(
+                        lambda x: x.code == "in_third_party_checks"
+                    )
                 )
                 if correct_dest_payment_method:
                     rec.paired_internal_transfer_payment_id.payment_method_line_id = correct_dest_payment_method
