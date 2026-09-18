@@ -136,6 +136,7 @@
                                 'default_move_journal_types': ('bank', 'cash'),
                                 'default_counterpart_currency_id': counterpart_currency_id,
                                 'default_counterpart_exchange_rate': counterpart_exchange_rate,
+                                'default_date': date,
                                 'default_company_id': company_id,
                                 'default_main_payment_id': id,
                                 'default_partner_id': partner_id,
