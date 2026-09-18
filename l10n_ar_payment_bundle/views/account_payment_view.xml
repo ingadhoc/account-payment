@@ -136,6 +136,7 @@
                                 'form_view_ref': 'l10n_ar_payment_bundle.view_account_payment_from_bundle_form',
                                 'list_view_ref': 'l10n_ar_payment_bundle.view_account_payment_custom_list',
                                 'default_move_journal_types': ('bank', 'cash'),
+                                'default_date': date,
                                 'default_company_id': company_id,
                                 'default_partner_id': partner_id,
                                 'default_payment_type': payment_type,
