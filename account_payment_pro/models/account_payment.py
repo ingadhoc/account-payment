@@ -900,6 +900,7 @@ class AccountPayment(models.Model):
             payment_lines = rec.move_id.line_ids.filtered(lambda x: x.account_type in valid_payment_account_types)
             debit_moves = payment_lines.mapped("matched_debit_ids.debit_move_id")
             credit_moves = payment_lines.mapped("matched_credit_ids.credit_move_id")
+<<<<<<< 64396038b4d1e73d690a5ac275ad3b9cb7e4c47f
 
             # Excluimos los apuntes que pertenecen a asientos de diferencia de cambio
             # (generados automáticamente por Odoo al conciliar en moneda extranjera).
@@ -918,7 +919,15 @@ class AccountPayment(models.Model):
             # contable/backend (ver campo y botón inteligente en la vista).
             exchange_move_ids = payment_lines.mapped("matched_debit_ids.exchange_move_id") | payment_lines.mapped(
                 "matched_credit_ids.exchange_move_id"
+||||||| d3edfac77d79545efc8e0af8ab3fd342c76e613b
+            debit_lines_sorted = debit_moves.filtered(lambda x: x.date_maturity != False).sorted(
+                key=lambda x: (x.date_maturity, x.move_id.name)
+=======
+            debit_lines_sorted = debit_moves.filtered(lambda x: x.date_maturity).sorted(
+                key=lambda x: (x.date_maturity, x.move_id.name or "")
+>>>>>>> 8551d457771b94b78dd3e3aaae821abdfce7fa60
             )
+<<<<<<< 64396038b4d1e73d690a5ac275ad3b9cb7e4c47f
             if exchange_move_ids:
                 debit_moves = debit_moves.filtered(lambda x: x.move_id not in exchange_move_ids)
                 credit_moves = credit_moves.filtered(lambda x: x.move_id not in exchange_move_ids)
@@ -928,6 +937,13 @@ class AccountPayment(models.Model):
             )
             credit_lines_sorted = credit_moves.filtered(lambda x: x.date_maturity).sorted(
                 key=lambda x: (x.date_maturity, x.move_id.name or "")
+||||||| d3edfac77d79545efc8e0af8ab3fd342c76e613b
+            credit_lines_sorted = credit_moves.filtered(lambda x: x.date_maturity != False).sorted(
+                key=lambda x: (x.date_maturity, x.move_id.name)
+=======
+            credit_lines_sorted = credit_moves.filtered(lambda x: x.date_maturity).sorted(
+                key=lambda x: (x.date_maturity, x.move_id.name or "")
+>>>>>>> 8551d457771b94b78dd3e3aaae821abdfce7fa60
             )
             debit_lines_without_date_maturity = debit_moves - debit_lines_sorted
             credit_lines_without_date_maturity = credit_moves - credit_lines_sorted
