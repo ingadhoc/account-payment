@@ -565,11 +565,11 @@ class AccountPayment(models.Model):
             payment_lines = rec.move_id.line_ids.filtered(lambda x: x.account_type in valid_payment_account_types)
             debit_moves = payment_lines.mapped("matched_debit_ids.debit_move_id")
             credit_moves = payment_lines.mapped("matched_credit_ids.credit_move_id")
-            debit_lines_sorted = debit_moves.filtered(lambda x: x.date_maturity != False).sorted(
-                key=lambda x: (x.date_maturity, x.move_id.name)
+            debit_lines_sorted = debit_moves.filtered(lambda x: x.date_maturity).sorted(
+                key=lambda x: (x.date_maturity, x.move_id.name or "")
             )
-            credit_lines_sorted = credit_moves.filtered(lambda x: x.date_maturity != False).sorted(
-                key=lambda x: (x.date_maturity, x.move_id.name)
+            credit_lines_sorted = credit_moves.filtered(lambda x: x.date_maturity).sorted(
+                key=lambda x: (x.date_maturity, x.move_id.name or "")
             )
             debit_lines_without_date_maturity = debit_moves - debit_lines_sorted
             credit_lines_without_date_maturity = credit_moves - credit_lines_sorted
