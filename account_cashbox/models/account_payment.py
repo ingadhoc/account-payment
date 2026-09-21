@@ -29,6 +29,9 @@ class AccountPayment(models.Model):
     @api.depends_context("uid")
     @api.depends("journal_id", "company_id")
     def _compute_cashbox_session_id(self):
+        user = self.env.user
+        # cajas para las que este usuario acepta que le asignemos una sesion sola
+        own_cashboxes = user.default_cashbox_id | user.allowed_cashbox_ids
         for rec in self:
             # solo sesiones operables para este pago: mismo criterio que el dominio de la vista,
             # la compañia del pago y una caja que maneje el diario del pago
@@ -48,12 +51,18 @@ class AccountPayment(models.Model):
                 # de la eleccion manual del usuario retrigger este compute (depende de
                 # journal_id) y le borra la sesion que acaba de elegir.
                 rec.cashbox_session_id = rec.cashbox_session_id
-            elif len(session_ids) == 1:
-                rec.cashbox_session_id = session_ids.id
-            elif len(session_ids) > 1:
+                continue
+            candidates = session_ids
+            if not user.requiere_account_cashbox_session:
+                # a un usuario que no opera con sesiones solo le auto-asignamos una caja suya: la
+                # caja que abrio otro le recortaria los diarios disponibles sin que la haya pedido
+                candidates = session_ids.filtered(lambda x: x.cashbox_id in own_cashboxes)
+            if len(candidates) == 1:
+                rec.cashbox_session_id = candidates.id
+            elif len(candidates) > 1:
                 # la caja por defecto del usuario sirve solo si su sesion esta entre las operables
-                default_session = self.env.user.default_cashbox_id.current_session_id
-                rec.cashbox_session_id = default_session if default_session in session_ids else False
+                default_session = user.default_cashbox_id.current_session_id
+                rec.cashbox_session_id = default_session if default_session in candidates else False
             else:
                 rec.cashbox_session_id = False
 

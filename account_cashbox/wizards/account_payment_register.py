@@ -30,6 +30,9 @@ class AccountPaymentRegister(models.TransientModel):
     @api.depends_context("uid")
     @api.depends("journal_id", "company_id")
     def _compute_cashbox_session_id(self):
+        user = self.env.user
+        # cajas para las que este usuario acepta que le asignemos una sesion sola
+        own_cashboxes = user.default_cashbox_id | user.allowed_cashbox_ids
         for rec in self:
             # mismo criterio que en account.payment: la sesion tiene que ser de la compañia del
             # pago y de una caja que maneje el diario
@@ -46,8 +49,13 @@ class AccountPaymentRegister(models.TransientModel):
             if rec.cashbox_session_id in session_ids:
                 # ya elegida y sigue siendo operable: no la pisamos (ver account.payment)
                 rec.cashbox_session_id = rec.cashbox_session_id
-            elif len(session_ids) == 1:
-                rec.cashbox_session_id = session_ids.id
+                continue
+            candidates = session_ids
+            if not user.requiere_account_cashbox_session:
+                # solo auto-asignamos una caja del usuario (ver account.payment)
+                candidates = session_ids.filtered(lambda x: x.cashbox_id in own_cashboxes)
+            if len(candidates) == 1:
+                rec.cashbox_session_id = candidates.id
             else:
                 rec.cashbox_session_id = False
 
