@@ -10,6 +10,14 @@ flip nunca se activaba para in_invoice / in_refund, quedando un asiento
 invertido no reconciliable. Estos tests garantizan que los cuatro move_types
 generen pagos con payment_type correcto, asiento con el lado correcto, y
 factura en payment_state=paid tras el action_post.
+
+Regresión cubierta (multimoneda):
+pay_now() copiaba payment_difference, que está en la moneda de la deuda, a
+amount, que está en la moneda del pago, sin convertirla. Con el diario de pago
+en una moneda distinta a la de la deuda, el pago salía por un importe sin
+sentido: la factura quedaba parcial (factura en moneda extranjera y diario en
+moneda de la compañía) o sobrepagada (al revés). Estos tests verifican moneda e
+importe del pago en ambos sentidos.
 """
 
 from odoo import Command, fields
@@ -18,6 +26,14 @@ from odoo.tests import common, tagged
 
 @tagged("post_install", "-at_install")
 class TestPayNowJournal(common.TransactionCase):
+    # move_type -> (payment_type, partner_type, account_type de la contrapartida)
+    _PAY_NOW_EXPECTED = {
+        "in_invoice": ("outbound", "supplier", "liability_payable"),
+        "out_invoice": ("inbound", "customer", "asset_receivable"),
+        "in_refund": ("inbound", "supplier", "liability_payable"),
+        "out_refund": ("outbound", "customer", "asset_receivable"),
+    }
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -55,7 +71,43 @@ class TestPayNowJournal(common.TransactionCase):
         cls.partner = cls.env["res.partner"].create(partner_vals)
         cls.product = cls.env.ref("product.product_product_16")
 
-    def _make_invoice(self, move_type, journal):
+        # Moneda extranjera a 1.000 unidades de la moneda de la compañía, sea cual
+        # sea esa moneda. Los diarios de pago multimoneda se crean acá para no
+        # modificar diarios existentes.
+        cls.foreign_currency = cls.env.ref("base.EUR")
+        if cls.foreign_currency == cls.company.currency_id:
+            cls.foreign_currency = cls.env.ref("base.USD")
+        cls.foreign_currency.active = True
+        cls.env["res.currency.rate"].create(
+            {
+                "currency_id": cls.foreign_currency.id,
+                "company_id": cls.company.id,
+                "name": cls.today,
+                "rate": 1.0 / 1000.0,
+            }
+        )
+        cls.company_currency_journal = cls._create_pay_journal("PNCC")
+        cls.foreign_currency_journal = cls._create_pay_journal("PNFX", cls.foreign_currency)
+
+    @classmethod
+    def _create_pay_journal(cls, code, currency=None):
+        """Crea un diario de pago propio del test. Los métodos manuales usan la
+        cuenta default del diario para que la factura quede paid y no in_payment."""
+        journal = cls.env["account.journal"].create(
+            {
+                "name": f"Pay Now {code}",
+                "code": code,
+                "type": "bank",
+                "company_id": cls.company.id,
+                "currency_id": currency.id if currency else False,
+            }
+        )
+        for pml in journal.inbound_payment_method_line_ids | journal.outbound_payment_method_line_ids:
+            if pml.payment_method_id.code == "manual":
+                pml.payment_account_id = journal.default_account_id
+        return journal
+
+    def _make_invoice(self, move_type, journal, currency=None, pay_journal=None):
         invoice = self.env["account.move"].create(
             {
                 "partner_id": self.partner.id,
@@ -63,7 +115,8 @@ class TestPayNowJournal(common.TransactionCase):
                 "move_type": move_type,
                 "journal_id": journal.id,
                 "company_id": self.company.id,
-                "pay_now_journal_id": self.pay_journal.id,
+                "currency_id": (currency or journal.currency_id or self.company.currency_id).id,
+                "pay_now_journal_id": (pay_journal or self.pay_journal).id,
                 "invoice_line_ids": [
                     Command.create(
                         {
@@ -125,3 +178,37 @@ class TestPayNowJournal(common.TransactionCase):
         invoice = self._make_invoice("out_refund", self.sale_journal)
         invoice.action_post()
         self._assert_reconciled(invoice, "outbound", "customer", "asset_receivable")
+
+    def _check_pay_now_amount(self, move_type, currency, pay_journal, expected_amount):
+        """Postea una factura con pay_now y verifica que quede paid con un pago en
+        la moneda del diario por expected_amount."""
+        payment_type, partner_type, account_type = self._PAY_NOW_EXPECTED[move_type]
+        journal = self.purchase_journal if move_type.startswith("in_") else self.sale_journal
+        pay_currency = pay_journal.currency_id or self.company.currency_id
+        invoice = self._make_invoice(move_type, journal, currency, pay_journal)
+        invoice.action_post()
+        self._assert_reconciled(invoice, payment_type, partner_type, account_type)
+        payment = invoice.matched_payment_ids
+        self.assertEqual(payment.currency_id, pay_currency, "El pago debe quedar en la moneda del diario")
+        self.assertEqual(
+            pay_currency.compare_amounts(payment.amount, expected_amount),
+            0,
+            f"Importe del pago: {payment.amount} {pay_currency.name}, se esperaba {expected_amount}",
+        )
+
+    def test_pay_now_foreign_invoice_company_currency_journal(self):
+        """Factura en moneda extranjera, diario en moneda de la compañía: el pago
+        es el total convertido (100 x 1.000), no el total en moneda extranjera."""
+        for move_type in self._PAY_NOW_EXPECTED:
+            with self.subTest(move_type=move_type):
+                self._check_pay_now_amount(move_type, self.foreign_currency, self.company_currency_journal, 100000.0)
+
+    def test_pay_now_company_invoice_foreign_currency_journal(self):
+        """Factura en moneda de la compañía, diario en moneda extranjera: el pago
+        es el total convertido (100 / 1.000), sin sobrepago."""
+        self._check_pay_now_amount("in_invoice", self.company.currency_id, self.foreign_currency_journal, 0.1)
+
+    def test_pay_now_same_foreign_currency(self):
+        """Factura y diario en la misma moneda extranjera: el pago es el total de
+        la factura, sin conversión."""
+        self._check_pay_now_amount("in_invoice", self.foreign_currency, self.foreign_currency_journal, 100.0)
