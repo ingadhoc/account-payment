@@ -15,3 +15,4 @@ from . import (
     test_write_off_and_rounding,
 )
 from . import test_receipt_debt_legal_entity
+from . import test_background_send_receipts

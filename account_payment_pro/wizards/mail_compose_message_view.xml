@@ -1,0 +1,19 @@
+<odoo>
+
+    <record id="email_compose_message_wizard_form_payment_background" model="ir.ui.view">
+        <field name="name">mail.compose.message.form.payment.background</field>
+        <field name="model">mail.compose.message</field>
+        <field name="inherit_id" ref="mail.email_compose_message_wizard_form"/>
+        <field name="arch" type="xml">
+            <field name="composition_mode" position="after">
+                <field name="payment_background_send" invisible="1"/>
+            </field>
+            <xpath expr="//form/group" position="before">
+                <div class="alert alert-info" role="alert" invisible="not payment_background_send">
+                    Building each receipt takes a while, so these emails will be sent in the background.
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
