@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-15 14:03+0000\n"
-"PO-Revision-Date: 2026-07-15 14:03+0000\n"
+"POT-Creation-Date: 2026-10-01 13:36+0000\n"
+"PO-Revision-Date: 2026-10-01 13:36+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -247,6 +247,31 @@ msgid "Available Journal"
 msgstr ""
 
 #. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__background_send_data
+msgid "Background Send Data"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.actions.server,name:account_payment_pro.ir_cron_background_send_payment_receipts_ir_actions_server
+msgid "Background Send Payment Receipts: cron"
+msgstr ""
+
+#. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/account_payment.py:0
+msgid ""
+"Background sending of payment receipts is unavailable because its scheduled "
+"action is not active. Please contact your system administrator."
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.email_compose_message_wizard_form_payment_background
+msgid ""
+"Building each receipt takes a while, so these emails will be sent in the "
+"background."
+msgstr ""
+
+#. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_invoice_wizard
 msgid "Cancel"
 msgstr ""
@@ -378,6 +403,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_base_language_install__display_name
+#: model:ir.model.fields,field_description:account_payment_pro.field_mail_compose_message__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_company__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__display_name
 msgid "Display Name"
@@ -404,6 +430,11 @@ msgstr ""
 msgid ""
 "El usuario descartó el aviso de deuda multi-moneda con la cruz. Se resetea "
 "solo si cambia el contacto o la compañía."
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model,name:account_payment_pro.model_mail_compose_message
+msgid "Email composition wizard"
 msgstr ""
 
 #. module: account_payment_pro
@@ -454,6 +485,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_base_language_install__id
+#: model:ir.model.fields,field_description:account_payment_pro.field_mail_compose_message__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_company__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__id
 msgid "ID"
@@ -466,6 +498,13 @@ msgid ""
 " If not set means that will be used to register accounting entries not "
 "related to invoicing legal documents. For Example: Receipts, Tax Payments, "
 "Register journal entries"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__background_send
+msgid ""
+"If set, the payment receipt is sent by the background cron instead of "
+"blocking the user request."
 msgstr ""
 
 #. module: account_payment_pro
@@ -636,6 +675,11 @@ msgid "Payment"
 msgstr ""
 
 #. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_mail_compose_message__payment_background_send
+msgid "Payment Background Send"
+msgstr ""
+
+#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_move_line__payment_matched_amount
 msgid "Payment Matched Amount"
 msgstr ""
@@ -724,6 +768,12 @@ msgid "Reason"
 msgstr ""
 
 #. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__background_send
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_search
+msgid "Receipt Queued for Sending"
+msgstr ""
+
+#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__invoice_date
 msgid "Refund Date"
 msgstr ""
@@ -765,6 +815,12 @@ msgid "Send the pending difference to write-off"
 msgstr ""
 
 #. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/mail_compose_message.py:0
+msgid "Sending receipts"
+msgstr ""
+
+#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_company__payment_receipt_full_ref
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__payment_receipt_full_ref
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
@@ -799,8 +855,20 @@ msgid "The payment journal must match the journal of its journal entry."
 msgstr ""
 
 #. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/account_payment.py:0
+msgid "The payment receipt email template is missing."
+msgstr ""
+
+#. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment_invoice_wizard__currency_id
 msgid "The payment's currency."
+msgstr ""
+
+#. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/mail_compose_message.py:0
+msgid "The receipts are being sent in the background."
 msgstr ""
 
 #. module: account_payment_pro
@@ -915,6 +983,14 @@ msgstr ""
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__user_counterpart_rate
 msgid "User Counterpart Rate"
+msgstr ""
+
+#. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/account_payment.py:0
+msgid ""
+"We tried to send this payment receipt in the background but got this error: "
+"%s"
 msgstr ""
 
 #. module: account_payment_pro
