@@ -1,11 +1,22 @@
+import logging
 from collections import defaultdict
 
+from markupsafe import Markup
 from odoo import Command, _, api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
+
+_logger = logging.getLogger(__name__)
 
 
 class AccountPayment(models.Model):
     _inherit = "account.payment"
+
+    background_send = fields.Boolean(
+        "Receipt Queued for Sending",
+        copy=False,
+        help="If set, the payment receipt is sent by the background cron instead of blocking the user request.",
+    )
+    background_send_data = fields.Json(copy=False)
 
     # Modelo tri-monetario: A (currency_id), B1 (counterpart_currency_id), B2 (destination_currency_id), C (company_currency_id)
     # desde account_payment_group, modelo account.payment
@@ -518,6 +529,10 @@ class AccountPayment(models.Model):
                 )
 
     def action_draft(self):
+        # A payment that goes back to draft must not be sent: it is about to be
+        # edited (amounts, withholdings) and its cached receipt is dropped.
+        self._dequeue_background_send()
+
         # Seteamos posted_before en true para que nos permita pasar a borrador el pago y poder realizar cambio sobre el mismo
         # Nos salteamos la siguente validacion
         # https://github.com/odoo/odoo/blob/b6b90636938ae961c339807ea893cabdede9f549/addons/account/models/account_move.py#L2474
@@ -1371,3 +1386,143 @@ class AccountPayment(models.Model):
         """Return the bundle recordset for this payment from the bundles dict."""
         self.ensure_one()
         return bundles.get(self._get_payment_bundle_key())
+
+    # -------------------------------------------------------------------------
+    # BACKGROUND SENDING OF PAYMENT RECEIPTS
+    # -------------------------------------------------------------------------
+
+    @api.model
+    def _get_background_send_batch_size(self):
+        """Amount of payments that can still be sent synchronously from the UI."""
+        return int(
+            self.env["ir.config_parameter"].sudo().get_param("account_payment_pro.background_send_batch_size", 5)
+        )
+
+    def _queue_background_send(self, send_values=None):
+        """Flag the payments so the cron sends their receipt, and wake the cron up.
+
+        `send_values` carries what the user composed (subject, body, attachments)
+        so the cron sends that very email instead of re-rendering the template."""
+        cron = self.env.ref("account_payment_pro.ir_cron_background_send_payment_receipts", raise_if_not_found=False)
+        if not cron or not cron.sudo().active:
+            raise UserError(
+                _(
+                    "Background sending of payment receipts is unavailable because its scheduled action is"
+                    " not active. Please contact your system administrator."
+                )
+            )
+        self.write(
+            {
+                "background_send": True,
+                "background_send_data": send_values or {"author_user_id": self.env.user.id},
+            }
+        )
+        cron._trigger()
+
+    def _get_internal_partners(self):
+        """Followers that are internal users, to be notified of a background failure."""
+        res = self.env["res.partner"]
+        for partner in self.message_partner_ids:
+            if any(user._is_internal() for user in partner.user_ids):
+                res |= partner
+        return res
+
+    def _background_send_receipt(self):
+        """Send the receipt of this payment reusing the standard mail composer.
+
+        We go through `mail.compose.message` in mass_mail mode on purpose: that is
+        the very path the contextual action uses, so every extension of it (the AR
+        single PDF of withholding certificates, the cached receipt PDF) keeps
+        applying and the customer receives exactly the same email as before."""
+        self.ensure_one()
+        template = self.env.ref("account.mail_template_data_payment_receipt", raise_if_not_found=False)
+        if not template:
+            raise UserError(_("The payment receipt email template is missing."))
+
+        data = self.background_send_data or {}
+        author = self.env["res.users"].browse(data.get("author_user_id")).exists() or self.env.user
+        composer = (
+            self.env["mail.compose.message"]
+            .with_user(author)
+            .with_context(
+                active_model="account.payment",
+                active_ids=self.ids,
+                mail_post_autofollow=True,
+            )
+            .create(
+                {
+                    "composition_mode": "mass_mail",
+                    "model": "account.payment",
+                    "res_ids": repr(self.ids),
+                    "template_id": data.get("template_id") or template.id,
+                    "email_layout_xmlid": data.get("email_layout_xmlid") or "mail.mail_notification_light",
+                }
+            )
+        )
+
+        # Restore what the user wrote in the composer, on top of the template.
+        # Key presence, not truthiness: a body the user cleared on purpose has to
+        # stay cleared instead of falling back to the template.
+        composed = {key: data[key] for key in ("subject", "body", "email_from", "author_id") if key in data}
+        if "attachment_ids" in data:
+            attachments = self.env["ir.attachment"].browse(data["attachment_ids"]).exists()
+            composed["attachment_ids"] = [Command.set(attachments.ids)]
+        if composed:
+            composer.write(composed)
+
+        composer._action_send_mail(auto_commit=False)
+
+    @api.model
+    def _cron_background_send_payment_receipts(self, job_count=20):
+        """Send the receipts of the payments queued by _queue_background_send.
+
+        One payment per iteration and per commit: a failure neither rolls back
+        the receipts already sent nor stops the rest of the batch."""
+        domain = [("background_send", "=", True), ("state", "in", ("in_process", "paid"))]
+        payments = self.search(domain, order="id", limit=job_count)
+        if not payments:
+            return
+        self._background_send_commit(remaining=self.search_count(domain))
+        for payment in payments:
+            # Each commit above released the previous lock, so take it again and
+            # re-check against the database: in between, someone may have
+            # cancelled the payment or another cron may have taken it.
+            payment = payment.try_lock_for_update()
+            if not payment or not payment.filtered_domain(domain):
+                self._background_send_commit(processed=1)
+                continue
+            try:
+                # Savepoint so a failure undoes only this payment's partial work,
+                # keeping the receipts already sent in this batch.
+                with self.env.cr.savepoint():
+                    payment._background_send_receipt()
+                    payment.write({"background_send": False, "background_send_data": False})
+                self._background_send_commit(processed=1)
+            except Exception as exp:  # noqa: BLE001
+                payment.write({"background_send": False, "background_send_data": False})
+                payment.message_post(
+                    body=Markup("<p>%s</p>")
+                    % _("We tried to send this payment receipt in the background but got this error: %s", exp),
+                    partner_ids=payment._get_internal_partners().ids,
+                )
+                _logger.error("Error while trying to send receipt of payment %s in background: %s", payment.id, exp)
+                # Commit so the failure does not roll back the receipts already sent.
+                # It counts as processed: the payment leaves the queue either way.
+                self._background_send_commit(processed=1)
+
+    @api.model
+    def _background_send_commit(self, processed=0, remaining=None):
+        """Commit what is done so far and report progress to the cron.
+
+        Isolated in its own method because committing is forbidden inside tests:
+        they mock this seam instead of the cursor."""
+        self.env["ir.cron"]._commit_progress(processed=processed, remaining=remaining)
+
+    def _dequeue_background_send(self):
+        """Take the payments out of the sending queue (they are no longer sendable)."""
+        self.filtered("background_send").write({"background_send": False, "background_send_data": False})
+
+    def action_cancel(self):
+        # A cancelled payment must not get its receipt emailed to the customer.
+        self._dequeue_background_send()
+        return super().action_cancel()

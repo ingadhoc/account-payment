@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-15 14:03+0000\n"
-"PO-Revision-Date: 2026-07-16 16:54+0000\n"
+"POT-Creation-Date: 2026-10-01 13:36+0000\n"
+"PO-Revision-Date: 2026-10-01 13:36+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/"
 "account-payment-19-0/account-payment-19-0-account_payment_pro/es/>\n"
@@ -272,6 +272,36 @@ msgid "Available Journal"
 msgstr "Diario disponible"
 
 #. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__background_send_data
+msgid "Background Send Data"
+msgstr "Datos del envío en segundo plano"
+
+#. module: account_payment_pro
+#: model:ir.actions.server,name:account_payment_pro.ir_cron_background_send_payment_receipts_ir_actions_server
+msgid "Background Send Payment Receipts: cron"
+msgstr "Envío de recibos de pago en segundo plano: cron"
+
+#. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/account_payment.py:0
+msgid ""
+"Background sending of payment receipts is unavailable because its scheduled "
+"action is not active. Please contact your system administrator."
+msgstr ""
+"El envío de recibos de pago en segundo plano no está disponible porque su "
+"acción planificada no está activa. Por favor, contacte a su administrador "
+"del sistema."
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.email_compose_message_wizard_form_payment_background
+msgid ""
+"Building each receipt takes a while, so these emails will be sent in the "
+"background."
+msgstr ""
+"Como generar cada recibo lleva tiempo, estos correos se enviarán en segundo "
+"plano."
+
+#. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_invoice_wizard
 msgid "Cancel"
 msgstr "Cancelar"
@@ -435,6 +465,11 @@ msgstr ""
 "solo si cambia el contacto o la compañía."
 
 #. module: account_payment_pro
+#: model:ir.model,name:account_payment_pro.model_mail_compose_message
+msgid "Email composition wizard"
+msgstr "Asistente de redacción de correo electrónico"
+
+#. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__amount_exact
 msgid ""
 "Exact value of amount with full precision, used internally for conversions "
@@ -504,6 +539,15 @@ msgstr ""
 "débito/crédito). Si no se establece significa que se utilizará para "
 "registrar asientos contables no relacionados con documentos legales de "
 "facturación. Por ejemplo: recibos, pagos de impuestos, asientos contables"
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__background_send
+msgid ""
+"If set, the payment receipt is sent by the background cron instead of "
+"blocking the user request."
+msgstr ""
+"Si está marcado, el recibo de pago lo envía el cron en segundo plano en "
+"lugar de bloquear la solicitud del usuario."
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_bank_statement_line__pay_now_journal_id
@@ -682,6 +726,11 @@ msgid "Payment"
 msgstr "Pago"
 
 #. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_mail_compose_message__payment_background_send
+msgid "Payment Background Send"
+msgstr "Envío de pagos en segundo plano"
+
+#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_move_line__payment_matched_amount
 msgid "Payment Matched Amount"
 msgstr "Importe Conciliado del Pago"
@@ -784,6 +833,12 @@ msgid "Reason"
 msgstr "Razón"
 
 #. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__background_send
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_search
+msgid "Receipt Queued for Sending"
+msgstr "Recibo en cola de envío"
+
+#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__invoice_date
 msgid "Refund Date"
 msgstr "Fecha de Reembolso"
@@ -825,6 +880,12 @@ msgid "Send the pending difference to write-off"
 msgstr "Enviar la diferencia pendiente a Ajuste"
 
 #. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/mail_compose_message.py:0
+msgid "Sending receipts"
+msgstr "Enviando recibos"
+
+#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_company__payment_receipt_full_ref
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__payment_receipt_full_ref
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
@@ -859,9 +920,21 @@ msgid "The payment journal must match the journal of its journal entry."
 msgstr "El diario de pago debe coincidir con el diario de su asiento contable."
 
 #. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/account_payment.py:0
+msgid "The payment receipt email template is missing."
+msgstr "Falta la plantilla de correo del recibo de pago."
+
+#. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment_invoice_wizard__currency_id
 msgid "The payment's currency."
 msgstr "La moneda del pago"
+
+#. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/mail_compose_message.py:0
+msgid "The receipts are being sent in the background."
+msgstr "Los recibos se están enviando en segundo plano."
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__to_pay_move_line_ids
@@ -988,6 +1061,16 @@ msgid "User Counterpart Rate"
 msgstr "Tasa de Contrapartida del Usuario"
 
 #. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/account_payment.py:0
+msgid ""
+"We tried to send this payment receipt in the background but got this error: "
+"%s"
+msgstr ""
+"Se intentó enviar este recibo de pago en segundo plano, pero ocurrió este "
+"error: %s"
+
+#. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "Write Off"
 msgstr "Ajuste"
@@ -1043,9 +1126,3 @@ msgstr ""
 #: model:ir.model,name:account_payment_pro.model_account_write_off_type
 msgid "account.write_off.type"
 msgstr "Tipo de Write Off"
-
-#~ msgid "Customer Bank Account"
-#~ msgstr "Cuenta Bancaria"
-
-#~ msgid "Vendor Bank Account"
-#~ msgstr "Cuenta Bancaria del Proveedor"
