@@ -1,5 +1,18 @@
 <odoo>
 
+    <record id="view_account_payment_search" model="ir.ui.view">
+        <field name="name">account.payment.search</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_search"/>
+        <field name="arch" type="xml">
+            <filter name="state_sent" position="before">
+                <filter string="Receipt Queued for Sending" name="background_send"
+                        domain="[('background_send', '=', True)]"/>
+                <separator/>
+            </filter>
+        </field>
+    </record>
+
     <record id="view_account_payment_tree" model="ir.ui.view">
         <field name="name">account.payment.list</field>
         <field name="model">account.payment</field>
@@ -8,6 +21,7 @@
             <field name="amount_company_currency_signed" position="after">
                 <field name="payment_total" sum="Total" optional="show"/>
                 <field name="destination_currency_id" column_invisible="True"/>
+                <field name="background_send" optional="hide"/>
             </field>
         </field>
     </record>
