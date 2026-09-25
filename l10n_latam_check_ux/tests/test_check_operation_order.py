@@ -1,5 +1,7 @@
 # © ADHOC SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+from datetime import timedelta
+
 from odoo import Command, fields
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 from odoo.exceptions import ValidationError
@@ -126,10 +128,10 @@ class TestCheckOperationOrder(AccountTestInvoicingCommon):
             delivery,
             "La última operación del cheque debe ser la entrega, que fue lo último confirmado.",
         )
-        self.assertGreater(
+        self.assertGreaterEqual(
             delivery.l10n_latam_move_check_ids_operation_date,
             receipt.l10n_latam_move_check_ids_operation_date,
-            "La entrega se confirmó después del recibo, su fecha de operación debe ser posterior.",
+            "La entrega se confirmó después del recibo, su fecha de operación no puede ser anterior.",
         )
 
     def test_delivered_check_is_not_available_anymore(self):
@@ -160,8 +162,109 @@ class TestCheckOperationOrder(AccountTestInvoicingCommon):
         with self.assertRaisesRegex(ValidationError, "not the last operation"):
             receipt.action_draft()
 
-    def test_operations_confirmed_in_the_same_second_do_not_tie(self):
-        """Dos pagos creados en el mismo instante igual tienen que quedar ordenados."""
+    def test_draft_payment_has_no_operation_date(self):
+        """A draft is not an operation yet, so it has no operation date until it is confirmed."""
+        delivery = self._create_draft_delivery()
+
+        self.assertFalse(
+            delivery.l10n_latam_move_check_ids_operation_date,
+            "A payment that was never confirmed should not have an operation date.",
+        )
+
+    def test_operation_date_is_the_confirmation_not_the_creation(self):
+        """The date is when the payment was confirmed, not when someone started loading it."""
+        before_posting = fields.Datetime.now()
+        __, delivery, __ = self._deliver_check_created_before_the_receipt("00000106")
+
+        self.assertGreaterEqual(
+            delivery.l10n_latam_move_check_ids_operation_date,
+            before_posting,
+            "The operation date must be the confirmation, even though create_date is from August.",
+        )
+
+    def test_reconfirming_a_payment_keeps_it_last(self):
+        """Correcting a payment does not reorder the chain, even though the date is rewritten.
+
+        The operation date is recomputed on every confirmation, and that is safe because
+        ``action_draft`` only lets the last operation of the chain go back to draft: whatever is
+        re-confirmed was already the last one.
+        """
+        __, delivery, check = self._deliver_check_created_before_the_receipt("00000107")
+
+        delivery.action_draft()
+        delivery.action_post()
+
+        self.assertEqual(check._get_last_operation(), delivery)
+        self.assertFalse(
+            check.current_journal_id,
+            "Correcting the payment order should not bring the handed over check back.",
+        )
+
+    def test_fixing_an_operation_date_updates_the_current_journal(self):
+        """Reordering the chain has to move the check on its own.
+
+        ``current_journal_id`` is stored and the core only depends on the operations' state, so
+        every correction of a date --a migration script, an import, a manual fix-- left the check
+        in the journal of the operation that was the last one before the fix.
+
+        The core only keeps a journal while the check has more inbound than outbound operations,
+        so the chain is a receipt and an internal transfer to another checks journal.
+        """
+        receipt = self._create_receipt("00000108")
+        check = receipt.l10n_latam_new_check_ids
+        destination_journal = self.env["account.journal"].create(
+            {
+                "name": "Third Party Checks Order Destination",
+                "code": "TPCOD",
+                "type": "cash",
+                "company_id": self.company_data["company"].id,
+                "inbound_payment_method_line_ids": [
+                    Command.create(
+                        {
+                            "payment_method_id": self.env.ref(
+                                "l10n_latam_check.account_payment_method_in_third_party_checks"
+                            ).id,
+                            "payment_account_id": self.inbound_payment_method_line.payment_account_id.id,
+                        }
+                    )
+                ],
+            }
+        )
+        transfer = self.env["account.payment"].create(
+            {
+                "partner_id": self.company_data["company"].partner_id.id,
+                "payment_type": "outbound",
+                "is_internal_transfer": True,
+                "journal_id": self.check_journal.id,
+                "destination_journal_id": destination_journal.id,
+                "payment_method_line_id": self.out_check_line.id,
+                "l10n_latam_move_check_ids": [Command.set(check.ids)],
+                "amount": 100.0,
+            }
+        )
+        transfer.action_post()
+        self.assertEqual(check.current_journal_id, destination_journal)
+
+        # Put the receipt after the transfer: the receipt becomes the last operation again.
+        receipt.l10n_latam_move_check_ids_operation_date = (
+            transfer.paired_internal_transfer_payment_id.l10n_latam_move_check_ids_operation_date
+            + timedelta(seconds=10)
+        )
+
+        self.assertEqual(check._get_last_operation(), receipt)
+        self.assertEqual(
+            check.current_journal_id,
+            self.check_journal,
+            "With the receipt as the last operation the check is back in its journal.",
+        )
+
+    def test_operations_confirmed_in_the_same_second_are_still_ordered(self):
+        """Dos pagos confirmados en el mismo instante igual tienen que quedar ordenados.
+
+        La fecha de operación tiene precisión de segundo, así que dos confirmaciones seguidas
+        compartirían fecha, y el desempate por id sigue el orden de creación: la OP, creada antes,
+        quedaría primera. Confirmar la deja un segundo después de la última operación confirmada.
+        """
         delivery = self._create_draft_delivery()
         self._force_create_date(delivery, "2026-08-25 09:00:00")
 
@@ -172,9 +275,4 @@ class TestCheckOperationOrder(AccountTestInvoicingCommon):
         delivery.l10n_latam_move_check_ids = [Command.set(check.ids)]
         delivery.action_post()
 
-        self.assertNotEqual(
-            delivery.l10n_latam_move_check_ids_operation_date,
-            receipt.l10n_latam_move_check_ids_operation_date,
-            "Dos operaciones del mismo cheque no pueden compartir fecha de operación.",
-        )
         self.assertEqual(check._get_last_operation(), delivery)

@@ -7,9 +7,10 @@ from odoo.exceptions import ValidationError
 class AccountPayment(models.Model):
     _inherit = "account.payment"
 
+    # No default on purpose: this field means "when this operation was confirmed", so it stays
+    # empty while the payment is a draft and it is filled on the first action_post().
     l10n_latam_move_check_ids_operation_date = fields.Datetime(
         string="Operation Date",
-        default=fields.Datetime.now,
     )
 
     @api.constrains("l10n_latam_move_check_ids_operation_date", "state")
@@ -40,6 +41,12 @@ class AccountPayment(models.Model):
         for rec in self:
             if rec.l10n_latam_check_warning_msg:
                 raise ValidationError("%s" % rec.l10n_latam_check_warning_msg)
+            # The chain of a check is the order in which its operations were confirmed, not the
+            # order in which they were created: a payment order left in draft for a few days and
+            # confirmed last belongs at the end of the chain, otherwise the check it hands over
+            # keeps showing as available in the portfolio.
+            # Recomputing it on every confirmation does not reorder anything, because action_draft
+            # only lets the last operation of the chain go back to draft.
             rec.l10n_latam_move_check_ids_operation_date = rec._get_check_operation_date()
 
         # Detectar cheques de terceros existentes usados más de una vez dentro del mismo
@@ -58,22 +65,14 @@ class AccountPayment(models.Model):
         super().action_post()
 
     def _get_check_operation_date(self):
-        """Fecha que deja a este pago al final de la cadena de operaciones de sus cheques.
+        """Confirmation date that leaves this payment last in the chain of its checks.
 
-        El orden de la cadena de un cheque —quien es su "ultima operacion"— sale de
-        ``l10n_latam_move_check_ids_operation_date``, y de ahi dependen el diario actual del cheque
-        (``_compute_current_journal``) y el bloqueo para restablecer un pago a borrador
-        (``action_draft``).
-
-        Anclar ese valor a una fecha suelta ordena mal en los dos sentidos: con la fecha de
-        confirmacion, re-confirmar un pago viejo lo manda al final de la cadena; con la fecha de
-        creacion, un borrador creado antes que el resto queda al principio aunque se confirme
-        ultimo, y ahi el cheque entregado sigue figurando en cartera. Por eso partimos de
-        ``create_date`` pero garantizamos que confirmar nunca deje al pago antes de una operacion
-        ya confirmada del mismo cheque.
+        The date has second precision, so two confirmations in the same second tie, and the id
+        tie-break follows the creation order: a payment order drafted before the receipt would land
+        first again. Pushing it one second past the last confirmed operation keeps the chain strict.
         """
         self.ensure_one()
-        operation_date = self.create_date or fields.Datetime.now()
+        operation_date = fields.Datetime.now()
         for check in self.l10n_latam_move_check_ids | self.l10n_latam_new_check_ids:
             last_operation_date = check._get_last_operation().l10n_latam_move_check_ids_operation_date
             if last_operation_date:
@@ -122,20 +121,15 @@ class AccountPayment(models.Model):
                         ),
                     )._create_paired_internal_transfer_payment()
 
-                # The outbound must have a greater operation_date than the inbound so it is
-                # identified as the latest operation. Subtract 1s from the inbound payment.
+                # The paired payment is created with copy() and posted without action_post(), so it
+                # inherits this operation date and the id tie-break leaves it last. That is right
+                # when this payment is the outbound side. When it is the inbound side, the check
+                # ends up in this journal, so this payment has to be the last operation.
                 if rec.payment_type == "inbound":
                     rec.write(
                         {
                             "l10n_latam_move_check_ids_operation_date": rec.l10n_latam_move_check_ids_operation_date
                             + timedelta(minutes=1)
-                        }
-                    )
-                else:
-                    rec.write(
-                        {
-                            "l10n_latam_move_check_ids_operation_date": rec.l10n_latam_move_check_ids_operation_date
-                            - timedelta(minutes=1)
                         }
                     )
                 rec._get_latam_checks()._compute_current_journal()
