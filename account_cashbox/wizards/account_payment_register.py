@@ -31,20 +31,21 @@ class AccountPaymentRegister(models.TransientModel):
         for rec in self:
             rec.requiere_account_cashbox_session = self.env.user.requiere_account_cashbox_session
 
-    @api.depends("company_id", "journal_id")
+    # sin journal_id a propósito, igual que en el pago: al elegir la sesión, el diario se
+    # ajusta solo (_compute_journal_id del core, vía available_journal_ids).
+    @api.depends("company_id")
     def _compute_available_cashbox_session_ids(self):
         Session = self.env["account.cashbox.session"]
         for rec in self:
-            rec.available_cashbox_session_ids = Session.search(
-                Session._get_available_domain(rec.company_id, journal=rec.journal_id)
-            )
+            rec.available_cashbox_session_ids = Session.search(Session._get_available_domain(rec.company_id))
 
     # a diferencia del pago, acá sí lleva depends: el wizard no tiene un action_post que
     # recalcule, y sin esto el compute puede correr antes de que journal_id tenga valor.
-    @api.depends("available_cashbox_session_ids")
+    @api.depends("company_id", "journal_id")
     def _compute_cashbox_session_id(self):
+        Session = self.env["account.cashbox.session"]
         for rec in self:
-            session_ids = rec.available_cashbox_session_ids
+            session_ids = Session.search(Session._get_available_domain(rec.company_id, journal=rec.journal_id))
             if len(session_ids) == 1:
                 rec.cashbox_session_id = session_ids.id
             else:

@@ -167,7 +167,6 @@ class TestCashboxSessionAssignment(common.TransactionCase):
 
         payment = self._create_payment()
 
-        self.assertFalse(payment.available_cashbox_session_ids)
         with self.assertRaises(UserError):
             payment.action_post()
         self.assertFalse(payment.cashbox_session_id)
@@ -251,7 +250,6 @@ class TestCashboxSessionAssignment(common.TransactionCase):
 
         wizard = self._register_wizard()
 
-        self.assertFalse(wizard.available_cashbox_session_ids)
         self.assertFalse(wizard.cashbox_session_id)
 
     def test_register_wizard_assigns_session_of_the_payment_journal(self):
@@ -285,6 +283,42 @@ class TestCashboxSessionAssignment(common.TransactionCase):
         form = Form(self._register_model())
         form.journal_id = self.journal
         form.cashbox_session_id = chosen
+        wizard = form.save()
+
+        self.assertEqual(wizard.cashbox_session_id, chosen)
+        self.assertEqual(wizard._create_payments().cashbox_session_id, chosen)
+
+    def test_payment_session_can_be_chosen_before_the_journal(self):
+        """Con un diario que ninguna caja maneja, la sesión de otra caja se sigue ofreciendo:
+        al elegirla, el diario pasa a uno de esa caja. Si la lista se filtrara por diario,
+        quedaría vacía y el usuario tendría que cambiar el diario primero."""
+        free_journal = self._create_journal("Cashbox Test Free Journal", "CBXTE")
+        session = self._open_session(self.journal)
+
+        form = Form(self.env["account.payment"].with_user(self.user))
+        form.partner_id = self.partner
+        form.amount = 100.0
+        form.journal_id = free_journal
+        self.assertIn(session, form.available_cashbox_session_ids)
+        form.cashbox_session_id = session
+        self.assertEqual(form.journal_id, self.journal)
+        payment = form.save()
+
+        payment.action_post()
+        self.assertEqual(payment.cashbox_session_id, session)
+
+    def test_register_wizard_session_can_be_chosen_before_the_journal(self):
+        """El mismo caso en el wizard de registro. Con dos sesiones de la misma caja, al
+        ajustarse el diario el recálculo no puede pisar la que eligió el usuario."""
+        free_journal = self._create_journal("Cashbox Test Free Journal", "CBXTE")
+        chosen = self._open_session(self.journal, users=False)
+        self._open_session(self.journal, cashbox=chosen.cashbox_id, users=False)
+
+        form = Form(self._register_model())
+        form.journal_id = free_journal
+        self.assertIn(chosen, form.available_cashbox_session_ids)
+        form.cashbox_session_id = chosen
+        self.assertEqual(form.journal_id, self.journal)
         wizard = form.save()
 
         self.assertEqual(wizard.cashbox_session_id, chosen)

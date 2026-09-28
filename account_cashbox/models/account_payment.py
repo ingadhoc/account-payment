@@ -67,21 +67,22 @@ class AccountPayment(models.Model):
         for rec in self:
             rec.requiere_account_cashbox_session = self.env.user.requiere_account_cashbox_session
 
-    @api.depends("company_id", "journal_id")
+    # sin journal_id a propósito: la sesión se elige primero y el diario se ajusta a ella
+    # (_onchange_cashbox_session). Filtrar acá por diario vaciaba la lista.
+    @api.depends("company_id")
     def _compute_available_cashbox_session_ids(self):
         Session = self.env["account.cashbox.session"]
         for rec in self:
-            rec.available_cashbox_session_ids = Session.search(
-                Session._get_available_domain(rec.company_id, journal=rec.journal_id)
-            )
+            rec.available_cashbox_session_ids = Session.search(Session._get_available_domain(rec.company_id))
 
     # sin @api.depends a propósito: el valor se fija al crear (o por contexto, ver
     # _create_paired_internal_transfer_payment) y se recalcula al registrar (action_post).
     # Con depends, el pago pareado de una transferencia interna —que debe quedar sin sesión—
     # recibiría una, y el pago creado por el wizard pisaría la que el usuario eligió ahí.
     def _compute_cashbox_session_id(self):
+        Session = self.env["account.cashbox.session"]
         for rec in self:
-            session_ids = rec.available_cashbox_session_ids
+            session_ids = Session.search(Session._get_available_domain(rec.company_id, journal=rec.journal_id))
             if len(session_ids) == 1:
                 rec.cashbox_session_id = session_ids.id
             elif len(session_ids) > 1:
