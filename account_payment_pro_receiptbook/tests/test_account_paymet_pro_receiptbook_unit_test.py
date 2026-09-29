@@ -419,3 +419,30 @@ class TestAccountPaymentProReceiptbookUnitTest(AccountTestInvoicingCommon):
         self.assertEqual(branch_rb.sequence_id.prefix, branch_rb.prefix)
         # Idempotent: a second run reassigns nothing.
         self.assertFalse(RB._resolve_branch_prefix_collisions())
+
+    def test_resync_shared_sequence_with_other_prefix(self):
+        """Receiptbooks sharing an ir.sequence resync to the highest number used by any of them,
+        read with the sequence prefix, even if a receiptbook has another prefix."""
+        self._enable_payment_accounts(self.company_bank_journal)
+        sequence = self.receiptbook.sequence_id
+        other_rb = self.env["account.payment.receiptbook"].create(
+            {
+                "name": "Shared sequence",
+                "partner_type": "customer",
+                "company_id": self.company.id,
+                "document_type_id": self.receiptbook.document_type_id.id,
+                "prefix": "001-",
+                "sequence_id": sequence.id,
+            }
+        )
+        self.assertEqual(other_rb.sequence_id, sequence)
+        self._post_receipt()
+        self._post_receipt(other_rb)
+        self._post_receipt()
+        self._post_receipt(other_rb)
+        expected_next = sequence.number_next_actual
+
+        for receiptbooks in (self.receiptbook | other_rb, other_rb, self.receiptbook):
+            sequence.number_next = 1
+            receiptbooks.action_resync_sequence()
+            self.assertEqual(sequence.number_next_actual, expected_next)

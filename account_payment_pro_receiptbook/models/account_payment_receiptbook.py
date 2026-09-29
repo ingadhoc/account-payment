@@ -6,6 +6,7 @@ import logging
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+from odoo.tools import SQL
 
 _logger = logging.getLogger(__name__)
 
@@ -217,58 +218,66 @@ class AccountPaymentReceiptbook(models.Model):
         """Recompone ``sequence_id`` para los receiptbooks en ``self``:
 
         - Asegura el ``ir.sequence`` vía :meth:`ensure_sequence` (crea si falta).
-        - Resuelve el último número usado vía un único ``SELECT`` que extrae
-          con regex los dígitos finales del ``name`` de ``account.payment``
-          (``SUBSTRING(name FROM '[0-9]+$')``) y castea ese residuo a
-          ``INTEGER``, devolviendo el ``MAX``.
+        - Por cada ``ir.sequence`` (varios receiptbooks pueden compartirla),
+          resuelve el último número usado con el prefijo de la secuencia, que es
+          el que entra en el ``name`` del pago, y no con el del receiptbook.
         - Setea ``sequence_id.number_next = max(numero) + 1`` para que el
           próximo payment posteado retome la numeración sin colisiones.
 
-        Sirve como ejecutor de la migración 19.0.2.0.0 y como acción manual de
-        reparación si la numeración se desfasa (deletes, importaciones, etc.).
+        Sirve como acción manual de reparación si la numeración se desfasa
+        (deletes, importaciones, etc.).
         """
         self.ensure_sequence()
         self.env.flush_all()
-        for rec in self:
-            doc_code_prefix = rec.document_type_id.doc_code_prefix or ""
-            prefix = rec.prefix or ""
-            last_number = self._resync_get_last_number(rec, doc_code_prefix, prefix)
+        for sequence in self.mapped("sequence_id"):
+            receiptbooks = self.sudo().with_context(active_test=False).search([("sequence_id", "=", sequence.id)])
+            prefix = sequence._get_prefix_suffix()[0] or ""
+            last_number = max(
+                self._resync_get_last_number(receiptbooks, doc_code_prefix, prefix)
+                for doc_code_prefix in set(receiptbooks.mapped(lambda r: r.document_type_id.doc_code_prefix or ""))
+            )
             next_number = last_number + 1
-            rec.sequence_id.sudo().number_next = next_number
+            sequence.sudo().number_next = next_number
 
             _logger.info(
-                "Receiptbook id=%s prefix=%r: último número=%d, ir.sequence id=%s number_next=%d",
-                rec.id,
-                rec.prefix,
+                "ir.sequence id=%s prefix=%r (receiptbooks %s): último número=%d, number_next=%d",
+                sequence.id,
+                prefix,
+                receiptbooks.ids,
                 last_number,
-                rec.sequence_id.id,
                 next_number,
             )
 
-    def _resync_get_last_number(self, rec, doc_code_prefix, prefix):
+    def _resync_get_last_number(self, receiptbooks, doc_code_prefix, prefix):
+        # Scan by name in the whole company tree, not by receiptbook: any payment with this
+        # name prefix can collide in a shared journal, even if it lost its receiptbook_id.
         has_main_payment = "main_payment_id" in self.env["account.payment"]._fields
-        child_filter = "AND main_payment_id IS NULL" if has_main_payment else ""
+        name_prefix = f"{doc_code_prefix} {prefix}" if doc_code_prefix else prefix
+        root_ids = receiptbooks.company_id.root_id.ids
+        company_ids = self.env["res.company"].sudo().search([("id", "child_of", root_ids)]).ids
         self.env.cr.execute(
-            f"""
-            SELECT MAX(CAST(
-                SUBSTRING(
-                    SPLIT_PART(REPLACE(REPLACE(name, %s, ''), %s, ''), ' ', 1)
-                    FROM '[0-9]+$')
-                AS INTEGER
-            ))
-              FROM account_payment
-             WHERE receiptbook_id = %s
-               AND name IS NOT NULL
-               AND name LIKE %s
-               {child_filter}
-               AND state != 'draft'
-            """,
-            (
-                doc_code_prefix + " ",
-                prefix,
-                rec.id,
-                f"{doc_code_prefix} {prefix}%",
-            ),
+            SQL(
+                """
+                SELECT MAX(CAST(
+                    SUBSTRING(SPLIT_PART(SUBSTRING(name FROM %s), ' ', 1) FROM '^[0-9]+$')
+                    AS INTEGER
+                ))
+                  FROM account_payment
+                 WHERE company_id = ANY(%s)
+                   AND name IS NOT NULL
+                   AND LEFT(name, %s) = %s
+                   AND state != 'draft'
+                   %s
+                   %s
+                """,
+                len(name_prefix) + 1,
+                company_ids,
+                len(name_prefix),
+                name_prefix,
+                SQL("AND main_payment_id IS NULL") if has_main_payment else SQL(),
+                # Without any prefix the name alone does not identify the receiptbook.
+                SQL("AND receiptbook_id = ANY(%s)", receiptbooks.ids) if not name_prefix else SQL(),
+            )
         )
         return self.env.cr.fetchone()[0] or 0
 
