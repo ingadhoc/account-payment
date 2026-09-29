@@ -19,12 +19,13 @@ class ResUsers(models.Model):
 
     default_cashbox_id = fields.Many2one(
         comodel_name="account.cashbox",
-        domain="[('id', 'in', allowed_cashbox_ids)]",
+        domain="['|', ('restrict_users', '=', False), ('id', 'in', allowed_cashbox_ids)]",
         help="""In the case of concurrent sessions in the selected cashbox,
         the most recently created session for that cashbox will be assigned to the payments.""",
     )
 
     @api.onchange("allowed_cashbox_ids")
     def _onchange_allowed_cashbox_ids(self):
-        if self.default_cashbox_id.id not in self.allowed_cashbox_ids.ids:
+        cashbox = self.default_cashbox_id
+        if cashbox.restrict_users and cashbox.id not in self.allowed_cashbox_ids.ids:
             self.default_cashbox_id = False
