@@ -54,6 +54,15 @@ Cashbox Setup
    * Session validation rules
    * User permissions
 
+Restricting Users
+-----------------
+
+#. On the cashbox, enable **Restrict Users** and set the **Allowed Users**
+#. A new session gets the user who opens it; other allowed users can be added to the session
+#. Every session user must be an allowed user of the cashbox, or the session is not saved.
+   Accounting administrators are exempt: they can operate any cashbox
+#. Without **Restrict Users**, sessions have no users and any user with access can operate them
+
 User Configuration
 ------------------
 

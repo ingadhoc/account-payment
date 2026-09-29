@@ -126,13 +126,16 @@ class AccountCashboxSession(models.Model):
                 for journal in rec.cashbox_id.journal_ids
             ]
 
-            @api.constrains("user_ids", "cashbox_id")
-            def _check_user_ids_allowed(self):
-                for rec in self:
-                    if rec.cashbox_id.restrict_users and rec.user_ids:
-                        allowed = set(rec.cashbox_id.allowed_res_users_ids.ids)
-                        if not set(rec.user_ids.ids).issubset(allowed):
-                            raise ValidationError(_("All session users must be allowed on the cashbox."))
+    @api.constrains("user_ids", "cashbox_id")
+    def _check_user_ids_allowed(self):
+        for rec in self.filtered("cashbox_id.restrict_users"):
+            # account managers operate any cashbox, same as the cashbox_admin rule
+            not_allowed = (
+                rec.user_ids.filtered(lambda u: not u.has_group("account.group_account_manager"))
+                - rec.cashbox_id.allowed_res_users_ids
+            )
+            if not_allowed:
+                raise ValidationError(_("All session users must be allowed on the cashbox."))
 
     @api.model_create_multi
     def create(self, vals_list):
