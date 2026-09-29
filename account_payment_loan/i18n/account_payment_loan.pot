@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-09 21:59+0000\n"
-"PO-Revision-Date: 2025-12-09 21:59+0000\n"
+"POT-Creation-Date: 2026-09-29 18:20+0000\n"
+"PO-Revision-Date: 2026-09-29 18:20+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -18,6 +18,12 @@ msgstr ""
 #. module: account_payment_loan
 #: model:ir.model.fields,field_description:account_payment_loan.field_res_company__loan_terms
 msgid " Loan Default Terms and Conditions"
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/wizards/account_loan_register.py:0
+msgid "%(origin)s | Installment %(number)s"
 msgstr ""
 
 #. module: account_payment_loan
@@ -418,6 +424,12 @@ msgstr ""
 #. module: account_payment_loan
 #: model_terms:ir.ui.view,arch_db:account_payment_loan.res_config_settings_view_form
 msgid "Insert your terms & conditions here..."
+msgstr ""
+
+#. module: account_payment_loan
+#. odoo-python
+#: code:addons/account_payment_loan/wizards/account_loan_register.py:0
+msgid "Installment %s"
 msgstr ""
 
 #. module: account_payment_loan

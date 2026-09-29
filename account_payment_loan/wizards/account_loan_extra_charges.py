@@ -8,7 +8,7 @@ class accountLoanExtraCharges(models.TransientModel):
     partner_id = fields.Many2one("res.partner")
     company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company)
     currency_id = fields.Many2one("res.currency", related="company_id.currency_id")
-    label = fields.Char(required=True, default=lambda x: _("Extra Charges"))
+    label = fields.Char(required=True, default=lambda self: self.env._("Extra Charges"))
     available_loan_move_ids = fields.Many2many(
         comodel_name="account.move", string="Loans", compute="_compute_available_loan_move_ids"
     )

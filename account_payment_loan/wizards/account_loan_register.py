@@ -129,7 +129,11 @@ class AccountLoanRegister(models.TransientModel):
     def _prepare_loan_move_data(self):
         amount_total = self.amount * self.installment_id.surcharge_coefficient
         loan_account = self.company_id.loan_journal_id.default_account_id
-        move_names = ", ".join(filter(None, self.move_line_ids.mapped("move_id.name")))
+        origin_moves = self.move_line_ids.mapped("move_id")
+        if self.refinancial_loan_move_ids:
+            # interest and extra charges moves are refinanced along with their loan, but they are not its origin
+            origin_moves = origin_moves.filtered(lambda x: not x.loan_move_ids) or origin_moves
+        move_names = ", ".join(filter(None, origin_moves.mapped("name")))
         if not self.refinancial_loan_move_ids:
             ref = _("Loan of %s") % move_names if move_names else _("Loan")
         else:
@@ -188,8 +192,11 @@ class AccountLoanRegister(models.TransientModel):
                     {
                         "account_id": loan_account.id,
                         "debit": installment["amount"],
-                        "name": _("fee N. %s due date %s")
-                        % (installment["divisor"], fields.Date.to_string(installment["date_maturity"])),
+                        "name": _(
+                            "%(origin)s | Installment %(number)s", origin=move_names, number=installment["divisor"]
+                        )
+                        if move_names
+                        else _("Installment %s", installment["divisor"]),
                         "date_maturity": installment["date_maturity"],
                         "currency_id": self.currency_id.id,
                     }
