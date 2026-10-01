@@ -1,10 +1,10 @@
 # Do NOT update manually; changes here will be overwritten by Copier
-_commit: 1173c5f
+_commit: 16f9b66
 _src_path: https://github.com/ingadhoc/addons-repo-template.git
 description: Odoo Invoicing Extension Addons
 is_private: false
 name: ADHOC Account Invoicing
-odoo_version: 19.0
+odoo_version: 20.0
 pre_commit_ignore: []
 slug: ''
 
