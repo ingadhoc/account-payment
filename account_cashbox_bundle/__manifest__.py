@@ -12,6 +12,6 @@
     ],
     "data": ["views/account_payment.xml"],
     "demo": ["demo/account_cashbox_bundle_demo.xml"],
-    "installable": True,
+    "installable": False,
     "auto_install": True,
 }

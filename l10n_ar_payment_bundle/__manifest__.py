@@ -26,7 +26,7 @@
         "views/report_payment_receipt_template.xml",
         "views/account_move_bundle_view.xml",
     ],
-    "installable": True,
+    "installable": False,
     "auto_install": False,
     "application": False,
     "demo": ["demo/l10n_ar_payment_bundle_demo.xml"],
