@@ -1,1 +1,6 @@
-from . import test_bundle_journal_suspense, test_bundle_reconcile, test_payment_difference
+from . import (
+    test_bundle_inherited_move,
+    test_bundle_journal_suspense,
+    test_bundle_reconcile,
+    test_payment_difference,
+)
