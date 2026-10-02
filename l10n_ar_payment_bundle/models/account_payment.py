@@ -160,6 +160,12 @@ class AccountPayment(models.Model):
             if rec.main_payment_id and not rec.main_payment_id.name:
                 raise ValidationError(_("The main payment must have a name before a linked payment can be posted."))
 
+        # A payment turned into a main bundle payment after being posted keeps its old entry: drop it,
+        # since _bypass_journal_entry only prevents creating a new one.
+        self._bypass_journal_entry().move_id.filtered(lambda m: m.state == "draft").with_context(
+            force_delete=True
+        ).unlink()
+
         res = super(AccountPayment, self).action_post()
 
         for rec in self:
