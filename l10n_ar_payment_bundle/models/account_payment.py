@@ -270,6 +270,12 @@ class AccountPayment(models.Model):
 
         self._check_bundle_currency_consistency()
 
+        # A payment turned into a main bundle payment after being posted keeps its old entry: drop it,
+        # since _bypass_journal_entry only prevents creating a new one.
+        self._bypass_journal_entry().move_id.filtered(lambda m: m.state == "draft").with_context(
+            force_delete=True
+        ).unlink()
+
         res = super(AccountPayment, self).action_post()
         for rec in self:
             # Determine the starting suffix number based on the highest numeric
