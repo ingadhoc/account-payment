@@ -18,22 +18,13 @@ class PaymentPortal(payment_portal.PaymentPortal):
             ('invoice_date_due', '<=', due_date),
         ]
 
-    @http.route(['/my/invoices/selected'], type='http', auth='public', methods=['GET'], website=True, sitemap=False)
-    def portal_my_selected_invoices(self, **kw):
-        try:
-            request.env['account.move'].check_access_rights('read')
-        except (AccessError, MissingError):
-            return request.redirect('/my')
-
-        invoice_id = int(kw.get('invoice_id'))
+    def _filter_selected_invoice(self, invoice_id=None):
         invoice = request.env['account.move'].browse(invoice_id)
         due_date = invoice.invoice_date_due
         invoice_date = invoice.invoice_date
 
-        # Initial selection by due_date
         selected_invoices = request.env['account.move'].search(self._get_selected_invoices_domain(due_date=due_date))
 
-        # If more than one with the due_date, filter by invoice_date <= invoice_date
         if selected_invoices.mapped('invoice_date_due').count(due_date) > 1:
             selected_invoices = selected_invoices.filtered(
                 lambda x: not (x.invoice_date_due == due_date and x.invoice_date > invoice_date)
@@ -45,6 +36,18 @@ class PaymentPortal(payment_portal.PaymentPortal):
                 selected_invoices = selected_invoices.filtered(lambda x: not (x.invoice_date_due == due_date and
                                                                x.invoice_date == invoice_date and
                                                                x.id > invoice_id))
+        return selected_invoices
+
+    @http.route(['/my/invoices/selected'], type='http', auth='public', methods=['GET'], website=True, sitemap=False)
+    def portal_my_selected_invoices(self, **kw):
+        try:
+            request.env['account.move'].check_access_rights('read')
+        except (AccessError, MissingError):
+            return request.redirect('/my')
+
+        invoice_id = int(kw.get('invoice_id'))
+        selected_invoices = self._filter_selected_invoice(invoice_id)
+
 
         values = self._selected_invoices_get_page_view_values(selected_invoices, **kw)
         return request.render("account_payment_multi.portal_selected_invoices_page", values) \
@@ -179,9 +182,9 @@ class PaymentPortal(payment_portal.PaymentPortal):
         partner = request.env.user.partner_id
 
         invoice_id = int(kwargs.get('invoice_id'))
-        due_date = request.env['account.move'].browse(invoice_id).invoice_date_due
 
-        selected_invoices = request.env['account.move'].search(self._get_selected_invoices_domain(due_date))
+        selected_invoices = self._filter_selected_invoice(invoice_id)
+
         currencies = selected_invoices.mapped('currency_id')
         if not all(currency == currencies[0] for currency in currencies):
             raise ValidationError(_("Impossible to pay all the selected invoices if they don't share the same currency."))
