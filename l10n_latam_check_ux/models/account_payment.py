@@ -48,6 +48,7 @@ class AccountPayment(models.Model):
             # Recomputing it on every confirmation does not reorder anything, because action_draft
             # only lets the last operation of the chain go back to draft.
             rec.l10n_latam_move_check_ids_operation_date = rec._get_check_operation_date()
+<<<<<<< 35ea0ea40cc9dc565222d7785e2b77144fb027f7
 
         # Detectar cheques de terceros existentes usados más de una vez dentro del mismo
         # batch de confirmación (ej: bundle confirma dos pagos hijos en draft que tienen
@@ -63,6 +64,28 @@ class AccountPayment(models.Model):
             seen |= rec.l10n_latam_move_check_ids
 
         super().action_post()
+||||||| ec023049214bbc644f445813d22de0b663418fc2
+        super().action_post()
+=======
+        # The core unlinks the checks of payments whose method is not for checks, and a bank journal
+        # cannot have a checks method. The inbound leg of a check transfer (its paired payment moves
+        # the same checks) keeps them anyway, on every confirmation and not only on the wizard one.
+        # A payment that kept stale checks after a method change has no such paired payment.
+        # The inbound legs go last: posting one moves the check to its journal, and an outbound leg
+        # posted in the same batch would then fail its "check still in journal" validation.
+        inbound_legs = self.filtered(
+            lambda x: (
+                x.payment_type == "inbound"
+                and x.l10n_latam_move_check_ids
+                and x.l10n_latam_move_check_ids == x.paired_internal_transfer_payment_id.l10n_latam_move_check_ids
+            )
+        )
+        others = self - inbound_legs
+        if others:
+            super(AccountPayment, others).action_post()
+        if inbound_legs:
+            super(AccountPayment, inbound_legs.with_context(l10n_ar_skip_remove_check=True)).action_post()
+>>>>>>> 75670c11c7fa45a2c438ff4de4012f3e14d381d0
 
     def _get_check_operation_date(self):
         """Confirmation date that leaves this payment last in the chain of its checks.
