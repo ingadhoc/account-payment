@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 18:20+0000\n"
-"PO-Revision-Date: 2026-09-29 18:20+0000\n"
+"POT-Creation-Date: 2026-10-06 15:17+0000\n"
+"PO-Revision-Date: 2026-10-06 15:17+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -783,12 +783,6 @@ msgid "de la ciudad de"
 msgstr ""
 
 #. module: account_payment_loan
-#. odoo-python
-#: code:addons/account_payment_loan/wizards/account_loan_register.py:0
-msgid "divisor"
-msgstr ""
-
-#. module: account_payment_loan
 #: model:ir.model.fields.selection,name:account_payment_loan.selection__account_card__loan_due_method__create_day
 msgid "every month on the same day it was created "
 msgstr ""
@@ -796,12 +790,6 @@ msgstr ""
 #. module: account_payment_loan
 #: model:ir.model.fields.selection,name:account_payment_loan.selection__account_card__loan_due_method__next_day_number
 msgid "every month on the same day number "
-msgstr ""
-
-#. module: account_payment_loan
-#. odoo-python
-#: code:addons/account_payment_loan/wizards/account_loan_register.py:0
-msgid "fee N. %s due date %s"
 msgstr ""
 
 #. module: account_payment_loan
