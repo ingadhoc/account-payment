@@ -1,0 +1,7 @@
+id,name,model_id,group_id/id,operation,domain
+installment_user,account.card.installment,account.card.installment,base.group_user,r,
+access_installment,account.card.installment,account.card.installment,account.group_account_invoice,crud,
+account_card_installment_company_rule,account card installment: multi-company,account.card.installment,,crud,"[('card_id.company_id', 'in', company_ids + [False])]"
+card_user,account.card,account.card,base.group_user,r,
+access_card,account.card,account.card,account.group_account_invoice,crud,
+account_card_company_rule,account card config: multi-company,account.card,,crud,"[('company_id', 'in', company_ids + [False])]"
