@@ -5,15 +5,7 @@ from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 from odoo.tests import tagged
 
 
-@tagged("post_install", "-at_install")
-class TestCheckTransferDestinationMethod(AccountTestInvoicingCommon):
-    """Depositing checks lets the user pick the payment method line of the destination journal.
-
-    The destination journal can hold two inbound lines with different outstanding accounts, one
-    for checks pending to be credited and another one for transfers. Until now the deposit always
-    landed on the third party checks line, so the other account could not be reached.
-    """
-
+class CheckTransferDestinationCommon(AccountTestInvoicingCommon):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -105,6 +97,16 @@ class TestCheckTransferDestinationMethod(AccountTestInvoicingCommon):
         )
         payment.action_post()
         return payment.l10n_latam_new_check_ids
+
+
+@tagged("post_install", "-at_install")
+class TestCheckTransferDestinationMethod(CheckTransferDestinationCommon):
+    """Depositing checks lets the user pick the payment method line of the destination journal.
+
+    The destination journal can hold two inbound lines with different outstanding accounts, one
+    for checks pending to be credited and another one for transfers. Until now the deposit always
+    landed on the third party checks line, so the other account could not be reached.
+    """
 
     def _transfer_wizard(self, checks, destination_line=None, split_payment=False):
         wizard = (
@@ -200,3 +202,109 @@ class TestCheckTransferDestinationMethod(AccountTestInvoicingCommon):
                 inbound_payment.l10n_latam_move_check_ids,
                 "The checks must stay linked when the chosen line is not for checks.",
             )
+
+
+@tagged("post_install", "-at_install")
+class TestCheckInternalTransferDestinationMethod(CheckTransferDestinationCommon):
+    """A check transfer made from the payment form, towards a checks journal that also accepts new checks.
+
+    The new checks line comes first by sequence. The paired payment must not take it: a transfer brings
+    no new checks, so the paired payment ended up with amount 0 and the check in the wrong journal.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        company = cls.company_data["company"]
+        outstanding_account = cls.inbound_payment_method_line.payment_account_id
+        cls.deposit_journal = cls.env["account.journal"].create(
+            {
+                "name": "Checks to Deposit",
+                "code": "TPCDP",
+                "type": "cash",
+                "company_id": company.id,
+                "inbound_payment_method_line_ids": [
+                    Command.create(
+                        {
+                            "payment_method_id": cls.env.ref(
+                                "l10n_latam_check.account_payment_method_new_third_party_checks"
+                            ).id,
+                            "payment_account_id": outstanding_account.id,
+                            "sequence": 10,
+                        }
+                    ),
+                    Command.create(
+                        {
+                            "payment_method_id": cls.env.ref(
+                                "l10n_latam_check.account_payment_method_in_third_party_checks"
+                            ).id,
+                            "payment_account_id": outstanding_account.id,
+                            "sequence": 11,
+                        }
+                    ),
+                ],
+            }
+        )
+        cls.deposit_new_check_line = cls.deposit_journal.inbound_payment_method_line_ids.filtered(
+            lambda line: line.code == "new_third_party_checks"
+        )
+        cls.deposit_in_check_line = cls.deposit_journal.inbound_payment_method_line_ids.filtered(
+            lambda line: line.code == "in_third_party_checks"
+        )
+        cls.out_check_line = cls.check_journal.outbound_payment_method_line_ids.filtered(
+            lambda line: line.code == "out_third_party_checks"
+        )
+
+    def _internal_transfer(self, checks, destination_journal):
+        return self.env["account.payment"].create(
+            {
+                "payment_type": "outbound",
+                "is_internal_transfer": True,
+                "journal_id": self.check_journal.id,
+                "payment_method_line_id": self.out_check_line.id,
+                "destination_journal_id": destination_journal.id,
+                "l10n_latam_move_check_ids": [Command.set(checks.ids)],
+            }
+        )
+
+    def test_new_checks_line_is_not_available_as_destination(self):
+        transfer = self._internal_transfer(self._receive_check(), self.deposit_journal)
+
+        self.assertNotIn(self.deposit_new_check_line, transfer.available_destination_payment_method_line_ids)
+        self.assertIn(self.deposit_in_check_line, transfer.available_destination_payment_method_line_ids)
+
+    def test_default_is_the_third_party_checks_line(self):
+        transfer = self._internal_transfer(self._receive_check(), self.deposit_journal)
+
+        self.assertEqual(transfer.destination_payment_method_line_id, self.deposit_in_check_line)
+
+    def test_default_prefers_checks_line_over_sequence(self):
+        """The destination journal of the wizard tests has the checks line before a manual one."""
+        self.checks_destination_line.sequence = 20
+        self.transfers_destination_line.sequence = 10
+        transfer = self._internal_transfer(self._receive_check(), self.destination_journal)
+
+        self.assertEqual(transfer.destination_payment_method_line_id, self.checks_destination_line)
+
+    def test_explicit_choice_is_kept(self):
+        transfer = self._internal_transfer(self._receive_check(), self.destination_journal)
+        transfer.destination_payment_method_line_id = self.transfers_destination_line
+
+        transfer.action_post()
+
+        self.assertEqual(
+            transfer.paired_internal_transfer_payment_id.payment_method_line_id, self.transfers_destination_line
+        )
+
+    def test_paired_payment_keeps_amount_and_checks(self):
+        checks = self._receive_check()
+        transfer = self._internal_transfer(checks, self.deposit_journal)
+
+        transfer.action_post()
+
+        paired_payment = transfer.paired_internal_transfer_payment_id
+        self.assertEqual(paired_payment.journal_id, self.deposit_journal)
+        self.assertEqual(paired_payment.payment_method_line_id, self.deposit_in_check_line)
+        self.assertEqual(paired_payment.amount, 100.0)
+        self.assertEqual(paired_payment.l10n_latam_move_check_ids, checks)
+        self.assertEqual(checks.current_journal_id, self.deposit_journal)
