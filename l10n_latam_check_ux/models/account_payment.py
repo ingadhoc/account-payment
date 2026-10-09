@@ -242,7 +242,6 @@ class AccountPayment(models.Model):
         que el asiento salga igual con un core sin parchear. El balance queda a la cotización del
         pago; la revaluación de abajo lo ajusta a la del asiento.
         """
-        check_suffix = "".join([item[1] for item in self._get_aml_default_display_name_list()])
         line_common_vals = {
             "currency_id": self.currency_id.id,
             "partner_id": self.partner_id.id,
@@ -253,7 +252,7 @@ class AccountPayment(models.Model):
             liquidity_amount = check.amount if self.payment_type == "inbound" else -check.amount
             liquidity_vals.append(
                 {
-                    "name": _("Check %(check_number)s - %(suffix)s", check_number=check.name, suffix=check_suffix),
+                    "name": self._l10n_latam_check_line_name(check),
                     "date_maturity": check.payment_date,
                     "amount_currency": liquidity_amount,
                     "balance": self.currency_id._convert(
@@ -264,6 +263,20 @@ class AccountPayment(models.Model):
                 }
             )
         return liquidity_vals
+
+    def _l10n_latam_check_line_name(self, check):
+        suffix = "".join([item[1] for item in self._get_aml_default_display_name_list()])
+        return _("Check %(check_number)s - %(suffix)s", check_number=check.name, suffix=suffix)
+
+    def _prepare_move_line_default_vals(self, write_off_line_vals=None, force_balance=None):
+        # l10n_latam_check gives the first liquidity line the batch label; keep the check label instead.
+        res = super()._prepare_move_line_default_vals(
+            write_off_line_vals=write_off_line_vals, force_balance=force_balance
+        )
+        if res and res[0].get("l10n_latam_check_ids"):
+            check = self.env["l10n_latam.check"].browse(res[0]["l10n_latam_check_ids"][0][2])
+            res[0]["name"] = self._l10n_latam_check_line_name(check)
+        return res
 
     def _l10n_latam_check_split_move(self):
         """No-op: las líneas de liquidez de arriba reemplazan al split move."""

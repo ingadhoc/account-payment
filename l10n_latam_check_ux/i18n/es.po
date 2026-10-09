@@ -173,7 +173,7 @@ msgstr "Cheque"
 #. odoo-python
 #: code:addons/l10n_latam_check_ux/models/account_payment.py:0
 msgid "Check %(check_number)s - %(suffix)s"
-msgstr ""
+msgstr "Cheque %(check_number)s - %(suffix)s"
 
 #. module: l10n_latam_check_ux
 #. odoo-python
