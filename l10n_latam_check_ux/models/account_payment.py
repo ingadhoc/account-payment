@@ -82,6 +82,29 @@ class AccountPayment(models.Model):
                 operation_date = max(operation_date, last_operation_date + timedelta(seconds=1))
         return operation_date
 
+    def _compute_available_destination_payment_method_line_ids(self):
+        super()._compute_available_destination_payment_method_line_ids()
+        # a transfer never brings new checks: with that line the paired payment ends up with amount 0
+        for pay in self:
+            pay.available_destination_payment_method_line_ids = (
+                pay.available_destination_payment_method_line_ids.filtered(lambda x: x.code != "new_third_party_checks")
+            )
+
+    def _compute_destination_payment_method_line_id(self):
+        check_transfers = self.filtered(
+            lambda x: x.payment_method_code in ("out_third_party_checks", "return_third_party_checks")
+        )
+        super(AccountPayment, self - check_transfers)._compute_destination_payment_method_line_id()
+        for pay in check_transfers:
+            available_lines = pay.available_destination_payment_method_line_ids
+            # an explicit choice is kept as long as it is still available on the destination journal
+            if pay.destination_payment_method_line_id in available_lines:
+                continue
+            # the default keeps the checks on the destination journal, like the transfer wizard does
+            pay.destination_payment_method_line_id = (
+                available_lines.filtered(lambda x: x.code == "in_third_party_checks")[:1] or available_lines[:1]
+            )
+
     def _create_paired_internal_transfer_payment(self):
         """
         Two modifications when only when transferring from a third party checks journal:
