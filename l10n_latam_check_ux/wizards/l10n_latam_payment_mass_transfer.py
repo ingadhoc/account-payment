@@ -43,8 +43,9 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
     @api.depends("destination_journal_id")
     def _compute_available_destination_payment_method_line_ids(self):
         for wizard in self:
+            journal = wizard.destination_journal_id
             wizard.available_destination_payment_method_line_ids = (
-                wizard.destination_journal_id._get_available_payment_method_lines("inbound")
+                journal._get_check_transfer_destination_lines() if journal else False
             )
 
     @api.depends("available_destination_payment_method_line_ids")
@@ -54,10 +55,19 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
             # an explicit choice is kept as long as it is still available on the destination journal
             if wizard.destination_payment_method_line_id in available_lines:
                 continue
-            # the default replicates the current behaviour: third party checks when the journal has it
-            wizard.destination_payment_method_line_id = (
-                available_lines.filtered(lambda x: x.code == "in_third_party_checks")[:1] or available_lines[:1]
-            )
+            wizard.destination_payment_method_line_id = available_lines[:1]
+
+    @api.constrains("destination_payment_method_line_id", "destination_journal_id")
+    def _check_destination_payment_method_line_id(self):
+        for wizard in self.filtered("destination_payment_method_line_id"):
+            if wizard.destination_payment_method_line_id not in wizard.available_destination_payment_method_line_ids:
+                raise ValidationError(
+                    _(
+                        "The destination payment method %(method)s cannot receive checks on the destination journal %(journal)s.",
+                        method=wizard.destination_payment_method_line_id.name,
+                        journal=wizard.destination_journal_id.name,
+                    )
+                )
 
     def _create_payments(self):
         if self.destination_journal_id.company_id != self.journal_id.company_id:
