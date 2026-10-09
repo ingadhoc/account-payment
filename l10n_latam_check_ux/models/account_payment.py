@@ -47,7 +47,10 @@ class AccountPayment(models.Model):
             # keeps showing as available in the portfolio.
             # Recomputing it on every confirmation does not reorder anything, because action_draft
             # only lets the last operation of the chain go back to draft.
-            rec.l10n_latam_move_check_ids_operation_date = rec._get_check_operation_date()
+            # action_post can also run on payments that are already confirmed (e.g. the list view
+            # confirm action), so only drafts get a new date.
+            if rec.state == "draft":
+                rec.l10n_latam_move_check_ids_operation_date = rec._get_check_operation_date()
         # The core unlinks the checks of payments whose method is not for checks, and a bank journal
         # cannot have a checks method. The inbound leg of a check transfer (its paired payment moves
         # the same checks) keeps them anyway, on every confirmation and not only on the wizard one.
