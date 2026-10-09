@@ -303,3 +303,19 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
                     "amount": 200.0,
                 }
             )
+
+    def test_deposit_of_several_checks_labels_each_check_line(self):
+        checks = self._create_third_party_check(
+            self.third_party_check_journal, "UX-LBL-0001"
+        ) | self._create_third_party_check(self.third_party_check_journal, "UX-LBL-0002")
+
+        self.env["l10n_latam.payment.mass.transfer"].with_context(
+            active_model="l10n_latam.check",
+            active_ids=checks.ids,
+        ).create({"destination_journal_id": self.company_bank_journal.id})._create_payments()
+
+        deposit = checks.operation_ids.filtered(lambda p: p.payment_type == "outbound")
+        self.assertEqual(len(deposit), 1)
+        labels = deposit.move_id.line_ids.mapped("name")
+        for check in checks:
+            self.assertTrue(any(label.startswith(f"Check {check.name} - ") for label in labels), labels)
