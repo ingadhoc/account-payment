@@ -115,8 +115,9 @@ class l10nLatamAccountPaymentCheck(models.Model):
         """Solo los cheques propios tienen estado de emisión (tarea 70884).
 
         Con una línea de liquidez por cheque los de terceros también tienen ``outstanding_line_id``,
-        así que base les daría un estado y entrarían al índice único de abajo, donde el mismo número
-        de dos libradores distintos es válido.
+        así que un core anterior a odoo/odoo@d85e16a les daría un estado y entrarían al índice único
+        de arriba, donde el mismo número de dos libradores distintos es válido. Desde d85e16a base
+        filtra igual; esto queda para las imágenes con un core anterior.
 
         El ``@api.depends`` no se puede sacar: el ORM lee las dependencias del método más derivado
         del MRO. Efecto colateral pinneado por los tests ``_today``: un cheque propio en borrador
