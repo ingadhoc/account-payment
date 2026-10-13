@@ -63,16 +63,15 @@ class TestOwnChecksEntry(LatamCheckCommon):
         self.assertEqual(moves, payment.move_id, "Only the payment move should touch the deferred checks account")
 
     def test_the_lines_are_built_here_when_the_core_does_not(self):
-        """Con un core sin parchear el modulo arma las N lineas por su cuenta (tarea 70884).
+        """Con un core anterior a odoo/odoo@d85e16a el modulo arma las N lineas por su cuenta.
 
         Se simula parcheando ``l10n_latam_check`` para que devuelva una sola linea de liquidez, que
-        es lo que hace el core vanilla. Sin esto la relocalizacion no tiene cobertura: con la imagen
-        parcheada -y en runbot- las lineas las arma el core y nunca se entra por esta rama.
+        es lo que hace ese core. Sin esto la rama no tiene cobertura con cheques propios: en 19.0
+        las lineas de los cheques propios las arma el core.
 
-        ``create=True`` porque sin el parche el metodo no existe en esa clase (el hook vive en
-        ``account``): mock lo agrega igual, y como la clase sigue en el MRO entre este modulo y
-        ``account``, el ``super()`` del override cae ahi lo mismo. Asi el test vale con las dos
-        imagenes, la parcheada y la que ya no lo esta.
+        ``create=True`` por si el metodo no existe en esa clase (el hook vive en ``account``): mock
+        lo agrega igual, y como la clase sigue en el MRO entre este modulo y ``account``, el
+        ``super()`` del override cae ahi lo mismo.
         """
         payment = self._create_own_check_payment([20, 30], numbers=["00000301", "00000302"])
         default_vals = {"name": "test", "amount_currency": -50.0, "balance": -50.0}
@@ -306,8 +305,8 @@ class TestOwnChecksLifecycle(LatamCheckCommon):
 
     def test_legacy_split_move_is_still_unlinked(self):
         """Un pago posteado antes de este cambio apunta a un asiento de split aparte, y al volver a
-        borrador se sigue desarmando. Se llama al metodo directo porque su gancho -``button_draft``
-        de ``account.move``- solo existe con el core sin parchear.
+        borrador se sigue desarmando. Se llama al metodo directo para no depender de armar un pago
+        con split move por el flujo normal, que ya no lo genera.
         """
         payment = self._create_own_check_payment([100], numbers=["00002601"])
         payment.action_post()
