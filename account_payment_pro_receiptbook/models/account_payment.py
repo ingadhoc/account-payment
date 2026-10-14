@@ -24,9 +24,12 @@ class AccountPayment(models.Model):
 
     def action_post(self):
         # si no tengo nombre y tengo talonario de recibo, numeramos con el talonario
+        # account_payment_pro skips canceled payments, so they must not take a number.
         for rec in self.filtered(
             lambda x: (
-                x.receiptbook_id and (not x.name or x.name == "/" or (x.move_id and not x.move_id._get_last_sequence()))
+                x.state != "canceled"
+                and x.receiptbook_id
+                and (not x.name or x.name == "/" or (x.move_id and not x.move_id._get_last_sequence()))
             )
         ):
             if not rec.receiptbook_id.active:

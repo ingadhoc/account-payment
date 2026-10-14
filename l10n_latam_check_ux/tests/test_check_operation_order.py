@@ -63,6 +63,26 @@ class TestCheckOperationOrder(AccountTestInvoicingCommon):
         cls.out_check_line = cls.check_journal.outbound_payment_method_line_ids.filtered(
             lambda line: line.code == "out_third_party_checks"
         )
+        # Where the checks are deposited: a check that left the portfolio journal is no longer
+        # available, the same as one handed over to a vendor.
+        cls.deposit_journal = cls.env["account.journal"].create(
+            {
+                "name": "Checks Deposit",
+                "code": "TPCDP",
+                "type": "cash",
+                "company_id": cls.company_data["company"].id,
+                "inbound_payment_method_line_ids": [
+                    Command.create(
+                        {
+                            "payment_method_id": cls.env.ref(
+                                "l10n_latam_check.account_payment_method_in_third_party_checks"
+                            ).id,
+                            "payment_account_id": cls.inbound_payment_method_line.payment_account_id.id,
+                        }
+                    )
+                ],
+            }
+        )
 
     def _create_receipt(self, check_number="00000101"):
         """Recibo de cliente donde nace el cheque de terceros."""
@@ -276,3 +296,56 @@ class TestCheckOperationOrder(AccountTestInvoicingCommon):
         delivery.action_post()
 
         self.assertEqual(check._get_last_operation(), delivery)
+
+    def _deposit(self, check):
+        wizard = (
+            self.env["l10n_latam.payment.mass.transfer"]
+            .with_context(active_model="l10n_latam.check", active_ids=check.ids)
+            .create(
+                {
+                    "payment_date": fields.Date.today(),
+                    "destination_journal_id": self.deposit_journal.id,
+                }
+            )
+        )
+        return wizard._create_payments()
+
+    def test_reposting_a_receipt_keeps_the_deposited_check_out_of_the_portfolio(self):
+        """ "Post Payments" on a receipt that is already confirmed must not undo a later deposit.
+
+        It is the case of the ticket: the receipt went back to the end of the chain and the
+        deposited check showed up again as available.
+        """
+        receipt = self._create_receipt("00000109")
+        check = receipt.l10n_latam_new_check_ids
+        self._deposit(check)
+        self.assertEqual(check.current_journal_id, self.deposit_journal)
+        last_operation = check._get_last_operation()
+        receipt_date = receipt.l10n_latam_move_check_ids_operation_date
+
+        receipt.action_post()
+
+        self.assertEqual(check._get_last_operation(), last_operation)
+        self.assertEqual(check.current_journal_id, self.deposit_journal)
+        self.assertEqual(receipt.l10n_latam_move_check_ids_operation_date, receipt_date)
+
+    def test_reposting_a_receipt_keeps_the_check_delivered(self):
+        """The same with a check handed over to a vendor: it must not come back to the portfolio."""
+        receipt, delivery, check = self._deliver_check_created_before_the_receipt("00000110")
+        receipt_date = receipt.l10n_latam_move_check_ids_operation_date
+
+        receipt.action_post()
+
+        self.assertEqual(check._get_last_operation(), delivery)
+        self.assertFalse(check.current_journal_id)
+        self.assertEqual(receipt.l10n_latam_move_check_ids_operation_date, receipt_date)
+
+    def test_reposting_a_receipt_with_its_entry_in_draft_keeps_the_check_delivered(self):
+        """Whatever happens to the entry, the check must not move."""
+        receipt, delivery, check = self._deliver_check_created_before_the_receipt("00000111")
+        receipt.move_id.button_draft()
+
+        receipt.action_post()
+
+        self.assertEqual(check._get_last_operation(), delivery)
+        self.assertFalse(check.current_journal_id)
