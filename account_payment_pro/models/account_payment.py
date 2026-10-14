@@ -1275,9 +1275,12 @@ class AccountPayment(models.Model):
                 (counterpart_aml + (debt_aml)).reconcile()
 
     def action_post(self):
-        res = super().action_post()
-        self._check_to_pay_lines_account()
-        self._reconcile_after_post()
+        # The list view "Post Payments" action calls this on every selected payment, and the core sets
+        # the ones with a cash outstanding account to paid whatever their state. Canceled ones are skipped.
+        to_post = self.filtered(lambda x: x.state != "canceled")
+        res = super(AccountPayment, to_post).action_post()
+        to_post._check_to_pay_lines_account()
+        to_post._reconcile_after_post()
         return res
 
     def _get_mached_payment(self):

@@ -446,3 +446,27 @@ class TestAccountPaymentProReceiptbookUnitTest(AccountTestInvoicingCommon):
             sequence.number_next = 1
             receiptbooks.action_resync_sequence()
             self.assertEqual(sequence.number_next_actual, expected_next)
+
+    def test_skipped_canceled_payment_does_not_take_a_receipt_number(self):
+        """Posting a selection with a canceled payment numbers only the draft."""
+        vals = {
+            "amount": 100,
+            "payment_type": "inbound",
+            "partner_id": self.partner_ri.id,
+            "journal_id": self.company_bank_journal.id,
+            "date": self.today,
+            "company_id": self.company.id,
+            "receiptbook_id": self.receiptbook.id,
+        }
+        draft = self.env["account.payment"].create(vals)
+        canceled = self.env["account.payment"].create(vals)
+        canceled.action_cancel()
+        sequence = self.receiptbook.with_context(ir_sequence_date=self.today).sequence_id
+        number_next = sequence.number_next_actual
+
+        (draft | canceled).action_post()
+
+        sequence.invalidate_recordset(["number_next_actual"])
+        self.assertEqual(sequence.number_next_actual, number_next + 1)
+        self.assertEqual(canceled.state, "canceled")
+        self.assertIn(canceled.name, (False, "/"))
