@@ -104,7 +104,6 @@ class CheckTransferDestinationCommon(AccountTestInvoicingCommon):
                         {
                             "name": "Checks Pending",
                             "payment_method_id": cls.env.ref("account.account_payment_method_manual_in").id,
-                            "payment_account_id": outstanding_account.id,
                             "sequence": 10,
                         }
                     ),
@@ -112,7 +111,6 @@ class CheckTransferDestinationCommon(AccountTestInvoicingCommon):
                         {
                             "name": "Transfers Pending",
                             "payment_method_id": cls.env.ref("account.account_payment_method_manual_in").id,
-                            "payment_account_id": cls.transfers_outstanding_account.id,
                             "sequence": 20,
                         }
                     ),
@@ -122,6 +120,9 @@ class CheckTransferDestinationCommon(AccountTestInvoicingCommon):
         cls.checks_pending_line, cls.transfers_destination_line = (
             cls.bank_journal.inbound_payment_method_line_ids.sorted("sequence")
         )
+        # some modules overwrite the outstanding accounts of a new bank journal (saas_client_account)
+        cls.checks_pending_line.payment_account_id = outstanding_account
+        cls.transfers_destination_line.payment_account_id = cls.transfers_outstanding_account
 
     @classmethod
     def _receive_check(cls, check_number="00000001"):
