@@ -130,13 +130,7 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
             }
         )
 
-        if dest_payment_method.code == "in_third_party_checks":
-            inbound_payment.action_post()
-        else:
-            # In case the journal is not part of the third party check, when posting the move we remove the checks
-            # when the payment method line is not for checks, but in this case, we don't want to remove it so that
-            # the operation_ids is filled with the two payments
-            inbound_payment.with_context(l10n_ar_skip_remove_check=True).action_post()
+        inbound_payment.action_post()
 
         outbound_payment.paired_internal_transfer_payment_id = inbound_payment.id
 
@@ -213,13 +207,7 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
             if dest_payment_method:
                 inbound_payment.payment_method_line_id = dest_payment_method
 
-            if dest_payment_method.code == "in_third_party_checks":
-                inbound_payment.action_post()
-            else:
-                # In case the journal is not part of the third party check, when posting the move we remove the checks
-                # when the payment method line is not for checks, but in this case, we don't want to remove it so that
-                # the operation_ids is filled with the two payments
-                inbound_payment.with_context(l10n_ar_skip_remove_check=True).action_post()
+            inbound_payment.action_post()
 
             body_inbound = _("This payment has been created from: ") + outbound_payment._get_html_link()
             inbound_payment.message_post(body=body_inbound)
