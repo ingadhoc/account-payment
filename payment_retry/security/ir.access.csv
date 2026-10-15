@@ -1,0 +1,4 @@
+id,name,model_id,group_id/id,operation,domain
+payment_retry_line, transaction retry line,payment.transaction.retry.lines,account.group_account_invoice,crud,
+payment_retry,payment transaction retry,payment.transaction.retry,account.group_account_invoice,crud,
+electronic_payment_pending_confirm,electronic payment pending confirm,electronic.payment.pending.confirm,account.group_account_invoice,crud,
