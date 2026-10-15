@@ -3,11 +3,11 @@
     "author": "ADHOC SA",
     "website": "https://www.adhoc.inc",
     "category": "Payment",
-    "version": "19.0.1.3.0",
+    "version": "20.0.1.0.0",
     "depends": ["account_payment"],
     "license": "LGPL-3",
     "images": [],
-    "installable": False,
+    "installable": True,
     "data": [
         "security/ir.model.access.csv",
         "data/ir_cron.xml",
