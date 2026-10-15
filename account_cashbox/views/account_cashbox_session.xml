@@ -41,13 +41,13 @@
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button name="action_import_payments"
-                            invisible="state != 'opened'" type="object" class="oe_stat_button" icon="fa-plus">
+                            invisible="state != 'opened'" type="object" class="oe_stat_button" icon="add">
                             <span>Import</span>
                         </button>
-                        <button name="action_session_payments" type="object" class="oe_stat_button" icon="fa-money" context="{'create':False}">
+                        <button name="action_session_payments" type="object" class="oe_stat_button" icon="payments" context="{'create':False}">
                             <span>Payments</span>
                         </button>
-                        <button name="action_session_entries" type="object" class="oe_stat_button" icon="fa-bars" invisible="require_cash_control == False" context="{'create':False}">
+                        <button name="action_session_entries" type="object" class="oe_stat_button" icon="menu" invisible="require_cash_control == False" context="{'create':False}">
                             <span>Adjustment Entries</span>
                         </button>
                     </div>
@@ -74,7 +74,7 @@
                                 <field name="journal_id" readonly="True" force_save="True"/>
                                 <field name="currency_id" optional="hide"/>
                                 <field name="amount"/>
-                                <button name="action_session_payments" type="object" title="Payments" icon="fa-search" context="{'create': False}"></button>
+                                <button name="action_session_payments" type="object" title="Payments" icon="search" context="{'create': False}"></button>
                                 <field name="balance_start" readonly = "parent.state != 'draft'" invisible ="require_cash_control == False"
                                     column_invisible = "parent.require_cash_control == False "/>
                                 <field name="balance_end" invisible = "require_cash_control == False"

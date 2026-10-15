@@ -54,6 +54,17 @@ Cashbox Setup
    * Session validation rules
    * User permissions
 
+Restricting Users
+-----------------
+
+#. On the cashbox, enable **Restrict Users** and set the **Allowed Users**
+#. A new session gets the user who opens it; other allowed users can be added to the session
+#. Every session user must be an allowed user of the cashbox, or the session is not saved.
+   Accounting administrators are exempt: they can operate any cashbox
+#. Without **Restrict Users**, sessions have no users and any user with access can operate them
+#. Who sees the cashbox: without **Restrict Users**, every invoicing user; with it, only its allowed
+   users and the users set to view its payments. Accounting administrators see every cashbox
+
 User Configuration
 ------------------
 
@@ -61,7 +72,9 @@ User Configuration
 #. For users that require cashbox sessions:
 
    * Enable "Require Cashbox Session"
-   * Assign appropriate cashbox access rights
+   * Set the "Default Cashbox": an unrestricted cashbox or one where the user is allowed
+
+The user's allowed cashboxes are read-only here: they are managed from each cashbox.
 
 Usage
 =====

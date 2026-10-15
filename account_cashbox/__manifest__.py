@@ -4,7 +4,7 @@
 {
     "name": "Cashbox management",
     "summary": "Introduces concept cashbox and accounting journal sessions",
-    "version": "19.0.1.10.0",
+    "version": "20.0.1.0.0",
     "category": "Accounting",
     "website": "www.adhoc.com.ar",
     "author": "juanpgarza, ADHOC SA",
@@ -19,8 +19,6 @@
         "demo/cashbox_demo.xml",
     ],
     "data": [
-        "security/cashbox_security.xml",
-        "security/ir.model.access.csv",
         "views/account_cashbox_session.xml",
         "views/account_cashbox.xml",
         "views/res_users_views.xml",
@@ -30,7 +28,8 @@
         "wizards/account_cashbox_payment_import.xml",
         "wizards/account_payment_register.xml",
         "wizards/account_cashbox_rounding_adjustment.xml",
+        "security/ir.access.csv",
     ],
-    "installable": False,
+    "installable": True,
     "application": False,
 }
