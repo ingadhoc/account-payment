@@ -15,21 +15,21 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
         compute="_compute_requiere_account_cashbox_session",
         compute_sudo=False,
     )
-    cashbox_session_ids_domain = fields.Binary(compute="_compute_cashbox_session_ids_domain")
+    cashbox_session_ids_domain = fields.Json(compute="_compute_cashbox_session_ids_domain")
 
     @api.depends_context("uid")
     # dummy depends para que se compute(no estamos seguros porque solo con el depends_context no computa)
-    @api.depends("destination_journal_id")
+    @api.depends("to_journal_id")
     def _compute_requiere_account_cashbox_session(self):
         self.requiere_account_cashbox_session = self.env.user.requiere_account_cashbox_session
 
-    @api.depends("destination_journal_id")
+    @api.depends("to_journal_id")
     def _compute_cashbox_session_id(self):
         for rec in self:
             session_ids = (
                 self.env["account.cashbox.session"]
                 .search([("state", "=", "opened"), "|", ("user_ids", "=", self.env.uid), ("user_ids", "=", False)])
-                .filtered(lambda x: rec.destination_journal_id in x.cashbox_id.journal_ids)
+                .filtered(lambda x: rec.to_journal_id in x.cashbox_id.journal_ids)
             )
             if len(session_ids) == 1:
                 rec.cashbox_session_id = session_ids.id
@@ -47,14 +47,14 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
         payments.cashbox_session_id = self.cashbox_session_id.id
         return payments
 
-    @api.onchange("destination_journal_id")
+    @api.onchange("to_journal_id")
     def _compute_cashbox_session_ids_domain(self):
         self.cashbox_session_id = False
-        cashbox_ids = self.env["account.cashbox"].search([("journal_ids", "in", self.destination_journal_id.ids)])
+        cashbox_ids = self.env["account.cashbox"].search([("journal_ids", "in", self.to_journal_id.ids)])
         session_ids = cashbox_ids.mapped("current_concurrent_session_ids").ids
         self.cashbox_session_ids_domain = [
             ("state", "=", "opened"),
-            ("company_id", "=", self.company_id.id),
+            ("company_id", "=", self.to_journal_id.company_id.id),
             ("id", "in", session_ids),
             "|",
             ("user_ids", "=", self.env.uid),
