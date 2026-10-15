@@ -1,0 +1,12 @@
+id,name,model_id,group_id/id,operation,domain
+cashbox_user,Cashbox Invoicing User,account.cashbox,account.group_account_invoice,r,"['|', '|', ('restrict_users', '=', False), ('allowed_res_users_ids', '=', user.id), ('allowed_users_view_payments', 'in', [user.id])]"
+cashbox_admin,Cashbox Invoicing Manager,account.cashbox,account.group_account_manager,crud,
+cashbox_company_rule,Cashbox multi-company,account.cashbox,,crud,"[('company_id', 'parent_of', company_ids)]"
+cashbox_session_user,Cashbox Session Invoicing User,account.cashbox.session,account.group_account_invoice,cru,"['|', ('user_ids', '=', user.id),('user_ids', '=', False)]"
+cashbox_session_view_only,Cashbox Session View Only,account.cashbox.session,account.group_account_invoice,r,"[('cashbox_id.allowed_users_view_payments', 'in', [user.id])]"
+cashbox_session_admin,Cashbox Session Invoicing Manager,account.cashbox.session,account.group_account_manager,crud,
+cashbox_session_company_rule,Cashbox Session multi-company,account.cashbox.session,,crud,"[('company_id', 'parent_of', company_ids)]"
+access_account_cashbox_session_line_user,access_account_cashbox_session_line_user,account.cashbox.session.line,account.group_account_invoice,cru,
+access_account_cashbox_session_line_manager,access_account_cashbox_session_line_user,account.cashbox.session.line,account.group_account_manager,crud,
+access_account_cashbox_payment_import_user,access_account_cashbox_payment_import_user,account.cashbox.payment.import,account.group_account_invoice,crud,
+access_account_cashbox_rounding_adjustment_wizard_user,access_account_cashbox_rounding_adjustment_wizard_user,account.cashbox.rounding.adjustment.wizard,account.group_account_invoice,cru,
