@@ -70,7 +70,7 @@ class PaymentTransactionRetry(models.TransientModel):
                     and x.amount_residual > 0.0
                     and x.move_type in ["out_invoice", "out_refund"]
                     and x.state == "posted"
-                    and not {"pending", "authorized"}.intersection(set(x.transaction_ids.mapped("state")))
+                    and not x.has_pending_transaction
                     and x.company_id == self.env.company
                 )
             )

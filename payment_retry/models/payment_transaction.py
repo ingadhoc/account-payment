@@ -21,12 +21,14 @@ class PaymentTransaction(models.Model):
                 ("operation", "!=", "validation"),
                 ("asynchronous_process", "=", True),
                 ("create_date", ">=", retry_limit_date),
+                # Already sent: the provider answer waits in payment.data to be processed.
+                ("payment_data_ids", "=", False),
             ]
         )
         self.env["ir.cron"]._commit_progress(remaining=len(tx_ids))
         for tx_id in tx_ids:
             try:
-                if tx_id.state == "draft":
+                if tx_id.state == "draft" and not tx_id.payment_data_ids:
                     tx_id._send_payment_request()
                 self.env["ir.cron"]._commit_progress(1)
             except Exception as exp:
@@ -38,10 +40,10 @@ class PaymentTransaction(models.Model):
     def _post_process_with_lock(self):
         """Keep the transactions still waiting to be sent out of the post-processing.
 
-        `payment`'s cron does not filter by state, so it also sweeps the draft transactions
-        `cron_asynchronous_process` is sending. Both update the same row and, under REPEATABLE
-        READ, the one committing last loses its whole transaction. A draft transaction has
-        nothing to post-process, and comes back here once it reaches a final state.
+        `payment`'s post-processing cron does not filter by state, so it also locks and writes the
+        draft transactions `cron_asynchronous_process` is sending. When both write the same row,
+        under REPEATABLE READ the one committing last fails. A draft transaction has nothing to
+        post-process, and comes back here once it reaches a final state.
         """
         waiting_txs = self.filtered(lambda tx: tx.asynchronous_process and tx.state == "draft")
         return super(PaymentTransaction, self - waiting_txs)._post_process_with_lock()
