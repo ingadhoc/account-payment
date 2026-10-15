@@ -4,16 +4,220 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 19.0+e\n"
+"Project-Id-Version: Odoo Server 20.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-08 13:26+0000\n"
-"PO-Revision-Date: 2026-07-08 13:26+0000\n"
+"POT-Creation-Date: 2026-10-15 13:31+0000\n"
+"PO-Revision-Date: 2026-10-15 13:31+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
+
+#. module: account_cashbox
+#: model:ir.module.module,description:base.module_account_cashbox
+msgid ""
+".. |company| replace:: ADHOC SA\n"
+"\n"
+".. |company_logo| image:: https://raw.githubusercontent.com/ingadhoc/maintainer-tools/master/resources/adhoc-logo.png\n"
+"   :alt: ADHOC SA\n"
+"   :target: https://www.adhoc.com.ar\n"
+"\n"
+".. |icon| image:: https://raw.githubusercontent.com/ingadhoc/maintainer-tools/master/resources/adhoc-icon.png\n"
+"\n"
+".. image:: https://img.shields.io/badge/license-AGPL--3-blue.png\n"
+"   :target: https://www.gnu.org/licenses/agpl\n"
+"   :alt: License: AGPL-3\n"
+"\n"
+"================\n"
+"Account Cashbox\n"
+"================\n"
+"\n"
+"Comprehensive cash management module for Odoo that provides complete cashbox session control, payment tracking, and cash reconciliation features.\n"
+"\n"
+"Features\n"
+"========\n"
+"\n"
+"* **Cashbox Configuration Management**: Set up and configure multiple cashboxes with custom settings\n"
+"* **Cash Session Control**: Start, manage, and close cashbox sessions with proper validation\n"
+"* **Payment Integration**: Seamlessly handle cash payments through cashbox sessions\n"
+"* **User Session Requirements**: Enforce cashbox session requirements for specific users\n"
+"* **Rounding Adjustments**: Handle cash rounding differences with dedicated adjustment tools\n"
+"* **Payment Import**: Import and process multiple payments within cashbox sessions\n"
+"* **Move Integration**: Link accounting moves to cashbox sessions for complete traceability\n"
+"\n"
+"Installation\n"
+"============\n"
+"\n"
+"To install this module, you need to:\n"
+"\n"
+"#. Just install this module.\n"
+"\n"
+"Dependencies\n"
+"============\n"
+"\n"
+"* account_ux\n"
+"* account_internal_transfer\n"
+"\n"
+"Configuration\n"
+"=============\n"
+"\n"
+"Cashbox Setup\n"
+"-------------\n"
+"\n"
+"#. Go to **Accounting > Configuration > Cashbox Management**\n"
+"#. Create new cashboxes and configure:\n"
+"\n"
+"   * Name and description\n"
+"   * Associated journal\n"
+"   * Session validation rules\n"
+"   * User permissions\n"
+"\n"
+"Restricting Users\n"
+"-----------------\n"
+"\n"
+"#. On the cashbox, enable **Restrict Users** and set the **Allowed Users**\n"
+"#. A new session gets the user who opens it; other allowed users can be added to the session\n"
+"#. Every session user must be an allowed user of the cashbox, or the session is not saved.\n"
+"   Accounting administrators are exempt: they can operate any cashbox\n"
+"#. Without **Restrict Users**, sessions have no users and any user with access can operate them\n"
+"#. Who sees the cashbox: without **Restrict Users**, every invoicing user; with it, only its allowed\n"
+"   users and the users set to view its payments. Accounting administrators see every cashbox\n"
+"\n"
+"User Configuration\n"
+"------------------\n"
+"\n"
+"#. Go to **Settings > Users & Companies > Users**\n"
+"#. For users that require cashbox sessions:\n"
+"\n"
+"   * Enable \"Require Cashbox Session\"\n"
+"   * Set the \"Default Cashbox\": an unrestricted cashbox or one where the user is allowed\n"
+"\n"
+"The user's allowed cashboxes are read-only here: they are managed from each cashbox.\n"
+"\n"
+"Usage\n"
+"=====\n"
+"\n"
+"Daily Cash Operations\n"
+"---------------------\n"
+"\n"
+"**Starting a Session:**\n"
+"\n"
+"#. Go to **Accounting > Bank and Cash > Cashbox**\n"
+"#. Select your cashbox and click \"New Session\"\n"
+"#. Click in \"Open Session\"\n"
+"\n"
+"**Processing Payments:**\n"
+"\n"
+"#. Cash payments will automatically link to active sessions\n"
+"#. Use **Payment Import Wizard** for bulk payment processing:\n"
+"\n"
+"   * Go to active session\n"
+"   * Click \"Import Payments\"\n"
+"   * Upload or enter payment data\n"
+"\n"
+"**Session Management:**\n"
+"\n"
+"#. Monitor ongoing sessions from the Cash Sessions menu\n"
+"#. Track payments, adjustments, and balances in real-time\n"
+"#. Use session lines to review all transactions\n"
+"\n"
+"**Closing a Session:**\n"
+"\n"
+"#. Count physical cash and enter closing balance\n"
+"#. Use **Rounding Adjustment** wizard if needed:\n"
+"\n"
+"   * Click \"Rounding Adjustment\" in session\n"
+"   * Enter actual counted amount\n"
+"   * System calculates and posts adjustment\n"
+"\n"
+"#. Validate session closure\n"
+"\n"
+"Payment Registration\n"
+"--------------------\n"
+"\n"
+"When registering payments in invoices:\n"
+"\n"
+"#. The system will check if user requires cashbox session\n"
+"#. Active sessions will be automatically linked to cash payments\n"
+"#. Session validation ensures all cash goes through proper controls\n"
+"\n"
+"Accounting Integration\n"
+"----------------------\n"
+"\n"
+"#. All cashbox operations create proper accounting entries\n"
+"#. Session movements are linked to accounting moves\n"
+"#. Full traceability from payment to journal entries\n"
+"#. Automatic reconciliation with bank statements\n"
+"\n"
+"Technical Details\n"
+"=================\n"
+"\n"
+"Models Extended\n"
+"---------------\n"
+"\n"
+"* `account.payment` - Links payments to cashbox sessions\n"
+"* `account.move` - Adds cashbox session tracking\n"
+"* `res.users` - Adds cashbox session requirements\n"
+"* `account.payment.register` - Integrates session validation\n"
+"\n"
+"New Models\n"
+"----------\n"
+"\n"
+"* `account.cashbox` - Cashbox configuration\n"
+"* `account.cashbox.session` - Cash session management\n"
+"* `account.cashbox.session.line` - Session transaction lines\n"
+"\n"
+"Wizards\n"
+"-------\n"
+"\n"
+"* Payment Import - Bulk payment processing\n"
+"* Rounding Adjustment - Handle cash differences\n"
+"* Enhanced Payment Register - Session-aware payment registration\n"
+"\n"
+"Security\n"
+"========\n"
+"\n"
+"The module includes comprehensive security rules:\n"
+"\n"
+"* Cashbox access controls\n"
+"* Session user restrictions\n"
+"* Payment validation rules\n"
+"* Multi-company support\n"
+"\n"
+".. image:: https://odoo-community.org/website/image/ir.attachment/5784_f2813bd/datas\n"
+"   :alt: Try me on Runbot\n"
+"   :target: http://runbot.adhoc.com.ar/\n"
+"\n"
+"Bug Tracker\n"
+"===========\n"
+"\n"
+"Bugs are tracked on `GitHub Issues\n"
+"<https://github.com/ingadhoc/account-payment/issues>`_. In case of trouble, please\n"
+"check there if your issue has already been reported. If you spotted it first,\n"
+"help us smashing it by providing a detailed and welcomed feedback.\n"
+"\n"
+"Credits\n"
+"=======\n"
+"\n"
+"Images\n"
+"------\n"
+"\n"
+"* |company| |icon|\n"
+"\n"
+"Contributors\n"
+"------------\n"
+"\n"
+"Maintainer\n"
+"----------\n"
+"\n"
+"|company_logo|\n"
+"\n"
+"This module is maintained by the |company|.\n"
+"\n"
+"To contribute to this module, please visit https://www.adhoc.com.ar.\n"
+msgstr ""
 
 #. module: account_cashbox
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_rounding_adjustment_wizard
@@ -65,6 +269,11 @@ msgstr ""
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__activity_exception_decoration
 msgid "Activity Exception Decoration"
+msgstr ""
+
+#. module: account_cashbox
+#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__activity_plans_ids
+msgid "Activity Plans"
 msgstr ""
 
 #. module: account_cashbox
@@ -149,7 +358,6 @@ msgstr ""
 
 #. module: account_cashbox
 #: model:account.journal,name:account_cashbox.journal_cajas
-#: model_terms:ir.ui.view,arch_db:account_cashbox.view_users_form_extend
 msgid "Cajas"
 msgstr ""
 
@@ -189,6 +397,7 @@ msgid "Cashbox Session"
 msgstr ""
 
 #. module: account_cashbox
+#: model:ir.module.module,shortdesc:base.module_account_cashbox
 #: model:ir.ui.menu,name:account_cashbox.menu_account_cashbox
 #: model_terms:ir.actions.act_window,help:account_cashbox.account_cashbox_action
 #: model_terms:ir.actions.act_window,help:account_cashbox.account_cashbox_settings_action
@@ -204,6 +413,11 @@ msgstr ""
 #: model:ir.model.fields,help:account_cashbox.field_account_bank_statement_line__cashbox_session_id
 #: model:ir.model.fields,help:account_cashbox.field_account_move__cashbox_session_id
 msgid "Cashbox session associated with this move."
+msgstr ""
+
+#. module: account_cashbox
+#: model_terms:ir.ui.view,arch_db:account_cashbox.view_users_form_extend
+msgid "Cashboxes"
 msgstr ""
 
 #. module: account_cashbox
@@ -332,19 +546,6 @@ msgid "Edit config"
 msgstr ""
 
 #. module: account_cashbox
-#: model:ir.model.constraint,message:account_cashbox.constraint_account_cashbox_session_uniq_name_cashbox
-msgid "El nombre de esta sesión de caja debe ser único!"
-msgstr ""
-
-#. module: account_cashbox
-#. odoo-python
-#: code:addons/account_cashbox/models/account_cashbox_session.py:0
-msgid ""
-"En el diario \"%s\" la diferencia del Balance Final Real (%s) excede la "
-"máxima diferencia permitida (%s)."
-msgstr ""
-
-#. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session_line__balance_end
 msgid "Ending Balance"
 msgstr ""
@@ -357,11 +558,6 @@ msgstr ""
 #. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__message_partner_ids
 msgid "Followers (Partners)"
-msgstr ""
-
-#. module: account_cashbox
-#: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__activity_type_icon
-msgid "Font awesome icon e.g. fa-tasks"
 msgstr ""
 
 #. module: account_cashbox
@@ -463,6 +659,11 @@ msgid ""
 msgstr ""
 
 #. module: account_cashbox
+#: model:ir.module.module,summary:base.module_account_cashbox
+msgid "Introduces concept cashbox and accounting journal sessions"
+msgstr ""
+
+#. module: account_cashbox
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__message_is_follower
 msgid "Is Follower"
 msgstr ""
@@ -513,6 +714,11 @@ msgstr ""
 #. module: account_cashbox
 #: model:ir.model.fields,help:account_cashbox.field_account_cashbox_rounding_adjustment_wizard__forced_rate
 msgid "Manually set the currency exchange rate for the adjustment"
+msgstr ""
+
+#. module: account_cashbox
+#: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__activity_type_icon
+msgid "Material Symbols icon e.g. checklist"
 msgstr ""
 
 #. module: account_cashbox
@@ -594,6 +800,14 @@ msgid "Numbering of cash sessions."
 msgstr ""
 
 #. module: account_cashbox
+#. odoo-python
+#: code:addons/account_cashbox/models/account_cashbox_session.py:0
+msgid ""
+"On journal \"%s\" the difference of the real ending balance (%s) exceeds the"
+" maximum allowed difference (%s)."
+msgstr ""
+
+#. module: account_cashbox
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_kanban
 msgid "Open Session"
 msgstr ""
@@ -626,6 +840,7 @@ msgid "Pay"
 msgstr ""
 
 #. module: account_cashbox
+#: model:ir.model,name:account_cashbox.model_account_payment
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__payment_ids
 msgid "Payment"
 msgstr ""
@@ -636,7 +851,6 @@ msgid "Payment method"
 msgstr ""
 
 #. module: account_cashbox
-#: model:ir.model,name:account_cashbox.model_account_payment
 #: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_payment_import__payment_ids
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_session_form
 msgid "Payments"
@@ -754,6 +968,11 @@ msgid ""
 msgstr ""
 
 #. module: account_cashbox
+#: model:ir.model.constraint,message:account_cashbox.constraint_account_cashbox_session_uniq_name_cashbox
+msgid "The session name must be unique per cashbox."
+msgstr ""
+
+#. module: account_cashbox
 #: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__activity_exception_decoration
 msgid "Type of the exception activity on record."
 msgstr ""
@@ -784,16 +1003,6 @@ msgstr ""
 #. module: account_cashbox
 #: model_terms:ir.ui.view,arch_db:account_cashbox.view_account_cashbox_kanban
 msgid "View Sessions"
-msgstr ""
-
-#. module: account_cashbox
-#: model:ir.model.fields,field_description:account_cashbox.field_account_cashbox_session__website_message_ids
-msgid "Website Messages"
-msgstr ""
-
-#. module: account_cashbox
-#: model:ir.model.fields,help:account_cashbox.field_account_cashbox_session__website_message_ids
-msgid "Website communication history"
 msgstr ""
 
 #. module: account_cashbox
