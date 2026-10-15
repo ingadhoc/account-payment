@@ -43,9 +43,9 @@ Configuration
 
 **Cashbox Session Setup:**
 
-#. Ensure cashbox sessions are properly configured in **Accounting > Configuration > Point of Sale Sessions**
-#. Create and open cashbox sessions as needed
-#. Users can be assigned to specific sessions or left unassigned for global access
+#. Set up the cashboxes in **Accounting > Configuration > Cashbox Management**, including the destination journals of the transfers
+#. Open the sessions from **Accounting > Bank and Cash > Cashbox**
+#. A session of a restricted cashbox belongs to the users who operate it; a session of an unrestricted cashbox can be used by anyone
 
 Usage
 =====
@@ -55,18 +55,14 @@ Usage
 #. Navigate to **Accounting > Customers > Checks** or **Accounting > Vendors > Checks**
 #. Select one or more third-party checks
 #. Click "Transfer" button to open the mass transfer wizard
-#. The system will automatically detect and suggest available cashbox sessions:
-
-   - If only one session is open and accessible to the user, it will be pre-selected
-   - If multiple sessions are available, a dropdown will allow selection
-   - If the user requires cashbox session usage, the field becomes mandatory
-
-#. Select the destination journal and cashbox session (if required)
-#. Complete the transfer - all resulting payments will be linked to the selected cashbox session
+#. Select the destination journal
+#. Select the cashbox session. The list shows the open sessions that the user can operate, of the cashboxes that handle the destination journal.
+   If the user requires cashbox session usage, the field is mandatory
+#. Complete the transfer - the outgoing payment of the transfer is linked to the selected cashbox session
 
 **Security and Access Control:**
 
-- The transfer button in check lists is restricted to users with "Show Accounting Features" access
+- The transfer button in the third party checks list is also available to invoicing users
 - Cashbox session selection is filtered by user permissions and session status
 - Only open sessions are available for selection
 
@@ -78,7 +74,7 @@ Bug Tracker
 ===========
 
 Bugs are tracked on `GitHub Issues
-<https://github.com/ingadhoc/account_payment/issues>`_. In case of trouble, please
+<https://github.com/ingadhoc/account-payment/issues>`_. In case of trouble, please
 check there if your issue has already been reported. If you spotted it first,
 help us smashing it by providing a detailed and welcomed feedback.
 
