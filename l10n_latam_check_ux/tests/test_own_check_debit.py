@@ -209,3 +209,37 @@ class TestOwnCheckDebit(LatamCheckCommon):
             second_open = open_lines.filtered(lambda line: line.l10n_latam_check_ids.payment_id == second)
             self.assertEqual(sum(first_open.mapped("amount_residual")), -20000.0)
             self.assertEqual(sum(second_open.mapped("amount_residual")), -20000.0)
+
+
+@tagged("post_install", "-at_install")
+class TestOwnCheckDebitWithoutReconcileWizard(TestOwnCheckDebit):
+    """Débito por el camino de Community, sin ``account.reconcile.wizard``.
+
+    Con Enterprise instalado ese camino no se ejecuta nunca: se fuerza para que
+    el débito arme su propio asiento y lo concilie contra el cheque.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.patch(type(self.env["account.check.action.wizard"]), "_has_reconcile_wizard", lambda self: False)
+
+    def test_debit_move_cancels_the_check_line_against_the_manual_account(self):
+        """Dado un cheque propio entregado, cuando se debita sin el wizard de
+        conciliación, entonces el asiento va al Debe de la cuenta del cheque y al
+        Haber de la cuenta del método manual, y concilia el apunte del cheque."""
+        payment = self._issue_checks([12000.0], numbers=["0061"])
+        check = payment.l10n_latam_new_check_ids
+
+        self._debit(check)
+
+        debit_move = self.env["account.move.line"].search([("name", "=", f"Débito cheque nro {check.name}")]).move_id
+        self.assertEqual(debit_move.state, "posted")
+        self.assertRecordValues(
+            debit_move.line_ids.sorted("debit", reverse=True),
+            [
+                {"account_id": self.deferred_check_account.id, "debit": 12000.0, "credit": 0.0},
+                {"account_id": self.manual_outstanding_account.id, "debit": 0.0, "credit": 12000.0},
+            ],
+        )
+        self.assertEqual(check.outstanding_line_id.amount_residual, 0.0)
+        self.assertEqual(check.issue_state, "debited")
