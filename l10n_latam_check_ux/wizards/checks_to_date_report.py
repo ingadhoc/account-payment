@@ -10,20 +10,42 @@ class AccountCheckToDateReportWizard(models.TransientModel):
     _name = "account.check.to_date.report.wizard"
     _description = "account.check.to_date.report.wizard"
 
+    company_ids = fields.Many2many(
+        "res.company",
+        string="Compañías",
+        compute="_compute_company_ids",
+        help="Compañías tildadas en el selector. El reporte incluye exactamente esas.",
+    )
     journal_id = fields.Many2one(
         "account.journal",
         string="Diario",
-        domain=[
-            "|",
-            ("outbound_payment_method_line_ids.code", "=", "check_printing"),
-            ("inbound_payment_method_line_ids.code", "=", "in_third_party_checks"),
-        ],
+        domain="""[
+            '&',
+            ('company_id', 'in', company_ids),
+            '|',
+            ('outbound_payment_method_line_ids.code', '=', 'check_printing'),
+            ('inbound_payment_method_line_ids.code', '=', 'in_third_party_checks'),
+        ]""",
     )
     to_date = fields.Date(
         "Hasta Fecha",
         required=True,
         default=fields.Date.today,
     )
+
+    @api.depends_context("allowed_company_ids")
+    def _compute_company_ids(self):
+        for rec in self:
+            rec.company_ids = self._get_report_companies()
+
+    @api.model
+    def _get_report_companies(self):
+        """Compañías que abarca el reporte: exactamente las tildadas en el selector.
+
+        No se limita al árbol de la compañía activa: el usuario arma el reporte con la
+        combinación que necesite, aunque sean compañías de otro grupo económico.
+        """
+        return self.env.companies
 
     def action_confirm(self):
         self.ensure_one()
@@ -68,6 +90,7 @@ class AccountCheckToDateReportWizard(models.TransientModel):
                         WHERE
                         apm.code = 'own_checks'
                         AND ap_move.date <= %(to_date)s
+                        AND ap_move.company_id = ANY(%(company_ids)s)
                         AND ap.state not in ('canceled', 'draft')
                         AND c.issue_state != 'voided'
                         ORDER BY c.id, ap_move.date desc
@@ -106,6 +129,7 @@ class AccountCheckToDateReportWizard(models.TransientModel):
                 ;
             """,
             to_date=to_date,
+            company_ids=self._get_report_companies().ids,
         )
         self.env.cr.execute(query)
         res = self.env.cr.fetchall()
@@ -205,6 +229,7 @@ class AccountCheckToDateReportWizard(models.TransientModel):
                 )
             )
             AND ap_move.date <= %s
+            AND ap_move.company_id = ANY(%s)
             UNION ALL
             SELECT c.id AS check_id, ap_move.date AS operation_date, apm.code AS operation_code
             FROM l10n_latam_check c
@@ -217,9 +242,11 @@ class AccountCheckToDateReportWizard(models.TransientModel):
                 apm.code in ('new_third_party_checks','in_third_party_checks')
                 AND c.current_journal_id IS NOT NULL
                 AND rel.check_id IS NULL
-                AND ap_move.date <= %s;
+                AND ap_move.date <= %s
+                AND ap_move.company_id = ANY(%s);
         """
-        self.env.cr.execute(query, (to_date, to_date, to_date))
+        company_ids = self._get_report_companies().ids
+        self.env.cr.execute(query, (to_date, to_date, company_ids, to_date, company_ids))
         res = self.env.cr.fetchall()
         check_ids = [x[0] for x in res]
         checks = self.env["l10n_latam.check"].search([("id", "in", check_ids)])

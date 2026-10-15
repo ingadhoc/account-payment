@@ -6,8 +6,12 @@
     <t t-set="company" t-value="env.company"/>
         <t t-call="web.internal_layout">
             <h3 class="text-center">Listado de cheques pendientes al <span t-field="docs.to_date"/></h3>
+            <t t-set="report_companies" t-value="docs._get_report_companies()"/>
+            <div>
+                Compañía: <span t-out="', '.join(report_companies.mapped('name'))"/>
+            </div>
             <t t-if="docs.journal_id">
-                Diario: <span t-esc="docs.env['account.journal'].browse(docs.journal_id.id).name"/>
+                Diario: <span t-out="docs.journal_id.name"/>
             </t>
             <div class="page">
                 <t t-if="docs._get_checks_handed(docs.journal_id.id, docs.to_date)">
@@ -20,6 +24,7 @@
                                 <th class="text-left">Fecha contable</th>
                                 <th class="text-left">Fecha de pago</th>
                                 <th class="text-left">Empresa</th>
+                                <th t-if="len(report_companies) > 1" class="text-left">Compañía</th>
                                 <th class="text-left">Importe</th>
                             </tr>
                         </thead>
@@ -38,6 +43,9 @@
                                 </td>
                                 <td>
                                     <span t-out="tcheck.partner_id.name" />
+                                </td>
+                                <td t-if="len(report_companies) > 1">
+                                    <span t-out="tcheck.company_id.name"/>
                                 </td>
                                 <td>
                                     <span t-out="tcheck.amount"  t-options='{"widget": "monetary", "display_currency": tcheck.currency_id}'/>
@@ -66,6 +74,7 @@
                                 <th class="text-left">Fecha contable</th>
                                 <th class="text-left">Fecha de pago</th>
                                 <th class="text-left">Cuit</th>
+                                <th t-if="len(report_companies) > 1" class="text-left">Compañía</th>
                                 <th class="text-left">Importe</th>
                             </tr>
                         </thead>
@@ -84,6 +93,9 @@
                                 </td>
                                 <td>
                                     <span t-out="tcheck.issuer_vat" />
+                                </td>
+                                <td t-if="len(report_companies) > 1">
+                                    <span t-out="tcheck.company_id.name"/>
                                 </td>
                                 <td>
                                     <span t-out="tcheck.amount"  t-options='{"widget": "monetary", "display_currency": tcheck.currency_id}'/>
