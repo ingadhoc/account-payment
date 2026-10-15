@@ -12,6 +12,6 @@
         "data/ir_cron.xml",
         "wizards/payment_transaction_retry.xml",
         "wizards/electronic_payment_pending_confirm.xml",
-        'security/ir.access.csv',
+        "security/ir.access.csv",
     ],
 }
