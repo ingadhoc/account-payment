@@ -45,7 +45,7 @@ class TestThirdPartyCheckLifecycle(LatamCheckCommon):
         outbound = (
             self.env["l10n_latam.payment.mass.transfer"]
             .with_context(active_model="l10n_latam.check", active_ids=checks.ids)
-            .create({"destination_journal_id": destination.id})
+            .create({"to_journal_id": destination.id})
             ._create_payments()
         )
         inbound = self._last_operation_of(checks[0], "inbound")

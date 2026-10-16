@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-23 20:56+0000\n"
-"PO-Revision-Date: 2026-04-23 18:41+0000\n"
+"POT-Creation-Date: 2026-10-16 13:15+0000\n"
+"PO-Revision-Date: 2026-10-16 13:15+0000\n"
 "Last-Translator: julia elizondo <jue@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
 "payment-19-0/account-payment-19-0-l10n_latam_check_ux/es/>\n"
@@ -28,19 +28,312 @@ msgstr ""
 msgid ""
 "%d deposited check(s): bank outgoing transfer + customer debit will be "
 "created."
-msgstr ""
+msgstr "%d cheque(s) depositado(s): se creará una transferencia saliente del banco y un débito al cliente."
 
 #. module: l10n_latam_check_ux
 #. odoo-python
 #: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
 msgid ""
 "%d endorsed check(s): supplier receipt + customer debit will be created."
-msgstr ""
+msgstr "%d cheque(s) endosado(s): se creará un recibo del proveedor y un débito al cliente."
 
 #. module: l10n_latam_check_ux
 #: model:ir.actions.report,print_report_name:l10n_latam_check_ux.checks_to_date_report
 msgid "'Cheques a fecha - %s' % (object.to_date)"
-msgstr "'Cheques a fecha - %s' % (object.to_date)"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.module.module,description:base.module_l10n_latam_check_ux
+msgid ""
+".. |company| replace:: ADHOC SA\n"
+"\n"
+".. |company_logo| image:: https://raw.githubusercontent.com/ingadhoc/maintainer-tools/master/resources/adhoc-logo.png\n"
+"   :alt: ADHOC SA\n"
+"   :target: https://www.adhoc.com.ar\n"
+"\n"
+".. |icon| image:: https://raw.githubusercontent.com/ingadhoc/maintainer-tools/master/resources/adhoc-icon.png\n"
+"\n"
+".. image:: https://img.shields.io/badge/license-AGPL--3-blue.png\n"
+"   :target: https://www.gnu.org/licenses/agpl\n"
+"   :alt: License: AGPL-3\n"
+"\n"
+"==============\n"
+"Latam Check UX\n"
+"==============\n"
+"\n"
+"This module extends the standard functionality of Odoo's l10n_latam_check module with enhanced user experience features for Latin American check management. It provides comprehensive improvements for check operations, reporting, and workflow optimization.\n"
+"\n"
+"**Version:** 20.0.1.0.0\n"
+"\n"
+"Features\n"
+"========\n"
+"\n"
+"Check Operations Management\n"
+"---------------------------\n"
+"\n"
+"* **Check Debit Functionality**: Adds a \"Debit check\" button on check records allowing users to easily debit checks with outstanding balances.\n"
+"* **Enhanced Check Operations**: Improved check operation tracking with operation dates and better filtering of operations by company.\n"
+"* **Check Operation History**: Complete operation tracking with chronological ordering and proper company filtering.\n"
+"* **Reset to Draft Validation**: Prevents resetting payments to draft if they are not the last operation for the associated checks.\n"
+"\n"
+"\n"
+"Mass Transfer Operations\n"
+"------------------------\n"
+"\n"
+"* **Enhanced Mass Transfer Wizard**: Improved wizard for transferring multiple checks between journals with additional validation.\n"
+"* **Split Payment Option**: Ability to create individual payments for each check instead of grouping them into a single payment.\n"
+"* **Inter-company Transfer Validation**: Checks can be transferred between branches only when both companies share the VAT number and the Inter-Banks Transfer Account.\n"
+"* **Automatic Pairing**: Automatic creation and pairing of inbound/outbound payments for internal transfers.\n"
+"\n"
+"User Interface Enhancements\n"
+"----------------------------\n"
+"\n"
+"* **Extended Check Views**: Additional fields in check list views including payment date, memo, and operation dates.\n"
+"* **Advanced Filtering**: New filters like \"Last 90 days\" for better data navigation.\n"
+"* **Operation Date Display**: Visible operation dates in check operation trees for better tracking.\n"
+"* **Bulk Actions**: Support for bulk check debit operations from list views.\n"
+"\n"
+"Data Management\n"
+"---------------\n"
+"\n"
+"* **Operation Date Tracking**: Automatic tracking of operation dates with proper sequencing for check operations.\n"
+"* **Company Context**: Improved company handling for multi-company environments.\n"
+"* **Check State Validation**: Enhanced validation to ensure check operation integrity and proper state transitions.\n"
+"\n"
+"Technical Features\n"
+"==================\n"
+"\n"
+"Models Extended\n"
+"---------------\n"
+"\n"
+"* **l10n_latam.check**: Enhanced with debit button configuration, operation dates, company computation, and payment state tracking.\n"
+"* **account.payment**: Extended with operation date tracking, validation improvements, and enhanced internal transfer functionality.\n"
+"* **account.journal**: Added check debit button configuration field.\n"
+"\n"
+"New Wizards\n"
+"-----------\n"
+"\n"
+"* **account.check.action.wizard**: Wizard for check debit operations with date validation and outstanding account management.\n"
+"* **l10n_latam.payment.mass.transfer**: Enhanced mass transfer wizard with split payment functionality and inter-company validation.\n"
+"\n"
+"Security & Permissions\n"
+"----------------------\n"
+"\n"
+"* Access rights defined in ``security/ir.access.csv`` for proper wizard access control.\n"
+"\n"
+"Validation & Constraints\n"
+"-------------------------\n"
+"\n"
+"* Date validation ensuring debit dates are not before issue dates.\n"
+"* Company validation for mass transfer operations: transfers between companies with a different VAT number are blocked.\n"
+"* Outstanding account validation for debit operations.\n"
+"* Check operation sequence validation.\n"
+"* Debit checks from payments: Adds a button in the check record to perform the debit action, streamlining check management.\n"
+"* Check number in PDF documents: Includes the check number when printing the receipt and payment PDFs, improving traceability.\n"
+"* Journal entry protection: The journal entry of a payment with checks cannot be deleted while the payment is confirmed, because deleting it and posting the payment again leaves the check with the wrong current journal. The payment has to be reset to draft to adjust its journal entry.\n"
+"* Own checks with automatic debit: when the account configured on the own checks payment method is not reconcilable (typically the liquidity account of the journal itself, i.e. the bank debits the check as soon as it is issued), the check is always in debited state and no reconciliation can ever move it. Those payments can be reset to draft and cancelled: the core restriction protects the reconciliation that debited or voided the check, and here there is none.\n"
+"\n"
+"Installation\n"
+"============\n"
+"\n"
+"This module has the following dependencies:\n"
+"\n"
+"* ``l10n_latam_check``: Base Latin American check functionality\n"
+"* ``account_ux``: Account user experience enhancements\n"
+"* ``account_internal_transfer``: Internal transfer functionality\n"
+"\n"
+"To install this module:\n"
+"\n"
+"#. Ensure all dependencies are installed and updated\n"
+"#. Install the module through the Apps menu\n"
+"#. The module will auto-install if all dependencies are present\n"
+"\n"
+"Configuration\n"
+"=============\n"
+"\n"
+"Journal Configuration\n"
+"---------------------\n"
+"\n"
+"#. Go to **Accounting → Configuration → Journals**\n"
+"#. Open a journal used for check management\n"
+"#. In the **Latam Checks** section, enable **\"Agregar botón de débito\"** to allow check debit operations\n"
+"#. Ensure the journal has a manual payment method configured for debit operations\n"
+"\n"
+"Payment Method Setup\n"
+"--------------------\n"
+"\n"
+"#. Verify that journals have proper payment methods configured:\n"
+"\n"
+"   * For outbound payments: Manual payment method for debit operations\n"
+"   * For check transfers: Appropriate third-party check payment methods\n"
+"\n"
+"#. The system will automatically use:\n"
+"\n"
+"   * Manual payment method named \"Manual\" if available\n"
+"   * First available manual payment method as fallback\n"
+"\n"
+"Usage\n"
+"=====\n"
+"\n"
+"Check Debit Operations\n"
+"----------------------\n"
+"\n"
+"#. Navigate to **Accounting → Vendors → Checks** or **Accounting → Customers → Checks**\n"
+"#. Open a check record in \"Handed\" state\n"
+"#. Click the **\"Debit check\"** button (visible only if journal is configured for debit operations)\n"
+"#. Set the debit date (must be after the check issue date)\n"
+"#. Confirm the operation\n"
+"\n"
+"The system will:\n"
+"\n"
+"* Create a reconciliation entry using the configured outstanding account\n"
+"* Post a message on the check record with the debit operation details\n"
+"* Link the debit move for audit trail\n"
+"\n"
+"Mass Check Transfers\n"
+"--------------------\n"
+"\n"
+"#. Go to **Accounting → Vendors → Checks** or use the check transfer wizard\n"
+"#. Select multiple checks for transfer\n"
+"#. Choose destination journal\n"
+"#. Enable **\"Split Payment\"** if you want individual payments per check\n"
+"#. Confirm the transfer operation\n"
+"\n"
+"The system will:\n"
+"\n"
+"* Validate that all checks belong to the same company\n"
+"* Block the transfer when the source and destination companies have a different VAT number or Inter-Banks Transfer Account\n"
+"* Create appropriate internal transfer payments\n"
+"* Maintain proper operation sequencing and dates\n"
+"* Link outbound and inbound payments automatically\n"
+"\n"
+"Enhanced Reporting\n"
+"------------------\n"
+"\n"
+"Payment receipts and transfer reports will automatically include:\n"
+"\n"
+"* Check numbers\n"
+"* Bank of the issuer's bank account (for third-party checks)\n"
+"* Issuer VAT information (for third-party checks)\n"
+"* Payment dates\n"
+"* Amounts with proper currency formatting\n"
+"\n"
+"Advanced Filtering\n"
+"------------------\n"
+"\n"
+"Use the enhanced filters in check views:\n"
+"\n"
+"* **Last 90 days**: Quick filter for recent checks\n"
+"* **Payment State**: Filter by payment status\n"
+"* **Company**: Multi-company filtering support\n"
+"\n"
+"Known Issues & Limitations\n"
+"===========================\n"
+"\n"
+"* Check debit operations require proper manual payment method configuration in the journal\n"
+"* Mass transfers between different companies require appropriate permissions and company context\n"
+"* Split payment functionality is only available for third-party checks with compatible currencies\n"
+"\n"
+"Troubleshooting\n"
+"===============\n"
+"\n"
+"Common Issues\n"
+"-------------\n"
+"\n"
+"**\"No es posible crear un nuevo débito de cheque sin un método de pagos 'manual' en el diario\"**\n"
+"\n"
+"* Solution: Configure a manual payment method in the journal settings\n"
+"\n"
+"**\"At least one check is in a journal where the 'Add Debit Date' option is not enabled\"**\n"
+"\n"
+"* Solution: Enable the \"Agregar botón de débito\" option in the journal configuration\n"
+"\n"
+"**\"Operation not allowed: To transfer the checks, you must be operating in the same company\"**\n"
+"\n"
+"* Solution: Switch to the appropriate company context before performing the transfer\n"
+"\n"
+"**\"Checks can only be transferred between companies with the same VAT\"**\n"
+"\n"
+"* Solution: Transfer checks only between branches of the same company (same VAT number)\n"
+"\n"
+"**\"All selected checks must belong to the same company\"**\n"
+"\n"
+"* Solution: Select checks from the same company for mass transfer operations\n"
+"\n"
+"Technical Notes\n"
+"===============\n"
+"\n"
+"Migration Notes\n"
+"---------------\n"
+"\n"
+"* The module maintains compatibility with Odoo 20.0 and includes auto-install capability\n"
+"\n"
+"Data Files\n"
+"----------\n"
+"\n"
+"* ``security/ir.access.csv``: Access control definitions\n"
+"* ``views/``: All view modifications and enhancements\n"
+"* ``wizards/``: Wizard definitions and forms\n"
+"* ``reports/``: Enhanced report templates\n"
+"* ``i18n/es.po``: Spanish translations\n"
+"\n"
+"Development & Extending\n"
+"========================\n"
+"\n"
+"The module follows Odoo best practices and can be extended by:\n"
+"\n"
+"* Inheriting the provided models for additional functionality\n"
+"* Adding new wizards for custom check operations\n"
+"* Extending report templates for additional check information\n"
+"* Creating additional validation rules through model constraints\n"
+"\n"
+"Example of extending check debit functionality::\n"
+"\n"
+"    from odoo import models, fields\n"
+"\n"
+"    class CustomCheckExtension(models.Model):\n"
+"        _inherit = 'l10n_latam.check'\n"
+"\n"
+"        custom_field = fields.Char('Custom Field')\n"
+"\n"
+"        def custom_debit_action(self):\n"
+"            # Custom debit logic here\n"
+"            return super().action_confirm()\n"
+"\n"
+".. image:: https://odoo-community.org/website/image/ir.attachment/5784_f2813bd/datas\n"
+"   :alt: Try me on Runbot\n"
+"   :target: http://runbot.adhoc.com.ar/\n"
+"\n"
+"Bug Tracker\n"
+"===========\n"
+"\n"
+"Bugs are tracked on `GitHub Issues\n"
+"<https://github.com/ingadhoc/account-payment/issues>`_. In case of trouble, please\n"
+"check there if your issue has already been reported. If you spotted it first,\n"
+"help us smashing it by providing a detailed and welcomed feedback.\n"
+"\n"
+"Credits\n"
+"=======\n"
+"\n"
+"Images\n"
+"------\n"
+"\n"
+"* |company| |icon|\n"
+"\n"
+"Contributors\n"
+"------------\n"
+"\n"
+"* ADHOC SA Development Team\n"
+"\n"
+"Maintainer\n"
+"----------\n"
+"\n"
+"|company_logo|\n"
+"\n"
+"This module is maintained by |company|.\n"
+"\n"
+"To contribute to this module, please visit https://www.adhoc.com.ar.\n"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.report_account_transfer_document
@@ -79,9 +372,6 @@ msgid ""
 "                                <span>Total</span>\n"
 "                                </strong>"
 msgstr ""
-"<strong>\n"
-"                                <span>Total</span>\n"
-"                                </strong>"
 
 #. module: l10n_latam_check_ux
 #. odoo-python
@@ -92,7 +382,7 @@ msgstr "Se ha creado un segundo pago:"
 #. module: l10n_latam_check_ux
 #: model:ir.model,name:l10n_latam_check_ux.model_account_account
 msgid "Account"
-msgstr ""
+msgstr "Cuenta"
 
 #. module: l10n_latam_check_ux
 #: model:ir.model,name:l10n_latam_check_ux.model_account_check_action_wizard
@@ -114,13 +404,13 @@ msgstr "Descripción de la Acción"
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_res_partner__add_check_credit
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_res_users__add_check_credit
 msgid "Agregar Crédito de Cheques"
-msgstr "Agregar Crédito de Cheques"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_journal__check_add_debit_button
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__check_add_debit_button
 msgid "Agregar botón de débito"
-msgstr "Agregar botón de débito"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #. odoo-python
@@ -141,12 +431,12 @@ msgstr ""
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__available_destination_payment_method_line_ids
 msgid "Available Destination Payment Method Line"
-msgstr ""
+msgstr "Líneas de método de pago de destino disponibles"
 
 #. module: l10n_latam_check_ux
-#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__bank_id
-msgid "Bank"
-msgstr ""
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__bank_account_id
+msgid "Bank Account"
+msgstr "Cuenta bancaria"
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__can_reject
@@ -162,12 +452,7 @@ msgstr "Cancelar"
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_to_date_report_view
 msgid "Cancelar"
-msgstr "Cancelar"
-
-#. module: l10n_latam_check_ux
-#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__check_ids
-msgid "Check"
-msgstr "Cheque"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #. odoo-python
@@ -181,13 +466,13 @@ msgstr "Cheque %(check_number)s - %(suffix)s"
 msgid ""
 "Check '%s' cannot be rejected. Only third-party checks in valid states can "
 "be rejected."
-msgstr ""
+msgstr "El cheque '%s' no se puede rechazar. Solo se pueden rechazar cheques de terceros en estados válidos."
 
 #. module: l10n_latam_check_ux
 #. odoo-python
 #: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
 msgid "Check '%s' is not a third-party check and cannot be rejected."
-msgstr ""
+msgstr "El cheque '%s' no es un cheque de terceros y no se puede rechazar."
 
 #. module: l10n_latam_check_ux
 #: model:ir.actions.act_window,name:l10n_latam_check_ux.action_debit_check_wizard
@@ -226,31 +511,47 @@ msgid "Checks Mass Transfers"
 msgstr "Transferencia Masiva de Cheques"
 
 #. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/l10n_latam_payment_mass_transfer.py:0
+msgid ""
+"Checks can only be transferred between companies with the same VAT: "
+"\"%(source_company)s\" and \"%(destination_company)s\" have different VAT "
+"numbers."
+msgstr "Los cheques solo se pueden transferir entre compañías con el mismo CUIT: \"%(source_company)s\" y \"%(destination_company)s\" tienen CUIT distintos."
+
+#. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_to_date_report_view
 msgid "Cheques a Fecha"
-msgstr "Cheques a Fecha"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model:ir.actions.act_window,name:l10n_latam_check_ux.action_account_check_to_date_report
 #: model:ir.actions.report,name:l10n_latam_check_ux.checks_to_date_report
 #: model:ir.ui.menu,name:l10n_latam_check_ux.menu_account_check_to_date_report
 msgid "Cheques a fecha"
-msgstr "Cheques a fecha"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
 msgid "Cheques de terceros"
-msgstr "Cheques de terceros"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
 msgid "Cheques propios"
-msgstr "Cheques propios"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__company_id
 msgid "Company"
 msgstr "Empresa"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,help:l10n_latam_check_ux.field_account_check_reject_wizard__company_id
+msgid ""
+"Company of the checks being rejected. The rejection is always processed "
+"within it."
+msgstr "Compañía de los cheques que se rechazan. El rechazo siempre se procesa dentro de ella."
 
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_action_wizard_form_view
@@ -261,7 +562,7 @@ msgstr "Confirmar"
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_to_date_report_view
 msgid "Confirmar"
-msgstr "Confirmar"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model:ir.model,name:l10n_latam_check_ux.model_res_partner
@@ -301,24 +602,19 @@ msgid "Debit check"
 msgstr "Debitar Cheque"
 
 #. module: l10n_latam_check_ux
-#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__destination_journal_id
-msgid "Destination Journal"
-msgstr "Diario Destino"
-
-#. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__destination_payment_method_line_id
 msgid "Destination Journal Payment Method"
-msgstr ""
+msgstr "Método de pago del diario de destino"
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__journal_id
 msgid "Diario"
-msgstr "Diario"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
 msgid "Diario:"
-msgstr "Diario:"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_account__display_name
@@ -333,27 +629,27 @@ msgstr "Diario:"
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__display_name
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_res_partner__display_name
 msgid "Display Name"
-msgstr "Nombre a Mostrar"
+msgstr "Nombre en pantalla"
 
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
 msgid "Empresa"
-msgstr "Empresa"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
 msgid "Fecha contable"
-msgstr "Fecha contable"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
 msgid "Fecha de pago"
-msgstr "Fecha de pago"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__to_date
 msgid "Hasta Fecha"
-msgstr "Hasta Fecha"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_account__id
@@ -368,7 +664,7 @@ msgstr "Hasta Fecha"
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__id
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_res_partner__id
 msgid "ID"
-msgstr "ID"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,help:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__split_payment
@@ -382,22 +678,12 @@ msgstr ""
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
 msgid "Importe"
-msgstr "Importe"
-
-#. module: l10n_latam_check_ux
-#. odoo-python
-#: code:addons/l10n_latam_check_ux/wizards/l10n_latam_payment_mass_transfer.py:0
-msgid ""
-"In order to transfer checks between branches you need to use internal "
-"transfer menu."
 msgstr ""
-"Para transferir cheques entre sucursales, necesitas usar el menú de "
-"transferencia interna."
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__issuer_vat
 msgid "Issuer Vat"
-msgstr ""
+msgstr "CUIT del Emisor"
 
 #. module: l10n_latam_check_ux
 #: model:ir.model,name:l10n_latam_check_ux.model_account_journal
@@ -407,14 +693,14 @@ msgstr "Diario"
 #. module: l10n_latam_check_ux
 #: model:ir.model,name:l10n_latam_check_ux.model_account_move
 msgid "Journal Entry"
-msgstr ""
+msgstr "Asiento contable"
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,help:l10n_latam_check_ux.field_account_check_reject_wizard__rejected_journal_id
 msgid ""
 "Journal used for rejected third-party checks (e.g. 'Cheques de Terceros "
 "Rechazados')."
-msgstr ""
+msgstr "Diario que se usa para los cheques de terceros rechazados (por ejemplo, 'Cheques de Terceros Rechazados')."
 
 #. module: l10n_latam_check_ux
 #. odoo-python
@@ -423,8 +709,6 @@ msgid ""
 "La fecha del débito del cheque %s no puede ser inferior a la fecha de "
 "emisión del mismo %s."
 msgstr ""
-"La fecha del débito del cheque %s no puede ser inferior a la fecha de "
-"emisión del mismo %s."
 
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.view_account_payment_search
@@ -446,6 +730,11 @@ msgid "Last Updated on"
 msgstr "Última Actualización el"
 
 #. module: l10n_latam_check_ux
+#: model:ir.module.module,shortdesc:base.module_l10n_latam_check_ux
+msgid "Latam Check UX"
+msgstr ""
+
+#. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.view_account_journal_form_inherited
 msgid "Latam Checks"
 msgstr "Cheques LATAM"
@@ -453,17 +742,12 @@ msgstr "Cheques LATAM"
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
 msgid "Listado de cheques pendientes al"
-msgstr "Listado de cheques pendientes al"
-
-#. module: l10n_latam_check_ux
-#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__main_company_id
-msgid "Main Company"
-msgstr "Empresa Principal"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__memo
 msgid "Memo"
-msgstr "Memo"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #. odoo-python
@@ -478,8 +762,6 @@ msgid ""
 "No es posible crear un nuevo débito de cheque sin un método de pagos "
 "'manual' en el diario %s."
 msgstr ""
-"No es posible crear un nuevo débito de cheque sin un método de pagos "
-"'manual' en el diario %s."
 
 #. module: l10n_latam_check_ux
 #. odoo-python
@@ -490,12 +772,12 @@ msgstr ""
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__name
 msgid "Number"
-msgstr ""
+msgstr "Número"
 
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
 msgid "Número"
-msgstr "Número"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__operation_ids
@@ -510,29 +792,29 @@ msgstr "Fecha de Operación"
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__outstanding_line_id
 msgid "Outstanding Line"
-msgstr ""
+msgstr "Línea de Liquidez"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model,name:l10n_latam_check_ux.model_account_payment
+msgid "Payment"
+msgstr "Pago"
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__payment_date
 msgid "Payment Date"
-msgstr ""
+msgstr "Fecha de Pago"
 
 #. module: l10n_latam_check_ux
 #: model:ir.model,name:l10n_latam_check_ux.model_account_payment_method_line
-msgid "Payment Methods"
-msgstr "Métodos de Pago"
+msgid "Payment Method Line"
+msgstr "Línea de método de pago"
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,help:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__destination_payment_method_line_id
 msgid ""
 "Payment method line used on the inbound payment created in the destination "
 "journal. It determines the outstanding account of that payment."
-msgstr ""
-
-#. module: l10n_latam_check_ux
-#: model:ir.model,name:l10n_latam_check_ux.model_account_payment
-msgid "Payments"
-msgstr "Pagos"
+msgstr "Línea de método de pago que se usa en el pago entrante creado en el diario de destino. Determina la cuenta pendiente de ese pago."
 
 #. module: l10n_latam_check_ux
 #: model:ir.actions.act_window,name:l10n_latam_check_ux.action_reject_check_wizard
@@ -562,11 +844,6 @@ msgid ""
 "utilizará el primero que sea del tipo Manual (sin importar el nombre). Se "
 "utilizará luego la cuenta configurada en dicho método de ese método de pago."
 msgstr ""
-"Si marca esta opción podrá debitar los cheques con un botón desde los "
-"mismos. Para realizar el asiento de débito se buscará un método de pago "
-"saliente del tipo Manual con nombre Manual, si no se encuentra uno se "
-"utilizará el primero que sea del tipo Manual (sin importar el nombre). Se "
-"utilizará luego la cuenta configurada en dicho método de ese método de pago."
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__split_payment
@@ -580,11 +857,41 @@ msgstr "Estado"
 
 #. module: l10n_latam_check_ux
 #. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/l10n_latam_payment_mass_transfer.py:0
+msgid ""
+"The Inter-Banks Transfer Account of \"%(source_company)s\" and "
+"\"%(destination_company)s\" must be the same to transfer checks between "
+"them."
+msgstr "La cuenta de transferencias interbancarias de \"%(source_company)s\" y \"%(destination_company)s\" debe ser la misma para transferir cheques entre ellas."
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,help:l10n_latam_check_ux.field_l10n_latam_check__payment_date
+msgid "The date when the check can be collected or cashed."
+msgstr "Fecha a partir de la cual el cheque se puede cobrar o depositar."
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/l10n_latam_payment_mass_transfer.py:0
+msgid ""
+"The destination payment method %(method)s cannot receive checks on the "
+"destination journal %(journal)s."
+msgstr "El método de pago de destino %(method)s no puede recibir cheques en el diario de destino %(journal)s."
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid ""
+"The journal '%(journal)s' belongs to '%(journal_company)s' but the check "
+"belongs to '%(company)s'."
+msgstr "El diario '%(journal)s' pertenece a '%(journal_company)s', pero el cheque pertenece a '%(company)s'."
+
+#. module: l10n_latam_check_ux
+#. odoo-python
 #: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
 msgid ""
 "The journal '%s' needs an inbound payment method of type 'Third Party Check "
 "(in)' to receive rejected checks from the supplier."
-msgstr ""
+msgstr "El diario '%s' necesita un método de pago entrante del tipo 'Cheque de terceros (entrada)' para recibir los cheques rechazados del proveedor."
 
 #. module: l10n_latam_check_ux
 #. odoo-python
@@ -592,7 +899,7 @@ msgstr ""
 msgid ""
 "The journal '%s' needs an inbound payment method of type 'Third Party Check "
 "(in)' to receive the transferred rejected check."
-msgstr ""
+msgstr "El diario '%s' necesita un método de pago entrante del tipo 'Cheque de terceros (entrada)' para recibir el cheque rechazado transferido."
 
 #. module: l10n_latam_check_ux
 #. odoo-python
@@ -600,7 +907,7 @@ msgstr ""
 msgid ""
 "The journal '%s' needs an outbound payment method compatible with third-"
 "party checks (e.g. 'out_third_party_checks') to transfer the rejected check."
-msgstr ""
+msgstr "El diario '%s' necesita un método de pago saliente compatible con cheques de terceros (por ejemplo, 'out_third_party_checks') para transferir el cheque rechazado."
 
 #. module: l10n_latam_check_ux
 #. odoo-python
@@ -609,7 +916,7 @@ msgid ""
 "The journal '%s' needs an outbound payment method of type 'Return Third "
 "Party Check' or 'Third Party Check (out)' to return the rejected check to "
 "the customer and generate the debt."
-msgstr ""
+msgstr "El diario '%s' necesita un método de pago saliente del tipo 'Devolución de cheque de terceros' o 'Cheque de terceros (salida)' para devolver el cheque rechazado al cliente y generar la deuda."
 
 #. module: l10n_latam_check_ux
 #. odoo-python
@@ -620,12 +927,12 @@ msgstr "Este pago ha sido creado desde: "
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.view_account_own_check_tree
 msgid "Total"
-msgstr "Total"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__user_can_write
 msgid "User Can Write"
-msgstr ""
+msgstr "El usuario puede escribir"
 
 #. module: l10n_latam_check_ux
 #. odoo-python
@@ -636,7 +943,7 @@ msgid ""
 "payment to draft first.\n"
 "Payments:\n"
 "%s"
-msgstr ""
+msgstr "No puede eliminar el asiento de un pago con cheques mientras el pago está confirmado. Si necesita ajustar el asiento, primero restablezca el pago a borrador.\nPagos:\n%s"
 
 #. module: l10n_latam_check_ux
 #. odoo-python
@@ -651,7 +958,7 @@ msgstr ""
 #. module: l10n_latam_check_ux
 #: model:ir.model,name:l10n_latam_check_ux.model_account_check_to_date_report_wizard
 msgid "account.check.to_date.report.wizard"
-msgstr "account.check.to_date.report.wizard"
+msgstr ""
 
 #. module: l10n_latam_check_ux
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_action_wizard_form_view
@@ -659,22 +966,3 @@ msgstr "account.check.to_date.report.wizard"
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_to_date_report_view
 msgid "or"
 msgstr "o"
-
-#~ msgid ""
-#~ "Operation not allowed: To transfer the checks, you must be operating in "
-#~ "the same company where the checks are registered. Please switch to the "
-#~ "appropriate company and try again."
-#~ msgstr ""
-#~ "Operación no permitida: Para transferir los cheques, debes estar operando "
-#~ "en la misma empresa en la que están registrados los cheques. Por favor, "
-#~ "cambia a la empresa correspondiente e inténtalo de nuevo."
-
-#~ msgid ""
-#~ "Check '%s' is not a third-party check and cannot be rejected with this "
-#~ "wizard."
-#~ msgstr ""
-#~ "El cheque '%s' no es un cheque de terceros y no puede ser rechazado con "
-#~ "este asistente."
-
-#~ msgid "Check rejected. Payments generated: %s"
-#~ msgstr "Cheque rechazado. Pagos generados: %s"

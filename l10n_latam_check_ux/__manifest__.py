@@ -19,7 +19,7 @@
 ##############################################################################
 {
     "name": "Latam Check UX",
-    "version": "19.0.2.2.0",
+    "version": "20.0.1.0.0",
     "category": "Accounting",
     "sequence": 14,
     "summary": "",
@@ -44,10 +44,10 @@
         "wizards/l10n_latam_payment_mass_transfer.xml",
         "reports/report_account_transfer.xml",
         "reports/report_checks_to_date.xml",
-        "security/ir.model.access.csv",
+        "security/ir.access.csv",
     ],
     "demo": [],
-    "installable": False,
+    "installable": True,
     "auto_install": True,
     "application": False,
 }

@@ -1,0 +1,4 @@
+id,name,model_id,group_id/id,operation,domain
+access_account_check_action_wizard,access_account_check_action_wizard,account.check.action.wizard,base.group_user,crud,
+access_account_check_to_date_report_wizard,access_account_check_to_date_report_wizard,account.check.to_date.report.wizard,account.group_account_invoice,cru,
+access_account_check_reject_wizard,access_account_check_reject_wizard,account.check.reject.wizard,account.group_account_invoice,cru,

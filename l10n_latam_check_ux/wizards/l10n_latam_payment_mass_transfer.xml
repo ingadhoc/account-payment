@@ -5,9 +5,8 @@
         <field name="model">l10n_latam.payment.mass.transfer</field>
         <field name="inherit_id" ref="l10n_latam_check.view_l10n_latam_payment_mass_transfer_form"></field>
         <field name="arch" type="xml">
-            <field name="destination_journal_id" position="after">
+            <field name="to_journal_id" position="after">
                 <field name="split_payment"/>
-                <field name="company_id"/>
                 <field name="available_destination_payment_method_line_ids" invisible="1"/>
                 <field name="destination_payment_method_line_id"
                        domain="[('id', 'in', available_destination_payment_method_line_ids)]"
