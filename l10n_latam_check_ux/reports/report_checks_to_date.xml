@@ -6,7 +6,7 @@
         <t t-call="web.internal_layout">
             <h3 class="text-center">Listado de cheques pendientes al <span t-field="docs.to_date"/></h3>
             <t t-if="docs.journal_id">
-                Diario: <span t-esc="docs.env['account.journal'].browse(docs.journal_id.id).name"/>
+                Diario: <span t-out="docs.env['account.journal'].browse(docs.journal_id.id).name"/>
             </t>
             <div class="page">
                 <t t-if="docs._get_checks_handed(docs.journal_id.id, docs.to_date)">
@@ -50,7 +50,7 @@
                                 </strong>
                             </td>
                             <td class="text-end" colspan="6">
-                                <span t-esc="total_issue" style="font-size: 15px" t-options='{"widget": "monetary", "display_currency": tcheck.currency_id}'/>
+                                <span t-out="total_issue" style="font-size: 15px" t-options='{"widget": "monetary", "display_currency": tcheck.currency_id}'/>
                             </td>
                         </div>
                     </table>
@@ -96,7 +96,7 @@
                                 </strong>
                             </td>
                             <td class="text-end" colspan="6">
-                                <span t-esc="total" style="font-size: 15px" t-options='{"widget": "monetary", "display_currency": tcheck.currency_id}'/>
+                                <span t-out="total" style="font-size: 15px" t-options='{"widget": "monetary", "display_currency": tcheck.currency_id}'/>
                             </td>
                         </div>
                     </table>
@@ -111,7 +111,6 @@
     <field name="model">account.check.to_date.report.wizard</field>
     <field name="report_type">qweb-pdf</field>
     <field name="report_name">l10n_latam_check_ux.checks_to_date</field>
-    <field name="report_file">l10n_latam_check_ux.checks_to_date</field>
     <field name="print_report_name">'Cheques a fecha - %s' % (object.to_date)</field>
 </record>
 

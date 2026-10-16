@@ -44,7 +44,7 @@
         "wizards/l10n_latam_payment_mass_transfer.xml",
         "reports/report_account_transfer.xml",
         "reports/report_checks_to_date.xml",
-        'security/ir.access.csv',
+        "security/ir.access.csv",
     ],
     "demo": [],
     "installable": True,
