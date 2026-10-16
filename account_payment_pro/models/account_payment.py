@@ -1054,6 +1054,11 @@ class AccountPayment(models.Model):
             counterpart = self.counterpart_rate or 1.0
             return self.payment_difference / counterpart if counterpart else self.payment_difference
 
+    def action_amount_from_checks(self):
+        """Set amount back to the sum of the checks."""
+        for rec in self.filtered(lambda x: x.state == "draft" and x._is_latam_check_payment()):
+            rec.amount = sum(rec._get_latam_checks().mapped("amount"))
+
     def action_adjust_amount_for_difference(self):
         """Ajusta amount para que payment_difference quede en cero."""
         for rec in self:

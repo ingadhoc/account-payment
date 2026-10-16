@@ -74,6 +74,12 @@
             <attribute name="invisible">True</attribute>
         </xpath>
 
+        <xpath expr="//div[@name='amount_div']//field[@name='amount']" position="after">
+            <button name="action_amount_from_checks" type="object"
+                class="btn btn-link btn-sm p-0" icon="fa-refresh" title="Recompute the amount from the checks"
+                invisible="state != 'draft' or payment_method_code not in ['in_third_party_checks', 'out_third_party_checks', 'return_third_party_checks', 'new_third_party_checks', 'own_checks']"/>
+        </xpath>
+
         <div name="amount_div" position="after">
             <!-- Rate de contrapartida: visible solo si A != B1 AND B1 != C -->
             <label for="user_counterpart_rate" string="Rate"
