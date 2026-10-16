@@ -32,6 +32,21 @@ class AccountPayment(models.Model):
                         % check.name
                     )
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        payments = super().create(vals_list)
+        # The payment register creates payments already confirmed (the core posts the move on create when it
+        # gets write_off_line_vals), so they never reach the draft branch of action_post.
+        for rec in payments.filtered(
+            lambda x: (
+                x.state != "draft"
+                and not x.l10n_latam_move_check_ids_operation_date
+                and (x.l10n_latam_move_check_ids or x.l10n_latam_new_check_ids)
+            )
+        ):
+            rec.l10n_latam_move_check_ids_operation_date = rec._get_check_operation_date()
+        return payments
+
     def action_post(self):
         # nosotros queremos bloquear tmb nros de cheques de terceros que sea unicos
         # para esto chequeamos el campo computado de warnings que ya lo tiene incorporado
@@ -199,8 +214,9 @@ class AccountPayment(models.Model):
         """
         payments_with_reconciled_checks = self.filtered(
             lambda payment: payment.l10n_latam_new_check_ids.filtered(
-                lambda check: check.issue_state in ("debited", "voided")
-                and check.outstanding_line_id.account_id.reconcile
+                lambda check: (
+                    check.issue_state in ("debited", "voided") and check.outstanding_line_id.account_id.reconcile
+                )
             )
         )
         return super(AccountPayment, payments_with_reconciled_checks)._get_reconciled_checks_error()
