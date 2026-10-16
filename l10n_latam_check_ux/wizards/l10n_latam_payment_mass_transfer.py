@@ -1,21 +1,10 @@
 from odoo import Command, _, api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 
 
 class L10nLatamPaymentMassTransfer(models.TransientModel):
     _inherit = "l10n_latam.payment.mass.transfer"
 
-    main_company_id = fields.Many2one(
-        "res.company",
-        compute="_compute_main_company",
-    )
-    destination_journal_id = fields.Many2one(
-        check_company=False,
-        domain="[('type', 'in', ('bank', 'cash')), ('id', '!=', journal_id), ('company_id', 'child_of', main_company_id)]",
-    )
-    check_ids = fields.Many2many(
-        check_company=False,
-    )
     split_payment = fields.Boolean(
         help="If this option is selected, each check will be registered as an individual payment instead of being grouped into a single payment."
     )
@@ -35,15 +24,10 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
         compute="_compute_available_destination_payment_method_line_ids",
     )
 
-    @api.depends("company_id")
-    def _compute_main_company(self):
-        for rec in self:
-            rec.main_company_id = rec.company_id.parent_id or rec.company_id
-
-    @api.depends("destination_journal_id")
+    @api.depends("to_journal_id")
     def _compute_available_destination_payment_method_line_ids(self):
         for wizard in self:
-            journal = wizard.destination_journal_id
+            journal = wizard.to_journal_id
             wizard.available_destination_payment_method_line_ids = (
                 journal._get_check_transfer_destination_lines() if journal else False
             )
@@ -57,7 +41,7 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
                 continue
             wizard.destination_payment_method_line_id = available_lines[:1]
 
-    @api.constrains("destination_payment_method_line_id", "destination_journal_id")
+    @api.constrains("destination_payment_method_line_id", "to_journal_id")
     def _check_destination_payment_method_line_id(self):
         for wizard in self.filtered("destination_payment_method_line_id"):
             if wizard.destination_payment_method_line_id not in wizard.available_destination_payment_method_line_ids:
@@ -65,15 +49,12 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
                     _(
                         "The destination payment method %(method)s cannot receive checks on the destination journal %(journal)s.",
                         method=wizard.destination_payment_method_line_id.name,
-                        journal=wizard.destination_journal_id.name,
+                        journal=wizard.to_journal_id.name,
                     )
                 )
 
     def _create_payments(self):
-        if self.destination_journal_id.company_id != self.journal_id.company_id:
-            raise ValidationError(
-                _("In order to transfer checks between branches you need to use internal transfer menu.")
-            )
+        self._check_transfer_companies()
 
         company = self.check_ids.mapped("company_id")
 
@@ -81,6 +62,32 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
             return self.with_company(company)._create_split_payments()
 
         return self.with_company(company)._create_grouped_payment()
+
+    def _check_transfer_companies(self):
+        """Same check as the core, plus the companies must share the VAT: checks only move between branches."""
+        self.ensure_one()
+        from_company = self.from_journal_id.company_id
+        to_company = self.to_journal_id.company_id
+        if from_company == to_company:
+            return
+        if from_company.transfer_account_id != to_company.transfer_account_id:
+            raise UserError(
+                _(
+                    'The Inter-Banks Transfer Account of "%(source_company)s" and "%(destination_company)s" must be the '
+                    "same to transfer checks between them.",
+                    source_company=from_company.display_name,
+                    destination_company=to_company.display_name,
+                )
+            )
+        if from_company.vat != to_company.vat:
+            raise ValidationError(
+                _(
+                    'Checks can only be transferred between companies with the same VAT: "%(source_company)s" and '
+                    '"%(destination_company)s" have different VAT numbers.',
+                    source_company=from_company.display_name,
+                    destination_company=to_company.display_name,
+                )
+            )
 
     def _create_grouped_payment(self):
         """Grouped check deposit, registered as an internal transfer.
@@ -101,7 +108,7 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
         # check_deposit_transfer keeps action_post from creating a third payment for the transfer
         payment_model = self.env["account.payment"].with_context(check_deposit_transfer=True)
 
-        pay_method_line = self.journal_id._get_available_payment_method_lines("outbound").filtered(
+        pay_method_line = self.from_journal_id._get_available_payment_method_lines("outbound").filtered(
             lambda x: x.code in ("out_third_party_checks", "return_third_party_checks")
         )[:1]
 
@@ -109,14 +116,15 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
             {
                 "date": self.payment_date,
                 "amount": amount,
-                "partner_id": self.env.company.partner_id.id,
+                "partner_id": self.from_journal_id.company_id.partner_id.id,
                 "payment_type": "outbound",
                 "memo": self.communication,
-                "journal_id": self.journal_id.id,
+                "journal_id": self.from_journal_id.id,
                 "currency_id": currency_id.id,
                 "is_internal_transfer": True,
                 "payment_method_line_id": pay_method_line.id if pay_method_line else False,
-                "destination_journal_id": self.destination_journal_id.id,
+                "destination_journal_id": self.to_journal_id.id,
+                "destination_company_id": self.to_journal_id.company_id.id,
                 "l10n_latam_move_check_ids": [Command.link(x.id) for x in checks],
             }
         )
@@ -127,14 +135,15 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
             {
                 "date": self.payment_date,
                 "amount": amount,
-                "partner_id": self.env.company.partner_id.id,
+                "partner_id": self.to_journal_id.company_id.partner_id.id,
                 "payment_type": "inbound",
                 "memo": self.communication,
-                "journal_id": self.destination_journal_id.id,
+                "journal_id": self.to_journal_id.id,
                 "currency_id": currency_id.id,
                 "is_internal_transfer": True,
                 "payment_method_line_id": dest_payment_method.id,
-                "destination_journal_id": self.journal_id.id,
+                "destination_journal_id": self.from_journal_id.id,
+                "destination_company_id": self.from_journal_id.company_id.id,
                 "paired_internal_transfer_payment_id": outbound_payment.id,
                 "l10n_latam_move_check_ids": [Command.link(x.id) for x in checks],
             }
@@ -167,7 +176,7 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
         )
         currency_id = self.check_ids[0].currency_id
 
-        pay_method_line = self.journal_id._get_available_payment_method_lines("outbound").filtered(
+        pay_method_line = self.from_journal_id._get_available_payment_method_lines("outbound").filtered(
             lambda x: x.code in ("out_third_party_checks", "return_third_party_checks")
         )[:1]
         outbound_payments = self.env["account.payment"]
@@ -179,14 +188,15 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
                     {
                         "date": self.payment_date,
                         "amount": check.amount,
-                        "partner_id": self.env.company.partner_id.id,
+                        "partner_id": self.from_journal_id.company_id.partner_id.id,
                         "payment_type": "outbound",
                         "memo": self.communication,
-                        "journal_id": self.journal_id.id,
+                        "journal_id": self.from_journal_id.id,
                         "currency_id": currency_id.id,
                         "is_internal_transfer": True,
                         "payment_method_line_id": pay_method_line.id if pay_method_line else False,
-                        "destination_journal_id": self.destination_journal_id.id,
+                        "destination_journal_id": self.to_journal_id.id,
+                        "destination_company_id": self.to_journal_id.company_id.id,
                         "l10n_latam_move_check_ids": [Command.link(check.id)],
                     }
                 )
@@ -199,13 +209,14 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
                     {
                         "date": self.payment_date,
                         "amount": check.amount,
-                        "partner_id": self.env.company.partner_id.id,
+                        "partner_id": self.to_journal_id.company_id.partner_id.id,
                         "payment_type": "inbound",
                         "memo": self.communication,
-                        "journal_id": self.destination_journal_id.id,
+                        "journal_id": self.to_journal_id.id,
                         "currency_id": currency_id.id,
                         "is_internal_transfer": True,
-                        "destination_journal_id": self.journal_id.id,
+                        "destination_journal_id": self.from_journal_id.id,
+                        "destination_company_id": self.from_journal_id.company_id.id,
                         "paired_internal_transfer_payment_id": outbound_payment.id,
                         "l10n_latam_move_check_ids": [Command.link(check.id)],
                     }

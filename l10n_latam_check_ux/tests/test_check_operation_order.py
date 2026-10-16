@@ -304,7 +304,7 @@ class TestCheckOperationOrder(AccountTestInvoicingCommon):
             .create(
                 {
                     "payment_date": fields.Date.today(),
-                    "destination_journal_id": self.deposit_journal.id,
+                    "to_journal_id": self.deposit_journal.id,
                 }
             )
         )

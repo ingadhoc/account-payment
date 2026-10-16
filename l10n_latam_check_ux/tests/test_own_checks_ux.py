@@ -125,7 +125,8 @@ class TestOwnChecksMulticurrency(LatamCheckCommon):
         odd_date = fields.Date.add(self.today, days=60)
         self.env["res.currency.rate"].create(
             {
-                "name": odd_date,
+                # since 20.0 a rate applies from the day after its date
+                "name": fields.Date.subtract(odd_date, days=1),
                 "currency_id": self.foreign_currency.id,
                 "company_id": self.company.id,
                 "rate": 1 / 40.189,
@@ -417,6 +418,10 @@ class TestOwnChecksDraftResync(LatamCheckCommon):
             {"name": "Test Transfer Destination", "code": "TDSTJ", "type": "cash", "company_id": self.company.id}
         )
         self._add_method_line(destination, self.manual_in_method, "Manual", self.manual_outstanding_account)
+        # some modules set the outstanding accounts of cash journals (saas_client_account): do not rely on them
+        destination.inbound_payment_method_line_ids.filtered(
+            lambda line: not line.payment_account_id
+        ).payment_account_id = destination.default_account_id
         payment = self._create_own_check_payment([40, 60], numbers=["00005101", "00005102"])
         payment.write({"is_internal_transfer": True, "destination_journal_id": destination.id})
         payment.action_post()

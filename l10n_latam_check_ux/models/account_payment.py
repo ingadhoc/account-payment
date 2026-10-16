@@ -305,14 +305,6 @@ class AccountPayment(models.Model):
             )
         return liquidity_vals
 
-    def _l10n_latam_check_split_move(self):
-        """No-op: las líneas de liquidez de arriba reemplazan al split move.
-
-        Se mantiene para la comunidad, por si usan un core anterior a odoo/odoo@d85e16a. En Adhoc no
-        hace falta. Borrar en 20.0.
-        """
-        return
-
     def _l10n_latam_check_unlink_split_move(self):
         """Reemplaza al core sin llamar a super.
 
