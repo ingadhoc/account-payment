@@ -79,8 +79,10 @@ class TestPaymentRetry(AccountTestInvoicingCommon):
         def send_payment_request(tx):
             raise Exception("request failed")
 
-        self._run_async_cron(send_payment_request)
+        with self.assertLogs("odoo.addons.payment_retry.models.payment_transaction", level="ERROR") as logs:
+            self._run_async_cron(send_payment_request)
         self.assertEqual(tx.state, "error")
+        self.assertIn("request failed", logs.output[0])
 
     def test_03_post_processing_skips_transactions_waiting_to_be_sent(self):
         """The post-processing leaves out the asynchronous transactions still in draft."""
