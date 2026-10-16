@@ -17,3 +17,4 @@ from . import (
 from . import test_receipt_debt_legal_entity
 from . import test_background_send_receipts
 from . import test_post_closed_payments
+from . import test_amount_from_checks
