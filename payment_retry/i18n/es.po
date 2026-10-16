@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-26 12:30+0000\n"
-"PO-Revision-Date: 2025-12-26 17:10+0000\n"
+"POT-Creation-Date: 2026-10-16 14:06+0000\n"
+"PO-Revision-Date: 2026-10-16 14:06+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
 "payment-19-0/account-payment-19-0-payment_retry/es/>\n"
@@ -21,6 +21,75 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == "
 "0) ? 1 : 2);\n"
 "X-Generator: Weblate 5.10.4\n"
+
+#. module: payment_retry
+#: model:ir.module.module,description:base.module_payment_retry
+msgid ""
+"=============\n"
+"Payment Retry\n"
+"=============\n"
+"\n"
+"Charge customer invoices again with the customer's saved payment token, and keep the invoice flagged while that electronic payment is on course.\n"
+"\n"
+"Características\n"
+"===============\n"
+"\n"
+"- Retry wizard, launched from the customer invoice list (**Actions › Retry payment**): one line per selected customer invoice or credit note that is posted, not paid or partially paid, with an amount due, of the current company and without an electronic payment on course.\n"
+"- Each line proposes the most recent payment token of the customer (or of its contacts) and the amount due; the amount can be changed directly or as a percentage, for one line or for all of them.\n"
+"- The wizard blocks the charge when a customer has no valid email, with a shortcut to the customers to fix.\n"
+"- Before charging, the wizard looks for similar transactions of the same customers or tokens in the last days and shows them as a warning; the charge can still be created with **Create payments without check**. Payment providers can add their own check with a ``<provider code>_check_for_similar_transactions`` method on ``payment.token``.\n"
+"- With more than 20 invoices, the payment requests are not sent at once: the scheduled action **Enviar transacciones de pago** sends them every 10 minutes.\n"
+"- While an electronic payment is on course (transaction pending, authorized, or sent and waiting for the provider answer to be processed), the invoice shows the payment status **Electronic payment**, is not offered for online payment on the portal, and is not offered again in the retry wizard.\n"
+"- Registering the payment by hand on such an invoice (**Pay**) first asks for confirmation and leaves an internal note on the invoice with the reference of the transaction on course.\n"
+"\n"
+"Detalles Técnicos\n"
+"=================\n"
+"\n"
+"- New models:\n"
+"\n"
+"  - ``payment.transaction.retry`` (transient): the retry wizard.\n"
+"  - ``payment.transaction.retry.lines`` (transient): one line per invoice, with token, amount to pay and percentage.\n"
+"  - ``electronic.payment.pending.confirm`` (transient): confirmation before registering a payment by hand.\n"
+"\n"
+"- Inherited models:\n"
+"\n"
+"  - ``account.move``: adds the ``electronic_pending`` value to ``status_in_payment``, the computed field ``has_pending_transaction``, and overrides ``_compute_status_in_payment``, ``action_force_register_payment`` and ``_has_to_be_paid``.\n"
+"  - ``payment.transaction``: adds ``asynchronous_process``, the method ``cron_asynchronous_process`` and overrides ``_post_process_with_lock`` to leave the draft asynchronous transactions out of the post-processing.\n"
+"\n"
+"- Views: form view of the retry wizard and of the confirmation wizard; server action **Retry payment** bound to the list view of ``account.move``.\n"
+"- Data: scheduled action ``payment_asynchronous_process`` (every 10 minutes).\n"
+"- Security: ``security/ir.access.csv`` gives full access to the three wizards to ``account.group_account_invoice``.\n"
+"- System parameter ``payment_retry.similar_transactions_days_frame``: how many days back the similar transactions are looked for (default 1).\n"
+"\n"
+"Uso\n"
+"===\n"
+"\n"
+"#. Go to the customer invoices list, select the invoices to charge and use **Actions › Retry payment**.\n"
+"#. Check the proposed token and amount of each line; change the amount or the percentage if needed.\n"
+"#. Click **Create payments**. If similar transactions are found, review the warning and click **Create payments without check** to go on.\n"
+"#. The invoices show the payment status **Electronic payment** until the provider answer is processed; then they are paid, or released if the payment failed.\n"
+"#. To check for similar transactions without charging, use **Check similar**.\n"
+"\n"
+"Arquitectura\n"
+"============\n"
+"\n"
+"The wizard creates one ``offline`` payment transaction per line with a token and an amount, linked to its invoice. Without asynchronous processing it sends the payment request right away; with it, ``cron_asynchronous_process`` sends the draft transactions created in the last 4 days that are not sent yet. The provider answer is recorded as ``payment.data`` and processed by ``payment``'s processing cron; until then, ``account.move._get_pending_transactions`` counts the transaction as on course.\n"
+"\n"
+"Dependencias\n"
+"============\n"
+"\n"
+"- ``account_payment``\n"
+"\n"
+"Autor\n"
+"=====\n"
+"\n"
+"ADHOC SA\n"
+"\n"
+"Licencia\n"
+"========\n"
+"\n"
+"LGPL-3\n"
+msgstr ""
 
 #. module: payment_retry
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__amount_residual
@@ -127,7 +196,7 @@ msgstr "Pago electrónico en curso"
 #. module: payment_retry
 #: model:ir.actions.server,name:payment_retry.payment_asynchronous_process_ir_actions_server
 msgid "Enviar transacciones de pago"
-msgstr "Enviar transacciones de pago"
+msgstr ""
 
 #. module: payment_retry
 #. odoo-python
@@ -148,18 +217,15 @@ msgstr "Tiene una transacción pendiente"
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__id
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__id
 msgid "ID"
-msgstr "ID"
+msgstr ""
 
 #. module: payment_retry
 #: model_terms:ir.ui.view,arch_db:payment_retry.payment_transaction_retry_view_form
 msgid ""
-"IMPORTANTE! Tener en cuenta que está generando más de 20 transacciones, esto "
-"se realizará de forma asincrónica y puede llegar a demorar el envío de los "
+"IMPORTANTE! Tener en cuenta que está generando más de 20 transacciones, esto"
+" se realizará de forma asincrónica y puede llegar a demorar el envío de los "
 "pagos"
 msgstr ""
-"IMPORTANTE! Tener en cuenta que está generando más de 20 transacciones, esto "
-"se realizará de forma asincrónica y puede llegar a demorar el envío de los "
-"pagos"
 
 #. module: payment_retry
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__invoice_id
@@ -315,7 +381,7 @@ msgstr "Advertencias"
 #. module: payment_retry
 #: model:ir.model.fields,field_description:payment_retry.field_payment_transaction__asynchronous_process
 msgid "asynchronous_process"
-msgstr "asynchronous_process"
+msgstr ""
 
 #. module: payment_retry
 #. odoo-python
@@ -326,6 +392,11 @@ msgid ""
 msgstr ""
 "odoo: Una transacción similar de %.2f %s para %s via %s fue creada en %s y "
 "actualmente se encuentra en el estado %s.\n"
+
+#. module: payment_retry
+#: model:ir.module.module,shortdesc:base.module_payment_retry
+msgid "payment retry"
+msgstr "reintento de pagos"
 
 #. module: payment_retry
 #: model:ir.model,name:payment_retry.model_payment_transaction_retry
