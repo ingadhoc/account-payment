@@ -7,6 +7,6 @@ def migrate(cr, version):
         "account_cashbox.cashbox_company_rule",
         "account_cashbox.cashbox_session_company_rule",
     ):
-        rule = env.ref(xml_id, raise_if_not_found=False)
-        if rule:
-            rule.domain_force = "[('company_id', 'parent_of', company_ids)]"
+        access = env.ref(xml_id, raise_if_not_found=False)
+        if access:
+            access.domain = "[('company_id', 'parent_of', company_ids)]"
