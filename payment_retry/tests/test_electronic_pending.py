@@ -8,7 +8,11 @@ class TestElectronicPending(AccountTestInvoicingCommon):
     def setUpClass(cls):
         super().setUpClass()
         cls.provider = cls.env.ref("payment.payment_provider_adyen").sudo()
-        cls.payment_method = cls.provider.with_context(active_test=False).payment_method_ids[:1]
+        cls.payment_method = (
+            cls.env["payment.method"]
+            .sudo()
+            .create({"name": "Test", "code": "test_payment_retry", "provider_id": cls.provider.id})
+        )
 
     def _create_invoice(self):
         invoice = self.env["account.move"].create(
@@ -41,7 +45,7 @@ class TestElectronicPending(AccountTestInvoicingCommon):
                 }
             )
         )
-        transaction.state = state
+        transaction.with_context(payment_safe_write=True).state = state
         invoice.invalidate_recordset()
         return transaction
 
@@ -96,7 +100,7 @@ class TestElectronicPending(AccountTestInvoicingCommon):
         """A cancelled or expired transaction leaves no trace on the invoice."""
         invoice = self._create_invoice()
         transaction = self._create_transaction(invoice)
-        transaction.state = "cancel"
+        transaction.with_context(payment_safe_write=True).state = "cancel"
         invoice.invalidate_recordset()
         self.assertFalse(invoice.has_pending_transaction)
         self.assertEqual(invoice.payment_state, "not_paid")
