@@ -140,9 +140,7 @@ class PaymentTransactionRetry(models.TransientModel):
     def _check_for_similar_transactions(self):
         self.ensure_one()
         message = ""
-        days_frame = int(
-            self.env["ir.config_parameter"].sudo().get_param("payment_retry.similar_transactions_days_frame", 1)
-        )
+        days_frame = self.env["ir.config_parameter"].sudo().get_int("payment_retry.similar_transactions_days_frame", 1)
         partner_ids = self.line_ids.mapped("partner_id")
         token_ids = self.line_ids.mapped("payment_token_id")
         similar_tx_ids = self.env["payment.transaction"].search(
