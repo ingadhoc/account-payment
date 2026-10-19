@@ -15,11 +15,14 @@ class AccountMove(models.Model):
     def _get_pending_transactions(self):
         """Return the electronic payments on course, the ones that could still pay these invoices.
 
-        Payment transactions are only readable by settings users, hence the sudo.
+        A draft transaction with payment data was already sent: the provider answer waits to be
+        processed. Payment transactions are only readable by settings users, hence the sudo.
         """
-        return self.sudo().transaction_ids.filtered(lambda tx: tx.state in ("pending", "authorized"))
+        return self.sudo().transaction_ids.filtered(
+            lambda tx: tx.state in ("pending", "authorized") or (tx.state == "draft" and tx.payment_data_ids)
+        )
 
-    @api.depends("transaction_ids.state")
+    @api.depends("transaction_ids.state", "transaction_ids.payment_data_ids")
     def _compute_has_pending_transaction(self):
         for rec in self:
             rec.has_pending_transaction = bool(rec._get_pending_transactions())
