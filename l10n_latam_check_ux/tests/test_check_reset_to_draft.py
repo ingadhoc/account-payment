@@ -103,7 +103,7 @@ class TestCheckResetToDraft(LatamCheckCommon):
         outbound = (
             self.env["l10n_latam.payment.mass.transfer"]
             .with_context(active_model="l10n_latam.check", active_ids=check.ids)
-            .create({"destination_journal_id": other_journal.id})
+            .create({"to_journal_id": other_journal.id})
             ._create_payments()
         )
         # el pase es dos apuntes (outbound + su inbound emparejado); ambos tienen que ser sanos

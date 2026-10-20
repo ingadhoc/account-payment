@@ -20,7 +20,7 @@
             <field name="payment_date" position="attributes">
                 <attribute name="readonly">not user_can_write</attribute>
             </field>
-            <field name="bank_id" position="attributes">
+            <field name="bank_account_id" position="attributes">
                 <attribute name="readonly">not user_can_write</attribute>
             </field>
             <xpath expr="//button[@name='action_void']" position="after">
@@ -94,9 +94,6 @@
                 <filter string="Last 90 days" name="last_90_days" domain="[('payment_date', '&gt;=', (context_today() - relativedelta(days=90)).strftime('%Y-%m-%d'))]" />
             </xpath>
         </field>
-    </record>
-    <record id="l10n_latam_check.action_third_party_check" model="ir.actions.act_window">
-        <field name="domain">[('payment_method_code', '=', 'new_third_party_checks'), ('payment_state', '!=', 'draft')]</field>
     </record>
 
     <record model="ir.ui.view" id="view_account_third_party_check_tree_reject">

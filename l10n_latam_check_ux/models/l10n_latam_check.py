@@ -9,7 +9,7 @@ class l10nLatamAccountPaymentCheck(models.Model):
     name = fields.Char(tracking=True)
     issuer_vat = fields.Char(tracking=True)
     payment_date = fields.Date(tracking=True)
-    bank_id = fields.Many2one(tracking=True)
+    bank_account_id = fields.Many2one(tracking=True)
 
     check_add_debit_button = fields.Boolean(related="original_journal_id.check_add_debit_button", readonly=True)
     can_reject = fields.Boolean(
@@ -85,23 +85,22 @@ class l10nLatamAccountPaymentCheck(models.Model):
         }
         return action
 
-    def _get_last_operation(self):
-        super()._get_last_operation()
+    def _get_operations(self):
         self.ensure_one()
         # El desempate por id es necesario: sin el, dos operaciones con la misma fecha quedan en el
         # orden en que las devolvio el recordset, que no es estable ni significativo.
         return (
             (self.payment_id + self.operation_ids)
             .filtered(lambda x: x.state not in ["draft", "canceled"] and x.l10n_latam_move_check_ids_operation_date)
-            .sorted(key=lambda payment: (payment.l10n_latam_move_check_ids_operation_date, payment._origin.id))[-1:]
+            .sorted(key=lambda payment: (payment.l10n_latam_move_check_ids_operation_date, payment._origin.id))
         )
 
     @api.depends("payment_method_line_id.code", "payment_id.partner_id")
-    def _compute_bank_id(self):
+    def _compute_bank_account_id(self):
         payment_method_change = self._origin.payment_method_line_id != self.payment_method_line_id
         partner_id_change = self._origin.payment_id.partner_id != self.payment_id.partner_id
         if payment_method_change or partner_id_change:
-            super()._compute_bank_id()
+            super()._compute_bank_account_id()
 
     @api.depends("payment_method_line_id.code", "payment_id.partner_id")
     def _compute_issuer_vat(self):
