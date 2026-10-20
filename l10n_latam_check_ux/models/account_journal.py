@@ -1,4 +1,4 @@
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class AccountJournal(models.Model):
@@ -16,6 +16,16 @@ class AccountJournal(models.Model):
             "en dicho método de ese método de pago."
         ),
     )
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        journals = super().create(vals_list)
+        # Without statements there is no bank line to reconcile the check debit against.
+        # 'no_statement' is added by saas_client_account; without it this never matches.
+        journals.filtered(lambda j: j.type in ("bank", "credit") and j.bank_statements_source == "no_statement").write(
+            {"check_add_debit_button": True}
+        )
+        return journals
 
     def _get_check_transfer_destination_lines(self):
         """Inbound lines that can receive the checks of a transfer on this journal.
