@@ -182,6 +182,16 @@ class TestCheckOperationOrder(AccountTestInvoicingCommon):
         with self.assertRaisesRegex(ValidationError, "not the last operation"):
             receipt.action_draft()
 
+    def test_canceled_receipt_can_be_reset_to_draft(self):
+        """A canceled payment leaves its check without confirmed operations, so nothing blocks it."""
+        receipt = self._create_receipt("00000105")
+        receipt.action_cancel()
+        self.assertFalse(receipt.l10n_latam_new_check_ids._get_last_operation())
+
+        receipt.action_draft()
+
+        self.assertEqual(receipt.state, "draft")
+
     def test_draft_payment_has_no_operation_date(self):
         """A draft is not an operation yet, so it has no operation date until it is confirmed."""
         delivery = self._create_draft_delivery()

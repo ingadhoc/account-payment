@@ -188,7 +188,7 @@ class AccountPayment(models.Model):
         for rec in self:
             for check in rec.mapped("l10n_latam_move_check_ids") + rec.mapped("l10n_latam_new_check_ids"):
                 last_operation = check._get_last_operation()
-                if rec != last_operation:
+                if last_operation and rec != last_operation:
                     raise ValidationError(
                         "You cannot reset this operation to draft because it is not the last operation for the checks."
                     )
