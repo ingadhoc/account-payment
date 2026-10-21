@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-01 13:36+0000\n"
+"POT-Creation-Date: 2026-10-21 19:48+0000\n"
 "PO-Revision-Date: 2026-10-01 13:36+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
@@ -839,6 +839,11 @@ msgstr "Razón"
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_search
 msgid "Receipt Queued for Sending"
 msgstr "Recibo en cola de envío"
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Recompute the amount from the checks"
+msgstr ""
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__invoice_date
