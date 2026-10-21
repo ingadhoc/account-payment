@@ -90,7 +90,7 @@
                         </table>
 
                         <t t-foreach="o.pop_session_journal_ids" t-as="statement">
-                            <h4 t-if="statement.line_ids">Medio de pago: <span t-esc="statement.journal_id.name"/></h4>
+                            <h4 t-if="statement.line_ids">Medio de pago: <span t-out="statement.journal_id.name"/></h4>
 
                             <table class="table table-sm o_main_table" t-if="statement.line_ids">
                                 <thead>
