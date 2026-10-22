@@ -223,6 +223,40 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
         visible_operations = self.env["account.payment"].browse(check.button_open_check_operations()["domain"][0][2])
         self.assertEqual(visible_operations, receipt | check.operation_ids)
 
+    def test_canceled_branch_transfer_returns_the_check_to_the_branch(self):
+        """Cancelar la transferencia de la sucursal a la compañía padre devuelve el cheque a la
+        sucursal: su diario y su compañía."""
+        branch = self._create_branch()
+        branch_journal = self._create_check_journal("Branch Third Party Checks", "BTPC", company=branch)
+        check = self._create_third_party_check(branch_journal, "UX-BRANCH-0002")
+        transfer = self.env["account.payment"].create(
+            {
+                "partner_id": branch.partner_id.id,
+                "payment_type": "outbound",
+                "is_internal_transfer": True,
+                "journal_id": branch_journal.id,
+                "destination_company_id": self.company.id,
+                "destination_journal_id": self.third_party_check_journal.id,
+                "payment_method_line_id": branch_journal._get_available_payment_method_lines("outbound")
+                .filtered(lambda x: x.code == "out_third_party_checks")[:1]
+                .id,
+                "l10n_latam_move_check_ids": [Command.set(check.ids)],
+                "amount": 100.0,
+            }
+        )
+        transfer.action_post()
+        with self.subTest("transferido, el cheque es de la compañía padre"):
+            self.assertEqual(check.company_id, self.company)
+
+        # the inbound leg is the last operation of the check, so the transfer is undone from there
+        paired = transfer.paired_internal_transfer_payment_id
+        paired.action_draft()
+        paired.action_cancel()
+        self.assertEqual((transfer | paired).mapped("state"), ["canceled", "canceled"])
+        with self.subTest("cancelada la transferencia, vuelve a la sucursal"):
+            self.assertEqual(check.current_journal_id, branch_journal)
+            self.assertEqual(check.company_id, branch)
+
     def test_bank_rejection_receives_in_rejected_journal(self):
         check = self._create_third_party_check(self.third_party_check_journal, "UX-REJ-0001")
         bank_journal = self.company_bank_journal
