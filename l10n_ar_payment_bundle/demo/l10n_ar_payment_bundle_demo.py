@@ -12,7 +12,8 @@ class AccountChartTemplate(models.AbstractModel):
     @api.model
     def _install_l10n_ar_payment_bundle_demo(self, companies):
         """Crea data demo para argentina"""
-        for company in companies.filtered(lambda x: x.country_code == "AR"):
+        # archived companies cannot post entries (their accounts are not seen as company accounts)
+        for company in companies.filtered(lambda x: x.active and x.country_code == "AR"):
             self = self.with_company(company)
             today = fields.Date.today()
 
