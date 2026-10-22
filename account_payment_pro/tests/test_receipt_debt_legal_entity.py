@@ -7,15 +7,17 @@ from odoo.tests import tagged
 
 @tagged("post_install", "-at_install")
 class TestReceiptDebtLegalEntity(AccountTestInvoicingCommon):
-    """El recibo lista la deuda de toda la entidad fiscal, acotada a lo seleccionado.
+    """El recibo lista la deuda según el tilde de bloqueo de la raíz del árbol.
 
     Con stores toda la deuda vivía en una sola compañía y el recibo la listaba entera.
-    Branches parte la compañía, y el recibo se partía con ella: filtraba por la compañía
-    del pago, así que una sucursal no veía la deuda de su padre ni al revés, sin ningún
-    aviso — el operador veía al cliente sin deuda.
+    Branches parte la compañía, y el recibo se partía con ella: un cliente compra en una
+    sucursal, va a pagar a otra y el operador lo ve sin deuda.
 
-    Ahora el filtro es la entidad fiscal intersecada con las compañías que el usuario
-    tiene seleccionadas, y el pago sigue quedando en la compañía donde se hizo.
+    Según "Block Inter-Company Reconciliation" de la raíz, el recibo lista la deuda de todo
+    el árbol (sin bloqueo), la de la entidad fiscal (bloqueo entre entidades distintas) o
+    solo la de la compañía del pago (bloqueo siempre), aunque el usuario no tenga
+    seleccionadas las otras compañías. En todos los casos el pago queda en la compañía
+    donde se hizo.
     """
 
     PARENT_VAT = "30111111118"
@@ -30,6 +32,7 @@ class TestReceiptDebtLegalEntity(AccountTestInvoicingCommon):
 
         cls.parent.country_id = False
         cls.parent.vat = cls.PARENT_VAT
+        cls.parent.block_intercompany_conciliation = "none"
         cls.same_entity = cls.env["res.company"].create(
             {"name": "Sucursal mismo CUIT", "parent_id": cls.parent.id, "vat": cls.PARENT_VAT}
         )
@@ -94,35 +97,52 @@ class TestReceiptDebtLegalEntity(AccountTestInvoicingCommon):
         )
         return self.env["account.move.line"].search(payment._get_to_pay_move_lines_domain())
 
-    def test_the_receipt_lists_the_debt_of_the_whole_legal_entity(self):
-        """Desde la sucursal se ve la deuda del padre, que es lo que se había perdido."""
+    def test_without_the_block_the_receipt_lists_the_debt_of_the_whole_tree(self):
+        """Lo que se había perdido: desde la sucursal se ve la deuda del resto, sin seleccionarlo."""
+        listed = self._debt_listed(self.same_entity, self.same_entity)
+
+        self.assertEqual(listed.company_id, self.parent + self.same_entity + self.other_entity)
+
+    def test_with_the_block_the_receipt_lists_only_its_company(self):
+        """Si no se concilia entre compañías, el recibo no ofrece deuda de otras, ni tildándolas."""
+        self.parent.block_intercompany_conciliation = "all"
         every_company = self.parent + self.same_entity + self.other_entity
 
-        listed = self._debt_listed(self.same_entity, every_company)
+        self.assertEqual(self._debt_listed(self.same_entity, every_company).company_id, self.same_entity)
+        self.assertEqual(self._debt_listed(self.parent, every_company).company_id, self.parent)
 
-        self.assertEqual(listed.company_id, self.parent + self.same_entity)
+    def test_blocked_between_legal_entities_lists_the_legal_entity(self):
+        """Solo la entidad fiscal, aunque el usuario no tenga seleccionada la otra compañía."""
+        self.parent.block_intercompany_conciliation = "other_legal_entity"
 
-    def test_it_lists_the_same_debt_from_the_parent(self):
-        """Y al revés: la padre cobra la deuda de su sucursal."""
-        every_company = self.parent + self.same_entity + self.other_entity
+        self.assertEqual(
+            self._debt_listed(self.same_entity, self.same_entity).company_id, self.parent + self.same_entity
+        )
+        self.assertEqual(self._debt_listed(self.other_entity, self.other_entity).company_id, self.other_entity)
 
-        listed = self._debt_listed(self.parent, every_company)
+    def test_add_all_takes_the_debt_of_several_companies(self):
+        """Antes, "Add All" con deuda en dos compañías rechazaba el pago por "different companies"."""
+        journal = self.env["account.journal"].create(
+            {"name": "Banco sucursal", "code": "ZZC", "type": "bank", "company_id": self.same_entity.id}
+        )
+        payment = (
+            self.env["account.payment"]
+            .with_context(allowed_company_ids=self.same_entity.ids)
+            .create(
+                {
+                    "partner_id": self.partner.id,
+                    "partner_type": "customer",
+                    "payment_type": "inbound",
+                    "company_id": self.same_entity.id,
+                    "journal_id": journal.id,
+                    "amount": 100.0,
+                }
+            )
+        )
 
-        self.assertEqual(listed.company_id, self.parent + self.same_entity)
+        payment.action_add_all()
 
-    def test_the_debt_of_another_legal_entity_is_never_listed(self):
-        """La garantía que se conserva: otra entidad fiscal no entra ni tildándola."""
-        every_company = self.parent + self.same_entity + self.other_entity
-
-        listed = self._debt_listed(self.parent, every_company)
-
-        self.assertNotIn(self.other_entity, listed.company_id)
-
-    def test_a_company_the_user_did_not_select_is_not_listed(self):
-        """ "Ni más ni menos que las seleccionadas": sin tildar la sucursal, su deuda no va."""
-        listed = self._debt_listed(self.parent, self.parent)
-
-        self.assertEqual(listed.company_id, self.parent)
+        self.assertEqual(payment.to_pay_move_line_ids.company_id, self.parent + self.same_entity + self.other_entity)
 
     def test_the_payment_keeps_the_company_where_it_was_made(self):
         """Aunque pague deuda de otra sucursal de la entidad, el pago es de esa compañía.
