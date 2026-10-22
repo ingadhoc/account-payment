@@ -623,19 +623,17 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
             linked._check_bundle_currency_consistency()
 
     # ==================================================================
-    # B.7 — Bundle reconcile (A=C=ARS, B1=USD, B2=ARS) + IIBB
+    # B.7 — Bundle reconcile (A=C=ARS, B1=ARS, B2=ARS) + IIBB
     # ==================================================================
 
     def test_b7_bundle_reconcile_ars_journal_usd_invoice(self):
-        """B.7 · caso 8 (reconcile_on_company_currency=True): A=C=ARS, B1=USD, B2=ARS.
+        """B.7 · caso 8 (reconcile_on_company_currency=True): A=C=ARS, B1=ARS, B2=ARS.
         Factura 1 000 USD neto (= 1 200 000 ARS neto, rate 1 200 ARS/USD).
         Bundle: linked banco ARS + retención IIBB 3%.
 
         En modo reconcile:
             destination_currency_id (B2) = ARS (company currency)
-            counterpart_currency_id (B1) = USD (moneda de la deuda)
-            B1 ≠ B2 → _compute_payment_difference mezclaría monedas
-                       si usa counterpart_currency_amount (B1) vs selected_debt (B2).
+            counterpart_currency_id (B1) = ARS (debt currency is C and read only with reconcile)
 
         Verifica:
             - selected_debt en ARS (B2=C): 1 452 000 ARS
@@ -656,8 +654,8 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         # En reconcile el main toma B2=ARS como destination_currency_id
         self.assertEqual(main.destination_currency_id, self.ars, "B2=ARS en reconcile mode")
 
-        # El main puede tener B1=USD si el usuario lo seleccionó (editable en modo reconcile)
-        main.counterpart_currency_id = self.usd
+        self.assertEqual(main.counterpart_currency_id, self.ars, "B1=C en reconcile mode")
+        self.assertFalse(main.counterpart_currency_editable)
 
         # selected_debt en ARS (B2=C → amount_residual)
         # Factura 1210 USD × 1200 = 1 452 000 ARS
@@ -672,17 +670,14 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         # Linked banco ARS: paga la deuda neta = 1 452 000 - 36 000 = 1 416 000 ARS
         linked = self._add_linked_payment(main, self.bank_ars, 1_416_000)
 
-        # El linked hereda counterpart_currency_id=USD (B1) del main, así que
-        # counterpart_currency_amount está en B1=USD (≈ 1180 USD), no en ARS.
-        # Lo relevante para la partida doble es payment_total, que usa el branch
-        # B1≠B2 y convierte A→C: amount_ARS / accounting_rate(1.0) = 1 416 000 ARS.
+        # The linked payment inherits B1=ARS from the main one
+        self.assertEqual(linked.counterpart_currency_id, self.ars)
         self.assertAlmostEqual(linked.payment_total, 1_416_000, places=0)
 
         # payment_total del main = sum(linked.payment_total) + withholdings = 1416000 + 36000 = 1452000 ARS
         self.assertAlmostEqual(main.payment_total, 1_452_000, places=0)
 
         # payment_difference = selected_debt - payment_total = 0
-        # Si B1≠B2 se mezclan monedas, el resultado sería incorrecto (≠ 0)
         self.assertAlmostEqual(
             linked.payment_difference, 0, places=0, msg="payment_difference debe ser 0 (sin mezcla B1 vs B2)"
         )
