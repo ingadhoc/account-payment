@@ -32,6 +32,7 @@ class TestReceiptDebtLegalEntity(AccountTestInvoicingCommon):
 
         cls.parent.country_id = False
         cls.parent.vat = cls.PARENT_VAT
+        cls.parent.block_intercompany_conciliation = "none"
         cls.same_entity = cls.env["res.company"].create(
             {"name": "Sucursal mismo CUIT", "parent_id": cls.parent.id, "vat": cls.PARENT_VAT}
         )
