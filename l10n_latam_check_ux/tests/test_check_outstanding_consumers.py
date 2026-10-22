@@ -110,6 +110,20 @@ class TestChecksToDateReport(LatamCheckCommon):
 
         self.assertFalse(self._on_hand() & checks, "Deposited checks left the third party journal")
 
+    def test_draft_or_canceled_operation_keeps_the_check_on_hand(self):
+        """Un endoso en borrador o cancelado no saca al cheque de la cartera."""
+        payment = self._receive_third_party_checks([55, 45], numbers=["00020601", "00020602"])
+        payment.action_post()
+        draft_check, canceled_check = payment.l10n_latam_new_check_ids
+
+        self._deliver_third_party_checks(draft_check)
+        canceled = self._deliver_third_party_checks(canceled_check)
+        canceled.action_post()
+        canceled.action_draft()
+        canceled.action_cancel()
+
+        self.assertEqual(draft_check + canceled_check, self._on_hand() & payment.l10n_latam_new_check_ids)
+
 
 @tagged("post_install", "-at_install")
 class TestOutstandingAccountConsumers(LatamCheckCommon):
