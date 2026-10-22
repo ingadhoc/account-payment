@@ -680,15 +680,11 @@ class TestPaymentMultimoneda(TestArCommon):
         finally:
             self.company.reconcile_on_company_currency = False
 
-    def test_caso10_arbitraje_informativo(self):
-        """Caso 10 · EUR / USD / ARS / ARS  (3 monedas + reconcile)
-        Factura USD, pago EUR, conciliación ARS. Verifica:
-        - A = EUR, B1 = USD (asignado manualmente), B2 = C = ARS
-        - counterpart_rate (EUR→USD) y accounting_rate (ARS→EUR) son distintos
-        - Ambos rates visibles (A ≠ B1 Y B1 ≠ C)
-
-        Con reconcile_on_company_currency el default de B1 es ARS (company),
-        por lo que el usuario debe elegir manualmente B1 = USD desde la vista.
+    def test_caso10_arbitraje_con_reconcile(self):
+        """Caso 10 · EUR / ARS / ARS / ARS  (3 monedas + reconcile)
+        USD invoice, EUR payment, reconcile in ARS. With reconcile_on_company_currency and an
+        account without currency the debt currency can only be C or A (EUR), never the USD of the
+        invoice. By default B1 = ARS and only the accounting rate (ARS→EUR) applies.
         """
         self.company.reconcile_on_company_currency = True
         try:
@@ -702,36 +698,13 @@ class TestPaymentMultimoneda(TestArCommon):
                 to_pay_move_line_ids=[Command.set(debt_lines.ids)],
             )
 
-            # Con reconcile_on_company_currency, B1 default = ARS.
-            # El usuario override manual via el campo editable en la vista:
-            payment.counterpart_currency_id = self.usd
+            self._assert_currencies(payment, A=self.eur, B1=self.ars, B2=self.ars, C=self.ars)
+            self.assertTrue(payment.counterpart_currency_editable, "B1 can be C or A")
 
-            self._assert_currencies(payment, A=self.eur, B1=self.usd, B2=self.ars, C=self.ars)
-
-            expected_cp = self._get_rate(self.eur, self.usd)
             expected_acc = self._get_rate(self.ars, self.eur)
-            self._assert_rates(payment, accounting=expected_acc, counterpart=expected_cp, places=4)
-
-            # Rates distintos (escenario no redundante: A ≠ B1 ≠ C)
-            self.assertNotAlmostEqual(payment.counterpart_rate, payment.accounting_rate, places=4)
-
+            self._assert_rates(payment, accounting=expected_acc, places=4)
             expected_liq_balance = 100 / expected_acc  # ≈ 132 000 ARS
-            expected_cp_amount = 100 * expected_cp  # ≈ 110 USD
-
-            # counterpart_currency_amount en B1 (USD): amount_EUR × counterpart_rate
-            self.assertAlmostEqual(
-                payment.counterpart_currency_amount,
-                expected_cp_amount,
-                places=2,
-                msg="cca en B1 (USD): amount_EUR × counterpart_rate",
-            )
-            # payment_total en B2 (ARS): B1≠B2 → amount_EUR / accounting_rate
-            self.assertAlmostEqual(
-                payment.payment_total,
-                expected_liq_balance,
-                places=2,
-                msg="payment_total en B2 (ARS): amount_EUR / accounting_rate",
-            )
+            self.assertAlmostEqual(payment.payment_total, expected_liq_balance, places=2)
 
             payment.action_post()
 
@@ -740,29 +713,20 @@ class TestPaymentMultimoneda(TestArCommon):
                 {
                     "liquidity": {"currency": self.eur, "amt_currency": -100, "balance": -expected_liq_balance},
                     "counterpart": {
-                        "currency": self.usd,
-                        "amt_currency": expected_cp_amount,
+                        "currency": self.ars,
+                        "amt_currency": expected_liq_balance,
                         "balance": expected_liq_balance,
                     },
                 },
             )
             self.assertIn(invoice.payment_state, ["paid", "in_payment"])
 
-            # payment_matched_amount: AP (credit side, outbound) → negativo en C=ARS.
-            # Caso 10 es el más crítico: rec.currency_id=USD (B1), target=ARS (C).
-            # Con el código anterior (buggy) devolvía 100*cp_rate EUR (importe en B1
-            # multiplicado por counterpart_rate, resultando en EUR, no ARS).
-            # Con el fix usa partial.amount → ARS correcto.
+            # AP (credit side, outbound) → negative in C=ARS, from partial.amount
             expected_invoice_ars = abs(self._get_debt_lines(invoice).balance)  # 100 USD * 1200 = 120 000 ARS
             inv_line = self._get_debt_lines(invoice)
             matched = inv_line.with_context(matched_payment_ids=payment.ids)
             self.assertEqual(matched.payment_matched_currency_id, self.ars, "target C=ARS en reconcile")
-            self.assertAlmostEqual(
-                matched.payment_matched_amount,
-                -expected_invoice_ars,
-                places=2,
-                msg="AP credit → negativo en ARS; usa partial.amount, no amount_currency en B1 (USD)",
-            )
+            self.assertAlmostEqual(matched.payment_matched_amount, -expected_invoice_ars, places=2)
         finally:
             self.company.reconcile_on_company_currency = False
 
@@ -790,6 +754,7 @@ class TestPaymentMultimoneda(TestArCommon):
                 to_pay_move_line_ids=[Command.set(self._get_debt_lines(invoice).ids)],
             )
             # Con el flag el default de B1 es C: el usuario la fuerza a USD desde la vista
+            self.assertTrue(payment.counterpart_currency_editable, "with reconcile B1 can be A")
             payment.counterpart_currency_id = self.usd
 
             self._assert_currencies(payment, A=self.usd, B1=self.usd, B2=self.ars, C=self.ars)
@@ -853,6 +818,87 @@ class TestPaymentMultimoneda(TestArCommon):
                     "counterpart": {
                         "currency": self.usd,
                         "amt_currency": expected_cp_amount,
+                        "balance": expected_cp_balance,
+                    },
+                    "write_off": {"currency": self.ars, "amt_currency": -1_200, "balance": -1_200},
+                },
+            )
+            self.assertIn(invoice.payment_state, ["paid", "in_payment"])
+        finally:
+            self.company.reconcile_on_company_currency = False
+
+    def test_reconcile_debt_currency_locked_to_company(self):
+        """With reconcile_on_company_currency and an account without currency the debt currency
+        can only be C or the journal currency. With an ARS journal, or one without currency, it is
+        C and read only, even
+        for a USD debt, and a USD debt currency (e.g. a draft payment from before) goes back to C on
+        recompute: converting ARS to USD rounded the counterpart line and left a residual in ARS
+        inside a full reconcile, with no exchange difference.
+        """
+        self.company.reconcile_on_company_currency = True
+        self.account_receivable.currency_id = False
+        try:
+            invoice = self._create_invoice(100, self.usd)
+            payment = self._create_payment(
+                self.bank_ars,
+                amount=abs(self._get_debt_lines(invoice).balance),
+                to_pay_move_line_ids=[Command.set(self._get_debt_lines(invoice).ids)],
+            )
+            self._assert_currencies(payment, A=self.ars, B1=self.ars, B2=self.ars, C=self.ars)
+            self.assertFalse(payment.counterpart_currency_editable)
+
+            payment.counterpart_currency_id = self.usd
+            payment.to_pay_move_line_ids = [Command.set(self._get_debt_lines(invoice).ids)]
+            self.assertEqual(payment.counterpart_currency_id, self.ars, "the debt currency goes back to C")
+
+            # A journal without currency also locks it, even if the payment itself is in USD
+            bank_no_currency = self.bank_ars.copy({"code": "BNOC", "currency_id": False})
+            payment_usd = self._create_payment(
+                bank_no_currency,
+                currency_id=self.usd.id,
+                amount=100,
+                to_pay_move_line_ids=[Command.set(self._get_debt_lines(invoice).ids)],
+            )
+            self.assertEqual(payment_usd.currency_id, self.usd)
+            self.assertFalse(payment_usd.counterpart_currency_editable)
+            self.assertEqual(payment_usd.counterpart_currency_id, self.ars)
+        finally:
+            self.company.reconcile_on_company_currency = False
+
+    def test_caso9_reconcile_con_write_off(self):
+        """Caso 9 + write-off · USD / ARS / ARS / ARS
+
+        USD payment against an ARS debt with reconcile and a write-off in C. B1 is C, so the
+        counterpart line goes in ARS and covers cash + write-off with nominal equal to balance.
+        """
+        self.company.reconcile_on_company_currency = True
+        self.account_receivable.currency_id = False
+        try:
+            invoice = self._create_invoice(117_600, self.ars)
+            debt_lines = self._get_debt_lines(invoice)
+            payment = self._create_payment(
+                self.bank_usd,
+                amount=99,
+                to_pay_move_line_ids=[Command.set(debt_lines.ids)],
+                write_off_type_id=self.write_off_type.id,
+                write_off_amount=-1_200,
+            )
+
+            self._assert_currencies(payment, A=self.usd, B1=self.ars, B2=self.ars, C=self.ars)
+
+            expected_liq_balance = 99 / self._get_rate(self.ars, self.usd)  # 99 USD → 118 800 ARS
+            # Counterpart balance: -118 800 - (-1 200) = -117 600 ARS
+            expected_cp_balance = -(expected_liq_balance + (-1_200))
+
+            payment.action_post()
+
+            self._assert_move_lines(
+                payment,
+                {
+                    "liquidity": {"currency": self.usd, "amt_currency": 99, "balance": expected_liq_balance},
+                    "counterpart": {
+                        "currency": self.ars,
+                        "amt_currency": expected_cp_balance,
                         "balance": expected_cp_balance,
                     },
                     "write_off": {"currency": self.ars, "amt_currency": -1_200, "balance": -1_200},
