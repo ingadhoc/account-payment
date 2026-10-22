@@ -192,6 +192,36 @@ class TestCheckOperationOrder(AccountTestInvoicingCommon):
 
         self.assertEqual(receipt.state, "draft")
 
+    def _deliver_and_cancel(self, check_number):
+        """OP que entrega un cheque de terceros y después se cancela: el cheque vuelve a la cartera."""
+        receipt = self._create_receipt(check_number)
+        check = receipt.l10n_latam_new_check_ids
+        delivery = self._create_draft_delivery()
+        delivery.l10n_latam_move_check_ids = [Command.set(check.ids)]
+        delivery.action_post()
+        delivery.action_draft()
+        delivery.action_cancel()
+        return receipt, delivery, check
+
+    def test_canceled_delivery_can_be_reset_to_draft(self):
+        """The receipt is still the last operation, but it is earlier than the canceled delivery."""
+        receipt, delivery, check = self._deliver_and_cancel("00000112")
+        self.assertEqual(check._get_last_operation(), receipt)
+
+        delivery.action_draft()
+
+        self.assertEqual(delivery.state, "draft")
+
+    def test_canceled_delivery_cannot_be_reset_to_draft_once_the_check_moved_again(self):
+        """A delivery confirmed after the cancellation is later in the chain, so it blocks."""
+        __, delivery, check = self._deliver_and_cancel("00000113")
+        second_delivery = self._create_draft_delivery()
+        second_delivery.l10n_latam_move_check_ids = [Command.set(check.ids)]
+        second_delivery.action_post()
+
+        with self.assertRaisesRegex(ValidationError, "not the last operation"):
+            delivery.action_draft()
+
     def test_draft_payment_has_no_operation_date(self):
         """A draft is not an operation yet, so it has no operation date until it is confirmed."""
         delivery = self._create_draft_delivery()
