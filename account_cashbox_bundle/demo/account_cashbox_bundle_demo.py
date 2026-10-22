@@ -23,6 +23,9 @@ class AccountChartTemplate(models.AbstractModel):
         Se crea solo para la compañía Responsable Inscripto (base.company_ri).
         """
         for company in companies:
+            # archived companies cannot be assigned to users
+            if not company.active:
+                continue
             _logger.info("Creating cashbox bundle demo data for company: %s", company.name)
             self = self.with_company(company)
 
