@@ -28,25 +28,21 @@
     <record id="journal_cajas" model="account.journal">
         <field name="name">Cajas</field>
         <field name="type">cash</field>
-        <field name="code">CAJAS</field>
     </record>
 
     <record id="journal_caja_central" model="account.journal">
         <field name="name">Caja Central</field>
         <field name="type">cash</field>
-        <field name="code">CAJAC</field>
     </record>
 
     <record id="journal_billetera_virtual" model="account.journal">
         <field name="name">Billetera Virtual</field>
         <field name="type">bank</field>
-        <field name="code">BILL1</field>
     </record>
 
     <record id="journal_viaticos" model="account.journal">
         <field name="name">Viaticos</field>
         <field name="type">cash</field>
-        <field name="code">VIA01</field>
     </record>
 
     <!-- Sequences and cashbox -->
