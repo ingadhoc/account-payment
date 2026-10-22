@@ -202,7 +202,10 @@
                             string="Debt Currency"
                             readonly="state != 'draft' or not counterpart_currency_editable"
                             required="use_payment_pro"
+                            domain="[('id', 'in', [company_currency_id, journal_currency_id])] if reconcile_on_company_currency else []"
                             options="{'no_create': True, 'no_open': True}"/>
+                        <field name="reconcile_on_company_currency" invisible="True"/>
+                        <field name="journal_currency_id" invisible="True"/>
                     </group>
                     <group name="name">
                         <field name="selected_debt" invisible="state not in ('draft')"/>
