@@ -138,6 +138,7 @@ class AccountCheckToDateReportWizard(models.TransientModel):
                 LEFT JOIN
                     account_move AS ap_move ON ap.move_id = ap_move.id
                 WHERE ap.date <= %s
+                AND ap.state NOT IN ('canceled', 'draft')
             UNION ALL
                 SELECT
                     llc.id as check_id,
@@ -145,6 +146,7 @@ class AccountCheckToDateReportWizard(models.TransientModel):
                 FROM l10n_latam_check llc
                 JOIN account_payment ap on ap.id = llc.payment_id
                 WHERE ap.date <= %s
+                AND ap.state NOT IN ('canceled', 'draft')
 
             ) AS query
             GROUP BY
