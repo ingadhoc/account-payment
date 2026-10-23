@@ -71,6 +71,7 @@ class AccountPayment(models.Model):
         digits=0,
         min_display_digits=2,
     )
+    reconcile_on_company_currency = fields.Boolean(related="company_id.reconcile_on_company_currency")
     counterpart_currency_editable = fields.Boolean(
         compute="_compute_counterpart_currency_editable",
         help="True when the destination account does not force a specific currency, "
@@ -271,6 +272,7 @@ class AccountPayment(models.Model):
         "destination_account_id",
         "company_currency_id",
         "company_id",
+        "journal_id",
         "to_pay_move_line_ids",
         "multi_currency_debt",
     )
@@ -281,7 +283,14 @@ class AccountPayment(models.Model):
             if account_currency and account_currency != rec.company_currency_id:
                 rec.counterpart_currency_editable = False
                 continue
-            elif self.env.context.get("default_company_id") and not rec.company_id.reconcile_on_company_currency:
+            elif rec.company_id.reconcile_on_company_currency:
+                # with reconcile the debt can only be in C or in the journal currency (see _compute_counterpart_currency_id)
+                journal_currency = rec.journal_id.currency_id
+                rec.counterpart_currency_editable = (
+                    bool(journal_currency) and journal_currency != rec.company_currency_id
+                )
+                continue
+            elif self.env.context.get("default_company_id"):
                 # sin reconcile, si venimos desde una factura NO queremos que editen la currency
                 rec.counterpart_currency_editable = False
                 continue
@@ -292,6 +301,7 @@ class AccountPayment(models.Model):
         "to_pay_move_line_ids",
         "company_id",
         "company_currency_id",
+        "journal_id",
         "is_internal_transfer",
         "destination_journal_id",
     )
@@ -311,11 +321,11 @@ class AccountPayment(models.Model):
                 rec.counterpart_currency_id = account_currency
                 continue
 
-            # Caso 2: la cuenta no tiene moneda definida (o es la de la compañía), en reconcile si ya eligió una
-            # la mantenemos. Sin reconcile se recomputa porque pudo elegir deuda en otra moneda
+            # Case 2: the account has no currency (or it is C). With reconcile the debt is in C or in the journal
+            # currency: another one is converted and rounded, leaving a residual in C with no exchange difference.
+            # Without reconcile it is recomputed because the user may pick debt in another currency
             if rec.company_id.reconcile_on_company_currency:
-                if not rec.counterpart_currency_id:
-                    # Default: moneda de la compañía
+                if rec.counterpart_currency_id not in (company_currency | rec.journal_id.currency_id):
                     rec.counterpart_currency_id = company_currency
             elif rec.to_pay_move_line_ids:
                 currencies = rec.to_pay_move_line_ids.mapped("currency_id")

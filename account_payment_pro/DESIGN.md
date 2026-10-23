@@ -21,7 +21,7 @@ In most cases B1 = B2 (referred to simply as **B**). They differ only when `reco
 
 ```
 if destination_account.currency_id exists and ≠ C  → that currency
-elif reconcile_on_company_currency                 → C  (editable)
+elif reconcile_on_company_currency                 → C  (editable only to the journal currency)
 elif to_pay_move_line_ids has lines                → currency of those lines (single-currency constraint)
 else                                               → C  (editable)
 ```
@@ -135,7 +135,7 @@ It is derived from `counterpart_currency_id` and `reconcile_on_company_currency`
 
 ### ADR-003 — B1 editable only in specific cases
 
-Only editable when the account has no forced currency (or it equals C) AND (`reconcile_on_company_currency` is active OR no debts selected). In internal transfers it is not editable (determined by the destination journal).
+Only editable when the account has no forced currency (or it equals C) and the payment is not opened from an invoice (unless `reconcile_on_company_currency` is active). With `reconcile_on_company_currency` the debt can only be in C or in the journal currency (`journal_id.currency_id`, not the payment `currency_id`), so it is read only when the journal has no currency or it is C: a third currency is converted from A and rounded, leaving a residual in C inside a full reconcile with no exchange difference. To collect a debt in another currency with that option, use an account with that currency. In internal transfers it is not editable (determined by the destination journal).
 
 ### ADR-004 — `accounting_rate` replaces `force_amount_company_currency`
 
@@ -195,9 +195,9 @@ These tests validate the full lifecycle (creation → rate setting → posting �
 | Caso 5 | Cross-currency arbitrage | USD→EUR→ARS |
 | Caso 6 | Partial / mixed payment | ARS→USD→ARS |
 | Caso 7 | Advance payment (no debt) | ARS→USD→ARS |
-| Caso 8 | Reconcile on company currency (ARS journal, USD forced) | ARS / B1=USD / B2=ARS |
-| Caso 9 | USD journal, ARS debt with reconcile | USD / B1=USD / B2=ARS |
-| Caso 10 | Arbitrage with reconcile | EUR / B1=USD / B2=ARS |
+| Caso 8 | Reconcile on company currency (ARS journal, USD debt) | ARS / B1=ARS / B2=ARS |
+| Caso 9 | USD journal, ARS debt with reconcile | USD / B1=ARS (default) or USD / B2=ARS |
+| Caso 10 | EUR journal, USD debt with reconcile | EUR / B1=ARS / B2=ARS |
 
 Additional unit tests cover: rate sync when B1=C, `counterpart_currency_amount` inverse, `selected_debt` field selection, rate visibility rules, and write-offs (company and foreign currency).
 
