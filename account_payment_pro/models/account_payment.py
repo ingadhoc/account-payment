@@ -1186,25 +1186,23 @@ class AccountPayment(models.Model):
         return records
 
     def _get_to_pay_companies(self):
-        """Las compañías cuya deuda puede pagar este pago: su entidad fiscal, acotada a lo
-        que el usuario tiene seleccionado.
+        """Las compañías cuya deuda puede pagar este pago.
 
-        La deuda de una entidad fiscal se cobra desde cualquiera de sus compañías, así que
-        el recibo tiene que listarla toda y no solo la de la compañía del pago —que era lo
-        que hacía, y por eso una sucursal no veía la deuda de su padre ni al revés—. Se
-        acota a ``env.companies`` porque el criterio acordado es "toda la deuda compatible
-        con las compañías que el usuario tiene seleccionadas, ni más ni menos": lo que el
-        usuario no tildó no entra.
+        Sigue a "Block Inter-Company Reconciliation" de la raíz del árbol
+        (``res.company._get_branch_debt_companies`` en ``account_ux``), aunque el usuario
+        no tenga acceso a las otras compañías ni las tenga seleccionadas, porque un
+        cliente compra en una sucursal y paga en otra: sin bloqueo, la deuda de todo el
+        árbol; con bloqueo entre entidades fiscales distintas, la de la entidad fiscal
+        del pago; con bloqueo siempre, solo la de la compañía del pago.
 
         El pago sigue quedando en la compañía donde se hizo, aunque la deuda sea de otra
-        sucursal de la entidad; lo que lo permite es el ``_check_company_domain`` de
-        ``account.move.line`` en ``account_ux``, que acepta la entidad fiscal completa.
+        sucursal; lo que lo permite es el ``_check_company_domain`` de
+        ``account.move.line`` en ``account_ux``, que acepta las mismas compañías.
         """
         self.ensure_one()
         if not self.company_id:
             return self.env["res.company"]
-        legal_entity = self.company_id._get_legal_entity_companies()
-        return (legal_entity & self.env.companies) or self.company_id
+        return self.company_id._get_branch_debt_companies() or self.company_id
 
     def _get_to_pay_move_lines_domain(self):
         self.ensure_one()
@@ -1252,7 +1250,7 @@ class AccountPayment(models.Model):
             to_pay_partners = rec.to_pay_move_line_ids.mapped("partner_id")
             if len(to_pay_partners) > 1:
                 raise ValidationError(_("All to pay lines must be of the same partner"))
-            if len(rec.to_pay_move_line_ids.mapped("company_id")) > 1:
+            if rec.to_pay_move_line_ids.company_id - rec._get_to_pay_companies():
                 raise ValidationError(_("You can't create payments for entries belonging to different companies."))
             if to_pay_partners and to_pay_partners != rec.partner_id.commercial_partner_id:
                 raise ValidationError(
@@ -1277,7 +1275,11 @@ class AccountPayment(models.Model):
                 lambda r: not r.reconciled and r.account_id.id == counterpart_aml.account_id.id
             )
             if counterpart_aml and debt_aml:
-                (counterpart_aml + (debt_aml)).reconcile()
+                to_reconcile_aml = counterpart_aml + debt_aml
+                # The debt may be of a branch the user has no access to, see _get_to_pay_companies.
+                if debt_aml.company_id - self.env.companies:
+                    to_reconcile_aml = to_reconcile_aml.sudo()
+                to_reconcile_aml.reconcile()
 
     def action_post(self):
         # The list view "Post Payments" action calls this on every selected payment, and the core sets
