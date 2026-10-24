@@ -17,8 +17,9 @@ class l10nLatamAccountPaymentCheck(models.Model):
     )
     date = fields.Date(related="payment_id.date")
     memo = fields.Char(related="payment_id.memo")
+    # related=False: otherwise the core related field wins and _compute_company_id never triggers
     company_id = fields.Many2one(
-        compute="_compute_company_id", store=True, compute_sudo=True, comodel_name="res.company"
+        related=False, compute="_compute_company_id", store=True, compute_sudo=True, comodel_name="res.company"
     )
     payment_state = fields.Selection(
         related="payment_id.state",
