@@ -207,7 +207,7 @@ class AccountLoanRegister(models.TransientModel):
             loan_move_data["line_ids"].append(
                 Command.create(
                     {
-                        "account_id": self.env.ref(f"account.{self.company_id.id}_account_loan_account").id,
+                        "account_id": loan_account.id,
                         "balance": credit_total - debit_total,
                         "name": _("Rounding"),
                         "currency_id": self.currency_id.id,

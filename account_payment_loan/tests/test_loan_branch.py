@@ -4,7 +4,7 @@ from odoo.tests import tagged
 
 
 @tagged("post_install", "-at_install")
-class TestLoanBranchSurcharge(AccountTestInvoicingCommon):
+class TestLoanBranch(AccountTestInvoicingCommon):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -12,8 +12,8 @@ class TestLoanBranchSurcharge(AccountTestInvoicingCommon):
         cls.branch = cls.env["res.company"].create(
             {"name": "Branch", "parent_id": cls.parent.id, "country_id": cls.parent.country_id.id}
         )
+        cls.cr.precommit.run()  # load the CoA on the branch
         cls.env = cls.env(context=dict(cls.env.context, allowed_company_ids=(cls.branch + cls.parent).ids))
-        cls.branch.loan_journal_id = cls.parent.loan_journal_id
         cls.branch_sale_journal = cls.env["account.journal"].create(
             {
                 "name": "Branch Sales",
@@ -23,18 +23,11 @@ class TestLoanBranchSurcharge(AccountTestInvoicingCommon):
                 "default_account_id": cls.company_data["default_account_revenue"].id,
             }
         )
-        # the branch is created after the chart was loaded, so it gets no default accounts
-        cls.partner_a.with_company(cls.branch).property_account_receivable_id = cls.company_data[
-            "default_account_receivable"
-        ]
 
         # the surcharge product only carries the sales tax of the parent company
         cls.surcharge_product = cls.env["product.product"].create(
             {"name": "Financial Surcharge", "type": "service", "taxes_id": [Command.set(cls.tax_sale_a.ids)]}
         )
-        cls.surcharge_product.with_company(cls.branch).property_account_income_id = cls.company_data[
-            "default_account_revenue"
-        ]
         cls.branch.product_surcharge_id = cls.surcharge_product
 
         cls.card = cls.env["account.card"].create(
@@ -48,8 +41,7 @@ class TestLoanBranchSurcharge(AccountTestInvoicingCommon):
             }
         )
 
-    def test_branch_loan_surcharge_uses_parent_tax(self):
-        """A branch without its own sales tax invoices the loan surcharge with the tax of its parent company."""
+    def _branch_invoice_receivable(self, amount):
         invoice = (
             self.env["account.move"]
             .with_company(self.branch)
@@ -59,13 +51,24 @@ class TestLoanBranchSurcharge(AccountTestInvoicingCommon):
                     "partner_id": self.partner_a.id,
                     "journal_id": self.branch_sale_journal.id,
                     "invoice_line_ids": [
-                        Command.create({"name": "test", "quantity": 1, "price_unit": 1000.0, "tax_ids": []}),
+                        Command.create({"name": "test", "quantity": 1, "price_unit": amount, "tax_ids": []}),
                     ],
                 }
             )
         )
         invoice.action_post()
-        receivable = invoice.line_ids.filtered(lambda x: x.account_id.account_type == "asset_receivable")
+        return invoice.line_ids.filtered(lambda x: x.account_id.account_type == "asset_receivable")
+
+    def test_branch_loan_settings(self):
+        """A branch uses the loan journal and accounts of its root company."""
+        for fname in ("loan_journal_id", "account_late_payment_interest", "account_loan_extra_charges"):
+            self.assertTrue(self.parent[fname])
+            self.assertEqual(self.branch[fname], self.parent[fname])
+
+    def test_branch_loan_surcharge_uses_parent_tax(self):
+        """A branch without its own sales tax invoices the loan surcharge with the tax of its parent company."""
+        receivable = self._branch_invoice_receivable(1000.0)
+        invoice = receivable.move_id
         wizard = (
             self.env["account.loan.register"]
             .with_context(active_ids=receivable.ids)
@@ -80,3 +83,20 @@ class TestLoanBranchSurcharge(AccountTestInvoicingCommon):
         surcharge_line = debit_note.invoice_line_ids.filtered(lambda line: line.product_id == self.surcharge_product)
         self.assertEqual(surcharge_line.tax_ids, self.tax_sale_a)
         self.assertAlmostEqual(debit_note.amount_total, 200.0, places=2)
+
+    def test_branch_loan_rounding(self):
+        """Installments that do not add up to the total get a rounding line on the loan account of the branch."""
+        receivable = self._branch_invoice_receivable(1000.0)
+        installment = self.env["account.card.installment"].create(
+            {"card_id": self.card.id, "name": "3 (10%)", "divisor": 3, "surcharge_coefficient": 1.1}
+        )
+        self.env["account.loan.register"].with_context(active_ids=receivable.ids).create(
+            {"card_id": self.card.id, "installment_id": installment.id}
+        ).action_register_loan()
+        loan = self.env["account.move"].search(
+            [("journal_id", "=", self.branch.loan_journal_id.id), ("company_id", "=", self.branch.id)]
+        )
+        self.assertEqual(loan.state, "posted")
+        rounding = loan.line_ids.filtered(lambda line: line.name == "Rounding")
+        self.assertEqual(rounding.account_id, self.branch.loan_journal_id.default_account_id)
+        self.assertAlmostEqual(rounding.balance, -0.01, places=2)
