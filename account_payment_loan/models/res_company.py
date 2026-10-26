@@ -18,3 +18,10 @@ class ResCompany(models.Model):
         help="Account used to record extra charges related to loans.",
     )
     loan_terms = fields.Html(string=" Loan Default Terms and Conditions", translate=True)
+
+    def _set_loan_settings_from_root(self):
+        """Branches use the loan journal and accounts of their root company, the same way account
+        copies the default accounts of the root when the chart is loaded on a branch."""
+        for company in self:
+            for fname in ("loan_journal_id", "account_late_payment_interest", "account_loan_extra_charges"):
+                company[fname] = company[fname] or company.root_id[fname]

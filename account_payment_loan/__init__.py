@@ -23,3 +23,4 @@ def post_init_hook(env):
         company.loan_journal_id = account_loan_journal_id.id
         company.account_late_payment_interest = env.ref(f"account.{company.id}_account_loan_interest_account").id
         company.account_loan_extra_charges = env.ref(f"account.{company.id}_account_loan_extra_charges").id
+    env["res.company"].search([("parent_id", "!=", False)])._set_loan_settings_from_root()
