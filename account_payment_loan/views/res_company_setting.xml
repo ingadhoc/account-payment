@@ -12,7 +12,7 @@
                         <div class="content-group">
                             <div class="row mt8">
                                 <label for="loan_journal_id" class="col-lg-5 o_light_label"/>
-                                <field name="loan_journal_id" domain="[('company_id', '=', company_id)]"/>
+                                <field name="loan_journal_id" domain="[('company_id', 'parent_of', company_id)]"/>
                             </div>
                         </div>
                     </setting>

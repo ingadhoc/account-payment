@@ -37,13 +37,9 @@ class AccountChartTemplate(models.AbstractModel):
         }
 
     def _post_load_data(self, template_code, company, template_data):
-        def get_first_parent(company):
-            if company.parent_id:
-                return get_first_parent(company.parent_id)
-            return company
-
         super()._post_load_data(template_code, company, template_data)
-        company = get_first_parent(company or self.env.company)
+        loaded_company = company or self.env.company
+        company = loaded_company.root_id
 
         # Settle the account_type recompute (scheduled when `code` was set) while the account is
         # not yet a journal default. Otherwise a later flush triggers _check_account_is_bank_journal_bank_account
@@ -56,3 +52,4 @@ class AccountChartTemplate(models.AbstractModel):
         company.loan_journal_id = account_loan_journal_id.id
         company.account_late_payment_interest = self.env.ref(f"account.{company.id}_account_loan_interest_account").id
         company.account_loan_extra_charges = self.env.ref(f"account.{company.id}_account_loan_extra_charges").id
+        (loaded_company - company)._set_loan_settings_from_root()
