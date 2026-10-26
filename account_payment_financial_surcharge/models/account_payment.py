@@ -43,7 +43,7 @@ class AccountPayment(models.Model):
     def _compute_net_amount(self):
         for rec in self:
             product = rec.company_id.product_surcharge_id
-            taxes = product.taxes_id.filtered(lambda t: t.company_id.id == rec.company_id.id)
+            taxes = product.taxes_id._filter_taxes_by_company(rec.company_id)
             net_amount = rec.amount / (rec.installment_id.surcharge_coefficient or 1)
 
             total_excluded = (
@@ -69,7 +69,7 @@ class AccountPayment(models.Model):
     def _inverse_net_amount(self):
         for rec in self:
             product = rec.company_id.product_surcharge_id
-            taxes = product.taxes_id.filtered(lambda t: t.company_id.id == rec.company_id.id)
+            taxes = product.taxes_id._filter_taxes_by_company(rec.company_id)
             amount = rec.net_amount * (rec.installment_id.surcharge_coefficient or 1) - rec.net_amount
             total_excluded = (
                 taxes.filtered(lambda x: not x.price_include)
@@ -115,7 +115,7 @@ class AccountPayment(models.Model):
             )
 
             if financing_surcharge_to_invoice > 0:
-                taxes = product.taxes_id.filtered(lambda t: t.company_id.id == rec.company_id.id)
+                taxes = product.taxes_id._filter_taxes_by_company(rec.company_id)
                 # If we are registering a payment of a draft invoice then we need to remove the invoice from the debts of the payment
                 # in order to be able to post/reconcile the payment (this is needed because in odoo 17 we are not able to reconcile
                 # draft account.move. only can reconcile posted ones)

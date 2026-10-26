@@ -228,7 +228,7 @@ class AccountLoanRegister(models.TransientModel):
 
         if self.is_invoiceable and not self.refinancial_loan_move_ids:
             product = self.company_id.product_surcharge_id
-            taxes = product.taxes_id.filtered(lambda t: t.company_id.id == self.company_id.id)
+            taxes = product.taxes_id._filter_taxes_by_company(self.company_id)
             total_excluded = taxes.with_context(force_price_include=True).compute_all(
                 price_unit=amount_total - self.amount,
                 currency=move_id.currency_id,
