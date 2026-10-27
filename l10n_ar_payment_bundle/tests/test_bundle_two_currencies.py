@@ -3,7 +3,7 @@
 
 from odoo import Command
 from odoo.addons.account_ux.tests.invariants import AccountInvariantsMixin
-from odoo.tests import tagged
+from odoo.tests import Form, tagged
 from odoo.tests.common import TransactionCase
 
 
@@ -184,3 +184,59 @@ class TestBundleTwoCurrencies(AccountInvariantsMixin, TransactionCase):
 
         with self.subTest("la factura queda saldada"):
             self.assertEqual(bill.amount_residual, 0.0)
+
+    def test_switch_from_foreign_journal_to_bundle_resets_amount_exact(self):
+        """Switching from a USD journal to the bundle journal must not keep the debt in amount_exact."""
+        expense = self.env["account.account"].search(
+            [("account_type", "=", "expense"), ("company_ids", "=", self.company.id)], limit=1
+        )
+        bill = self.env["account.move"].create(
+            {
+                "move_type": "in_invoice",
+                "partner_id": self.vendor.id,
+                "invoice_date": "2026-01-01",
+                "company_id": self.company.id,
+                "l10n_latam_document_type_id": self.invoice_a.id,
+                "l10n_latam_document_number": "1-1001",
+                "invoice_line_ids": [
+                    Command.create(
+                        {
+                            "name": "Test bundle switch journal bill line",
+                            "quantity": 1,
+                            "price_unit": 50000.0,
+                            "account_id": expense.id,
+                            "tax_ids": [Command.clear()],
+                        }
+                    ),
+                ],
+            }
+        )
+        bill.action_post()
+
+        payment_form = Form(
+            self.env["account.payment"].with_context(default_payment_type="outbound", default_partner_type="supplier")
+        )
+        payment_form.journal_id = self.usd_bank_journal
+        payment_form.partner_id = self.vendor
+        self.assertEqual(payment_form.amount, 50.0)
+        payment_form.journal_id = self.bundle_journal
+        main = payment_form.save()
+
+        self.assertTrue(main.is_main_payment)
+        self.assertEqual(main.amount, 0.0)
+        self.assertEqual(main.amount_exact, 0.0)
+        self.assertEqual(main.payment_total, 0.0)
+
+        self.env["account.payment"].create(
+            {
+                "payment_type": "outbound",
+                "partner_type": "supplier",
+                "partner_id": self.vendor.id,
+                "journal_id": self.cash_journal.id,
+                "payment_method_line_id": self.cash_manual.id,
+                "amount": 30000.0,
+                "main_payment_id": main.id,
+            }
+        )
+        self.assertEqual(main.payment_total, 30000.0)
+        self.assertEqual(main.payment_difference, 20000.0)
