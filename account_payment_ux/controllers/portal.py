@@ -8,6 +8,9 @@ class PortalAccountInherit(PortalAccount):
     # es necesaria porque el usuario portal no accede a payment.transaction.
     def _get_overdue_invoices_domain(self, partner_id=None):
         domain = super()._get_overdue_invoices_domain(partner_id=partner_id)
+        # In 20.0 the portal counters build this domain before checking access
+        if not request.env["account.move"].has_access("read"):
+            return domain
         move_ids = request.env["account.move"].search(domain).ids
         ignored_moves = (
             request.env["payment.transaction"]

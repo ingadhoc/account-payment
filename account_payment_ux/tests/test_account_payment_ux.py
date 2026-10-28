@@ -12,7 +12,7 @@ class TestAccountPaymentUx(AccountPaymentCommon):
     def setUpClass(cls):
         super().setUpClass()
         cls.today = fields.Date.today()
-        cls.env["ir.config_parameter"].sudo().set_param("account_payment.enable_portal_payment", True)
+        cls.env["ir.config_parameter"].sudo().set_bool("account_payment.enable_portal_payment", True)
 
     def _create_posted_invoice(self, **values):
         invoice = self.init_invoice("out_invoice", partner=self.partner, amounts=[1000.0], currency=self.currency)
@@ -65,13 +65,13 @@ class TestAccountPaymentUx(AccountPaymentCommon):
                     reference=f"TX-{invoice.id}",
                     invoice_ids=[(6, 0, invoice.ids)],
                 )
-                tx._post_process()
-                payment = tx.payment_id
+                self._run_post_processing()
+                payment = tx.payment_id.with_context(payment_safe_write=True)
                 payment.action_draft()
                 payment.amount += amount_delta
-                tx.is_post_processed = False
+                tx.with_context(payment_safe_write=True).is_post_processed = False
 
-                tx._post_process()
+                self._run_post_processing()
 
                 self.assertEqual(tx.payment_id, payment, "The post-process must not create another payment")
                 if expect_posted:
@@ -80,3 +80,4 @@ class TestAccountPaymentUx(AccountPaymentCommon):
                 else:
                     self.assertEqual(payment.state, "draft")
                     self.assertEqual(invoice.amount_residual, invoice.amount_total)
+
