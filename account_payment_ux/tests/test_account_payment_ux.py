@@ -81,3 +81,27 @@ class TestAccountPaymentUx(AccountPaymentCommon):
                     self.assertEqual(payment.state, "draft")
                     self.assertEqual(invoice.amount_residual, invoice.amount_total)
 
+    def test_confirmed_after_error_recovers_cancelled_payment(self):
+        """Given a done transaction that goes to error and is confirmed again, the
+        payment that core cancelled on the error is posted again and reconciled
+        with the invoice, without creating another payment.
+        """
+        invoice = self._create_posted_invoice()
+        tx = self._create_transaction(
+            "redirect", state="done", amount=invoice.amount_total, invoice_ids=[(6, 0, invoice.ids)]
+        )
+        self._run_post_processing()
+        payment = tx.payment_id
+
+        with self.subTest("on error, core cancels the payment and the invoice is not paid"):
+            tx.with_context(payment_safe_write=True)._set_error("Amount mismatch", extra_allowed_states=("done",))
+            self._run_post_processing()
+            self.assertEqual(payment.state, "canceled")
+            self.assertEqual(invoice.amount_residual, invoice.amount_total)
+
+        with self.subTest("confirmed again, the same payment is posted and the invoice is paid"):
+            tx.with_context(payment_safe_write=True)._set_done()
+            self._run_post_processing()
+            self.assertEqual(tx.payment_id, payment, "The post-process must not create another payment")
+            self.assertEqual(payment.move_id.state, "posted")
+            self.assertTrue(invoice.currency_id.is_zero(invoice.amount_residual))

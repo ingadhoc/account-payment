@@ -8,6 +8,8 @@
 
 - When the electronic transaction is pending the payment will remain in draft status. After done this electronic transaction the payment changes its state and reconcilie with the invoices.
 
+- When a confirmed transaction goes to error or is cancelled, Odoo cancels its payment. If the transaction is confirmed again, the same payment is posted and reconciled with the invoices.
+
 ----
 
 <img alt="ADHOC" src="http://fotos.subefotos.com/83fed853c1e15a8023b86b2b22d6145bo.png" />
