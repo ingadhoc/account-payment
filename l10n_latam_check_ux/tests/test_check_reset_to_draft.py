@@ -2,6 +2,7 @@
 # For copyright and license notices, see __manifest__.py file in module root
 # directory
 ##############################################################################
+from odoo import Command
 from odoo.exceptions import UserError
 from odoo.tests import tagged
 
@@ -128,3 +129,35 @@ class TestCheckResetToDraft(LatamCheckCommon):
         with self.subTest("revertido el pase, el cobro original sí puede volver a borrador"):
             receipt.action_draft()
             self.assertEqual(receipt.state, "draft")
+
+    def test_removing_a_third_party_check_in_draft_rebuilds_the_entry(self):
+        """Dada una OP confirmada con cuatro cheques de terceros, cuando vuelve
+        a borrador, se le sacan dos cheques y se confirma otra vez, entonces el
+        asiento se rehace con los dos cheques restantes y la contrapartida por
+        el importe nuevo: no queda la línea de los cheques quitados ni la deuda
+        saldada por el importe anterior.
+        """
+        receipt = self._receive_third_party_checks(
+            [100000.0, 200000.0, 300000.0, 400000.0], numbers=["00000911", "00000912", "00000913", "00000914"]
+        )
+        receipt.action_post()
+        checks = receipt.l10n_latam_new_check_ids
+        kept = checks.filtered(lambda check: check.amount in (100000.0, 200000.0))
+
+        payment = self._deliver_third_party_checks(checks)
+        payment.action_post()
+        self.assert_check_lines_match(payment, "primera confirmación")
+
+        payment.action_draft()
+        # the form sends the recomputed amount along with the checks
+        payment.write({"l10n_latam_move_check_ids": [Command.set(kept.ids)], "amount": 300000.0})
+        payment.action_post()
+
+        with self.subTest("el importe del pago sale de los cheques que quedaron"):
+            self.assertEqual(payment.amount, 300000.0)
+        with self.subTest("una línea por cheque que quedó, sin las de los cheques quitados"):
+            self.assert_check_lines_match(payment, "re-confirmada sin dos cheques")
+        with self.subTest("la contrapartida baja al importe nuevo"):
+            self.assertEqual(sum(self._counterpart_lines(payment).mapped("debit")), 300000.0)
+        self.assert_move_balanced(payment.move_id, "re-confirmada sin dos cheques")
+        self.assert_payment_invariants(payment, "re-confirmada sin dos cheques")
