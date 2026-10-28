@@ -15,7 +15,7 @@ class AccountPayment(models.Model):
     @api.depends("to_pay_move_line_ids")
     def _compute_is_loan_payment(self):
         for rec in self:
-            loan_account_id = rec.company_id.loan_journal_id.default_account_id
+            loan_account_id = rec.company_id._get_loan_setting("loan_journal_id").default_account_id
             rec.is_loan_payment = rec.to_pay_move_line_ids.filtered(
                 lambda x: x.account_id == loan_account_id and not x.move_id.loan_move_ids
             ).exists()
@@ -29,7 +29,7 @@ class AccountPayment(models.Model):
 
             loan_surcharge = 0.0
             daily_interest = rec.company_id.late_payment_interest / 30
-            loan_account_id = rec.company_id.loan_journal_id.default_account_id
+            loan_account_id = rec.company_id._get_loan_setting("loan_journal_id").default_account_id
 
             lines = rec.to_pay_move_line_ids.filtered(
                 lambda l: l.account_id == loan_account_id
@@ -50,8 +50,8 @@ class AccountPayment(models.Model):
         for rec in self.filtered(lambda p: p.is_loan_payment):
             if rec.loan_surcharge:
                 # intereses ganado  y perdidos
-                loan_account_id = rec.company_id.loan_journal_id.default_account_id
-                late_payment_interest_account_id = rec.company_id.account_late_payment_interest
+                loan_account_id = rec.company_id._get_loan_setting("loan_journal_id").default_account_id
+                late_payment_interest_account_id = rec.company_id._get_loan_setting("account_late_payment_interest")
                 loan_move_ids = rec.to_pay_move_line_ids.filtered(lambda x: x.account_id == loan_account_id).mapped(
                     "move_id"
                 )
@@ -64,7 +64,7 @@ class AccountPayment(models.Model):
                 interest_move_data = {
                     "partner_id": rec.partner_id.id,
                     "loan_move_ids": [Command.set(loan_base_move_ids.ids)],
-                    "journal_id": rec.company_id.loan_journal_id.id,
+                    "journal_id": rec.company_id._get_loan_setting("loan_journal_id").id,
                     "ref": _("Interest for %s") % move_names,
                     "line_ids": [
                         Command.create(

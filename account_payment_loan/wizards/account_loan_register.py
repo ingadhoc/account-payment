@@ -128,7 +128,7 @@ class AccountLoanRegister(models.TransientModel):
 
     def _prepare_loan_move_data(self):
         amount_total = self.amount * self.installment_id.surcharge_coefficient
-        loan_account = self.company_id.loan_journal_id.default_account_id
+        loan_account = self.company_id._get_loan_setting("loan_journal_id").default_account_id
         origin_moves = self.move_line_ids.mapped("move_id")
         if self.refinancial_loan_move_ids:
             # interest and extra charges moves are refinanced along with their loan, but they are not its origin
@@ -140,7 +140,7 @@ class AccountLoanRegister(models.TransientModel):
             ref = _("Refinancing of %s") % move_names if move_names else _("Refinancing")
         loan_move_data = {
             "partner_id": self.partner_id.id,
-            "journal_id": self.company_id.loan_journal_id.id,
+            "journal_id": self.company_id._get_loan_setting("loan_journal_id").id,
             "company_id": self.company_id.id,
             "ref": ref,
             "loan_description": "%s %s <p>%s</p>"
@@ -172,7 +172,7 @@ class AccountLoanRegister(models.TransientModel):
                     }
                 )
             )
-            late_payment_interest_account_id = self.company_id.account_late_payment_interest
+            late_payment_interest_account_id = self.company_id._get_loan_setting("account_late_payment_interest")
             credit_total += self.currency_id.round(amount_total - self.amount)
             loan_move_data["line_ids"].append(
                 Command.create(
