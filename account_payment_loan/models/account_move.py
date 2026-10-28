@@ -13,7 +13,9 @@ class AccountMove(models.Model):
 
     def _compute_is_loan(self):
         for rec in self:
-            rec.is_loan = bool(rec.journal_id == rec.company_id.loan_journal_id and not rec.loan_move_ids)
+            rec.is_loan = bool(
+                rec.journal_id == rec.company_id._get_loan_setting("loan_journal_id") and not rec.loan_move_ids
+            )
 
     def action_register_loan(self):
         return self.line_ids.action_register_loan()
@@ -24,7 +26,7 @@ class AccountMove(models.Model):
         for rec in self.filtered(lambda x: not x.loan_move_ids):
             late_payment_interest = rec.company_id.late_payment_interest
             daily_interest = late_payment_interest / 30
-            loan_account_id = rec.company_id.loan_journal_id.default_account_id
+            loan_account_id = rec.company_id._get_loan_setting("loan_journal_id").default_account_id
 
             for line_id in rec.line_ids.filtered(
                 lambda x: x.account_id == loan_account_id
@@ -52,12 +54,12 @@ class AccountMove(models.Model):
         for rec in self:
             loan_surcharge = rec._get_total_debit(date)
             # intereses ganado  y perdidos
-            loan_account_id = rec.company_id.loan_journal_id.default_account_id
-            late_payment_interest_account_id = rec.company_id.account_late_payment_interest
+            loan_account_id = rec.company_id._get_loan_setting("loan_journal_id").default_account_id
+            late_payment_interest_account_id = rec.company_id._get_loan_setting("account_late_payment_interest")
             move_names = ", ".join(rec.filtered(lambda x: not x.loan_move_ids).mapped("name"))
             interest_move_data = {
                 "partner_id": rec.partner_id.id,
-                "journal_id": rec.company_id.loan_journal_id.id,
+                "journal_id": rec.company_id._get_loan_setting("loan_journal_id").id,
                 "ref": _("Interest for %s") % move_names,
                 "loan_move_ids": [Command.set(rec.ids)],
                 "line_ids": [
