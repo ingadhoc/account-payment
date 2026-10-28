@@ -35,7 +35,10 @@ class AccountPayment(models.Model):
 
     @api.constrains("amount", "amount_exact", "is_main_payment")
     def _check_amount_in_main_payment(self):
-        if self.filtered(lambda x: x.is_main_payment and (x.amount != 0 or x.amount_exact != 0)):
+        if self.filtered(
+            lambda x: x.is_main_payment
+            and (x.amount != 0 or (x.currency_id and not x.currency_id.is_zero(x.amount_exact)))
+        ):
             raise ValidationError(_("The payment bundle amount always must be Zero"))
 
     @api.constrains("company_id", "main_payment_id", "link_payment_ids")
@@ -181,6 +184,12 @@ class AccountPayment(models.Model):
         main_payments.amount = 0
         main_payments.amount_exact = 0
         super(AccountPayment, self - main_payments)._onchange_withholdings()
+
+    @api.onchange("currency_id")
+    def _onchange_currency_recompute_amount(self):
+        main_payments = self.filtered("is_main_payment")
+        main_payments.previous_currency_id = main_payments.currency_id
+        super(AccountPayment, self - main_payments)._onchange_currency_recompute_amount()
 
     @api.depends("main_payment_id")
     def _compute_counterpart_rate(self):
