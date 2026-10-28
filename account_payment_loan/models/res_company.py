@@ -19,9 +19,8 @@ class ResCompany(models.Model):
     )
     loan_terms = fields.Html(string=" Loan Default Terms and Conditions", translate=True)
 
-    def _set_loan_settings_from_root(self):
-        """Branches use the loan journal and accounts of their root company, the same way account
-        copies the default accounts of the root when the chart is loaded on a branch."""
-        for company in self:
-            for fname in ("loan_journal_id", "account_late_payment_interest", "account_loan_extra_charges"):
-                company[fname] = company[fname] or company.root_id[fname]
+    def _get_loan_setting(self, fname):
+        """Loan setting of the closest company in the hierarchy that has it set, so branches use the one of
+        their parent company unless they set their own."""
+        self.ensure_one()
+        return next((company[fname] for company in reversed(self.parent_ids) if company[fname]), self[fname])

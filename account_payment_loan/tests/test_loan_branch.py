@@ -60,10 +60,11 @@ class TestLoanBranch(AccountTestInvoicingCommon):
         return invoice.line_ids.filtered(lambda x: x.account_id.account_type == "asset_receivable")
 
     def test_branch_loan_settings(self):
-        """A branch uses the loan journal and accounts of its root company."""
+        """A branch without its own loan settings uses the ones of its parent company."""
         for fname in ("loan_journal_id", "account_late_payment_interest", "account_loan_extra_charges"):
             self.assertTrue(self.parent[fname])
-            self.assertEqual(self.branch[fname], self.parent[fname])
+            self.assertFalse(self.branch[fname])
+            self.assertEqual(self.branch._get_loan_setting(fname), self.parent[fname])
 
     def test_branch_loan_surcharge_uses_parent_tax(self):
         """A branch without its own sales tax invoices the loan surcharge with the tax of its parent company."""
@@ -93,10 +94,11 @@ class TestLoanBranch(AccountTestInvoicingCommon):
         self.env["account.loan.register"].with_context(active_ids=receivable.ids).create(
             {"card_id": self.card.id, "installment_id": installment.id}
         ).action_register_loan()
+        loan_journal = self.branch._get_loan_setting("loan_journal_id")
         loan = self.env["account.move"].search(
-            [("journal_id", "=", self.branch.loan_journal_id.id), ("company_id", "=", self.branch.id)]
+            [("journal_id", "=", loan_journal.id), ("company_id", "=", self.branch.id)]
         )
         self.assertEqual(loan.state, "posted")
         rounding = loan.line_ids.filtered(lambda line: line.name == "Rounding")
-        self.assertEqual(rounding.account_id, self.branch.loan_journal_id.default_account_id)
+        self.assertEqual(rounding.account_id, loan_journal.default_account_id)
         self.assertAlmostEqual(rounding.balance, -0.01, places=2)
