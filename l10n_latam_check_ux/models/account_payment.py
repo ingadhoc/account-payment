@@ -352,6 +352,13 @@ class AccountPayment(models.Model):
                 tuple(field for field in changed_fields if field != "amount")
             )
 
+    @api.model
+    def _get_trigger_fields_to_synchronize(self):
+        """Sin ``amount`` en el set de arriba, sacar un cheque de terceros existente tiene que
+        disparar la sincronización por sí solo: si no, el asiento conserva la línea del cheque
+        quitado y la contrapartida por el importe anterior."""
+        return super()._get_trigger_fields_to_synchronize() + ("l10n_latam_move_check_ids",)
+
     def _prepare_paired_payment_values(self):
         """Override to validate check payment method combinations on internal transfers.
 
