@@ -3,9 +3,8 @@ from odoo.http import request
 
 
 class PortalAccountInherit(PortalAccount):
-    # Obtiene el dominio de facturas vencidas y excluye las que tienen
-    # pagos online pendientes (no manual/transferencia); esta busqueda
-    # es necesaria porque el usuario portal no accede a payment.transaction.
+    # Exclude the invoices with a pending transaction of any provider, bank transfers
+    # included; sudo because portal users cannot read payment.transaction.
     def _get_overdue_invoices_domain(self, partner_id=None):
         domain = super()._get_overdue_invoices_domain(partner_id=partner_id)
         # In 20.0 the portal counters build this domain before checking access
@@ -18,7 +17,6 @@ class PortalAccountInherit(PortalAccount):
             .search(
                 [
                     ("invoice_ids", "in", move_ids),
-                    ("provider_code", "not in", ["manual", "transfer"]),
                     ("state", "=", "pending"),
                 ]
             )
