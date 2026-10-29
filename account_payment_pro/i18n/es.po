@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-21 19:48+0000\n"
+"POT-Creation-Date: 2026-10-29 13:36+0000\n"
 "PO-Revision-Date: 2026-10-01 13:36+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
@@ -846,6 +846,11 @@ msgid "Recompute the amount from the checks"
 msgstr ""
 
 #. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__reconcile_on_company_currency
+msgid "Reconcile On Company Currency"
+msgstr ""
+
+#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__invoice_date
 msgid "Refund Date"
 msgstr "Fecha de Reembolso"
@@ -947,6 +952,18 @@ msgstr "Los recibos se están enviando en segundo plano."
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__to_pay_move_line_ids
 msgid "This lines are the ones the user has selected to be paid."
 msgstr "Estas líneas son las que el usuario ha seleccionado para pagar"
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__reconcile_on_company_currency
+msgid ""
+"This option enables open documents in the payment report when reconciling "
+"debt with secondary currency, if the account doesn't have a currency "
+"configured, then reconcile on company currency. This will avoid all the "
+"automatic exchange rates journal entries by forcing same rate of the "
+"original document being reconcile. IMPORTANT: If you change this setting if "
+"you reconcile any previous item and re-reconcile it, it will be reconciled "
+"with the new mechanism"
+msgstr ""
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__to_pay_amount
