@@ -55,15 +55,14 @@ Configure the installment plans available for loans in **Accounting > Configurat
 
 ### Register a New Loan
 
-1. Go to **Accounting > Customers > Payments** or from the customer contact view.
-2. Select the invoices or journal items to include in the loan.
-3. Click on **Action > Register Loan**.
-4. In the wizard:
+1. Go to **Accounting > Customers > Invoices** and open a customer invoice or credit note with a pending balance (draft or posted).
+2. Click on the **Register Loan** button in the header.
+3. In the wizard:
    - Select the loan **Card**.
    - Choose the **Installment Plan**.
    - Indicate if it is **Invoiceable** (will create a Debit Note) or not (will create a journal entry).
    - Add an internal note if necessary.
-5. Click on **Register Loan**.
+4. Click on **Register Loan**.
 
 ### Make a Loan Payment
 
@@ -75,19 +74,17 @@ Configure the installment plans available for loans in **Accounting > Configurat
 
 ### View Debt Report
 
-1. Go to **Accounting > Reports > Loan Debt** (or from the customer contact).
-2. Select the customer or leave blank to see all.
-3. The report will show:
-   - Loans granted
-   - Overdue and pending installments
-   - Accumulated interest
-   - Outstanding balance
+1. Go to **Accounting > Customers > Customers Ledger** (journal items grouped by customer).
+2. On the customer's group row, click the **Loan** button.
+3. The report shows the customer's pending loan installments, the **Financial Surcharge** for overdue installments and the **Amount to Pay**. Optionally filter by loan.
+4. From there you can **Pay selected lines** or **refinance loans**.
 
 ### Add Extra Charges
 
-1. From an existing loan, use **Action > Extra Charges**.
-2. Specify the amount and concept of the charge.
-3. Confirm to add the charge to the loan.
+1. Go to **Accounting > Customers > Customers Ledger**.
+2. On the customer's group row, click the **Loan Extra Charges** button.
+3. Select the loan, and enter the label and the amount of the charge.
+4. Click on **Add**.
 
 ## Dependencies
 
