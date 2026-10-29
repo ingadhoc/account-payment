@@ -10,6 +10,17 @@ class TestMassTransferCashboxSession(L10nLatamCheckTest):
     diario destino y la deja en el pago, y la exige si el usuario la requiere."""
 
     @classmethod
+    def setup_other_company(cls, **kwargs):
+        # saas_client_account forbids a currency other than the country's, and the common builds an
+        # Argentine company with the chart's currency: skip that check only while building it
+        env = cls.env
+        cls.env = env(context=dict(env.context, skip_currency_constraint=True))
+        try:
+            return super().setup_other_company(**kwargs)
+        finally:
+            cls.env = env
+
+    @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.destination_journal = cls.company_data_3["default_journal_bank"]
