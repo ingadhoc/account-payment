@@ -18,4 +18,9 @@ from . import (
 from . import test_receipt_debt_legal_entity
 from . import test_background_send_receipts
 from . import test_post_closed_payments
+<<<<<<< 5b7f9828992b46015a92972513473ff9f5ac5b7c
 from . import test_amount_from_checks
+||||||| 57e9e82f713875dc02bd88dadb6eb1b2484f2295
+=======
+from . import test_reconcile_covered_debt
+>>>>>>> 42db5ba7bf28a30fc213f349c942dc38802ea3b3
