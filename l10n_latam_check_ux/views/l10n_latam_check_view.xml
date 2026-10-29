@@ -20,8 +20,13 @@
             <field name="payment_date" position="attributes">
                 <attribute name="readonly">not user_can_write</attribute>
             </field>
+            <!-- The bank of the check comes first; the bank account is computed from it and can still be changed among the accounts of that bank -->
+            <field name="bank_account_id" position="before">
+                <field name="bank_id" invisible="issue_state" readonly="not user_can_write"/>
+            </field>
             <field name="bank_account_id" position="attributes">
                 <attribute name="readonly">not user_can_write</attribute>
+                <attribute name="domain">[('bank_id', '=', bank_id)] if bank_id else []</attribute>
             </field>
             <xpath expr="//button[@name='action_void']" position="after">
                 <field name="check_add_debit_button" invisible="1"/>
@@ -93,6 +98,17 @@
             <xpath expr="//filter[@name='payment_date']" position="after">
                 <filter string="Last 90 days" name="last_90_days" domain="[('payment_date', '&gt;=', (context_today() - relativedelta(days=90)).strftime('%Y-%m-%d'))]" />
             </xpath>
+        </field>
+    </record>
+
+    <record id="view_account_payment_third_party_checks_search" model="ir.ui.view">
+        <field name="name">l10n_latam.check.third_party.search.inherit</field>
+        <field name="model">l10n_latam.check</field>
+        <field name="inherit_id" ref="l10n_latam_check.view_account_payment_third_party_checks_search"/>
+        <field name="arch" type="xml">
+            <field name="bank_account_id" position="replace">
+                <field name="bank_id"/>
+            </field>
         </field>
     </record>
 

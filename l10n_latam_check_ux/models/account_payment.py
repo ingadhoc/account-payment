@@ -527,3 +527,45 @@ class AccountPayment(models.Model):
             # redondea el nominal viejo, deriva el balance de él y el asiento vuelve a no cerrar.
             counterpart_lines[0]["amount_currency"] = counterpart_lines[0]["balance"]
         return res
+
+    def _get_duplicated_check_msg(self, checks_names):
+        return _(
+            "Other checks were found with same number, issuer and bank. Please double check you are not "
+            "encoding the same check more than once. List of other payments/checks: %s",
+            checks_names,
+        )
+
+    @api.depends("l10n_latam_new_check_ids.bank_id", "l10n_latam_move_check_ids.bank_id")
+    def _compute_l10n_latam_check_warning_msg(self):
+        """The core looks for duplicated third party checks by bank account, so two endorsed checks
+        without account are taken as the same check. Its message is replaced by one that compares the
+        bank, as in 19.0; the rest of the messages are kept."""
+        super()._compute_l10n_latam_check_warning_msg()
+        # Same text as the core message: without the list of checks, it is the start of it
+        core_duplicated_msg = self._get_duplicated_check_msg("")
+        for rec in self.filtered(
+            lambda x: x._is_latam_check_payment() and x.payment_method_code == "new_third_party_checks"
+        ):
+            msgs = [
+                msg
+                for msg in (rec.l10n_latam_check_warning_msg or "").removeprefix("* ").split("\n* ")
+                if msg and not msg.startswith(core_duplicated_msg)
+            ]
+            same_checks = self.env["l10n_latam.check"]
+            for check in rec.l10n_latam_new_check_ids.filtered(
+                lambda x: x.name and x.payment_method_line_id.code == "new_third_party_checks" and x.issuer_vat
+            ):
+                same_checks += same_checks.search(
+                    [
+                        ("payment_id.company_id", "=", rec.company_id.id),
+                        ("issuer_vat", "=", check.issuer_vat),
+                        ("name", "=", check.name),
+                        ("bank_id", "=", check.bank_id.id),
+                        ("payment_id.state", "not in", ["draft", "canceled"]),
+                        ("id", "!=", check._origin.id),
+                    ],
+                    limit=1,
+                )
+            if same_checks:
+                msgs.append(rec._get_duplicated_check_msg(", ".join(same_checks.mapped("display_name"))))
+            rec.l10n_latam_check_warning_msg = msgs and "* %s" % "\n* ".join(msgs) or False

@@ -10,6 +10,11 @@ class l10nLatamAccountPaymentCheck(models.Model):
     issuer_vat = fields.Char(tracking=True)
     payment_date = fields.Date(tracking=True)
     bank_account_id = fields.Many2one(tracking=True)
+    # Odoo 20 replaced the bank of the check with a bank account of the partner, which an endorsed
+    # check usually does not have: the issuer bank is chosen from the catalog again, as in 19.0
+    bank_id = fields.Many2one(
+        "res.bank", compute="_compute_bank_id", store=True, readonly=False, tracking=True, index="btree_not_null"
+    )
 
     check_add_debit_button = fields.Boolean(related="original_journal_id.check_add_debit_button", readonly=True)
     can_reject = fields.Boolean(
@@ -96,11 +101,25 @@ class l10nLatamAccountPaymentCheck(models.Model):
         )
 
     @api.depends("payment_method_line_id.code", "payment_id.partner_id")
+    def _compute_bank_id(self):
+        # Only a change of method or partner proposes the bank again, so the one chosen by hand is kept
+        payment_method_change = self._origin.payment_method_line_id != self.payment_method_line_id
+        partner_id_change = self._origin.payment_id.partner_id != self.payment_id.partner_id
+        if not (payment_method_change or partner_id_change):
+            return
+        new_third_party_checks = self.filtered(lambda x: x.payment_method_line_id.code == "new_third_party_checks")
+        for rec in new_third_party_checks:
+            rec.bank_id = rec.partner_id.bank_ids[:1].bank_id
+        (self - new_third_party_checks).bank_id = False
+
+    @api.depends("payment_method_line_id.code", "payment_id.partner_id", "bank_id")
     def _compute_bank_account_id(self):
         payment_method_change = self._origin.payment_method_line_id != self.payment_method_line_id
         partner_id_change = self._origin.payment_id.partner_id != self.payment_id.partner_id
         if payment_method_change or partner_id_change:
             super()._compute_bank_account_id()
+        for rec in self.filtered(lambda x: x.bank_id and x.payment_method_line_id.code == "new_third_party_checks"):
+            rec.bank_account_id = rec.partner_id.bank_ids.filtered(lambda a: a.bank_id == rec.bank_id)[:1]
 
     @api.depends("payment_method_line_id.code", "payment_id.partner_id")
     def _compute_issuer_vat(self):

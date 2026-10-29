@@ -31,6 +31,7 @@
         "l10n_latam_check",
         "account_ux",
         "account_internal_transfer",
+        "base_bank",
     ],
     "data": [
         "wizards/account_check_action_wizard_view.xml",
