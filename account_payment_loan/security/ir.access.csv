@@ -1,0 +1,4 @@
+id,name,model_id,group_id/id,operation,domain
+access_account_loan_register,access.account.loan.register,account.loan.register,account.group_account_invoice,cru,
+access_account_loan_debt_report,access.account.loan.register,account.loan.debt.report,account.group_account_invoice,cru,
+access_account_loan_extra_charges,access.account.extra.charges,account.loan.extra.charges,account.group_account_invoice,cru,
