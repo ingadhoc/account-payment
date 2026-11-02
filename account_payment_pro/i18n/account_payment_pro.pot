@@ -4,16 +4,75 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 19.0+e\n"
+"Project-Id-Version: Odoo Server 20.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-01 13:36+0000\n"
-"PO-Revision-Date: 2026-10-01 13:36+0000\n"
+"POT-Creation-Date: 2026-11-02 13:43+0000\n"
+"PO-Revision-Date: 2026-11-02 13:43+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
+
+#. module: account_payment_pro
+#: model:ir.module.module,description:base.module_account_payment_pro
+msgid ""
+"# Account Payment Pro\n"
+"\n"
+"Extends Odoo's core payment model to support multi-currency operations, debt selection, withholdings, and write-offs. Introduces a **tri-currency model** (A / B / C) that cleanly separates the journal currency, the debt/cancellation currency, and the company accounting currency.\n"
+"\n"
+"This module is the foundation for managing Argentine withholdings — install `l10n_ar_tax` (and `l10n_ar_withholding`) to activate that feature.\n"
+"\n"
+"## Features\n"
+"\n"
+"- **Tri-currency payments:** work with up to three currencies per payment — journal (A), counterpart/debt (B), and company (C).\n"
+"- **Select debts to pay:** choose specific invoices or credit notes during payment creation.\n"
+"- **Withholding support:** dedicated tab for tax withholdings when the localization module is installed.\n"
+"- **Write-offs:** register write-offs directly within the payment form.\n"
+"- **Editable exchange rates:** `accounting_rate` (A↔C) and `counterpart_rate` (A↔B) are stored and user-editable; the UI shows rates in the most readable direction automatically.\n"
+"- **Multi-currency internal transfers:** supports transfers between journals in different currencies (ARS→USD, USD→EUR, etc.) with proper bridge-account reconciliation.\n"
+"- **Pay Now on invoices:** instant payment creation from the invoice form.\n"
+"- **Debt of the whole legal entity:** the debt offered to be paid is the one of every company that is the same legal entity as the payment's, limited to the companies the user has selected — so a branch sees the debt of its parent and the other way round, instead of only its own. Companies of another legal entity are never listed, and the payment stays in the company where it was made.\n"
+"\n"
+"## Dependencies\n"
+"\n"
+"| Module | Purpose |\n"
+"|--------|---------|\n"
+"| `account` | Odoo core accounting |\n"
+"| `l10n_latam_invoice_document` | LATAM invoice documents |\n"
+"| `account_internal_transfer` | Internal transfer support |\n"
+"| `l10n_latam_check` | Check management |\n"
+"| `account_ux` | Provides `reconcile_on_company_currency` on `res.company` |\n"
+"\n"
+"For Argentine withholdings: install `l10n_ar_withholding` + `l10n_ar_tax`.\n"
+"\n"
+"## Configuration\n"
+"\n"
+"1. **Write-off types:** Accounting → Configuration → Write-off Types.\n"
+"2. **Payment settings:** Accounting → Configuration → Settings → Payment.\n"
+"3. **Reconcile on company currency:** enable per-company in Accounting → Settings if you need AP/AR accounts without a specific currency to always reconcile in the company currency.\n"
+"\n"
+"## Usage\n"
+"\n"
+"1. Go to Accounting → Payments to create and manage payments.\n"
+"2. Use \"Pay Now\" on invoices for quick payment processing.\n"
+"3. Select specific debts, adjust exchange rates, register withholdings and write-offs in the payment form.\n"
+"4. Internal transfers between different-currency journals are created normally; the system computes paired amounts and rates automatically.\n"
+"\n"
+"## Bug Tracker\n"
+"\n"
+"Bugs are tracked on [GitHub Issues](https://github.com/ingadhoc/account-payment/issues).\n"
+"\n"
+"## Credits\n"
+"\n"
+"**Author:** ADHOC SA · [www.adhoc.com.ar](https://www.adhoc.com.ar)\n"
+"**License:** AGPL-3.0 or later\n"
+"\n"
+"---\n"
+"\n"
+"See [DESIGN.md](DESIGN.md) for internal architecture and design decisions.\n"
+msgstr ""
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
@@ -47,12 +106,12 @@ msgstr ""
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
-msgid "<i class=\"fa fa-arrow-left\"/> Amount"
+msgid "<i class=\"oi\" data-icon=\"arrow_back\"/> Amount"
 msgstr ""
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
-msgid "<i class=\"fa fa-arrow-left\"/> Write-off"
+msgid "<i class=\"oi\" data-icon=\"arrow_back\"/> Write-off"
 msgstr ""
 
 #. module: account_payment_pro
@@ -122,6 +181,11 @@ msgstr ""
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__account_id
 msgid "Account"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.module.module,shortdesc:base.module_account_payment_pro
+msgid "Account Payment Super Power"
 msgstr ""
 
 #. module: account_payment_pro
@@ -287,17 +351,12 @@ msgid "Check nro 123456"
 msgstr ""
 
 #. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__commercial_partner_id
-msgid "Commercial Entity"
-msgstr ""
-
-#. module: account_payment_pro
-#: model:ir.model,name:account_payment_pro.model_res_company
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__company_ids
 msgid "Companies"
 msgstr ""
 
 #. module: account_payment_pro
+#: model:ir.model,name:account_payment_pro.model_res_company
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__company_id
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__company_id
 msgid "Company"
@@ -670,6 +729,7 @@ msgid "Pay now Journal"
 msgstr ""
 
 #. module: account_payment_pro
+#: model:ir.model,name:account_payment_pro.model_account_payment
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__payment_id
 msgid "Payment"
 msgstr ""
@@ -724,11 +784,6 @@ msgid ""
 msgstr ""
 
 #. module: account_payment_pro
-#: model:ir.model,name:account_payment_pro.model_account_payment
-msgid "Payments"
-msgstr ""
-
-#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__payment_difference
 msgid "Payments Difference"
 msgstr ""
@@ -771,6 +826,16 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__background_send
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_search
 msgid "Receipt Queued for Sending"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Recompute the amount from the checks"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__reconcile_on_company_currency
+msgid "Reconcile On Company Currency"
 msgstr ""
 
 #. module: account_payment_pro
@@ -874,6 +939,18 @@ msgstr ""
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__to_pay_move_line_ids
 msgid "This lines are the ones the user has selected to be paid."
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__reconcile_on_company_currency
+msgid ""
+"This option enables open documents in the payment report when reconciling "
+"debt with secondary currency, if the account doesn't have a currency "
+"configured, then reconcile on company currency. This will avoid all the "
+"automatic exchange rates journal entries by forcing same rate of the "
+"original document being reconcile. IMPORTANT: If you change this setting if "
+"you reconcile any previous item and re-reconcile it, it will be reconciled "
+"with the new mechanism"
 msgstr ""
 
 #. module: account_payment_pro
