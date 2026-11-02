@@ -353,3 +353,58 @@ class TestCheckOperationOrder(AccountTestInvoicingCommon):
 
         self.assertEqual(check._get_last_operation(), delivery)
         self.assertFalse(check.current_journal_id)
+
+    def _register_payment(self, invoice, vals):
+        """Pay from the invoice "Pay" button, which opens the standard wizard without payment_pro."""
+        if "use_payment_pro" in self.env["res.company"]._fields:
+            self.company_data["company"].use_payment_pro = False
+        return (
+            self.env["account.payment.register"]
+            .with_context(active_model="account.move", active_ids=invoice.ids)
+            .create(vals)
+            ._create_payments()
+        )
+
+    def _register_receipt(self, check_number):
+        invoice = self.init_invoice("out_invoice", partner=self.partner_a, amounts=[100.0], post=True)
+        return self._register_payment(
+            invoice,
+            {
+                "journal_id": self.check_journal.id,
+                "payment_method_line_id": self.in_check_line.id,
+                "l10n_latam_new_check_ids": [
+                    Command.create({"name": check_number, "payment_date": fields.Date.today(), "amount": 100.0})
+                ],
+            },
+        )
+
+    def test_check_received_from_the_register_wizard_is_in_its_journal(self):
+        """The wizard creates the payment already in process, so action_post did not set its date."""
+        receipt = self._register_receipt("00000114")
+        check = receipt.l10n_latam_new_check_ids
+
+        self.assertTrue(receipt.l10n_latam_move_check_ids_operation_date)
+        self.assertEqual(check._get_last_operation(), receipt)
+        self.assertEqual(check.current_journal_id, self.check_journal)
+
+    def test_check_delivered_from_the_register_wizard_leaves_the_portfolio(self):
+        """A check handed over from the wizard goes after its receipt in the chain."""
+        receipt = self._register_receipt("00000115")
+        check = receipt.l10n_latam_new_check_ids
+        bill = self.init_invoice("in_invoice", partner=self.partner_a, amounts=[100.0], post=True)
+
+        delivery = self._register_payment(
+            bill,
+            {
+                "journal_id": self.check_journal.id,
+                "payment_method_line_id": self.out_check_line.id,
+                "l10n_latam_move_check_ids": [Command.set(check.ids)],
+            },
+        )
+
+        self.assertGreater(
+            delivery.l10n_latam_move_check_ids_operation_date,
+            receipt.l10n_latam_move_check_ids_operation_date,
+        )
+        self.assertEqual(check._get_last_operation(), delivery)
+        self.assertFalse(check.current_journal_id)
