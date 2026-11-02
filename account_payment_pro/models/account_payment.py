@@ -190,6 +190,18 @@ class AccountPayment(models.Model):
     # amount is the gross amount (paid + withheld); the user works with the net one
     withhold = fields.Selection(compute="_compute_withhold", store=True, readonly=False)
     withholding_net_amount = fields.Monetary(readonly=False, inverse="_inverse_withholding_net_amount")
+    withholding_net_amount_signed = fields.Monetary(
+        string="Net Amount in Currency",
+        currency_field="currency_id",
+        compute="_compute_withholding_net_amount_signed",
+    )
+    counterpart_currency_net_amount = fields.Monetary(
+        string="Net Amount in Debt Currency",
+        currency_field="counterpart_currency_id",
+        compute="_compute_counterpart_currency_net_amount",
+        inverse="_inverse_counterpart_currency_net_amount",
+        readonly=False,
+    )
     open_move_line_ids = fields.One2many(related="move_id.open_move_line_ids")
     multi_currency_debt = fields.Boolean(
         compute="_compute_multi_currency_debt",
@@ -506,6 +518,42 @@ class AccountPayment(models.Model):
             if rec.currency_id and not rec.currency_id.is_zero(amount - rec.amount):
                 rec.amount_exact = amount
                 rec.amount = amount
+
+    @api.depends("withholding_net_amount", "payment_type")
+    def _compute_withholding_net_amount_signed(self):
+        for rec in self:
+            sign = -1 if rec.payment_type == "outbound" else 1
+            rec.withholding_net_amount_signed = sign * rec.withholding_net_amount
+
+    @api.depends("counterpart_currency_amount", "withholding_amount", "counterpart_rate", "counterpart_currency_id")
+    def _compute_counterpart_currency_net_amount(self):
+        for rec in self:
+            withholding = rec.withholding_amount * (rec.counterpart_rate or 1.0)
+            rec.counterpart_currency_net_amount = rec.counterpart_currency_amount - withholding
+
+    @api.onchange("counterpart_currency_net_amount")
+    def _inverse_counterpart_currency_net_amount(self):
+        for rec in self:
+            gross = rec.counterpart_currency_net_amount + rec.withholding_amount * (rec.counterpart_rate or 1.0)
+            if rec.counterpart_currency_id and not rec.counterpart_currency_id.is_zero(
+                gross - rec.counterpart_currency_amount
+            ):
+                rec.counterpart_currency_amount = gross
+                rec._inverse_counterpart_currency_amount()
+
+    @api.depends("withholding_line_ids.amount", "accounting_rate")
+    def _compute_amount_company_currency_signed(self):
+        """Without an entry the core converts the gross amount; what goes through the bank is the net one,
+        which is also what the posted payment shows (its liquidity lines)."""
+        super()._compute_amount_company_currency_signed()
+        for rec in self.filtered(lambda x: not x.move_id and x.use_payment_pro and x.withholding_line_ids):
+            if rec.accounting_rate and rec.currency_id != rec.company_currency_id:
+                amount = rec.withholding_net_amount_signed / rec.accounting_rate
+            else:
+                amount = rec.currency_id._convert(
+                    rec.withholding_net_amount_signed, rec.company_currency_id, rec.company_id, rec.date
+                )
+            rec.amount_company_currency_signed = rec.company_currency_id.round(amount)
 
     def _get_blocking_l10n_latam_warning_msg(self):
         """The core compares the checks with the payment amount, but with withholdings they pay the net one."""
