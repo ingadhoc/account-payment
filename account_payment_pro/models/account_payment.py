@@ -187,6 +187,9 @@ class AccountPayment(models.Model):
     )
     write_off_available = fields.Boolean(compute="_compute_write_off_available")
     use_payment_pro = fields.Boolean(compute="_compute_use_payment_pro")
+    # amount is the gross amount (paid + withheld); the user works with the net one
+    withhold = fields.Selection(compute="_compute_withhold", store=True, readonly=False)
+    withholding_net_amount = fields.Monetary(readonly=False, inverse="_inverse_withholding_net_amount")
     open_move_line_ids = fields.One2many(related="move_id.open_move_line_ids")
     multi_currency_debt = fields.Boolean(
         compute="_compute_multi_currency_debt",
@@ -473,11 +476,55 @@ class AccountPayment(models.Model):
             if not rec.currency_id.is_zero(rec.amount - rec.amount_exact):
                 rec.amount_exact = rec.amount
 
+    @api.depends("withholding_line_ids.amount")
     def _compute_amount(self):
         super()._compute_amount()
+        # the checks are the net amount: the gross one adds the withholdings
+        for rec in self.filtered(lambda x: x._is_latam_check_payment() and x.withholding_line_ids):
+            rec.amount = rec.l10n_latam_checks_amount + rec.withholding_amount
         for rec in self:
             if rec.currency_id and not rec.currency_id.is_zero(rec.amount - rec.amount_exact):
                 rec.amount_exact = rec.amount
+
+    @api.depends("use_payment_pro", "withholding_line_ids.amount", "amount")
+    def _compute_withhold(self):
+        """With payment pro the mode follows the withholding lines instead of being chosen by the user."""
+        for rec in self:
+            if not rec.use_payment_pro:
+                rec.withhold = rec.withhold or "payment"
+            elif not rec.withholding_line_ids:
+                rec.withhold = "payment"
+            elif rec.currency_id.is_zero(rec.amount - rec.withholding_amount):
+                rec.withhold = "withhold"
+            else:
+                rec.withhold = "withhold_pay"
+
+    @api.onchange("withholding_net_amount")
+    def _inverse_withholding_net_amount(self):
+        for rec in self:
+            amount = rec.withholding_net_amount + rec.withholding_amount
+            if rec.currency_id and not rec.currency_id.is_zero(amount - rec.amount):
+                rec.amount_exact = amount
+                rec.amount = amount
+
+    def _get_blocking_l10n_latam_warning_msg(self):
+        """The core compares the checks with the payment amount, but with withholdings they pay the net one."""
+        mismatch_msg = _(
+            "The amount of the payment  does not match the amount of the selected check. "
+            "Please try to deselect and select the check again."
+        )
+        msgs = super()._get_blocking_l10n_latam_warning_msg()
+        with_withholdings = self.filtered(
+            lambda x: x.state == "draft" and x._is_latam_check_payment() and x.withholding_line_ids
+        )
+        if not with_withholdings:
+            return msgs
+        msgs = [msg for msg in msgs if msg != mismatch_msg]
+        for rec in self.filtered(lambda x: x.state == "draft" and x._is_latam_check_payment()):
+            checks_amount = sum(rec._get_latam_checks().mapped("amount"))
+            if not rec.currency_id.is_zero(checks_amount - rec.withholding_net_amount):
+                msgs.append(mismatch_msg)
+        return msgs
 
     @api.onchange("currency_id")
     def _onchange_currency_recompute_amount(self):
@@ -514,6 +561,17 @@ class AccountPayment(models.Model):
                 and not rec.currency_id.is_zero(amount - rec.env.context.get("default_amount"))
             ):
                 amount = rec.env.context.get("default_amount")
+            # the withholding lines are in the payment currency as well
+            date = rec.date or fields.Date.context_today(rec)
+            for line in rec.withholding_line_ids:
+                line.update(
+                    {
+                        "base_amount": old_currency._convert(
+                            line.base_amount, new_currency, rec.company_id, date, False
+                        ),
+                        "amount": old_currency._convert(line.amount, new_currency, rec.company_id, date, False),
+                    }
+                )
             rec.update({"amount_exact": amount, "amount": amount})
 
     @api.constrains("to_pay_move_line_ids")
@@ -757,7 +815,8 @@ class AccountPayment(models.Model):
 
         liquidity_lines = res.get("liquidity_lines", [])
         counterpart_lines = res.get("counterpart_lines", [])
-        if not liquidity_lines or not counterpart_lines:
+        # a withholding-only payment has no liquidity line but still needs the adjustments below
+        if not counterpart_lines or (not liquidity_lines and self.withhold != "withhold"):
             return res
 
         if write_off_line_vals:
@@ -1064,9 +1123,9 @@ class AccountPayment(models.Model):
             return self.payment_difference / counterpart if counterpart else self.payment_difference
 
     def action_amount_from_checks(self):
-        """Set amount back to the sum of the checks."""
+        """Set amount back to the sum of the checks plus the withholdings."""
         for rec in self.filtered(lambda x: x.state == "draft" and x._is_latam_check_payment()):
-            rec.amount = sum(rec._get_latam_checks().mapped("amount"))
+            rec.amount = sum(rec._get_latam_checks().mapped("amount")) + rec.withholding_amount
 
     def action_adjust_amount_for_difference(self):
         """Ajusta amount para que payment_difference quede en cero."""

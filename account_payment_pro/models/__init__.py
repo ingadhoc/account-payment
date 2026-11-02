@@ -1,4 +1,5 @@
 from . import account_payment
+from . import account_payment_withholding_line
 from . import mail_compose_message
 from . import account_move_line
 from . import account_move
