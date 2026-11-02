@@ -92,8 +92,12 @@ class AccountPayment(models.Model):
         first again. Pushing it one second past the last confirmed operation keeps the chain strict.
         """
         self.ensure_one()
+        return self._get_checks_operation_date(self.l10n_latam_move_check_ids | self.l10n_latam_new_check_ids)
+
+    @api.model
+    def _get_checks_operation_date(self, checks):
         operation_date = fields.Datetime.now()
-        for check in self.l10n_latam_move_check_ids | self.l10n_latam_new_check_ids:
+        for check in checks:
             last_operation_date = check._get_last_operation().l10n_latam_move_check_ids_operation_date
             if last_operation_date:
                 operation_date = max(operation_date, last_operation_date + timedelta(seconds=1))
