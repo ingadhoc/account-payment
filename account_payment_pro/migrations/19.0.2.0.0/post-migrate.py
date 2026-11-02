@@ -27,7 +27,7 @@ se vuelva a correr.
 
 import logging
 
-from openupgradelib import openupgrade
+from odoo.upgrade import util
 
 _logger = logging.getLogger(__name__)
 
@@ -36,10 +36,10 @@ def migrate(cr, version):
     if not version:
         return
 
-    has_bkp_counterpart = openupgrade.column_exists(cr, "account_payment", "x_bkp_counterpart_exchange_rate")
-    has_bkp_force = openupgrade.column_exists(cr, "account_payment", "x_bkp_force_amount_company_currency")
-    has_bkp_write_off = openupgrade.column_exists(cr, "account_payment", "x_bkp_write_off_amount")
-    has_bkp_unreconciled = openupgrade.column_exists(cr, "account_payment", "x_bkp_unreconciled_amount")
+    has_bkp_counterpart = util.column_exists(cr, "account_payment", "x_bkp_counterpart_exchange_rate")
+    has_bkp_force = util.column_exists(cr, "account_payment", "x_bkp_force_amount_company_currency")
+    has_bkp_write_off = util.column_exists(cr, "account_payment", "x_bkp_write_off_amount")
+    has_bkp_unreconciled = util.column_exists(cr, "account_payment", "x_bkp_unreconciled_amount")
 
     # ══════════════════════════════════════════════════════════════════════════
     # PASO 1: accounting_rate

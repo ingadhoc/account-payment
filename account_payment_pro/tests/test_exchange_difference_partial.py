@@ -23,13 +23,13 @@ class TestExchangeDifferencePartial(AccountInvariantsMixin, TransactionCase):
             cls.usd = cls.env.ref("base.USD")
         cls.usd.active = True
         cls.env["res.currency.rate"].create(
-            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-01-01", "rate": 0.001}
+            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2025-12-31", "rate": 0.001}
         )
         cls.env["res.currency.rate"].create(
-            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-02-01", "rate": 1.0 / 1100.0}
+            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-01-31", "rate": 1.0 / 1100.0}
         )
         cls.env["res.currency.rate"].create(
-            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-02-15", "rate": 1.0 / 900.0}
+            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-02-14", "rate": 1.0 / 900.0}
         )
 
         cls.customer = cls.env["res.partner"].create({"name": "Test Exchange Partial Customer"})
@@ -158,7 +158,12 @@ class TestExchangeDifferencePartial(AccountInvariantsMixin, TransactionCase):
 
         with self.subTest("el saldo final cierra en cero en las dos monedas"):
             self.assertEqual(invoice.amount_residual, 0.0)
-            self.assertEqual(self.company.currency_id.round(sum(invoice.line_ids.mapped("amount_residual"))), 0.0)
+            self.assertEqual(
+                self.company.currency_id.round(
+                    sum(invoice.line_ids.filtered(lambda line: line.account_id.reconcile).mapped("amount_residual"))
+                ),
+                0.0,
+            )
 
     def test_negative_control_same_currency_same_rate_generates_no_difference_line(self):
         """Control negativo: cobro en USD contra una factura en USD, mismo

@@ -105,7 +105,6 @@ class AccountPayment(models.Model):
         related="destination_journal_id.currency_id",
         string="Destination Journal Currency",
     )
-    commercial_partner_id = fields.Many2one(related="partner_id.commercial_partner_id")
     # MUY IMPORTANTE; NO agregar tracking porque rompe como se calcula (ver commit)
     payment_total = fields.Monetary(
         compute="_compute_payment_total",
@@ -1424,9 +1423,7 @@ class AccountPayment(models.Model):
     @api.model
     def _get_background_send_batch_size(self):
         """Amount of payments that can still be sent synchronously from the UI."""
-        return int(
-            self.env["ir.config_parameter"].sudo().get_param("account_payment_pro.background_send_batch_size", 5)
-        )
+        return self.env["ir.config_parameter"].sudo().get_int("account_payment_pro.background_send_batch_size", 5)
 
     def _queue_background_send(self, send_values=None):
         """Flag the payments so the cron sends their receipt, and wake the cron up.
@@ -1508,7 +1505,7 @@ class AccountPayment(models.Model):
 
         One payment per iteration and per commit: a failure neither rolls back
         the receipts already sent nor stops the rest of the batch."""
-        domain = [("background_send", "=", True), ("state", "in", ("in_process", "paid"))]
+        domain = [("background_send", "=", True), ("state", "in", ("paid", "reconciled"))]
         payments = self.search(domain, order="id", limit=job_count)
         if not payments:
             return
