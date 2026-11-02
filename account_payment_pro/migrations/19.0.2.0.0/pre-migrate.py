@@ -16,7 +16,8 @@ Qué garantiza al terminar:
 
 import logging
 
-from openupgradelib import openupgrade
+from odoo.tools import SQL
+from odoo.upgrade import util
 
 _logger = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ def migrate(cr, version):
     # Marca todas las filas existentes como "migradas". El post-migrate filtra
     # cada UPDATE por esta columna para que pagos creados después de la
     # migración nunca sean tocados, incluso si el post se re-ejecuta.
-    if not openupgrade.column_exists(cr, "account_payment", "x_bkp_migrated"):
+    if not util.column_exists(cr, "account_payment", "x_bkp_migrated"):
         cr.execute("ALTER TABLE account_payment ADD COLUMN x_bkp_migrated BOOLEAN")
         cr.execute("UPDATE account_payment SET x_bkp_migrated = TRUE")
         _logger.info("account_payment_pro: marked %s rows as x_bkp_migrated", cr.rowcount)
@@ -46,13 +47,28 @@ def migrate(cr, version):
     ):
         # Saltear si el backup ya existe: los x_bkp_ son write-once, así un
         # reintento nunca pisa el valor original que lee el post-migrate.
-        if openupgrade.column_exists(cr, "account_payment", col) and not openupgrade.column_exists(
+        if util.column_exists(cr, "account_payment", col) and not util.column_exists(
             cr, "account_payment", f"x_bkp_{col}"
         ):
             columns_to_backup.append((col, f"x_bkp_{col}", None))
 
     if columns_to_backup:
-        openupgrade.copy_columns(cr, {"account_payment": columns_to_backup})
+        for old, new, _type in columns_to_backup:
+            cr.execute(
+                SQL(
+                    "ALTER TABLE account_payment ADD COLUMN %s %s",
+                    SQL.identifier(new),
+                    SQL(util.column_type(cr, "account_payment", old)),
+                )
+            )
+            cr.execute(
+                SQL(
+                    "UPDATE account_payment SET %s = %s WHERE %s IS NOT NULL",
+                    SQL.identifier(new),
+                    SQL.identifier(old),
+                    SQL.identifier(old),
+                )
+            )
         _logger.info(
             "account_payment_pro: backed up columns: %s",
             [c[0] for c in columns_to_backup],
@@ -61,21 +77,25 @@ def migrate(cr, version):
     # ── 2. Renombrar counterpart_exchange_rate → counterpart_rate ─────────────
     # Evita que el ORM cree la columna como campo nuevo y encole recompute.
     # Los valores quedan en formato viejo; el post-migrate los transforma.
-    if openupgrade.column_exists(cr, "account_payment", "counterpart_exchange_rate"):
-        openupgrade.rename_columns(cr, {"account_payment": [("counterpart_exchange_rate", "counterpart_rate")]})
+    if util.column_exists(cr, "account_payment", "counterpart_exchange_rate"):
+        cr.execute("ALTER TABLE account_payment RENAME counterpart_exchange_rate TO counterpart_rate")
+        cr.execute(
+            "ALTER INDEX IF EXISTS account_payment_counterpart_exchange_rate_index"
+            " RENAME TO account_payment_counterpart_rate_index"
+        )
         _logger.info("account_payment_pro: renamed counterpart_exchange_rate → counterpart_rate")
 
     # ── 3. Pre-crear accounting_rate ──────────────────────────────────────────
     # Campo nuevo store=True. Crear la columna evita que el ORM la registre como
     # nueva y encole recompute masivo al cargar el módulo. Los valores los pone
     # el post-migrate.
-    if not openupgrade.column_exists(cr, "account_payment", "accounting_rate"):
+    if not util.column_exists(cr, "account_payment", "accounting_rate"):
         cr.execute("ALTER TABLE account_payment ADD COLUMN accounting_rate float8")
         _logger.info("account_payment_pro: pre-created accounting_rate column")
 
     # ── 4. Pre-crear counterpart_currency_amount ──────────────────────────────
     # Era compute sin store=True → no existía columna. Ahora es store=True.
     # Crear la columna evita el recompute masivo. Los valores los pone el post.
-    if not openupgrade.column_exists(cr, "account_payment", "counterpart_currency_amount"):
+    if not util.column_exists(cr, "account_payment", "counterpart_currency_amount"):
         cr.execute("ALTER TABLE account_payment ADD COLUMN counterpart_currency_amount numeric")
         _logger.info("account_payment_pro: pre-created counterpart_currency_amount column")

@@ -54,6 +54,8 @@ class TestPayNowJournal(common.TransactionCase):
             partner_vals["country_id"] = ar.id
         cls.partner = cls.env["res.partner"].create(partner_vals)
         cls.product = cls.env.ref("product.product_product_16")
+        # Demo taxes on this product change between versions: the scenarios assume none.
+        cls.product.write({"taxes_id": False, "supplier_taxes_id": False})
 
     def _make_invoice(self, move_type, journal):
         invoice = self.env["account.move"].create(

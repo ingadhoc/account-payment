@@ -30,18 +30,18 @@ class TestExchangeDifference(AccountInvariantsMixin, TransactionCase):
             cls.usd = cls.env.ref("base.USD")
         cls.usd.active = True
         cls.env["res.currency.rate"].create(
-            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-01-01", "rate": 0.001}
+            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2025-12-31", "rate": 0.001}
         )
         cls.env["res.currency.rate"].create(
-            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-02-01", "rate": 1.0 / 1100.0}
+            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-01-31", "rate": 1.0 / 1100.0}
         )
         cls.env["res.currency.rate"].create(
-            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-02-15", "rate": 1.0 / 900.0}
+            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-02-14", "rate": 1.0 / 900.0}
         )
         # tercera cotización, de una "conciliación de la transitoria" posterior al cobro (E4):
         # tiene que existir en el sistema sin afectar la diferencia ya asentada al TC del cobro.
         cls.env["res.currency.rate"].create(
-            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-03-01", "rate": 1.0 / 1200.0}
+            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-02-28", "rate": 1.0 / 1200.0}
         )
 
         cls.customer = cls.env["res.partner"].create({"name": "Test Exchange Difference Customer"})
@@ -203,4 +203,9 @@ class TestExchangeDifference(AccountInvariantsMixin, TransactionCase):
         fx_lines = self._fx_lines(payment)
         self.assertEqual(fx_lines.balance, 100000.0, "pagar más caro en pesos es una pérdida")
         self.assertEqual(bill.amount_residual, 0.0)
-        self.assertEqual(self.company.currency_id.round(sum(bill.line_ids.mapped("amount_residual"))), 0.0)
+        self.assertEqual(
+            self.company.currency_id.round(
+                sum(bill.line_ids.filtered(lambda line: line.account_id.reconcile).mapped("amount_residual"))
+            ),
+            0.0,
+        )

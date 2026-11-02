@@ -37,7 +37,7 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
         cls.rates = cls.env["res.currency.rate"].create(
             [
                 {
-                    "name": "2024-01-01",
+                    "name": "2023-12-31",
                     "inverse_company_rate": 800,
                     "currency_id": cls.eur_currency.id,
                     "company_id": cls.company.id,
@@ -349,7 +349,7 @@ class TestAccountPaymentProUnitTest(common.TransactionCase):
         )
         payment.action_post()
 
-        self.assertIn(payment.state, ["paid", "in_process"], "El pago invertido debe poder postearse")
+        self.assertIn(payment.state, ["paid", "reconciled"], "El pago invertido debe poder postearse")
         self.assertIn(credit_note.payment_state, ["paid", "in_payment"], "La nota de crédito debe quedar pagada")
 
     def test_change_product_includes_parent_company_taxes(self):

@@ -539,7 +539,7 @@ class TestPaymentMultimoneda(TestArCommon):
                 "counterpart": {"currency": self.usd, "amt_currency": 50, "balance": 60_000},
             },
         )
-        self.assertIn(payment.state, ["paid", "in_process"])
+        self.assertIn(payment.state, ["paid", "reconciled"])
 
     # ==================================================================
     # CASOS CON reconcile_on_company_currency (B1 ≠ B2 posible)

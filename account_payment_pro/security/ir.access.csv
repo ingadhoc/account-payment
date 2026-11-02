@@ -1,0 +1,5 @@
+id,name,model_id,group_id/id,operation,domain
+access_account_payment_invoice_wizard,access_account_payment_invoice_wizard,account.payment.invoice.wizard,base.group_user,cru,
+access_account_write_off_type_all,access_account_write_off_type,account.write_off.type,base.group_user,r,
+access_account_write_off_type_admin,access_account_write_off_type,account.write_off.type,account.group_account_manager,crud,
+account_write_off_type_company_rule,Write Off Type multi-company,account.write_off.type,,crud,"[('company_ids', 'in', company_ids)]"
