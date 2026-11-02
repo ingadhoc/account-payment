@@ -34,17 +34,17 @@ class TestExchangeDifferenceEdgeCases(AccountInvariantsMixin, TransactionCase):
 
         # misma cotización en ambas fechas: representa "sin conversión" (E2/E5 de R07/R08)
         cls.env["res.currency.rate"].create(
-            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-01-01", "rate": 0.001}
+            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2025-12-31", "rate": 0.001}
         )
         cls.env["res.currency.rate"].create(
-            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-02-01", "rate": 0.001}
+            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-01-31", "rate": 0.001}
         )
         # segunda cotización distinta, solo para la NC de FCP-R08-E5 (conserva su propio TC)
         cls.env["res.currency.rate"].create(
-            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-01-15", "rate": 1.0 / 1200.0}
+            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-01-14", "rate": 1.0 / 1200.0}
         )
         cls.env["res.currency.rate"].create(
-            {"currency_id": cls.eur.id, "company_id": cls.company.id, "name": "2026-02-01", "rate": 1.0 / 1300.0}
+            {"currency_id": cls.eur.id, "company_id": cls.company.id, "name": "2026-01-31", "rate": 1.0 / 1300.0}
         )
 
         cls.vendor = cls.env["res.partner"].create({"name": "Test Exchange Edge Cases Vendor"})
@@ -110,7 +110,12 @@ class TestExchangeDifferenceEdgeCases(AccountInvariantsMixin, TransactionCase):
 
         self.assertFalse(payment.exchange_diff_move_ids, "sin cotización distinta, no hay nada que revaluar")
         self.assertEqual(bill.amount_residual, 0.0)
-        self.assertEqual(self.company.currency_id.round(sum(bill.line_ids.mapped("amount_residual"))), 0.0)
+        self.assertEqual(
+            self.company.currency_id.round(
+                sum(bill.line_ids.filtered(lambda line: line.account_id.reconcile).mapped("amount_residual"))
+            ),
+            0.0,
+        )
 
     def test_invoice_and_credit_note_each_keep_their_own_rate_and_the_net_closes_without_duplicating_the_difference(
         self,

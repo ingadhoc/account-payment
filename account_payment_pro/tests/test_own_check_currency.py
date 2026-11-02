@@ -37,7 +37,7 @@ class TestOwnCheckCurrency(AccountInvariantsMixin, TransactionCase):
             cls.usd = cls.env.ref("base.USD")
         cls.usd.active = True
         cls.env["res.currency.rate"].create(
-            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-01-01", "rate": 0.001}
+            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2025-12-31", "rate": 0.001}
         )
 
         cls.vendor = cls.env["res.partner"].create({"name": "Test Own Check Currency Vendor"})

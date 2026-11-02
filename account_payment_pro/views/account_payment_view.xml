@@ -5,7 +5,7 @@
         <field name="model">account.payment</field>
         <field name="inherit_id" ref="account.view_account_payment_search"/>
         <field name="arch" type="xml">
-            <filter name="state_sent" position="before">
+            <filter name="outstanding" position="before">
                 <filter string="Receipt Queued for Sending" name="background_send"
                         domain="[('background_send', '=', True)]"/>
                 <separator/>
@@ -39,7 +39,7 @@
             <button name="action_open_exchange_diff_moves"
                     type="object"
                     class="oe_stat_button"
-                    icon="fa-exchange"
+                    icon="swap_horiz"
                     invisible="exchange_diff_move_count == 0"
                     groups="account.group_account_user">
                 <div class="o_form_field o_stat_info">
@@ -76,7 +76,7 @@
 
         <xpath expr="//div[@name='amount_div']//field[@name='amount']" position="after">
             <button name="action_amount_from_checks" type="object"
-                class="btn btn-link btn-sm p-0" icon="fa-refresh" title="Recompute the amount from the checks"
+                class="btn btn-link btn-sm p-0" icon="refresh" title="Recompute the amount from the checks"
                 invisible="state != 'draft' or payment_method_code not in ['in_third_party_checks', 'out_third_party_checks', 'return_third_party_checks', 'new_third_party_checks', 'own_checks']"/>
         </xpath>
 
@@ -145,12 +145,12 @@
                     <button name="action_adjust_amount_for_difference" type="object"
                         class="btn btn-link btn-sm p-0 ms-1" title="Add the pending difference to the payment amount"
                         invisible="not payment_difference or payment_method_code in ['in_third_party_checks', 'out_third_party_checks', 'new_third_party_checks', 'own_checks']">
-                        <i class="fa fa-arrow-left"/> Amount
+                        <i class="oi" data-icon="arrow_back"/> Amount
                     </button>
                     <button name="action_adjust_writeoff_for_difference" type="object"
                         class="btn btn-link btn-sm p-0 ms-1" title="Send the pending difference to write-off"
                         invisible="not payment_difference or not write_off_available or payment_method_code in ['in_third_party_checks', 'out_third_party_checks', 'new_third_party_checks', 'own_checks']">
-                        <i class="fa fa-arrow-left"/> Write-off
+                        <i class="oi" data-icon="arrow_back"/> Write-off
                     </button>
                 )</span>
             </div>
