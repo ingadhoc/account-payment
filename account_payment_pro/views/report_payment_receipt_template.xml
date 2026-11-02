@@ -106,9 +106,10 @@
                         </t>
                         <!-- Regular (non-check) payment rows -->
                         <t t-set="all_same_type" t-value="len(set(payment_bundle.mapped('payment_type'))) == 1"/>
-                        <t t-foreach="payment_bundle.filtered(lambda x: not x._is_latam_check_payment() and x.amount != 0.0)" t-as="doc" id="payment_bundle_doc">
-                            <t t-set="display_amount_a" t-value="abs(doc.amount_signed) if all_same_type else doc.amount_signed"/>
-                            <t t-set="display_amount_b_raw" t-value="doc.counterpart_currency_amount if doc.counterpart_currency_id == doc.destination_currency_id else (doc.amount / doc.accounting_rate if doc.accounting_rate else doc.amount)"/>
+                        <!-- amount is the gross amount: the payment row shows what went through the bank (net) -->
+                        <t t-foreach="payment_bundle.filtered(lambda x: not x._is_latam_check_payment() and x.withholding_net_amount != 0.0)" t-as="doc" id="payment_bundle_doc">
+                            <t t-set="display_amount_a" t-value="abs(doc.withholding_net_amount_signed) if all_same_type else doc.withholding_net_amount_signed"/>
+                            <t t-set="display_amount_b_raw" t-value="doc.counterpart_currency_net_amount if doc.counterpart_currency_id == doc.destination_currency_id else (doc.withholding_net_amount / doc.accounting_rate if doc.accounting_rate else doc.withholding_net_amount)"/>
                             <t t-set="display_amount_b" t-value="abs(display_amount_b_raw) if all_same_type else (display_amount_b_raw if doc.payment_type == 'inbound' else -display_amount_b_raw)"/>
                             <tr style="page-break-inside: avoid">
                                 <td>

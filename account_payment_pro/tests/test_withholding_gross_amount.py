@@ -57,6 +57,26 @@ class TestWithholdingGrossAmount(AccountTestInvoicingCommon):
         self.assertEqual(payment.amount_exact, 1000.0)
         self.assertEqual(payment.payment_total, 1000.0, "the payment total already includes the withholdings")
 
+    def test_list_amounts_show_the_net_amount(self):
+        payment = self._payment()
+        self.assertEqual(payment.withholding_net_amount_signed, -980.0)
+        self.assertEqual(payment.amount_company_currency_signed, -980.0, "a draft shows what goes through the bank")
+        payment.action_post()
+        self.assertEqual(payment.amount_company_currency_signed, -980.0)
+
+    def test_the_debt_currency_amount_is_also_net(self):
+        foreign = self.setup_other_currency("EUR", rates=[("2000-01-01", 1.0)])
+        payment = self._payment()
+        payment.counterpart_currency_id = foreign
+        payment.counterpart_rate = 0.5
+        payment.counterpart_currency_amount = 500.0
+        self.assertEqual(payment.counterpart_currency_net_amount, 490.0, "500 gross - 20 withheld * 0.5")
+
+        payment.counterpart_currency_net_amount = 480.0
+
+        self.assertEqual(payment.counterpart_currency_amount, 490.0)
+        self.assertEqual(payment.amount, 980.0)
+
     def test_the_mode_follows_the_withholding_lines(self):
         payment = self._payment(withholding_base=0.0)
         self.assertEqual(payment.withhold, "payment")
