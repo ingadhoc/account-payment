@@ -14,6 +14,8 @@ class ResUsers(models.Model):
         relation="account_cashbox_users_rel",
         column1="user_id",
         column2="cashbox_id",
+        help="Cashboxes with 'Restrict Users' set where this user is allowed. Configured from each cashbox. "
+        "Cashboxes without restriction are available to all invoicing users, even if not listed here.",
     )
     requiere_account_cashbox_session = fields.Boolean()
 

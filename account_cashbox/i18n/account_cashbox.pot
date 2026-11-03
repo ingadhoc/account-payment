@@ -421,6 +421,14 @@ msgid "Cashboxes"
 msgstr ""
 
 #. module: account_cashbox
+#: model:ir.model.fields,help:account_cashbox.field_res_users__allowed_cashbox_ids
+msgid ""
+"Cashboxes with 'Restrict Users' set where this user is allowed. Configured "
+"from each cashbox. Cashboxes without restriction are available to all "
+"invoicing users, even if not listed here."
+msgstr ""
+
+#. module: account_cashbox
 #: model:ir.model.fields,help:account_cashbox.field_account_cashbox_rounding_adjustment_wizard__force_rate
 msgid ""
 "Check to manually set the exchange rate. If unchecked, the system will use "
