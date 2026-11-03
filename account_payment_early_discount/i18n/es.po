@@ -1,0 +1,116 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_payment_early_discount
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-02 15:12+0000\n"
+"PO-Revision-Date: 2026-11-02 15:12+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: account_payment_early_discount
+#: model_terms:ir.ui.view,arch_db:account_payment_early_discount.view_account_payment_form
+msgid "(difference after discount"
+msgstr "(diferencia después del descuento"
+
+#. module: account_payment_early_discount
+#: model_terms:ir.ui.view,arch_db:account_payment_early_discount.view_move_line_tree
+msgid "Amount with Discount"
+msgstr "Importe con descuento"
+
+#. module: account_payment_early_discount
+#: model:ir.model.fields,help:account_payment_early_discount.field_account_bank_statement_line__is_early_discount
+#: model:ir.model.fields,help:account_payment_early_discount.field_account_move__is_early_discount
+msgid "Credit note created by the early payment discount."
+msgstr "Nota de crédito creada por el descuento por pronto pago."
+
+#. module: account_payment_early_discount
+#: model:ir.model.fields,field_description:account_payment_early_discount.field_account_payment__early_discount_difference
+msgid "Difference after discount"
+msgstr "Diferencia después del descuento"
+
+#. module: account_payment_early_discount
+#: model_terms:ir.ui.view,arch_db:account_payment_early_discount.view_move_line_tree
+msgid "Discount Until"
+msgstr "Descuento hasta"
+
+#. module: account_payment_early_discount
+#: model:ir.model.fields,field_description:account_payment_early_discount.field_account_move__display_name
+#: model:ir.model.fields,field_description:account_payment_early_discount.field_account_move_line__display_name
+#: model:ir.model.fields,field_description:account_payment_early_discount.field_account_payment__display_name
+msgid "Display Name"
+msgstr "Nombre para mostrar"
+
+#. module: account_payment_early_discount
+#: model:ir.model.fields,field_description:account_payment_early_discount.field_account_move_line__early_discount_available
+msgid "Early Discount Available"
+msgstr "Descuento por pronto pago disponible"
+
+#. module: account_payment_early_discount
+#: model:ir.model.fields,field_description:account_payment_early_discount.field_account_payment__early_discount_write_off_warning
+msgid "Early Discount Write Off Warning"
+msgstr "Aviso de ajuste con descuento por pronto pago"
+
+#. module: account_payment_early_discount
+#: model:ir.model.fields,field_description:account_payment_early_discount.field_account_payment__early_discount_amount
+msgid "Early Payment Discount"
+msgstr "Descuento por pronto pago"
+
+#. module: account_payment_early_discount
+#. odoo-python
+#: code:addons/account_payment_early_discount/models/account_move.py:0
+msgid "Early payment discount"
+msgstr "Descuento por pronto pago"
+
+#. module: account_payment_early_discount
+#: model:ir.model.fields,help:account_payment_early_discount.field_account_payment__early_discount_amount
+msgid ""
+"Early payment discount that will be applied as credit notes when the payment"
+" is posted."
+msgstr ""
+"Descuento por pronto pago que se aplicará como notas de crédito al publicar"
+" el pago."
+
+#. module: account_payment_early_discount
+#: model:ir.model.fields,field_description:account_payment_early_discount.field_account_move__id
+#: model:ir.model.fields,field_description:account_payment_early_discount.field_account_move_line__id
+#: model:ir.model.fields,field_description:account_payment_early_discount.field_account_payment__id
+msgid "ID"
+msgstr ""
+
+#. module: account_payment_early_discount
+#: model:ir.model.fields,field_description:account_payment_early_discount.field_account_bank_statement_line__is_early_discount
+#: model:ir.model.fields,field_description:account_payment_early_discount.field_account_move__is_early_discount
+msgid "Is Early Discount"
+msgstr "Es descuento por pronto pago"
+
+#. module: account_payment_early_discount
+#: model:ir.model,name:account_payment_early_discount.model_account_move
+msgid "Journal Entry"
+msgstr "Asiento contable"
+
+#. module: account_payment_early_discount
+#: model:ir.model,name:account_payment_early_discount.model_account_move_line
+msgid "Journal Item"
+msgstr "Apunte contable"
+
+#. module: account_payment_early_discount
+#: model:ir.model,name:account_payment_early_discount.model_account_payment
+msgid "Payments"
+msgstr "Pagos"
+
+#. module: account_payment_early_discount
+#: model_terms:ir.ui.view,arch_db:account_payment_early_discount.view_account_payment_form
+msgid ""
+"The payment has a write-off and, with the early payment discount, the "
+"payment exceeds the debt. Check if the write-off is needed."
+msgstr ""
+"El pago tiene un ajuste y, con el descuento por pronto pago, el pago supera"
+" la deuda. Revise si el ajuste es necesario."
