@@ -47,7 +47,7 @@ class TestBackgroundSendReceipts(AccountTestInvoicingCommon):
             self.env["account.payment"]._cron_background_send_payment_receipts(**kwargs)
 
     def _set_batch_size(self, size):
-        self.env["ir.config_parameter"].sudo().set_param("account_payment_pro.background_send_batch_size", str(size))
+        self.env["ir.config_parameter"].sudo().set_int("account_payment_pro.background_send_batch_size", size)
 
     # -------------------------------------------------------------------------
     # Entrada por UI: el composer de Odoo decide si manda o encola

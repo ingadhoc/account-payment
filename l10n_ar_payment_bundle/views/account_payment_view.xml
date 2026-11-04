@@ -48,7 +48,7 @@
                 <attribute name="invisible">1</attribute>
             </xpath>
 
-            <field name="withholdings_amount" position="attributes">
+            <field name="withholding_amount" position="attributes">
                 <attribute name="invisible">1</attribute>
             </field>
 
@@ -93,10 +93,7 @@
             <xpath expr="//page[@name='paid']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
-            <xpath expr="//page[@name='withholdings_page']" position="attributes">
-                <attribute name="invisible">1</attribute>
-            </xpath>
-            <xpath expr="//page[@name='withholdings_page_editable']" position="attributes">
+            <xpath expr="//notebook[@name='payment_notebook']/page[.//field[@name='withholding_line_ids']]" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
             <field name="receiptbook_id"  position="attributes">
@@ -119,7 +116,7 @@
                         type="action"
                         string="Rename"
                         class="btn-secondary"
-                        invisible="not is_main_payment or state not in ['in_process', 'paid']"
+                        invisible="not is_main_payment or state not in ['paid', 'reconciled']"
                         groups="base.group_no_one"/>
             </button>
             <field name="counterpart_currency_id" position="attributes">
@@ -128,7 +125,7 @@
             <button name="button_open_journal_entry" position="attributes">
                 <attribute name="invisible" separator=" and " add="not show_move_button"></attribute>
             </button>
-            <page name="withholdings_page" position="after">
+            <xpath expr="//notebook[@name='payment_notebook']/page[.//field[@name='withholding_line_ids']]" position="after">
                 <page name="link_payment_ids" string="Payments" invisible="not is_main_payment">
                         <!-- pasar en el contexto company_id es necesario para que se elija bien el primer diario sugerido -->
                         <field name="link_payment_ids"
@@ -144,7 +141,7 @@
                             }"
                             readonly="state != 'draft'"/>
                 </page>
-            </page>
+            </xpath>
             <label for="amount" position="attributes">
                 <attribute name="invisible">is_main_payment</attribute>
             </label>
@@ -182,10 +179,7 @@
             <xpath expr="//page[@name='paid']" position="attributes">
                 <attribute name="invisible" separator=" or " add=" main_payment_id"/>
             </xpath>
-            <xpath expr="//page[@name='withholdings_page']" position="attributes">
-                <attribute name="invisible" separator=" or " add=" main_payment_id"/>
-            </xpath>
-            <xpath expr="//page[@name='withholdings_page_editable']" position="attributes">
+            <xpath expr="//notebook[@name='payment_notebook']/page[.//field[@name='withholding_line_ids']]" position="attributes">
                 <attribute name="invisible" separator=" or " add=" main_payment_id"/>
             </xpath>
             <sheet position="before">
@@ -213,7 +207,7 @@
                 <field name="amount" string="Amount (JC)" help="Amount on journal currency" optional="hide"/>
                 <field name="payment_total_signed" string="Amount" sum="Total"/>
                 <field name="counterpart_currency_amount" string="Amount (DC)" sum="Total" help="Amount in Debt Currency" optional="hide" column_invisible="parent.destination_currency_id == parent.counterpart_currency_id"/>
-                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'in_process'" decoration-success="state == 'paid'"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'paid' and not is_reconciled" decoration-success="state == 'reconciled' or (state == 'paid' and is_reconciled)"/>
             </list>
         </field>
     </record>
