@@ -89,7 +89,7 @@ class TestMassTransferDestinationDomain(TransactionCase):
                 active_model="l10n_latam.check",
                 active_ids=self.check.ids,
             )
-            .create({})
+            .create({"to_journal_id": self.root_bank_journal.id})
         )
 
     def test_to_journal_domain_reaches_the_root_company(self):
@@ -102,6 +102,7 @@ class TestMassTransferDestinationDomain(TransactionCase):
         )
 
     def test_to_journal_domain_excludes_bundle_journals(self):
+        (self.root | self.branch | self.sub_branch).use_payment_pro = True
         wizard = self._wizard()
         reachable = self.env["account.journal"].search(wizard.to_journal_domain)
         bundle_ids = {
