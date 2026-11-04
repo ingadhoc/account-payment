@@ -8,14 +8,7 @@ from odoo.tests.common import TransactionCase
 
 @tagged("post_install", "-at_install")
 class TestMassTransferDestinationDomain(TransactionCase):
-    """El dominio de destination_journal_id tiene que alcanzar toda la jerarquia de compañias.
-
-    l10n_ar_payment_bundle redefine destination_journal_id con su propio dominio dinamico (para
-    excluir los diarios de bundle) armado con company_id = company_id, pisando el que
-    l10n_latam_check_ux corrige sobre este mismo campo (main_company_id, resuelto hasta la raiz
-    del arbol). Con una jerarquia de mas de dos niveles, el desplegable quedaba vacio pese a que
-    main_company_id ya apuntaba a la raiz.
-    """
+    """The destination domain keeps the whole company tree reachable and hides the bundle journals."""
 
     @classmethod
     def setUpClass(cls):
@@ -88,8 +81,8 @@ class TestMassTransferDestinationDomain(TransactionCase):
         payment.action_post()
         cls.check = payment.l10n_latam_new_check_ids
 
-    def test_destination_journal_domain_reaches_the_root_company(self):
-        wizard = (
+    def _wizard(self):
+        return (
             self.env["l10n_latam.payment.mass.transfer"]
             .with_context(
                 allowed_company_ids=[self.sub_branch.id, self.branch.id, self.root.id],
@@ -99,13 +92,23 @@ class TestMassTransferDestinationDomain(TransactionCase):
             .create({})
         )
 
-        if "main_company_id" not in wizard._fields:
-            self.skipTest("l10n_latam_check_ux is not installed")
-
-        self.assertEqual(wizard.main_company_id, self.root)
-        reachable = self.env["account.journal"].search(wizard.destination_journal_domain)
+    def test_to_journal_domain_reaches_the_root_company(self):
+        wizard = self._wizard()
+        reachable = self.env["account.journal"].search(wizard.to_journal_domain)
         self.assertIn(
             self.root_bank_journal,
             reachable,
             "the root company's bank journal should be a valid destination",
         )
+
+    def test_to_journal_domain_excludes_bundle_journals(self):
+        wizard = self._wizard()
+        reachable = self.env["account.journal"].search(wizard.to_journal_domain)
+        bundle_ids = {
+            journal_id
+            for company in self.root | self.branch | self.sub_branch
+            for payment_type in ("inbound", "outbound")
+            if (journal_id := company._get_bundle_journal(payment_type))
+        }
+        self.assertTrue(bundle_ids)
+        self.assertFalse(reachable & self.env["account.journal"].browse(bundle_ids))
