@@ -154,13 +154,13 @@ class AccountPayment(models.Model):
         super(AccountPayment, self - with_main_payments)._compute_to_pay_move_lines()
 
     @api.depends("main_payment_id")
-    def _compute_l10n_ar_withholding_line_ids(self):
+    def _compute_withholding_line_ids(self):
         with_main_payments = self.filtered("main_payment_id")
         for rec in with_main_payments:
-            rec.l10n_ar_withholding_line_ids = False
-        super(AccountPayment, self - with_main_payments)._compute_l10n_ar_withholding_line_ids()
+            rec.withholding_line_ids = False
+        super(AccountPayment, self - with_main_payments)._compute_withholding_line_ids()
 
-    @api.depends("is_main_payment", "withholdings_amount")
+    @api.depends("is_main_payment", "withholding_amount")
     def _compute_amount(self):
         main_paments = self.filtered("is_main_payment")
         main_paments.amount = 0.0
@@ -176,14 +176,6 @@ class AccountPayment(models.Model):
         main_payments.amount = 0
         main_payments.amount_exact = 0
         super(AccountPayment, self - main_payments)._onchange_to_pay_lines_adjust_amount()
-
-    @api.onchange("withholdings_amount")
-    def _onchange_withholdings(self):
-        """dejamos este onchange además del compute_amount porque "le gana" en ejecución y, si cambian retenciones le asignaba un amount"""
-        main_payments = self.filtered("is_main_payment")
-        main_payments.amount = 0
-        main_payments.amount_exact = 0
-        super(AccountPayment, self - main_payments)._onchange_withholdings()
 
     @api.onchange("currency_id")
     def _onchange_currency_recompute_amount(self):
@@ -221,12 +213,12 @@ class AccountPayment(models.Model):
         for rec in linked:
             # Neteo de los linkeados vía payment_total_signed (una devolución resta, no suma).
             # payment_total viene en B2/destination_currency_id, misma moneda que selected_debt
-            # y withholdings_amount.
+            # y withholding_amount.
             total_linked_in_b = sum(rec.main_payment_id.link_payment_ids.mapped("payment_total_signed"))
             rec.payment_difference = (
                 abs(rec.main_payment_id.to_pay_amount)
                 - total_linked_in_b
-                - rec.main_payment_id.withholdings_amount
+                - rec.main_payment_id.withholding_amount
                 - rec.main_payment_id.write_off_amount
             )
         super(AccountPayment, self - linked)._compute_payment_difference()
@@ -372,7 +364,7 @@ class AccountPayment(models.Model):
         # Only main bundle payments (is_main_payment, no main_payment_id) without write-off or withholdings skip journal entry.
         # Linked payments and regular payments always create journal entries, including write-off.
         return self.filtered(
-            lambda x: x.is_main_payment and not x.main_payment_id and not (x.write_off_amount or x.withholdings_amount)
+            lambda x: x.is_main_payment and not x.main_payment_id and not (x.write_off_amount or x.withholding_amount)
         )
 
     def _generate_journal_entry(self, write_off_line_vals=None, force_balance=None, line_ids=None):
