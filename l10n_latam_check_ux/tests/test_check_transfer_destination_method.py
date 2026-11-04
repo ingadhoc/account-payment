@@ -164,7 +164,7 @@ class TestCheckTransferDestinationMethod(CheckTransferDestinationCommon):
             .create(
                 {
                     "payment_date": fields.Date.today(),
-                    "destination_journal_id": (destination_journal or self.bank_journal).id,
+                    "to_journal_id": (destination_journal or self.bank_journal).id,
                     "split_payment": split_payment,
                 }
             )

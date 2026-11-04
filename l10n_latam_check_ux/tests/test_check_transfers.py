@@ -178,7 +178,7 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
             active_ids=check.ids,
         ).create(
             {
-                "destination_journal_id": bank_journal.id,
+                "to_journal_id": bank_journal.id,
             }
         )._create_payments()
 
@@ -257,6 +257,33 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
             self.assertEqual(check.current_journal_id, branch_journal)
             self.assertEqual(check.company_id, branch)
 
+    def _mass_transfer_from_branch(self, vat):
+        self.company.vat = "30710158254"
+        branch = self._create_branch()
+        branch.vat = vat
+        branch_journal = self._create_check_journal("Branch Third Party Checks", "BTPC", company=branch)
+        check = self._create_third_party_check(branch_journal, "UX-BRANCH-MT-0001")
+        wizard = (
+            self.env["l10n_latam.payment.mass.transfer"]
+            .with_context(
+                active_model="l10n_latam.check",
+                active_ids=check.ids,
+                allowed_company_ids=(branch | self.company).ids,
+            )
+            .create({"to_journal_id": self.third_party_check_journal.id})
+        )
+        return check, wizard
+
+    def test_mass_transfer_between_branches_with_same_vat(self):
+        check, wizard = self._mass_transfer_from_branch("30710158254")
+        wizard._create_payments()
+        self.assertEqual(check.current_journal_id, self.third_party_check_journal)
+
+    def test_mass_transfer_between_companies_with_different_vat_is_blocked(self):
+        _check, wizard = self._mass_transfer_from_branch("30711111111")
+        with self.assertRaisesRegex(ValidationError, "same VAT"):
+            wizard._create_payments()
+
     def test_bank_rejection_receives_in_rejected_journal(self):
         check = self._create_third_party_check(self.third_party_check_journal, "UX-REJ-0001")
         bank_journal = self.company_bank_journal
@@ -266,7 +293,7 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
             active_ids=check.ids,
         ).create(
             {
-                "destination_journal_id": bank_journal.id,
+                "to_journal_id": bank_journal.id,
             }
         )._create_payments()
 
@@ -275,7 +302,7 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
             active_ids=check.ids,
         ).create(
             {
-                "destination_journal_id": self.rejected_check_journal.id,
+                "to_journal_id": self.rejected_check_journal.id,
             }
         )._create_payments()
 
@@ -294,6 +321,10 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
             limit=1,
         )
         self.assertTrue(cash_journal, "A cash journal is required to run this test")
+        # some modules set the outstanding accounts of cash journals (saas_client_account): do not rely on them
+        cash_journal.inbound_payment_method_line_ids.filtered(
+            lambda line: not line.payment_account_id
+        ).payment_account_id = cash_journal.default_account_id
 
         own_checks_method = bank_journal._get_available_payment_method_lines("outbound").filtered(
             lambda x: x.code == "own_checks"
@@ -356,7 +387,7 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
         self.env["l10n_latam.payment.mass.transfer"].with_context(
             active_model="l10n_latam.check",
             active_ids=check.ids,
-        ).create({"destination_journal_id": self.company_bank_journal.id})._create_payments()
+        ).create({"to_journal_id": self.company_bank_journal.id})._create_payments()
 
         branch = self._create_branch()
         branch_rejected_journal = self._create_check_journal("Branch Rejected Checks", "BRJC", company=branch)
@@ -388,32 +419,3 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
         partner_from_parent.add_check_credit = True
 
         self.assertEqual(partner_from_parent.credit - credit_without_checks, 100.0)
-
-    def test_mass_transfer_destination_domain_reaches_the_root_company(self):
-        """El dominio del diario destino se arma sobre la raíz, no sobre el padre inmediato.
-
-        Con una jerarquía de más de dos niveles, `parent_id` se queda en la compañía
-        intermedia y deja afuera del dominio a la casa central y a las otras ramas.
-        """
-        branch = self._create_branch()
-        sub_branch = self._create_branch(name="Sub branch", parent=branch)
-        sub_branch_journal = self._create_check_journal("Sub Branch Checks", "SBC", company=sub_branch)
-        check = self._create_third_party_check(sub_branch_journal, "UX-ROOT-0001")
-
-        wizard = (
-            self.env["l10n_latam.payment.mass.transfer"]
-            .with_context(active_model="l10n_latam.check", active_ids=check.ids)
-            .create({})
-        )
-
-        self.assertEqual(wizard.main_company_id, self.company)
-
-    def test_mass_transfer_view_exposes_the_fields_of_the_destination_domain(self):
-        """El desplegable del diario destino queda vacío si la vista no trae `main_company_id`.
-
-        El dominio de `destination_journal_id` lo lee, y el cliente web evalúa los dominios solo
-        con los campos que la vista carga: sin el campo, `main_company_id` es False, el `child_of`
-        no matchea ninguna compañía y el usuario no puede elegir ningún diario.
-        """
-        view = self.env["l10n_latam.payment.mass.transfer"].get_view()
-        self.assertIn("main_company_id", view["models"]["l10n_latam.payment.mass.transfer"])

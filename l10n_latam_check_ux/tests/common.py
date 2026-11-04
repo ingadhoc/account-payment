@@ -30,7 +30,6 @@ class LatamCheckCommon(AccountInvariantsMixin, TransactionCase):
         cls.env = cls.env(context=dict(cls.env.context, allowed_company_ids=cls.company.ids))
 
         cls.partner = cls.env["res.partner"].create({"name": "Check Test Partner", "vat": "30710158254"})
-        cls.bank = cls.env["res.bank"].search([], limit=1) or cls.env["res.bank"].create({"name": "Test Bank"})
 
         # one reconcilable outstanding account per check type + a non-reconcilable one for issue_state
         cls.deferred_check_account = cls._create_account("TDEFCHK", "Test Deferred Checks", reconcile=True)
@@ -174,7 +173,7 @@ class LatamCheckCommon(AccountInvariantsMixin, TransactionCase):
     def _new_check_vals(self, amount, number=None, payment_date=None, issuer=False):
         vals = {"amount": amount, "payment_date": payment_date or self.today, "name": number}
         if issuer:
-            vals.update({"issuer_vat": "30710158254", "bank_id": self.bank.id})
+            vals.update({"issuer_vat": "30710158254"})
         return vals
 
     def _create_own_check_payment(

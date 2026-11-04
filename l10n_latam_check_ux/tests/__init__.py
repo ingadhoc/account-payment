@@ -11,3 +11,5 @@ from . import test_own_check_debit
 from . import test_check_operation_order
 from . import test_check_transfer_destination_method
 from . import test_checks_to_date_report
+from . import test_journal_debit_button
+from . import test_check_bank
