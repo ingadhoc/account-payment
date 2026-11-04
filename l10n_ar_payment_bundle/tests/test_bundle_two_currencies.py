@@ -39,7 +39,7 @@ class TestBundleTwoCurrencies(AccountInvariantsMixin, TransactionCase):
         # de la compañía tiene que ser distinta a la del medio "extranjero" del test,
         # así que resolvemos una compañía AR real (mismo patrón que l10n_ar_tax).
         cls.company = cls.env["res.company"].search(
-            [("l10n_ar_tax_base_account_id", "!=", False), ("partner_id.country_id.code", "=", "AR")], limit=1
+            [("chart_template", "like", "ar_"), ("partner_id.country_id.code", "=", "AR")], limit=1
         )
         cls.env = cls.env(context=dict(cls.env.context, allowed_company_ids=cls.company.ids))
         cls.env.user.company_id = cls.company
@@ -93,9 +93,9 @@ class TestBundleTwoCurrencies(AccountInvariantsMixin, TransactionCase):
             {
                 "name": "Test Bundle Two Currencies Vendor",
                 "company_id": False,
-                "l10n_latam_identification_type_id": cls.env.ref("l10n_ar.it_cuit").id,
+                "country_id": cls.env.ref("base.ar").id,
                 "l10n_ar_afip_responsibility_type_id": cls.env.ref("l10n_ar.res_IVARI").id,
-                "vat": "30710158267",
+                "vat": "20055361682",
             }
         )
 

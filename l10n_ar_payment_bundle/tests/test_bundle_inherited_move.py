@@ -18,7 +18,12 @@ class TestBundleInheritedMove(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.company = cls.env.company
+        # an AR chart gives the bundle journal its outstanding accounts, which a generic one does not
+        cls.company = cls.env["res.company"].search(
+            [("chart_template", "like", "ar_"), ("partner_id.country_id.code", "=", "AR")], limit=1
+        )
+        cls.env = cls.env(context=dict(cls.env.context, allowed_company_ids=cls.company.ids))
+        cls.env.user.company_id = cls.company
         cls.company.use_payment_pro = True
 
         cls.partner = cls.env["res.partner"].create({"name": "Test Customer"})

@@ -9,6 +9,7 @@ Groups multiple payments into a single "bundle receipt": a main payment (`is_mai
 - **Withholding integration:** integrates with `l10n_ar_tax` to handle tax withholdings within the bundle.
 - **Receipt books:** supports receipt book management via `account_payment_pro_receiptbook`.
 - **Custom payment method:** adds `Payment multiple` for both inbound and outbound payments.
+- **Main payment state:** the main payment keeps the native state (Paid) and does not turn Reconciled. The actual state of each payment method is shown on its linked payment.
 
 ## Known issues / Roadmap
 
