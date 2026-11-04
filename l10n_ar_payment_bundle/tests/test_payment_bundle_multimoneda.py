@@ -93,6 +93,21 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
     # Helpers
     # ------------------------------------------------------------------
 
+    def _get_rate(self, from_currency, to_currency):
+        return self.env["res.currency"]._get_conversion_rate(
+            from_currency=from_currency,
+            to_currency=to_currency,
+            company=self.company,
+            date=self.today,
+        )
+
+    def _wth_line(self, payment):
+        self.assertEqual(len(payment.withholding_line_ids), 1)
+        return payment.withholding_line_ids
+
+    def _wth_move_lines(self, payment):
+        return payment.move_id.line_ids.filtered(lambda x: x.account_id == self.account_tax_wth)
+
     def _create_main_payment(self, invoice, fiscal_position=None, **kw):
         """Crea el pago principal del bundle (amount=0, is_main_payment=True).
 
@@ -219,7 +234,7 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         # Post
         main.action_post()
         for linked in (linked1, linked2):
-            self.assertIn(linked.state, ("paid", "in_process"), "Linked payment debe estar posteado")
+            self.assertIn(linked.state, ("paid", "reconciled"), "Linked payment debe estar posteado")
             self.assertAlmostEqual(
                 sum(linked.move_id.line_ids.mapped("balance")),
                 0,
@@ -237,7 +252,7 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
 
         Verifica:
         - Retención: base=10 000, amount=300 ARS
-        - withholdings_amount = 300 ARS (en B=ARS)
+        - withholding_amount = 300 ARS (en B=ARS)
         - payment_total = 5000 + 6800 + 300 = 12 100
         - payment_difference = 0
         - Post: todos los asientos balancean
@@ -249,10 +264,10 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         wth = self._wth_line(main)
         self.assertAlmostEqual(wth.base_amount, 10_000, places=2)
         self.assertAlmostEqual(wth.amount, 300, places=2)
-        self.assertAlmostEqual(main.withholdings_amount, 300, places=2)
+        self.assertAlmostEqual(main.destination_currency_withholding_amount, 300, places=2)
 
         # El main tiene amount=0, por lo tanto counterpart_currency_amount=0.
-        # Las retenciones fluyen a payment_total vía withholdings_amount (override l10n_ar_tax).
+        # Las retenciones fluyen a payment_total vía destination_currency_withholding_amount.
         self.assertAlmostEqual(main.counterpart_currency_amount, 0, places=2)
 
         # Linked: caja + banco que cubran deuda - retención
@@ -266,7 +281,7 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         # Post
         main.action_post()
         for linked in (linked1, linked2):
-            self.assertIn(linked.state, ("paid", "in_process"), "Linked payment debe estar posteado")
+            self.assertIn(linked.state, ("paid", "reconciled"), "Linked payment debe estar posteado")
 
         # Main genera asiento (tiene withholdings)
         self.assertTrue(main.move_id, "Main con retenciones genera asiento")
@@ -294,11 +309,11 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
 
         self.assertEqual(main.destination_currency_id, self.usd, "B = USD")
 
-        # Retención: base_amount en C(ARS), withholdings_amount en B(USD)
+        # Retención: base_amount en C(ARS), withholding_amount en B(USD)
         wth = self._wth_line(main)
         self.assertAlmostEqual(wth.base_amount, 1_200_000, places=0)
         self.assertAlmostEqual(wth.amount, 36_000, places=0)
-        self.assertAlmostEqual(main.withholdings_amount, 30, places=2)
+        self.assertAlmostEqual(main.destination_currency_withholding_amount, 30, places=2)
 
         # Linked 1: banco USD (A=B=USD)
         linked_usd = self._add_linked_payment(main, self.bank_usd, 500)
@@ -336,7 +351,9 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
 
         # payment_total del main en USD
         expected_total = (
-            linked_usd.counterpart_currency_amount + linked_ars.counterpart_currency_amount + main.withholdings_amount
+            linked_usd.counterpart_currency_amount
+            + linked_ars.counterpart_currency_amount
+            + main.destination_currency_withholding_amount
         )
         self.assertAlmostEqual(
             main.payment_total,
@@ -348,7 +365,7 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         # Post
         main.action_post()
         for linked in (linked_usd, linked_ars):
-            self.assertIn(linked.state, ("paid", "in_process"), "Linked payment debe estar posteado")
+            self.assertIn(linked.state, ("paid", "reconciled"), "Linked payment debe estar posteado")
             lines = linked.move_id.line_ids
             self.assertAlmostEqual(
                 sum(lines.mapped("balance")),
@@ -425,7 +442,7 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         invoice = self._create_invoice(1_000, self.usd)
         main = self._create_main_payment(invoice)
 
-        self.assertAlmostEqual(main.withholdings_amount, 30, places=2)
+        self.assertAlmostEqual(main.destination_currency_withholding_amount, 30, places=2)
 
         # Linked 1: 2 cheques propios ARS (sumando ~580 USD ≈ 696 000 ARS)
         linked_checks = self._add_linked_check_payment(
@@ -528,7 +545,7 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         wth = self._wth_line(main)
         self.assertAlmostEqual(wth.base_amount, 1_000 * 1_320, places=0)
         wth_amount_ars = wth.amount  # ≈ 39 600 ARS
-        wth_amount_eur = main.withholdings_amount  # ≈ 30 EUR
+        wth_amount_eur = main.destination_currency_withholding_amount  # ≈ 30 EUR
 
         # Linked ARS: ~800 000 ARS
         linked_ars = self._add_linked_payment(main, self.bank_ars, 800_000)
@@ -581,7 +598,7 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         # Post
         main.action_post()
         for linked in (linked_ars, linked_usd):
-            self.assertIn(linked.state, ("paid", "in_process"), "Linked payment debe estar posteado")
+            self.assertIn(linked.state, ("paid", "reconciled"), "Linked payment debe estar posteado")
             lines = linked.move_id.line_ids
             self.assertAlmostEqual(
                 sum(lines.mapped("balance")),
@@ -640,7 +657,7 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         Verifica:
             - selected_debt en ARS (B2=C): 1 452 000 ARS
             - wth base = 1 200 000 ARS, wth amount = 36 000 ARS
-            - withholdings_amount = 36 000 ARS (en B2=ARS)
+            - withholding_amount = 36 000 ARS (en B2=ARS)
             - Linked ARS: amount 1 416 000, cca 1 416 000 ARS
             - payment_difference = 0 (sin mezcla de monedas)
             - Todos los asientos balancean
@@ -667,7 +684,9 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         wth = self._wth_line(main)
         self.assertAlmostEqual(wth.base_amount, 1_200_000, places=0)
         self.assertAlmostEqual(wth.amount, 36_000, places=0)
-        self.assertAlmostEqual(main.withholdings_amount, 36_000, places=0, msg="withholdings_amount en ARS (B2=C)")
+        self.assertAlmostEqual(
+            main.destination_currency_withholding_amount, 36_000, places=0, msg="Withholdings in ARS (B2=C)"
+        )
 
         # Linked banco ARS: paga la deuda neta = 1 452 000 - 36 000 = 1 416 000 ARS
         linked = self._add_linked_payment(main, self.bank_ars, 1_416_000)
@@ -689,7 +708,7 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
 
         # Post
         main.action_post()
-        self.assertIn(linked.state, ("paid", "in_process"), "Linked debe estar posteado")
+        self.assertIn(linked.state, ("paid", "reconciled"), "Linked debe estar posteado")
 
         # Asiento del linked balancear
         self.assertAlmostEqual(
@@ -769,7 +788,7 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         # Post: cada linked balancea (el asiento ya era correcto aun con el bug).
         main.action_post()
         for linked in (linked_pay, linked_refund):
-            self.assertIn(linked.state, ("paid", "in_process"), "Linked payment debe estar posteado")
+            self.assertIn(linked.state, ("paid", "reconciled"), "Linked payment debe estar posteado")
             self.assertAlmostEqual(
                 sum(linked.move_id.line_ids.mapped("balance")),
                 0,
