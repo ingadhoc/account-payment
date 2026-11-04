@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 19.0+e\n"
+"Project-Id-Version: Odoo Server 20.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-06 12:32+0000\n"
-"PO-Revision-Date: 2026-03-06 12:32+0000\n"
+"POT-Creation-Date: 2026-11-04 19:24+0000\n"
+"PO-Revision-Date: 2026-11-04 19:24+0000\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
 "Language: es\n"
@@ -17,35 +17,135 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
 #. module: account_cashbox_bundle
+#: model:ir.module.module,description:base.module_account_cashbox_bundle
+msgid ""
+"# Account Cashbox Bundle\n"
+"\n"
+"Technical bridge module that ensures proper integration between Account Cashbox and Payment Bundle functionality.\n"
+"\n"
+"## Features\n"
+"\n"
+"This module provides seamless integration between cashbox operations and payment bundles:\n"
+"\n"
+"- **Excludes bundle journals from cashbox configuration**: Payment bundle journals are automatically filtered out from cashbox journal selection, as they operate differently from regular cashbox transactions.\n"
+"\n"
+"- **Smart cashbox session handling**: Main bundle payments automatically bypass cashbox session requirements, while child payments within the bundle maintain proper cashbox controls.\n"
+"\n"
+"- **Domain restrictions**: Prevents configuration errors by ensuring bundle payment methods cannot be associated with cashbox sessions.\n"
+"\n"
+"## Installation\n"
+"\n"
+"This module is set to `auto_install`, meaning it will be automatically installed when both dependencies are present:\n"
+"\n"
+"- `account_cashbox`\n"
+"- `l10n_ar_payment_bundle`\n"
+"\n"
+"No manual installation is required.\n"
+"\n"
+"## Configuration\n"
+"\n"
+"No configuration needed. The module works automatically once installed.\n"
+"\n"
+"## Usage\n"
+"\n"
+"### Cashbox Configuration\n"
+"\n"
+"When setting up a cashbox:\n"
+"\n"
+"1. Navigate to **Accounting → Configuration → Cashboxes**\n"
+"2. Create or edit a cashbox\n"
+"3. When selecting journals, payment bundle journals will be automatically excluded from available options\n"
+"\n"
+"This ensures only regular cash and bank journals can be associated with cashbox sessions.\n"
+"\n"
+"### Payment Operations\n"
+"\n"
+"**Bundle Payments (Main):**\n"
+"- When creating a payment using a payment bundle journal, the cashbox session requirement is automatically bypassed\n"
+"- This is correct behavior as bundle payments are container/parent payments\n"
+"\n"
+"**Child Payments:**\n"
+"- Individual payments within a bundle will follow standard cashbox rules\n"
+"- Cashbox session requirements are determined by user configuration and journal settings\n"
+"\n"
+"## Technical Details\n"
+"\n"
+"### Models Extended\n"
+"\n"
+"**account.cashbox**\n"
+"- Adds domain restriction to `journal_ids` field to exclude journals with payment_bundle methods\n"
+"\n"
+"**account.payment**\n"
+"- Overrides `_compute_requiere_account_cashbox_session()` to disable cashbox requirement for main payments\n"
+"\n"
+"### Dependencies\n"
+"\n"
+"- `account_cashbox`\n"
+"- `l10n_ar_payment_bundle`\n"
+"\n"
+"## Bug Tracker\n"
+"\n"
+"Bugs are tracked on [GitHub Issues](https://github.com/adhoc-ar/account-payment/issues).\n"
+"\n"
+"If you encounter any issues, please check if it has already been reported. If not, please [create a new issue](https://github.com/adhoc-ar/account-payment/issues/new) with detailed steps to reproduce.\n"
+"\n"
+"## Credits\n"
+"\n"
+"### Authors\n"
+"\n"
+"- ADHOC SA\n"
+"\n"
+"### Contributors\n"
+"\n"
+"- ADHOC SA\n"
+"\n"
+"### Maintainer\n"
+"\n"
+"This module is maintained by **ADHOC SA**.\n"
+"\n"
+"For more information, please visit <https://www.adhoc.com.ar>\n"
+msgstr ""
+
+#. module: account_cashbox_bundle
+#: model:ir.module.module,shortdesc:base.module_account_cashbox_bundle
+msgid "Account Cashbox Bundle"
+msgstr "Cajas y pagos agrupados"
+
+#. module: account_cashbox_bundle
 #: model:ir.model,name:account_cashbox_bundle.model_account_chart_template
 msgid "Account Chart Template"
-msgstr ""
+msgstr "Plantilla de plan de cuentas"
 
 #. module: account_cashbox_bundle
 #: model:ir.model,name:account_cashbox_bundle.model_account_cashbox
 msgid "Cashbox"
-msgstr ""
+msgstr "Cajas"
 
 #. module: account_cashbox_bundle
 #: model:ir.model.fields,field_description:account_cashbox_bundle.field_account_cashbox__display_name
 #: model:ir.model.fields,field_description:account_cashbox_bundle.field_account_chart_template__display_name
 #: model:ir.model.fields,field_description:account_cashbox_bundle.field_account_payment__display_name
 msgid "Display Name"
-msgstr ""
+msgstr "Mostrar nombre"
 
 #. module: account_cashbox_bundle
 #: model:ir.model.fields,field_description:account_cashbox_bundle.field_account_cashbox__id
 #: model:ir.model.fields,field_description:account_cashbox_bundle.field_account_chart_template__id
 #: model:ir.model.fields,field_description:account_cashbox_bundle.field_account_payment__id
 msgid "ID"
-msgstr ""
+msgstr "ID"
+
+#. module: account_cashbox_bundle
+#: model:ir.model,name:account_cashbox_bundle.model_account_payment
+msgid "Payment"
+msgstr "Pago"
 
 #. module: account_cashbox_bundle
 #: model:ir.model.fields,field_description:account_cashbox_bundle.field_account_cashbox__journal_ids
 msgid "Payment method"
-msgstr ""
+msgstr "Método de Pago"
 
 #. module: account_cashbox_bundle
-#: model:ir.model,name:account_cashbox_bundle.model_account_payment
-msgid "Payments"
-msgstr ""
+#: model:ir.module.module,summary:base.module_account_cashbox_bundle
+msgid "Technical bridge module for account_cashbox and l10n_ar_payment_bundle"
+msgstr "Módulo puente técnico entre account_cashbox y l10n_ar_payment_bundle"
