@@ -37,7 +37,7 @@ class AccountJournal(models.Model):
     def write(self, vals):
         res = super().write(vals)
         if "inbound_payment_method_line_ids" in vals or "outbound_payment_method_line_ids" in vals:
-            self.env.registry.clear_cache()
+            self.env.transaction.invalidate_ormcache()
         return res
 
     @api.constrains("inbound_payment_method_line_ids", "outbound_payment_method_line_ids")
