@@ -29,7 +29,7 @@ class ResCompany(models.Model):
                 chart_template._load_data({"account.journal": journals_to_create})
 
         if companies:
-            self.env.registry.clear_cache()
+            self.env.transaction.invalidate_ormcache()
 
     @api.model_create_multi
     def create(self, vals_list):

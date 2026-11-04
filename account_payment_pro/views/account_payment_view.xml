@@ -5,7 +5,7 @@
         <field name="model">account.payment</field>
         <field name="inherit_id" ref="account.view_account_payment_search"/>
         <field name="arch" type="xml">
-            <filter name="state_sent" position="before">
+            <filter name="outstanding" position="before">
                 <filter string="Receipt Queued for Sending" name="background_send"
                         domain="[('background_send', '=', True)]"/>
                 <separator/>
@@ -18,6 +18,16 @@
         <field name="model">account.payment</field>
         <field name="inherit_id" ref="account.view_account_payment_tree"/>
         <field name="arch" type="xml">
+            <!-- amount_signed is the gross amount: show the net one, as the "Amount" column (liquidity lines) does -->
+            <xpath expr="(//field[@name='amount_signed'])[1]" position="attributes">
+                <attribute name="column_invisible">True</attribute>
+            </xpath>
+            <xpath expr="(//field[@name='amount_signed'])[2]" position="attributes">
+                <attribute name="column_invisible">True</attribute>
+            </xpath>
+            <xpath expr="(//field[@name='amount_signed'])[2]" position="after">
+                <field name="withholding_net_amount_signed" string="Amount in Currency" optional="show" groups="base.group_multi_currency"/>
+            </xpath>
             <field name="amount_company_currency_signed" position="after">
                 <field name="payment_total" sum="Total" optional="show"/>
                 <field name="destination_currency_id" column_invisible="True"/>
@@ -39,7 +49,7 @@
             <button name="action_open_exchange_diff_moves"
                     type="object"
                     class="oe_stat_button"
-                    icon="fa-exchange"
+                    icon="swap_horiz"
                     invisible="exchange_diff_move_count == 0"
                     groups="account.group_account_user">
                 <div class="o_form_field o_stat_info">
@@ -74,9 +84,14 @@
             <attribute name="invisible">True</attribute>
         </xpath>
 
+        <!-- amount is the gross amount: the user keeps typing and seeing the net one -->
+        <xpath expr="//div[@name='amount_div']//field[@name='amount']" position="attributes">
+            <attribute name="invisible">use_payment_pro and withholding_line_ids</attribute>
+        </xpath>
         <xpath expr="//div[@name='amount_div']//field[@name='amount']" position="after">
+            <field name="withholding_net_amount" invisible="not use_payment_pro or not withholding_line_ids" readonly="state != 'draft'"/>
             <button name="action_amount_from_checks" type="object"
-                class="btn btn-link btn-sm p-0" icon="fa-refresh" title="Recompute the amount from the checks"
+                class="btn btn-link btn-sm p-0" icon="refresh" title="Recompute the amount from the checks"
                 invisible="state != 'draft' or payment_method_code not in ['in_third_party_checks', 'out_third_party_checks', 'return_third_party_checks', 'new_third_party_checks', 'own_checks']"/>
         </xpath>
 
@@ -130,13 +145,16 @@
                 <label for="counterpart_currency_amount" string="Amount in" class="fw-bold text-900 me-1"/>
                 <field name="counterpart_currency_id" readonly="True" options="{'no_open': True}"/>
             </div>
-            <field nolabel="1" name="counterpart_currency_amount" readonly="state != 'draft'" invisible="currency_id == counterpart_currency_id"/>
+            <field nolabel="1" name="counterpart_currency_amount" readonly="state != 'draft'" invisible="currency_id == counterpart_currency_id or (use_payment_pro and withholding_line_ids)"/>
+            <field nolabel="1" name="counterpart_currency_net_amount" readonly="state != 'draft'" invisible="currency_id == counterpart_currency_id or not use_payment_pro or not withholding_line_ids"/>
             <!-- Write off -->
             <label for="write_off_amount" string="Write Off" invisible="not write_off_available or is_internal_transfer or not use_payment_pro"/>
             <div name="write_off_amount" class="o_row" invisible="not write_off_available or is_internal_transfer or not use_payment_pro">
                 <field name="write_off_amount" readonly="state != 'draft'"/>
                 <field name="write_off_type_id" placeholder="Write-off type" invisible="not write_off_amount" readonly="state != 'draft'" required="write_off_amount" options="{'no_create': True, 'no_open': True}"/>
             </div>
+            <!-- Withholdings: payment total = net + withholdings -->
+            <field name="withholding_amount" string="Withholdings" invisible="not use_payment_pro or is_internal_transfer or not display_withholding"/>
             <!-- Payment total -->
             <label for="payment_total" readonly="state != 'draft'" invisible="not use_payment_pro or is_internal_transfer"/>
             <div name="payment_total" invisible="not use_payment_pro or is_internal_transfer">
@@ -145,12 +163,12 @@
                     <button name="action_adjust_amount_for_difference" type="object"
                         class="btn btn-link btn-sm p-0 ms-1" title="Add the pending difference to the payment amount"
                         invisible="not payment_difference or payment_method_code in ['in_third_party_checks', 'out_third_party_checks', 'new_third_party_checks', 'own_checks']">
-                        <i class="fa fa-arrow-left"/> Amount
+                        <i class="oi" data-icon="arrow_back"/> Amount
                     </button>
                     <button name="action_adjust_writeoff_for_difference" type="object"
                         class="btn btn-link btn-sm p-0 ms-1" title="Send the pending difference to write-off"
                         invisible="not payment_difference or not write_off_available or payment_method_code in ['in_third_party_checks', 'out_third_party_checks', 'new_third_party_checks', 'own_checks']">
-                        <i class="fa fa-arrow-left"/> Write-off
+                        <i class="oi" data-icon="arrow_back"/> Write-off
                     </button>
                 )</span>
             </div>
@@ -176,6 +194,24 @@
                 <field name="currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
             </div>
         </div>
+    </field>
+</record>
+<!-- With payment pro the withholding mode is deduced from the lines, so the user never picks it -->
+<record id="withholding_view_account_payment_form" model="ir.ui.view">
+    <field name="name">account.payment.form.withholding</field>
+    <field name="model">account.payment</field>
+    <field name="inherit_id" ref="l10n_account_withholding_tax.view_account_payment_form"/>
+    <field name="priority">40</field>
+    <field name="arch" type="xml">
+        <field name="withhold" position="attributes">
+            <attribute name="invisible">use_payment_pro or not display_withholding</attribute>
+        </field>
+        <xpath expr="//field[@name='withholding_line_ids']/ancestor::page[1]" position="attributes">
+            <attribute name="invisible">withhold == 'payment' and not (use_payment_pro and display_withholding)</attribute>
+        </xpath>
+        <xpath expr="//field[@name='withholding_net_amount'][@readonly='1']" position="attributes">
+            <attribute name="invisible">use_payment_pro</attribute>
+        </xpath>
     </field>
 </record>
 <record id="latam_check_view_account_payment_form_inherited" model="ir.ui.view">
