@@ -7,20 +7,85 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 19.0+e\n"
+"Project-Id-Version: Odoo Server 20.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-15 15:38+0000\n"
-"PO-Revision-Date: 2026-04-23 18:41+0000\n"
+"POT-Creation-Date: 2026-11-04 17:09+0000\n"
+"PO-Revision-Date: 2026-11-04 17:09+0000\n"
 "Last-Translator: julia elizondo <jue@adhoc.inc>\n"
-"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
-"payment-19-0/account-payment-19-0-l10n_ar_payment_bundle/es/>\n"
+"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-payment-20-0/account-payment-20-0-l10n_ar_payment_bundle/es/>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == "
-"0) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == 0) ? 1 : 2);\n"
 "X-Generator: Weblate 5.10.4\n"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.module.module,description:base.module_l10n_ar_payment_bundle
+msgid ""
+"# Argentinean Payment Bundle\n"
+"\n"
+"Groups multiple payments into a single \"bundle receipt\": a main payment (`is_main_payment=True`, amount=0) that concentrates the debt, withholdings, and write-off, plus linked payments (`link_payment_ids`) that represent the actual payment methods. Supports **multi-currency bundles** — linked payments can use journals in any currency (ARS, USD, EUR, etc.), and all amounts are expressed in the main payment's debt currency (B) via each linked payment's own `counterpart_rate`.\n"
+"\n"
+"## Features\n"
+"\n"
+"- **Payment bundles:** group multiple payments under a single main payment for unified receipt management.\n"
+"- **Multi-currency linked payments:** a bundle can mix linked payments in ARS, USD, EUR, etc. Each linked payment computes its own `counterpart_rate` (A→B) according to its journal.\n"
+"- **Withholding integration:** integrates with `l10n_ar_tax` to handle tax withholdings within the bundle.\n"
+"- **Receipt books:** supports receipt book management via `account_payment_pro_receiptbook`.\n"
+"- **Custom payment method:** adds `Payment multiple` for both inbound and outbound payments.\n"
+"- **Main payment state:** the main payment has no journal entry, so it keeps the native state (Paid) and never turns Reconciled. The actual state of each payment method is shown on its linked payment.\n"
+"\n"
+"## Known issues / Roadmap\n"
+"\n"
+"- Multiple receipt report not implemented for non-Argentine companies.\n"
+"- Payment register wizard should not allow selecting the payment bundle journal.\n"
+"\n"
+"## Dependencies\n"
+"\n"
+"| Module | Purpose |\n"
+"|--------|---------|\n"
+"| `account_payment_pro` | Tri-currency payment model |\n"
+"| `l10n_ar_tax` | Argentine withholdings |\n"
+"| `account_payment_pro_receiptbook` | Receipt book management |\n"
+"\n"
+"## Configuration\n"
+"\n"
+"1. **Bundle journals:** journals with the `Payment multiple` method are auto-created for Argentine companies (post-init hook). Verify they are configured correctly.\n"
+"2. **Receipt books:** configure as needed for payment receipt management.\n"
+"3. **Withholding taxes:** set up in `l10n_ar_tax` to integrate with bundle payments.\n"
+"\n"
+"## Usage\n"
+"\n"
+"### Creating a bundle\n"
+"\n"
+"1. Go to Payments, create a new payment selecting the `Payment multiple` method.\n"
+"2. Add linked payments — each can use a different journal/currency.\n"
+"3. The main payment concentrates debt selection, withholdings, and write-off.\n"
+"4. Validation is done through the main payment.\n"
+"\n"
+"### Multi-currency example\n"
+"\n"
+"Invoice: 1.000 USD. Bundle with:\n"
+"- Linked 1: 500 USD (cash, `counterpart_rate`=1.0) → 500 USD in B.\n"
+"- Linked 2: 600.000 ARS (transfer, `counterpart_rate`≈0.000833) → 500 USD in B.\n"
+"- IIBB withholding: 30 USD (≈36.000 ARS stored).\n"
+"\n"
+"The system adjusts linked amounts automatically when withholdings change.\n"
+"\n"
+"## Bug Tracker\n"
+"\n"
+"Bugs are tracked on [GitHub Issues](https://github.com/ingadhoc/account-payment/issues).\n"
+"\n"
+"## Credits\n"
+"\n"
+"**Author:** ADHOC SA · [www.adhoc.com.ar](https://www.adhoc.com.ar)\n"
+"**License:** AGPL-3.0 or later\n"
+"\n"
+"---\n"
+"\n"
+"See [DESIGN.md](DESIGN.md) for internal architecture and design decisions.\n"
+msgstr ""
 
 #. module: l10n_ar_payment_bundle
 #: model:ir.model,name:l10n_ar_payment_bundle.model_account_chart_template
@@ -53,6 +118,11 @@ msgid "Amount on journal currency"
 msgstr "Importe en moneda del diario"
 
 #. module: l10n_ar_payment_bundle
+#: model:ir.module.module,shortdesc:base.module_l10n_ar_payment_bundle
+msgid "Argentinean Payment bundle"
+msgstr "Pago Múltiple argentino"
+
+#. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_payment_rename_wizard_form
 msgid "Cancel"
 msgstr "Cancelar"
@@ -60,12 +130,12 @@ msgstr "Cancelar"
 #. module: l10n_ar_payment_bundle
 #: model:ir.model,name:l10n_ar_payment_bundle.model_l10n_latam_payment_mass_transfer
 msgid "Checks Mass Transfers"
-msgstr ""
+msgstr "Transferencia Masiva de Cheques"
 
 #. module: l10n_ar_payment_bundle
 #: model:ir.model,name:l10n_ar_payment_bundle.model_res_company
-msgid "Companies"
-msgstr "Empresas"
+msgid "Company"
+msgstr "Empresa"
 
 #. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__counterpart_currency_id
@@ -90,17 +160,12 @@ msgstr "Nombre Actual"
 #. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__partner_id
 msgid "Customer/Vendor"
-msgstr "Cliente/Proveedor"
+msgstr "Cliente/proveedor"
 
 #. module: l10n_ar_payment_bundle
-#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_l10n_latam_payment_mass_transfer__destination_journal_id
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_l10n_latam_payment_mass_transfer__to_journal_id
 msgid "Destination Journal"
-msgstr ""
-
-#. module: l10n_ar_payment_bundle
-#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_l10n_latam_payment_mass_transfer__destination_journal_domain
-msgid "Destination Journal Domain"
-msgstr ""
+msgstr "Diario de Destino"
 
 #. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_chart_template__display_name
@@ -114,7 +179,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__display_name
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_res_company__display_name
 msgid "Display Name"
-msgstr "Nombre para mostrar"
+msgstr "Mostrar nombre"
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_payment_rename_wizard_form
@@ -133,14 +198,14 @@ msgstr "Ingresar nuevo nombre del pago..."
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__id
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_res_company__id
 msgid "ID"
-msgstr "ID"
+msgstr "ID (identificación)"
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_from_bundle_form
 msgid ""
 "IMPORTANT: Linked draft validation must be done from main receipt. Draft "
-"validation of a linked payment is only used for corrections and advanced use "
-"cases. Are you sure you want to continue?"
+"validation of a linked payment is only used for corrections and advanced use"
+" cases. Are you sure you want to continue?"
 msgstr ""
 "IMPORTANTE: La validación del borrador vinculado debe realizarse desde el "
 "recibo principal. La validación del borrador de un pago vinculado solo se "
@@ -151,8 +216,8 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
 msgid ""
 "IMPORTANT: Linked payment validation must be done from main receipt. Manual "
-"validation of a linked payment is only used for corrections and advanced use "
-"cases. Are you sure you want to continue?"
+"validation of a linked payment is only used for corrections and advanced use"
+" cases. Are you sure you want to continue?"
 msgstr ""
 "IMPORTANTE: La validación de un pago vinculado debe realizarse desde el "
 "recibo principal. La validación manual de un pago vinculado solo se utiliza "
@@ -171,7 +236,7 @@ msgstr "Diario"
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_move_bundle_list
 msgid "Journal Entries"
-msgstr ""
+msgstr "Asientos contables"
 
 #. module: l10n_ar_payment_bundle
 #. odoo-python
@@ -182,7 +247,7 @@ msgstr "Asiento Contable"
 #. module: l10n_ar_payment_bundle
 #: model:ir.model,name:l10n_ar_payment_bundle.model_account_move_line
 msgid "Journal Item"
-msgstr ""
+msgstr "Apunte contable"
 
 #. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__write_uid
@@ -233,7 +298,7 @@ msgstr "Nuevo Nombre"
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_move_bundle_list
 msgid "Number"
-msgstr ""
+msgstr "Número"
 
 #. module: l10n_ar_payment_bundle
 #. odoo-python
@@ -253,14 +318,15 @@ msgid "Pay"
 msgstr "Pagar"
 
 #. module: l10n_ar_payment_bundle
+#: model:ir.model,name:l10n_ar_payment_bundle.model_account_payment
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__payment_id
 msgid "Payment"
 msgstr "Pago"
 
 #. module: l10n_ar_payment_bundle
 #: model:ir.model,name:l10n_ar_payment_bundle.model_account_payment_method
-msgid "Payment Methods"
-msgstr "Métodos de Pago"
+msgid "Payment Method"
+msgstr "Método de pago"
 
 #. module: l10n_ar_payment_bundle
 #: model:ir.actions.report,name:l10n_ar_payment_bundle.action_report_receipt_bundle
@@ -280,7 +346,7 @@ msgstr "Total Pago"
 #. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__payment_total_signed
 msgid "Payment Total (signed)"
-msgstr ""
+msgstr "Total Pago (con signo)"
 
 #. module: l10n_ar_payment_bundle
 #. odoo-python
@@ -305,7 +371,6 @@ msgid "Payment name changed from '%s' to '%s'"
 msgstr "El nombre del pago cambió de '%s' a '%s'"
 
 #. module: l10n_ar_payment_bundle
-#: model:ir.model,name:l10n_ar_payment_bundle.model_account_payment
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
 msgid "Payments"
@@ -325,7 +390,7 @@ msgstr "Por favor ingrese un nuevo nombre para el pago."
 #. module: l10n_ar_payment_bundle
 #: model:ir.model,name:l10n_ar_payment_bundle.model_account_resequence_wizard
 msgid "Remake the sequence of Journal Entries."
-msgstr "Rehaga la secuencia de los asientos contables."
+msgstr "Haga de nuevo la secuencia de asientos contables."
 
 #. module: l10n_ar_payment_bundle
 #: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
@@ -407,6 +472,11 @@ msgid "This lines are the ones the user has selected to be paid."
 msgstr "Estas líneas son las que el usuario ha seleccionado para pagar"
 
 #. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_l10n_latam_payment_mass_transfer__to_journal_domain
+msgid "To Journal Domain"
+msgstr "Dominio del diario destino"
+
+#. module: l10n_ar_payment_bundle
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__to_pay_move_line_ids
 msgid "To Pay Lines"
 msgstr "Líneas a Pagar"
@@ -442,8 +512,8 @@ msgstr "Advertencias"
 #. odoo-python
 #: code:addons/l10n_ar_payment_bundle/models/account_journal.py:0
 msgid ""
-"You cannot assign a currency to journals that use the payment bundle payment "
-"method."
+"You cannot assign a currency to journals that use the payment bundle payment"
+" method."
 msgstr ""
 "No puede asignar una Moneda a los diarios que utilizan el método de pago de "
 "Múltiples Pagos."
