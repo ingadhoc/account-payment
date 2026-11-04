@@ -16,7 +16,7 @@ Latam Check UX
 
 This module extends the standard functionality of Odoo's l10n_latam_check module with enhanced user experience features for Latin American check management. It provides comprehensive improvements for check operations, reporting, and workflow optimization.
 
-**Version:** 19.0.1.0.0
+**Version:** 20.0.1.0.0
 
 Features
 ========
@@ -35,7 +35,7 @@ Mass Transfer Operations
 
 * **Enhanced Mass Transfer Wizard**: Improved wizard for transferring multiple checks between journals with additional validation.
 * **Split Payment Option**: Ability to create individual payments for each check instead of grouping them into a single payment.
-* **Inter-company Transfer Validation**: Proper validation for transfers between different companies and branches.
+* **Inter-company Transfer Validation**: Checks can be transferred between branches only when both companies share the VAT number and the Inter-Banks Transfer Account.
 * **Automatic Pairing**: Automatic creation and pairing of inbound/outbound payments for internal transfers.
 
 User Interface Enhancements
@@ -72,13 +72,13 @@ New Wizards
 Security & Permissions
 ----------------------
 
-* Access rights defined in ``security/ir.model.access.csv`` for proper wizard access control.
+* Access rights defined in ``security/ir.access.csv`` for proper wizard access control.
 
 Validation & Constraints
 -------------------------
 
 * Date validation ensuring debit dates are not before issue dates.
-* Company validation for mass transfer operations.
+* Company validation for mass transfer operations: transfers between companies with a different VAT number are blocked.
 * Outstanding account validation for debit operations.
 * Check operation sequence validation.
 * Debit checks from payments: Adds a button in the check record to perform the debit action, streamlining check management.
@@ -155,6 +155,7 @@ Mass Check Transfers
 The system will:
 
 * Validate that all checks belong to the same company
+* Block the transfer when the source and destination companies have a different VAT number or Inter-Banks Transfer Account
 * Create appropriate internal transfer payments
 * Maintain proper operation sequencing and dates
 * Link outbound and inbound payments automatically
@@ -165,7 +166,7 @@ Enhanced Reporting
 Payment receipts and transfer reports will automatically include:
 
 * Check numbers
-* Bank information (for third-party checks)
+* Bank of the issuer's bank account (for third-party checks)
 * Issuer VAT information (for third-party checks)
 * Payment dates
 * Amounts with proper currency formatting
@@ -204,6 +205,10 @@ Common Issues
 
 * Solution: Switch to the appropriate company context before performing the transfer
 
+**"Checks can only be transferred between companies with the same VAT"**
+
+* Solution: Transfer checks only between branches of the same company (same VAT number)
+
 **"All selected checks must belong to the same company"**
 
 * Solution: Select checks from the same company for mass transfer operations
@@ -214,13 +219,12 @@ Technical Notes
 Migration Notes
 ---------------
 
-* Migration scripts are available in ``migrations/18.0.1.6.0/`` for version upgrades
-* The module maintains compatibility with Odoo 19.0 and includes auto-install capability
+* The module maintains compatibility with Odoo 20.0 and includes auto-install capability
 
 Data Files
 ----------
 
-* ``security/ir.model.access.csv``: Access control definitions
+* ``security/ir.access.csv``: Access control definitions
 * ``views/``: All view modifications and enhancements
 * ``wizards/``: Wizard definitions and forms
 * ``reports/``: Enhanced report templates

@@ -40,4 +40,10 @@
             </t>
         </xpath>
     </template>
+
+    <template id="report_payment_receipt_document_check_bank" inherit_id="l10n_latam_check.report_payment_receipt_document">
+        <span t-field="check.bank_account_id.display_name" position="attributes">
+            <attribute name="t-field">check.bank_id.display_name</attribute>
+        </span>
+    </template>
 </data>

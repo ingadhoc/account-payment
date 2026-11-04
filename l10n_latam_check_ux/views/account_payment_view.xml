@@ -22,6 +22,34 @@
         <xpath expr="//field[@name='l10n_latam_move_check_ids']/list[@name='existing_checks']" position="attributes">
             <attribute name="create">false</attribute>
         </xpath>
+        <xpath expr="//list[@name='new_checks']/field[@name='bank_account_id']" position="attributes">
+            <attribute name="optional">hide</attribute>
+            <attribute name="domain">[('bank_id', '=', bank_id)] if bank_id else []</attribute>
+        </xpath>
+        <xpath expr="//list[@name='new_checks']/field[@name='bank_account_id']" position="before">
+            <field name="bank_id" column_invisible="parent.payment_method_code == 'own_checks'"/>
+        </xpath>
+        <xpath expr="//list[@name='existing_checks']/field[@name='bank_account_id']" position="before">
+            <field name="bank_id" optional="hide"/>
+        </xpath>
+        </field>
+    </record>
+
+    <record id="view_account_payment_register_form" model="ir.ui.view">
+        <field name="name">account.payment.register.form.inherit</field>
+        <field name="model">account.payment.register</field>
+        <field name="inherit_id" ref="l10n_latam_check.view_account_payment_register_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='l10n_latam_new_check_ids']/list/field[@name='bank_account_id']" position="attributes">
+                <attribute name="optional">hide</attribute>
+                <attribute name="domain">[('bank_id', '=', bank_id)] if bank_id else []</attribute>
+            </xpath>
+            <xpath expr="//field[@name='l10n_latam_new_check_ids']/list/field[@name='bank_account_id']" position="before">
+                <field name="bank_id" column_invisible="parent.payment_method_code == 'own_checks'"/>
+            </xpath>
+            <xpath expr="//list[@name='existing_checks']/field[@name='bank_account_id']" position="before">
+                <field name="bank_id" optional="hide"/>
+            </xpath>
         </field>
     </record>
 </odoo>

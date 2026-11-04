@@ -100,8 +100,8 @@ class TestChecksToDateReport(LatamCheckCommon):
             .with_context(active_model="l10n_latam.check", active_ids=checks.ids)
             .create(
                 {
-                    "journal_id": self.third_party_journal.id,
-                    "destination_journal_id": self.bank_journal.id,
+                    "from_journal_id": self.third_party_journal.id,
+                    "to_journal_id": self.bank_journal.id,
                     "payment_date": self.today,
                 }
             )
