@@ -9,6 +9,7 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
         "account.cashbox.session",
         string="POP Session",
         readonly=False,
+        store=True,
         compute="_compute_cashbox_session_id",
     )
     requiere_account_cashbox_session = fields.Boolean(
@@ -31,6 +32,9 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
                 .search([("state", "=", "opened"), "|", ("user_ids", "=", self.env.uid), ("user_ids", "=", False)])
                 .filtered(lambda x: rec.destination_journal_id in x.cashbox_id.journal_ids)
             )
+            if rec.cashbox_session_id in session_ids:
+                # keep the choice of the user while it is still a valid session
+                continue
             if len(session_ids) == 1:
                 rec.cashbox_session_id = session_ids.id
             else:
@@ -47,16 +51,17 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
         payments.cashbox_session_id = self.cashbox_session_id.id
         return payments
 
-    @api.onchange("destination_journal_id")
+    @api.depends("destination_journal_id", "company_id")
+    @api.depends_context("uid")
     def _compute_cashbox_session_ids_domain(self):
-        self.cashbox_session_id = False
-        cashbox_ids = self.env["account.cashbox"].search([("journal_ids", "in", self.destination_journal_id.ids)])
-        session_ids = cashbox_ids.mapped("current_concurrent_session_ids").ids
-        self.cashbox_session_ids_domain = [
-            ("state", "=", "opened"),
-            ("company_id", "=", self.company_id.id),
-            ("id", "in", session_ids),
-            "|",
-            ("user_ids", "=", self.env.uid),
-            ("user_ids", "=", False),
-        ]
+        for rec in self:
+            cashbox_ids = self.env["account.cashbox"].search([("journal_ids", "in", rec.destination_journal_id.ids)])
+            session_ids = cashbox_ids.mapped("current_concurrent_session_ids").ids
+            rec.cashbox_session_ids_domain = [
+                ("state", "=", "opened"),
+                ("company_id", "=", rec.company_id.id),
+                ("id", "in", session_ids),
+                "|",
+                ("user_ids", "=", self.env.uid),
+                ("user_ids", "=", False),
+            ]
