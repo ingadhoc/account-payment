@@ -153,6 +153,11 @@ class AccountPayment(models.Model):
             rec.to_pay_move_line_ids = rec.main_payment_id.to_pay_move_line_ids
         super(AccountPayment, self - with_main_payments)._compute_to_pay_move_lines()
 
+    @api.onchange("counterpart_currency_id")
+    def _onchange_counterpart_currency_id_filter_lines(self):
+        # Linked payments take debt and currency from the main payment: re-adding all debt would ignore its selection.
+        super(AccountPayment, self - self.filtered("main_payment_id"))._onchange_counterpart_currency_id_filter_lines()
+
     @api.depends("main_payment_id")
     def _compute_l10n_ar_withholding_line_ids(self):
         with_main_payments = self.filtered("main_payment_id")
