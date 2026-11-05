@@ -3,7 +3,7 @@
 
 from odoo import Command
 from odoo.addons.account_ux.tests.invariants import AccountInvariantsMixin
-from odoo.tests import tagged
+from odoo.tests import Form, tagged
 from odoo.tests.common import TransactionCase
 
 
@@ -210,3 +210,23 @@ class TestBundleOverUnderPayment(AccountInvariantsMixin, TransactionCase):
         with self.subTest("una factura vieja sin relación con este pago no se toca"):
             self.assertEqual(old_bill.payment_state, "not_paid")
             self.assertEqual(old_bill.amount_residual, 15000.0)
+
+    def test_linked_payments_from_the_form_keep_the_debt_removed_from_the_main(self):
+        """Removing all debt in the form and then adding the linked payments leaves the bundle on account."""
+        bill = self._create_bill(15000.0, "1-1104")
+        form = Form(
+            self.env["account.payment"].with_context(default_payment_type="outbound", default_partner_type="supplier")
+        )
+        form.partner_id = self.vendor
+        form.journal_id = self.bundle_journal
+        self.assertIn(bill.line_ids.filtered("account_id.reconcile").id, form.to_pay_move_line_ids.ids)
+        form.to_pay_move_line_ids.clear()
+        for journal, amount in ((self.cash_journal, 6000.0), (self.bank_journal, 4000.0)):
+            with form.link_payment_ids.new() as linked:
+                linked.journal_id = journal
+                linked.amount = amount
+        main = form.save()
+
+        self.assertFalse(main.link_payment_ids.to_pay_move_line_ids)
+        main.action_post()
+        self.assertEqual(bill.amount_residual, 15000.0)
