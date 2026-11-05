@@ -1,6 +1,6 @@
 {
     "name": "Account Payment Personal Loan",
-    "version": "19.0.1.1.0",
+    "version": "20.0.1.0.0",
     "category": "Accounting",
     "sequence": 14,
     "summary": "",
@@ -13,7 +13,7 @@
         "demo/account_card.xml",
     ],
     "data": [
-        "security/ir.model.access.csv",
+        "security/ir.access.csv",
         "security/res.groups.xml",
         "views/report_promissory_note.xml",
         "views/account_card.xml",
@@ -25,7 +25,7 @@
         "wizards/account_loan_debt_report.xml",
         "wizards/account_loan_extra_charges.xml",
     ],
-    "installable": False,
+    "installable": True,
     "auto_install": False,
     "application": False,
     "post_init_hook": "post_init_hook",
