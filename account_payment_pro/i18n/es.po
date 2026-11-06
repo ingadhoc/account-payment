@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-01 13:36+0000\n"
-"PO-Revision-Date: 2026-10-01 13:36+0000\n"
+"POT-Creation-Date: 2026-11-02 13:43+0000\n"
+"PO-Revision-Date: 2026-11-02 13:43+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/"
 "account-payment-19-0/account-payment-19-0-account_payment_pro/es/>\n"
@@ -22,6 +22,65 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == 0)"
 " ? 1 : 2);\n"
 "X-Generator: Weblate 5.10.4\n"
+
+#. module: account_payment_pro
+#: model:ir.module.module,description:base.module_account_payment_pro
+msgid ""
+"# Account Payment Pro\n"
+"\n"
+"Extends Odoo's core payment model to support multi-currency operations, debt selection, withholdings, and write-offs. Introduces a **tri-currency model** (A / B / C) that cleanly separates the journal currency, the debt/cancellation currency, and the company accounting currency.\n"
+"\n"
+"This module is the foundation for managing Argentine withholdings — install `l10n_ar_tax` (and `l10n_ar_withholding`) to activate that feature.\n"
+"\n"
+"## Features\n"
+"\n"
+"- **Tri-currency payments:** work with up to three currencies per payment — journal (A), counterpart/debt (B), and company (C).\n"
+"- **Select debts to pay:** choose specific invoices or credit notes during payment creation.\n"
+"- **Withholding support:** dedicated tab for tax withholdings when the localization module is installed.\n"
+"- **Write-offs:** register write-offs directly within the payment form.\n"
+"- **Editable exchange rates:** `accounting_rate` (A↔C) and `counterpart_rate` (A↔B) are stored and user-editable; the UI shows rates in the most readable direction automatically.\n"
+"- **Multi-currency internal transfers:** supports transfers between journals in different currencies (ARS→USD, USD→EUR, etc.) with proper bridge-account reconciliation.\n"
+"- **Pay Now on invoices:** instant payment creation from the invoice form.\n"
+"- **Debt of the whole legal entity:** the debt offered to be paid is the one of every company that is the same legal entity as the payment's, limited to the companies the user has selected — so a branch sees the debt of its parent and the other way round, instead of only its own. Companies of another legal entity are never listed, and the payment stays in the company where it was made.\n"
+"\n"
+"## Dependencies\n"
+"\n"
+"| Module | Purpose |\n"
+"|--------|---------|\n"
+"| `account` | Odoo core accounting |\n"
+"| `l10n_latam_invoice_document` | LATAM invoice documents |\n"
+"| `account_internal_transfer` | Internal transfer support |\n"
+"| `l10n_latam_check` | Check management |\n"
+"| `account_ux` | Provides `reconcile_on_company_currency` on `res.company` |\n"
+"\n"
+"For Argentine withholdings: install `l10n_ar_withholding` + `l10n_ar_tax`.\n"
+"\n"
+"## Configuration\n"
+"\n"
+"1. **Write-off types:** Accounting → Configuration → Write-off Types.\n"
+"2. **Payment settings:** Accounting → Configuration → Settings → Payment.\n"
+"3. **Reconcile on company currency:** enable per-company in Accounting → Settings if you need AP/AR accounts without a specific currency to always reconcile in the company currency.\n"
+"\n"
+"## Usage\n"
+"\n"
+"1. Go to Accounting → Payments to create and manage payments.\n"
+"2. Use \"Pay Now\" on invoices for quick payment processing.\n"
+"3. Select specific debts, adjust exchange rates, register withholdings and write-offs in the payment form.\n"
+"4. Internal transfers between different-currency journals are created normally; the system computes paired amounts and rates automatically.\n"
+"\n"
+"## Bug Tracker\n"
+"\n"
+"Bugs are tracked on [GitHub Issues](https://github.com/ingadhoc/account-payment/issues).\n"
+"\n"
+"## Credits\n"
+"\n"
+"**Author:** ADHOC SA · [www.adhoc.com.ar](https://www.adhoc.com.ar)\n"
+"**License:** AGPL-3.0 or later\n"
+"\n"
+"---\n"
+"\n"
+"See [DESIGN.md](DESIGN.md) for internal architecture and design decisions.\n"
+msgstr ""
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
@@ -46,39 +105,31 @@ msgstr "+ Nota de Débito"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
 msgid "- Exp."
-msgstr "- Exp."
+msgstr ""
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
 msgid "- Santander Rio"
-msgstr "- Santander Rio"
+msgstr ""
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
-msgid "<i class=\"fa fa-arrow-left\"/> Amount"
-msgstr "<i class=\"fa fa-arrow-left\"/> Importe"
+msgid "<i class=\"oi\" data-icon=\"arrow_back\"/> Amount"
+msgstr "<i class=\"oi\" data-icon=\"arrow_back\"/> Importe"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
-msgid "<i class=\"fa fa-arrow-left\"/> Write-off"
-msgstr "<i class=\"fa fa-arrow-left\"/> Ajuste"
+msgid "<i class=\"oi\" data-icon=\"arrow_back\"/> Write-off"
+msgstr "<i class=\"oi\" data-icon=\"arrow_back\"/> Ajuste"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid ""
 "<span>\n"
-"                        El contacto tiene deuda en múltiples monedas. Se "
-"priorizó la moneda de la compañía;\n"
-"                        podés cambiar la moneda de cancelación para filtrar "
-"las líneas a pagar.\n"
+"                        El contacto tiene deuda en múltiples monedas. Se priorizó la moneda de la compañía;\n"
+"                        podés cambiar la moneda de cancelación para filtrar las líneas a pagar.\n"
 "                    </span>"
 msgstr ""
-"<span>\n"
-"                        El contacto tiene deuda en múltiples monedas. Se "
-"priorizó la moneda de la compañía;\n"
-"                        podés cambiar la moneda de cancelación para filtrar "
-"las líneas a pagar.\n"
-"                    </span>"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
@@ -88,12 +139,12 @@ msgstr "<span> Dif. Cambio</span>"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "<span>1</span>"
-msgstr "<span>1</span>"
+msgstr ""
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "<span>=</span>"
-msgstr "<span>=</span>"
+msgstr ""
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
@@ -139,6 +190,11 @@ msgstr "<strong><span>Total Pagado</span></strong>"
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__account_id
 msgid "Account"
 msgstr "Cuenta"
+
+#. module: account_payment_pro
+#: model:ir.module.module,shortdesc:base.module_account_payment_pro
+msgid "Account Payment Super Power"
+msgstr ""
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__date
@@ -309,17 +365,12 @@ msgstr "Cancelar"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid "Cerrar"
-msgstr "Cerrar"
+msgstr ""
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
 msgid "Check nro 123456"
 msgstr "Cheque nro 123456"
-
-#. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__commercial_partner_id
-msgid "Commercial Entity"
-msgstr "Entidad comercial"
 
 #. module: account_payment_pro
 #: model:ir.model,name:account_payment_pro.model_res_company
@@ -434,10 +485,11 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_base_language_install__display_name
+#: model:ir.model.fields,field_description:account_payment_pro.field_mail_compose_message__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_company__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__display_name
 msgid "Display Name"
-msgstr "Nombre en pantalla"
+msgstr "Mostrar nombre"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__distribution_analytic_account_ids
@@ -461,8 +513,6 @@ msgid ""
 "El usuario descartó el aviso de deuda multi-moneda con la cruz. Se resetea "
 "solo si cambia el contacto o la compañía."
 msgstr ""
-"El usuario descartó el aviso de deuda multi-moneda con la cruz. Se resetea "
-"solo si cambia el contacto o la compañía."
 
 #. module: account_payment_pro
 #: model:ir.model,name:account_payment_pro.model_mail_compose_message
@@ -522,10 +572,11 @@ msgstr "Contiene cuenta de cobro/pago Pendiente"
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_base_language_install__id
+#: model:ir.model.fields,field_description:account_payment_pro.field_mail_compose_message__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_company__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_res_config_settings__id
 msgid "ID"
-msgstr "ID"
+msgstr ""
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment_invoice_wizard__use_documents
@@ -666,7 +717,7 @@ msgstr "Nombre"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid "No volver a mostrar este aviso para este pago"
-msgstr "No volver a mostrar este aviso para este pago"
+msgstr ""
 
 #. module: account_payment_pro
 #. odoo-python
@@ -743,17 +794,12 @@ msgstr "Moneda de Conciliación del Pago"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.res_config_settings_view_form
 msgid ""
-"Payment Pro incorpora funcionalidades que permiten llevar un flujo de "
-"cobros                         y pagos con retenciones, especificamente "
-"utilizado en Argentina. Al activarlo a                         ​su ​vez, se "
-"pierden algunas funcionalidades nativas como descuento por pronto "
-"pago                         y sugerencias de diferencia de cambio"
+"Payment Pro incorpora funcionalidades que permiten llevar un flujo de cobros"
+"                         y pagos con retenciones, especificamente utilizado "
+"en Argentina. Al activarlo a                         ​su ​vez, se pierden "
+"algunas funcionalidades nativas como descuento por pronto pago"
+"                         y sugerencias de diferencia de cambio"
 msgstr ""
-"Payment Pro incorpora funcionalidades que permiten llevar un flujo de "
-"cobros                         y pagos con retenciones, especificamente "
-"utilizado en Argentina. Al activarlo a                         ​su ​vez, se "
-"pierden algunas funcionalidades nativas como descuento por pronto "
-"pago                         y sugerencias de diferencia de cambio"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__payment_total
@@ -783,11 +829,6 @@ msgstr ""
 "El pago se emparejará automáticamente con las líneas más antiguas de esta "
 "lista (por fecha de vencimiento). Puedes eliminar cualquier línea que no "
 "desees que se empareje."
-
-#. module: account_payment_pro
-#: model:ir.model,name:account_payment_pro.model_account_payment
-msgid "Payments"
-msgstr "Pagos"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__payment_difference
@@ -837,6 +878,16 @@ msgstr "Razón"
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_search
 msgid "Receipt Queued for Sending"
 msgstr "Recibo en cola de envío"
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
+msgid "Recompute the amount from the checks"
+msgstr "Recalcular el importe desde los cheques"
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__reconcile_on_company_currency
+msgid "Reconcile On Company Currency"
+msgstr "Conciliar en moneda de la compañía"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__invoice_date
@@ -895,7 +946,7 @@ msgstr "Mostrar la referencia completa en los comprobantes imputados"
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__skip_to_pay_autofill
 msgid "Skip To Pay Autofill"
-msgstr ""
+msgstr "Omitir autocompletado de deuda"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.report_payment_receipt_document_pro
@@ -942,6 +993,25 @@ msgid "This lines are the ones the user has selected to be paid."
 msgstr "Estas líneas son las que el usuario ha seleccionado para pagar"
 
 #. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__reconcile_on_company_currency
+msgid ""
+"This option enables open documents in the payment report when reconciling "
+"debt with secondary currency, if the account doesn't have a currency "
+"configured, then reconcile on company currency. This will avoid all the "
+"automatic exchange rates journal entries by forcing same rate of the "
+"original document being reconcile. IMPORTANT: If you change this setting if "
+"you reconcile any previous item and re-reconcile it, it will be reconciled "
+"with the new mechanism"
+msgstr ""
+"Esta opción permite abrir documentos en el informe de pagos al conciliar "
+"deudas con moneda secundaria. Si la cuenta no tiene una moneda configurada, "
+"entonces se concilia en la moneda de la empresa. Esto evitará todos los "
+"asientos contables automáticos de tipos de cambio al forzar el mismo tipo de "
+"cambio del documento original que se está conciliando. IMPORTANTE: Si "
+"se cambia esta configuración, cualquier ítem anterior que se concilie y se "
+"vuelva a conciliar se hará con el nuevo mecanismo"
+
+#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__to_pay_amount
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid "To Pay Amount"
@@ -967,7 +1037,7 @@ msgstr "Importe a recibir"
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_tree
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_with_matched_tree
 msgid "Total"
-msgstr "Total"
+msgstr ""
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__amount_total
@@ -1001,8 +1071,6 @@ msgid ""
 "True si el rate teórico A→B1 < 1.0 (B1 es la moneda fuerte). Determina la "
 "dirección de visualización de user_counterpart_rate."
 msgstr ""
-"True si el rate teórico A→B1 < 1.0 (B1 es la moneda fuerte). Determina la "
-"dirección de visualización de user_counterpart_rate."
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__accounting_rate_inverted
@@ -1010,8 +1078,6 @@ msgid ""
 "True si el rate teórico A→C < 1.0 (C es la moneda fuerte). Determina la "
 "dirección de visualización de user_accounting_rate."
 msgstr ""
-"True si el rate teórico A→C < 1.0 (C es la moneda fuerte). Determina la "
-"dirección de visualización de user_accounting_rate."
 
 #. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__counterpart_currency_editable

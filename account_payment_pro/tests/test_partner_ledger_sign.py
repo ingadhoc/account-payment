@@ -29,6 +29,8 @@ class TestPartnerLedgerSign(AccountInvariantsMixin, TransactionCase):
             [("company_id", "=", cls.company.id), ("type", "=", "bank")], limit=1
         )
         cls.product = cls.env.ref("product.product_product_16")
+        # Demo taxes on this product change between versions: the scenarios assume none.
+        cls.product.write({"taxes_id": False, "supplier_taxes_id": False})
         cls.customer = cls.env["res.partner"].create({"name": "Test Ledger Sign Customer"})
         cls.vendor = cls.env["res.partner"].create({"name": "Test Ledger Sign Vendor"})
 
