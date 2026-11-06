@@ -1,5 +1,7 @@
 # © ADHOC SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+from unittest.mock import patch
+
 from odoo import Command, fields
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 from odoo.addons.l10n_ar.tests.common import TestArCommon
@@ -119,6 +121,25 @@ class TestWithholdingGrossAmount(AccountTestInvoicingCommon):
         self.assertEqual(tax_line.amount_currency, -20.0)
         self.assertEqual(tax_line.balance, -40.0)
         self.assertEqual(sum(liquidity.mapped("balance")), -1960.0)
+        self.assertEqual(sum(counterpart.mapped("balance")), 2000.0)
+
+    def test_the_entry_books_the_company_currency_amounts_of_the_line(self):
+        """A localization that computes the withholding in company currency gives the exact amounts: the entry books
+        them instead of converting back the rounded line, and the bank line absorbs the difference."""
+        foreign = self.setup_other_currency("EUR", rates=[("2000-01-01", 1.0)])
+        payment = self._payment(currency_id=foreign.id)
+        payment.accounting_rate = 0.5
+        exact = {"base_amount": 2000.0, "amount": 39.99}
+        line_model = type(payment.withholding_line_ids)
+        with patch.object(line_model, "_get_company_currency_amounts", lambda line: exact):
+            payment.action_post()
+
+        liquidity, counterpart, _writeoff = payment._seek_for_lines()
+        tax_line = payment.move_id.line_ids.filtered(lambda line: line.tax_line_id == self.withholding_tax)
+        self.assertEqual(tax_line.amount_currency, -20.0)
+        self.assertEqual(tax_line.balance, -39.99)
+        self.assertEqual(tax_line.tax_base_amount, -2000.0)
+        self.assertEqual(sum(liquidity.mapped("balance")), -1960.01)
         self.assertEqual(sum(counterpart.mapped("balance")), 2000.0)
 
 

@@ -20,15 +20,13 @@ class AccountMove(models.Model):
         copy=False,
     )
 
-    @api.depends("origin_payment_id.accounting_rate")
-    def _compute_expected_currency_rate(self):
-        """The entry of a payment pro payment keeps the rate of the payment: refreshing the rate on post
-        must not move its withholding tax lines to the rate of the day."""
-        super()._compute_expected_currency_rate()
-        for move in self:
-            payment = move.origin_payment_id
-            if payment.use_payment_pro and payment.accounting_rate and move.currency_id != move.company_currency_id:
-                move.expected_currency_rate = payment.accounting_rate
+    def refresh_invoice_currency_rate(self):
+        """The entry of a payment pro payment is built at the rate of the payment, so there is nothing to refresh.
+        Refreshing it would convert its withholding tax lines again from the payment currency and lose the company
+        currency amounts they were booked with."""
+        return super(
+            AccountMove, self.filtered(lambda move: not move.origin_payment_id.use_payment_pro)
+        ).refresh_invoice_currency_rate()
 
     @api.depends("line_ids.account_id.account_type", "line_ids.reconciled")
     def _compute_open_move_lines(self):
