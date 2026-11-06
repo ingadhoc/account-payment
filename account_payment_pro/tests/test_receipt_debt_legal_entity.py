@@ -16,8 +16,8 @@ class TestReceiptDebtLegalEntity(AccountTestInvoicingCommon):
     Según "Block Inter-Company Reconciliation" de la raíz, el recibo lista la deuda de todo
     el árbol (sin bloqueo), la de la entidad fiscal (bloqueo entre entidades distintas) o
     solo la de la compañía del pago (bloqueo siempre), aunque el usuario no tenga
-    seleccionadas las otras compañías. En todos los casos el pago queda en la compañía
-    donde se hizo.
+    seleccionadas las otras compañías, si está en el grupo que lo habilita. En todos los
+    casos el pago queda en la compañía donde se hizo.
     """
 
     PARENT_VAT = "30111111118"
@@ -26,6 +26,7 @@ class TestReceiptDebtLegalEntity(AccountTestInvoicingCommon):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.env.user.group_ids += cls.env.ref("account_ux.group_read_branch_debt")
         cls.parent = cls.company_data["company"]
         cls.parent_invoice = cls.init_invoice("out_invoice", amounts=[100.0], post=True, company=cls.parent)
         cls.partner = cls.parent_invoice.partner_id
