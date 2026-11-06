@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 from odoo import Command
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
+from odoo.exceptions import ValidationError
 from odoo.tests import tagged
 
 
@@ -39,11 +40,18 @@ class TestReceiptBranchDebtNoAccess(AccountTestInvoicingCommon):
                 "login": "branch_a_receipts",
                 "company_id": cls.branch_a.id,
                 "company_ids": [Command.set(cls.branch_a.ids)],
-                "group_ids": [Command.set(cls.env.ref("account.group_account_manager").ids)],
+                "group_ids": [
+                    Command.set(
+                        (
+                            cls.env.ref("account.group_account_manager")
+                            + cls.env.ref("account_ux.group_read_branch_debt")
+                        ).ids
+                    )
+                ],
             }
         )
 
-    def test_the_receipt_collects_the_debt_of_a_branch_without_access(self):
+    def _new_receipt(self):
         payment = (
             self.env["account.payment"]
             .with_user(self.user_a)
@@ -60,9 +68,37 @@ class TestReceiptBranchDebtNoAccess(AccountTestInvoicingCommon):
             )
         )
         payment.action_add_all()
+        return payment
+
+    def test_the_receipt_collects_the_debt_of_a_branch_without_access(self):
+        payment = self._new_receipt()
         self.assertEqual(payment.to_pay_move_line_ids.move_id, self.invoice_b)
 
         payment.action_post()
 
         self.assertEqual(payment.company_id, self.branch_a)
         self.assertEqual(self.invoice_b.payment_state, "paid")
+
+    def test_the_receipt_goes_back_to_draft_and_releases_the_debt(self):
+        payment = self._new_receipt()
+        payment.action_post()
+
+        payment.action_draft()
+
+        self.assertEqual(payment.state, "draft")
+        self.assertEqual(self.invoice_b.payment_state, "not_paid")
+
+        payment.action_post()
+
+        self.assertEqual(self.invoice_b.payment_state, "paid")
+
+    def test_without_the_group_the_receipt_does_not_offer_other_branches(self):
+        self.user_a.group_ids -= self.env.ref("account_ux.group_read_branch_debt")
+        self.assertFalse(self._new_receipt().to_pay_move_line_ids)
+
+    def test_the_receipt_is_not_posted_with_debt_it_can_no_longer_collect(self):
+        payment = self._new_receipt()
+        self.root_company.block_intercompany_conciliation = "all"
+
+        with self.assertRaises(ValidationError):
+            payment.action_post()

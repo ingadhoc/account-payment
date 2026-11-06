@@ -555,6 +555,10 @@ class AccountPayment(models.Model):
             payment_lines = rec.move_id.line_ids.filtered(lambda l: l.account_id.account_type in valid_account_types)
             partials = payment_lines.mapped("matched_debit_ids") | payment_lines.mapped("matched_credit_ids")
             if partials:
+                # The debt may be of a branch the user has no access to, see _get_to_pay_companies.
+                debt_companies = (partials.sudo().debit_move_id | partials.sudo().credit_move_id).company_id
+                if debt_companies - self.env.companies:
+                    partials = partials.sudo()
                 partials.unlink()
 
         super().action_draft()
@@ -1210,21 +1214,27 @@ class AccountPayment(models.Model):
     def _get_to_pay_companies(self):
         """Las compañías cuya deuda puede pagar este pago.
 
-        Sigue a "Block Inter-Company Reconciliation" de la raíz del árbol
-        (``res.company._get_branch_debt_companies`` en ``account_ux``), aunque el usuario
-        no tenga acceso a las otras compañías ni las tenga seleccionadas, porque un
-        cliente compra en una sucursal y paga en otra: sin bloqueo, la deuda de todo el
-        árbol; con bloqueo entre entidades fiscales distintas, la de la entidad fiscal
-        del pago; con bloqueo siempre, solo la de la compañía del pago.
+        Sigue a "Block Inter-Company Reconciliation" de la raíz del árbol: con bloqueo
+        siempre, solo la compañía del pago. Si no, la entidad fiscal acotada a lo que el
+        usuario tiene seleccionado, más lo que permite la opción
+        (``res.company._get_branch_debt_companies`` en ``account_ux``) si el usuario está
+        en el grupo "Read and collect the debt of other branches": un cliente compra en
+        una sucursal y paga en otra.
 
         El pago sigue quedando en la compañía donde se hizo, aunque la deuda sea de otra
         sucursal; lo que lo permite es el ``_check_company_domain`` de
         ``account.move.line`` en ``account_ux``, que acepta las mismas compañías.
         """
         self.ensure_one()
-        if not self.company_id:
+        company = self.company_id
+        if not company:
             return self.env["res.company"]
-        return self.company_id._get_branch_debt_companies() or self.company_id
+        if company.sudo().root_id.block_intercompany_conciliation == "all":
+            return company
+        companies = company._get_legal_entity_companies() & self.env.companies
+        if self.env.user.has_group("account_ux.group_read_branch_debt"):
+            companies |= company._get_branch_debt_companies()
+        return companies or company
 
     def _get_to_pay_move_lines_domain(self):
         self.ensure_one()
@@ -1273,7 +1283,14 @@ class AccountPayment(models.Model):
             if len(to_pay_partners) > 1:
                 raise ValidationError(_("All to pay lines must be of the same partner"))
             if rec.to_pay_move_line_ids.company_id - rec._get_to_pay_companies():
-                raise ValidationError(_("You can't create payments for entries belonging to different companies."))
+                raise ValidationError(
+                    _(
+                        "This payment can't collect the debt of %(companies)s. Remove those lines to continue.",
+                        companies=", ".join(
+                            (rec.to_pay_move_line_ids.company_id - rec._get_to_pay_companies()).mapped("name")
+                        ),
+                    )
+                )
             if to_pay_partners and to_pay_partners != rec.partner_id.commercial_partner_id:
                 raise ValidationError(
                     _("Payment is for partner %s but payment lines are of partner %s")
@@ -1329,6 +1346,9 @@ class AccountPayment(models.Model):
         # The list view "Post Payments" action calls this on every selected payment, and the core sets
         # the ones with a cash outstanding account to paid whatever their state. Canceled ones are skipped.
         to_post = self.filtered(lambda x: x.state != "canceled")
+        # The scope may have changed since the lines were loaded, and the read rules silently hide what fell out of it.
+        to_post.invalidate_recordset(["to_pay_move_line_ids"])
+        to_post.sudo().check_to_pay_lines()
         res = super(AccountPayment, to_post).action_post()
         to_post._check_to_pay_lines_account()
         to_post._reconcile_after_post()
