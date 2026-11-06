@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_payment_form" model="ir.ui.view">
+        <field name="name">account.payment.form.early.discount</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account_payment_pro.view_account_payment_form"/>
+        <field name="arch" type="xml">
+            <div name="payment_total" position="after">
+                <field name="early_discount_write_off_warning" invisible="1"/>
+                <label for="early_discount_amount" invisible="state != 'draft' or not early_discount_amount"/>
+                <div name="early_discount_amount" invisible="state != 'draft' or not early_discount_amount">
+                    <field name="early_discount_amount" class="oe_inline"/>
+                    <span class="text-muted"> (difference after discount <field name="early_discount_difference" class="oe_inline"/>)</span>
+                    <div class="text-warning" invisible="not early_discount_write_off_warning">
+                        The payment has a write-off and, with the early payment discount, the payment exceeds the debt. Check if the write-off is needed.
+                    </div>
+                </div>
+            </div>
+        </field>
+    </record>
+
+    <record id="view_move_line_tree" model="ir.ui.view">
+        <field name="name">account.move.line.list.early.discount</field>
+        <field name="model">account.move.line</field>
+        <field name="inherit_id" ref="account_payment_pro.view_move_line_tree"/>
+        <field name="arch" type="xml">
+            <field name="amount_residual_currency" position="after">
+                <field name="early_discount_available" column_invisible="True"/>
+                <field name="discount_date" string="Discount Until" optional="show" readonly="True" invisible="not early_discount_available"/>
+                <field name="discount_amount_currency" string="Amount with Discount" optional="show" readonly="True" invisible="not early_discount_available"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_move_line_with_matched_tree" model="ir.ui.view">
+        <field name="name">account.move.line.list.matched.early.discount</field>
+        <field name="model">account.move.line</field>
+        <field name="inherit_id" ref="account_payment_pro.view_move_line_with_matched_tree"/>
+        <field name="arch" type="xml">
+            <field name="discount_date" position="attributes">
+                <attribute name="column_invisible">True</attribute>
+            </field>
+            <field name="discount_amount_currency" position="attributes">
+                <attribute name="column_invisible">True</attribute>
+            </field>
+        </field>
+    </record>
+
+</odoo>
