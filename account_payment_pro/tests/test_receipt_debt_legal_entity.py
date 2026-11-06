@@ -16,8 +16,8 @@ class TestReceiptDebtLegalEntity(AccountTestInvoicingCommon):
     Según "Block Inter-Company Reconciliation" de la raíz, el recibo lista la deuda de todo
     el árbol (sin bloqueo), la de la entidad fiscal (bloqueo entre entidades distintas) o
     solo la de la compañía del pago (bloqueo siempre), aunque el usuario no tenga
-    seleccionadas las otras compañías. En todos los casos el pago queda en la compañía
-    donde se hizo.
+    seleccionadas las otras compañías, si está en el grupo que lo habilita. En todos los
+    casos el pago queda en la compañía donde se hizo.
     """
 
     PARENT_VAT = "30111111118"
@@ -26,6 +26,7 @@ class TestReceiptDebtLegalEntity(AccountTestInvoicingCommon):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.env.user.group_ids += cls.env.ref("account_ux.group_read_branch_debt")
         cls.parent = cls.company_data["company"]
         cls.parent_invoice = cls.init_invoice("out_invoice", amounts=[100.0], post=True, company=cls.parent)
         cls.partner = cls.parent_invoice.partner_id
@@ -119,6 +120,14 @@ class TestReceiptDebtLegalEntity(AccountTestInvoicingCommon):
             self._debt_listed(self.same_entity, self.same_entity).company_id, self.parent + self.same_entity
         )
         self.assertEqual(self._debt_listed(self.other_entity, self.other_entity).company_id, self.other_entity)
+
+    def test_without_the_group_it_lists_the_selected_companies_of_the_legal_entity(self):
+        """Without the group nothing changes: the legal entity, cut to the selected companies."""
+        self.env.user.group_ids -= self.env.ref("account_ux.group_read_branch_debt")
+        every_company = self.parent + self.same_entity + self.other_entity
+
+        self.assertEqual(self._debt_listed(self.parent, self.parent).company_id, self.parent)
+        self.assertEqual(self._debt_listed(self.parent, every_company).company_id, self.parent + self.same_entity)
 
     def test_add_all_takes_the_debt_of_several_companies(self):
         """Antes, "Add All" con deuda en dos compañías rechazaba el pago por "different companies"."""
