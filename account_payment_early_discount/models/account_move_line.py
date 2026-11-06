@@ -23,7 +23,7 @@ class AccountMoveLine(models.Model):
     def action_register_payment(self, ctx=None):
         res = super().action_register_payment(ctx=ctx)
         context = isinstance(res, dict) and res.get("context")
-        if not context or context.get("default_partner_type") != "customer" or "default_amount" not in context:
+        if not self.company_id[:1].use_payment_pro or not context or context.get("default_partner_type") != "customer":
             return res
         # suggest the amount with discount; Payment Pro builds the default amount from the residual in company currency
         lines = self.browse(context.get("default_to_pay_move_line_ids") or [])
