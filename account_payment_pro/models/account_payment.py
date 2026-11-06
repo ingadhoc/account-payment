@@ -1280,6 +1280,11 @@ class AccountPayment(models.Model):
                 rec.amount = amount
                 rec.amount_exact = amount
 
+    @api.onchange("partner_id")
+    def _onchange_partner_id_follow_debt(self):
+        """A new partner brings its own debt: the amount follows it, as when the withholdings change."""
+        self.filtered(lambda x: x.partner_id != x._origin.partner_id)._onchange_withholding_amount_follow_debt()
+
     @api.onchange("l10n_latam_new_check_ids")
     def _onchange_new_check_default_amount(self):
         """Al agregar un cheque nuevo, calcular su monto como la diferencia pendiente de pago."""
