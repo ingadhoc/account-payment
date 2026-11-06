@@ -123,6 +123,21 @@ class TestWithholdingGrossAmount(AccountTestInvoicingCommon):
         self.assertEqual(sum(liquidity.mapped("balance")), -1960.0)
         self.assertEqual(sum(counterpart.mapped("balance")), 2000.0)
 
+    def test_the_amount_follows_the_debt_when_the_withholdings_change(self):
+        """Removing a bill changes the base of the withholdings, and then the gross amount follows the remaining
+        debt, as the net one did in 19."""
+        bills = self.init_invoice("in_invoice", partner=self.partner_a, amounts=[1000.0], post=True)
+        bills |= self.init_invoice("in_invoice", partner=self.partner_a, amounts=[500.0], post=True)
+        debt = bills.line_ids.filtered(lambda line: line.account_id.account_type == "liability_payable")
+        payment = self._payment(withholding_base=1500.0, amount=1500.0, to_pay_move_line_ids=[Command.set(debt.ids)])
+
+        payment.to_pay_move_line_ids = [Command.unlink(debt.filtered(lambda line: line.move_id == bills[0]).id)]
+        payment.withholding_line_ids.base_amount = 500.0
+        payment._onchange_withholding_amount_follow_debt()
+
+        self.assertEqual(payment.amount, 500.0, "the gross amount is the remaining debt")
+        self.assertEqual(payment.withholding_net_amount, 490.0)
+
     def test_the_entry_books_the_company_currency_amounts_of_the_line(self):
         """A localization that computes the withholding in company currency gives the exact amounts: the entry books
         them instead of converting back the rounded line, and the bank line absorbs the difference."""

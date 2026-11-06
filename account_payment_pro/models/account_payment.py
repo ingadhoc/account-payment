@@ -1257,6 +1257,29 @@ class AccountPayment(models.Model):
             rec.amount = amount if amount > 0 else 0
             rec.amount_exact = amount if amount > 0 else 0
 
+    @api.onchange("withholding_amount")
+    def _onchange_withholding_amount_follow_debt(self):
+        """When the withholdings change (the selected debt, its base, or the partner changed), the gross amount
+        follows the selected debt, up and down and never below zero. Supplier payments only, and not with third
+        party checks, where the checks set the amount."""
+        third_party_checks = (
+            "in_third_party_checks",
+            "out_third_party_checks",
+            "return_third_party_checks",
+            "new_third_party_checks",
+        )
+        for rec in self.filtered(
+            lambda x: x.use_payment_pro
+            and x.state == "draft"
+            and x.partner_type == "supplier"
+            and x.currency_id
+            and x.payment_method_code not in third_party_checks
+        ):
+            amount = max(rec.amount + rec._get_payment_difference_in_currency_a(), 0.0)
+            if not rec.currency_id.is_zero(amount - rec.amount):
+                rec.amount = amount
+                rec.amount_exact = amount
+
     @api.onchange("l10n_latam_new_check_ids")
     def _onchange_new_check_default_amount(self):
         """Al agregar un cheque nuevo, calcular su monto como la diferencia pendiente de pago."""
