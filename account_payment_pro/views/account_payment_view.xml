@@ -154,7 +154,8 @@
                 <field name="write_off_type_id" placeholder="Write-off type" invisible="not write_off_amount" readonly="state != 'draft'" required="write_off_amount" options="{'no_create': True, 'no_open': True}"/>
             </div>
             <!-- Withholdings: payment total = net + withholdings -->
-            <field name="withholding_amount" string="Withholdings" invisible="not use_payment_pro or is_internal_transfer or not display_withholding"/>
+            <field name="withholding_amount" invisible="True"/>
+            <field name="destination_currency_withholding_amount" invisible="not use_payment_pro or is_internal_transfer or not display_withholding"/>
             <!-- Payment total -->
             <label for="payment_total" readonly="state != 'draft'" invisible="not use_payment_pro or is_internal_transfer"/>
             <div name="payment_total" invisible="not use_payment_pro or is_internal_transfer">

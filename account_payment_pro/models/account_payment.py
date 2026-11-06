@@ -202,6 +202,12 @@ class AccountPayment(models.Model):
         inverse="_inverse_counterpart_currency_net_amount",
         readonly=False,
     )
+    destination_currency_withholding_amount = fields.Monetary(
+        string="Withholdings",
+        currency_field="destination_currency_id",
+        compute="_compute_destination_currency_withholding_amount",
+        help="Withholdings in the debt currency, at the rate of the payment.",
+    )
     open_move_line_ids = fields.One2many(related="move_id.open_move_line_ids")
     multi_currency_debt = fields.Boolean(
         compute="_compute_multi_currency_debt",
@@ -530,6 +536,22 @@ class AccountPayment(models.Model):
         for rec in self:
             withholding = rec.withholding_amount * (rec.counterpart_rate or 1.0)
             rec.counterpart_currency_net_amount = rec.counterpart_currency_amount - withholding
+
+    @api.depends(
+        "withholding_amount",
+        "counterpart_rate",
+        "accounting_rate",
+        "counterpart_currency_id",
+        "destination_currency_id",
+    )
+    def _compute_destination_currency_withholding_amount(self):
+        # same A -> B2 conversion as _compute_payment_total
+        for rec in self:
+            if rec.counterpart_currency_id != rec.destination_currency_id:
+                amount = rec.withholding_amount / rec.accounting_rate if rec.accounting_rate else rec.withholding_amount
+            else:
+                amount = rec.withholding_amount * (rec.counterpart_rate or 1.0)
+            rec.destination_currency_withholding_amount = amount
 
     @api.onchange("counterpart_currency_net_amount")
     def _inverse_counterpart_currency_net_amount(self):

@@ -79,6 +79,39 @@ class TestWithholdingGrossAmount(AccountTestInvoicingCommon):
         self.assertEqual(payment.counterpart_currency_amount, 490.0)
         self.assertEqual(payment.amount, 980.0)
 
+    def test_the_withholdings_total_is_shown_in_the_debt_currency(self):
+        """The lines stay in the payment currency; the total next to the payment total is in the debt one."""
+        foreign = self.setup_other_currency("EUR", rates=[("2000-01-01", 1.0)])
+        payment = self._payment()
+        payment.counterpart_currency_id = foreign
+        payment.counterpart_rate = 0.5
+        self.assertEqual(payment.withholding_amount, 20.0)
+        self.assertEqual(payment.destination_currency_withholding_amount, 10.0, "20 withheld * 0.5")
+        self.assertEqual(
+            payment.counterpart_currency_net_amount + payment.destination_currency_withholding_amount,
+            payment.payment_total,
+        )
+
+    def test_the_withholdings_total_reconciling_on_company_currency(self):
+        """Reconciling on company currency the debt currency is the company one, at the accounting rate."""
+        foreign = self.setup_other_currency("EUR", rates=[("2000-01-01", 1.0)])
+        # the flag is only allowed in Argentina
+        self.company.country_id = self.env.ref("base.ar")
+        self.company.reconcile_on_company_currency = True
+        # a receipt with a suffered withholding, so no localization computes the line over it
+        sale_withholding = self.withholding_tax.copy({"type_tax_use": "sale"})
+        receipt = self._payment(
+            withholding_base=0.0, partner_type="customer", payment_type="inbound", currency_id=foreign.id
+        )
+        receipt.withholding_line_ids = [Command.create({"tax_id": sale_withholding.id, "base_amount": 1000.0})]
+        # 1 company unit = 0.5 EUR
+        receipt.accounting_rate = 0.5
+
+        self.assertEqual(receipt.withholding_amount, 20.0)
+        self.assertEqual(receipt.destination_currency_id, self.company.currency_id)
+        self.assertEqual(receipt.destination_currency_withholding_amount, 40.0, "20 EUR / 0.5")
+        self.assertEqual(receipt.payment_total, 2000.0)
+
     def test_the_mode_follows_the_withholding_lines(self):
         payment = self._payment(withholding_base=0.0)
         self.assertEqual(payment.withhold, "payment")
