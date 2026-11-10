@@ -98,14 +98,16 @@ class TestWithholdingGrossAmount(AccountTestInvoicingCommon):
         # the flag is only allowed in Argentina
         self.company.country_id = self.env.ref("base.ar")
         self.company.reconcile_on_company_currency = True
-        # a receipt with a suffered withholding, so no localization computes the line over it
+        # a receipt with a suffered withholding, typed as the certificate says
         sale_withholding = self.withholding_tax.copy({"type_tax_use": "sale"})
         receipt = self._payment(
             withholding_base=0.0, partner_type="customer", payment_type="inbound", currency_id=foreign.id
         )
-        receipt.withholding_line_ids = [Command.create({"tax_id": sale_withholding.id, "base_amount": 1000.0})]
         # 1 company unit = 0.5 EUR
         receipt.accounting_rate = 0.5
+        receipt.withholding_line_ids = [
+            Command.create({"tax_id": sale_withholding.id, "base_amount": 1000.0, "amount": 20.0})
+        ]
 
         self.assertEqual(receipt.withholding_amount, 20.0)
         self.assertEqual(receipt.destination_currency_id, self.company.currency_id)
