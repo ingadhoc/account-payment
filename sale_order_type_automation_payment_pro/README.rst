@@ -31,6 +31,9 @@ Technical Details
   partner's full debt.
 - Views: none.
 - Data / security: none.
+- Tests: ``tests/test_automation_payment_scope.py`` checks that, with a prior open
+  invoice of the same partner, the automatic payment reconciles only the invoice of
+  the flow and leaves the prior one unpaid.
 
 Usage
 =====
