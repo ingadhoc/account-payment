@@ -766,6 +766,66 @@ class TestPaymentMultimoneda(TestArCommon):
         finally:
             self.company.reconcile_on_company_currency = False
 
+    def test_caso8_reconcile_debt_currency_with_rounding(self):
+        """Caso 8 · ARS / B1=USD / B2=ARS with a round ARS receipt against a USD invoice.
+
+        The ARS amount is 3 ARS short (less than half a USD cent), so the USD counterpart rounds to the
+        invoice amount. Either debt currency reconciles in ARS: the 3 ARS stay pending and no exchange
+        difference is created.
+        """
+        self.company.reconcile_on_company_currency = True
+        self.account_receivable.currency_id = False
+        try:
+            for debt_currency in (self.usd, self.ars):
+                with self.subTest(debt_currency=debt_currency.name):
+                    invoice = self._create_invoice(16_236.09, self.usd)
+                    debt_line = self._get_debt_lines(invoice)
+                    payment = self._create_payment(
+                        self.bank_ars,
+                        amount=debt_line.balance - 3,
+                        to_pay_move_line_ids=[Command.set(debt_line.ids)],
+                    )
+                    payment.counterpart_currency_id = debt_currency
+                    payment.action_post()
+
+                    self.assertFalse(debt_line.reconciled)
+                    self.assertAlmostEqual(debt_line.amount_residual, 3, places=2)
+                    self.assertFalse(debt_line.matched_credit_ids.exchange_move_id)
+                    if debt_currency == self.ars:
+                        self.assertFalse(debt_line.full_reconcile_id)
+        finally:
+            self.company.reconcile_on_company_currency = False
+
+    def test_caso8_reconcile_debt_currency_at_other_rate(self):
+        """Caso 8 · ARS / B1=USD / B2=ARS paying a USD invoice at a higher rate than the invoice.
+
+        The pair reconciles in ARS without exchange difference: the debt ends at zero in both currencies
+        and the extra ARS stay open on the payment.
+        """
+        self.company.reconcile_on_company_currency = True
+        self.account_receivable.currency_id = False
+        try:
+            invoice = self._create_invoice(1000, self.usd)
+            debt_line = self._get_debt_lines(invoice)
+            payment = self._create_payment(
+                self.bank_ars,
+                amount=1_300_000,
+                to_pay_move_line_ids=[Command.set(debt_line.ids)],
+            )
+            payment.counterpart_currency_id = self.usd
+            payment.counterpart_rate = 1 / 1300
+            self.assertAlmostEqual(payment.counterpart_currency_amount, 1000, places=2)
+            payment.action_post()
+
+            self.assertTrue(debt_line.reconciled)
+            self.assertTrue(self.usd.is_zero(debt_line.amount_residual_currency))
+            self.assertFalse(debt_line.matched_credit_ids.exchange_move_id)
+            counterpart = payment.move_id.line_ids.filtered(lambda l: l.account_id == self.account_receivable)
+            self.assertAlmostEqual(counterpart.amount_residual, -100_000, places=2)
+            self.assertFalse(counterpart.full_reconcile_id)
+        finally:
+            self.company.reconcile_on_company_currency = False
+
     def test_caso9_spec_b1_forzada_usd(self):
         """Caso 9 de la spec · USD / USD / ARS / ARS  ("Pago USD de Deuda ARS")
 

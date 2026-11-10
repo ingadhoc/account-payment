@@ -161,6 +161,12 @@ Stored rates use Odoo native format. UX helpers invert conditionally. The `*_rat
 
 The migration script backs up the original column and converts values using `counterpart_rate`.
 
+### ADR-012 — Debt currency in a third currency keeps `reconcile_on_company_currency`
+
+With the option active, the user may pick a B1 that differs from both A and C (e.g. ARS journal, USD debt). The pair still reconciles in C (`account_ux`), each line at its own rate, and no exchange difference is created. If the payment rate differs from the invoice rate, the debt ends at zero in both currencies and the difference stays open on the payment, to be closed with a debit or credit note.
+
+Known limit, outside this module: when the C difference is worth less than one cent of B1 (rounding), the debt ends at zero in B1 with a residual in C, and Odoo creates the full reconcile because both lines share B1.
+
 ---
 
 ## Migration scripts (19.0.2.0.0)
