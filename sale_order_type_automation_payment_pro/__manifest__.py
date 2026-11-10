@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 {
     "name": "Sale Order Type Automation - Payment Pro",
-    "version": "19.0.1.0.0",
+    "version": "20.0.1.0.0",
     "author": "ADHOC SA",
     "website": "www.adhoc.com.ar",
     "license": "AGPL-3",
@@ -14,6 +14,6 @@
         "account_payment_pro",
     ],
     "data": [],
-    "installable": False,
+    "installable": True,
     "auto_install": True,
 }
