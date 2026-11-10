@@ -44,10 +44,16 @@ class AccountPaymentRegister(models.TransientModel):
     @api.depends("company_id", "journal_id")
     def _compute_cashbox_session_id(self):
         Session = self.env["account.cashbox.session"]
+        default_session = self.env.user.default_cashbox_id.current_session_id
         for rec in self:
             session_ids = Session.search(Session._get_available_domain(rec.company_id, journal=rec.journal_id))
+            if rec.cashbox_session_id._origin in session_ids:
+                # keep the session chosen by the user while it manages the journal
+                continue
             if len(session_ids) == 1:
                 rec.cashbox_session_id = session_ids.id
+            elif default_session in session_ids:
+                rec.cashbox_session_id = default_session
             else:
                 rec.cashbox_session_id = False
 
@@ -62,12 +68,15 @@ class AccountPaymentRegister(models.TransientModel):
             )
 
     def _compute_journal_id(self):
+        # core compares journal_id with available_journal_ids, which holds new records in the form
+        keep = self.filtered(lambda w: w.journal_id and w.journal_id._origin in w.available_journal_ids._origin)
+        rest = self - keep
         # l10n_account_withholding_tax keeps any non-general journal, even out of the
         # session journals: clear it so the core picks one of the available ones
-        for wizard in self.filtered("cashbox_session_id"):
-            if wizard.journal_id.type != "general" and wizard.journal_id not in wizard.available_journal_ids:
+        for wizard in rest.filtered("cashbox_session_id"):
+            if wizard.journal_id.type != "general":
                 wizard.journal_id = False
-        return super()._compute_journal_id()
+        return super(AccountPaymentRegister, rest)._compute_journal_id()
 
     def _create_payment_vals_from_wizard(self, batch_result):
         payment_vals = super()._create_payment_vals_from_wizard(batch_result)

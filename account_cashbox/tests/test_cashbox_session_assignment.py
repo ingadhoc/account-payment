@@ -368,3 +368,47 @@ class TestCashboxSessionAssignment(common.TransactionCase):
         )
 
         self.assertFalse(payment.cashbox_session_id)
+
+    def _open_sessions_sharing_journals(self):
+        """Dos cajas abiertas que manejan los mismos dos diarios: cada diario tiene dos
+        sesiones candidatas, así que el compute por diario no puede elegir ninguna."""
+        journals = self.journal | self.other_journal
+        sessions = self.env["account.cashbox.session"]
+        for code in ("CBXTX", "CBXTY"):
+            cashbox = self._create_cashbox(self.journal, name="Caja %s" % code, journal_ids=[Command.set(journals.ids)])
+            sessions |= self._open_session(self.journal, cashbox=cashbox, users=False)
+        return sessions
+
+    def test_register_wizard_keeps_the_session_when_the_journal_changes(self):
+        """Con dos sesiones abiertas que comparten diarios, cambiar a otro diario de la
+        sesión elegida no la borra."""
+        chosen = self._open_sessions_sharing_journals()[0]
+
+        form = Form(self._register_model())
+        form.cashbox_session_id = chosen
+        other = (self.journal | self.other_journal) - form.journal_id
+        form.journal_id = other
+        self.assertEqual(form.cashbox_session_id, chosen)
+        wizard = form.save()
+
+        payment = wizard._create_payments()
+        self.assertEqual(payment.journal_id, other)
+        self.assertEqual(payment.cashbox_session_id, chosen)
+
+    def test_register_wizard_keeps_the_journal_when_the_session_is_chosen(self):
+        """El caso inverso: al elegir la sesión, el diario ya elegido se mantiene si
+        está en ella, aunque no sea el primero de la lista."""
+        chosen = self._open_sessions_sharing_journals()[0]
+
+        form = Form(self._register_model())
+        form.cashbox_session_id = chosen
+        other = (self.journal | self.other_journal) - form.journal_id
+        form.cashbox_session_id = self.env["account.cashbox.session"]
+        form.journal_id = other
+        form.cashbox_session_id = chosen
+        self.assertEqual(form.journal_id, other)
+        wizard = form.save()
+
+        payment = wizard._create_payments()
+        self.assertEqual(payment.journal_id, other)
+        self.assertEqual(payment.cashbox_session_id, chosen)
