@@ -535,7 +535,7 @@ class AccountPayment(models.Model):
         """
         res = super()._prepare_move_lines_per_type(write_off_line_vals=write_off_line_vals, force_balance=force_balance)
         liquidity_lines = res["liquidity_lines"]
-        if not liquidity_lines[0].get("l10n_latam_check_ids"):
+        if not liquidity_lines or not liquidity_lines[0].get("l10n_latam_check_ids"):
             return res
         counterpart_lines = res["counterpart_lines"]
         if not counterpart_lines:
