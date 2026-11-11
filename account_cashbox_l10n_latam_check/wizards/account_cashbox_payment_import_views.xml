@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_payment_list_cashbox_import" model="ir.ui.view">
+        <field name="name">account.payment.list.cashbox.import</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_tree"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <field name="payment_method_line_id" position="after">
+                <field name="l10n_latam_check_numbers" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="cashbox_payment_import_view_form" model="ir.ui.view">
+        <field name="name">cashbox_payment_import.view.form.check</field>
+        <field name="model">account.cashbox.payment.import</field>
+        <field name="inherit_id" ref="account_cashbox.cashbox_payment_import_view_form"/>
+        <field name="arch" type="xml">
+            <field name="payment_ids" position="attributes">
+                <attribute name="context">{'list_view_ref': 'account_cashbox_l10n_latam_check.view_account_payment_list_cashbox_import'}</attribute>
+            </field>
+        </field>
+    </record>
+
+</odoo>
