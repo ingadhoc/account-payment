@@ -1345,7 +1345,7 @@ class AccountPayment(models.Model):
         records -= skip
         internal_transfers = records.filtered(lambda x: x.is_internal_transfer)
 
-        with_payment_pro = self._get_filter_payments(records, ["direct_debit_mandate_id", "pos_session_id"])
+        with_payment_pro = self._get_filter_payments(records, ["mandate_id", "pos_session_id"])
 
         if internal_transfers or not self.env.context.get("pay_now"):
             ((internal_transfers or self) - with_payment_pro).to_pay_move_line_ids = [Command.clear()]
