@@ -216,6 +216,8 @@ class TestBundleTwoCurrencies(AccountInvariantsMixin, TransactionCase):
         payment_form = Form(
             self.env["account.payment"].with_context(default_payment_type="outbound", default_partner_type="supplier")
         )
+        # The demo data has USD rates near today; pin the date to the rate the test creates
+        payment_form.date = "2026-01-01"
         payment_form.journal_id = self.usd_bank_journal
         payment_form.partner_id = self.vendor
         self.assertEqual(payment_form.amount, 50.0)
