@@ -227,6 +227,23 @@ class TestThirdPartyChecksRejection(LatamCheckCommon):
         self.assertEqual(customer_return.partner_id, self.partner)
         self.assertEqual(customer_return.amount, 55)
 
+    def test_rejected_check_leaves_the_credit_limit(self):
+        """A rejected check goes back to the customer as debt: counting it as on hand too would
+        add it twice to the credit limit."""
+        self.env["ir.config_parameter"].sudo().set_param("l10n_latam_check_ux.add_check_credit", True)
+        payment = self._receive_third_party_checks([55], numbers=["00013002"])
+        payment.action_post()
+        check = payment.l10n_latam_new_check_ids
+        self.assertEqual(self.partner._get_on_hand_checks_credit(self.company), 55.0)
+
+        self._deliver_third_party_checks(check).action_post()
+        self.assertEqual(self.partner._get_on_hand_checks_credit(self.company), 0.0, "Endorsed: not on hand")
+
+        self.env["account.check.reject.wizard"].with_context(
+            active_model="l10n_latam.check", active_ids=check.ids
+        ).create({"date": self.today, "rejected_journal_id": self.rejected_journal.id}).action_confirm()
+        self.assertEqual(self.partner._get_on_hand_checks_credit(self.company), 0.0, "Rejected: the customer owes it")
+
 
 @tagged("post_install", "-at_install")
 class TestThirdPartyChecksMulticurrency(LatamCheckCommon):
