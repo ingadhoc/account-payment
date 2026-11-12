@@ -5,3 +5,4 @@ from . import account_account
 from . import l10n_latam_check
 from . import res_partner
 from . import account_payment_method_line
+from . import res_config_settings
