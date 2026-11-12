@@ -46,6 +46,11 @@ User Interface Enhancements
 * **Operation Date Display**: Visible operation dates in check operation trees for better tracking.
 * **Bulk Actions**: Support for bulk check debit operations from list views.
 
+Credit Limit
+------------
+
+* **Third Party Checks on Hand**: Optionally adds the third party checks on hand (due or not, until they are deposited, endorsed or rejected) to the amount due checked against the partner's credit limit, on invoices and sales orders. Checks in another currency are converted to the company currency, checks received from a contact count for its commercial partner, and checks of every company of the hierarchy (branches) are included. The partner's **Total Receivable** (``credit``) is not changed, so it keeps matching the partner ledger.
+
 Data Management
 ---------------
 
@@ -124,6 +129,13 @@ Payment Method Setup
 
    * Manual payment method named "Manual" if available
    * First available manual payment method as fallback
+
+Credit Limit Setup
+------------------
+
+#. Go to **Accounting → Configuration → Settings**
+#. Enable **Sales Credit Limit**
+#. Enable **Include Third Party Checks on Hand**, shown below it. The setting is global: it applies to every company of the database
 
 Usage
 =====
