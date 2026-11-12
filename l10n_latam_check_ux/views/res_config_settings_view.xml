@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.l10n_latam_check_ux</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <!-- global setting (config parameter): no company_dependent icon -->
+            <xpath expr="//setting[field[@name='account_use_credit_limit']]" position="after">
+                <setting id="l10n_latam_check_add_credit" invisible="not account_use_credit_limit"
+                         help="Add the third party checks on hand to the amount due when checking the credit limit">
+                    <field name="l10n_latam_check_add_credit"/>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>
