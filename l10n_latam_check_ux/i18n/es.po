@@ -300,3 +300,32 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_action_wizard_form_view
 msgid "or"
 msgstr "o"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.res_config_settings_view_form
+msgid ""
+"Add the third party checks on hand to the amount due when checking the "
+"credit limit"
+msgstr ""
+"Suma los cheques de terceros en cartera a la deuda al controlar el límite de "
+"crédito"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,help:l10n_latam_check_ux.field_res_config_settings__l10n_latam_check_add_credit
+msgid ""
+"Add the third party checks on hand to the partner's amount due when checking"
+" the credit limit. Applies to every company of the database."
+msgstr ""
+"Suma los cheques de terceros en cartera a la deuda del contacto al controlar "
+"el límite de crédito. Aplica a todas las compañías de la base de datos."
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_res_config_settings__l10n_latam_check_add_credit
+msgid "Include Third Party Checks on Hand"
+msgstr "Incluir cheques de terceros en cartera"
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/models/account_move.py:0
+msgid "Includes third party checks on hand: %(amount)s"
+msgstr "Incluye cheques de terceros en cartera: %(amount)s"
