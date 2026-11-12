@@ -1,0 +1,57 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* sale_exception_credit_limit_latam_check
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-12 14:49+0000\n"
+"PO-Revision-Date: 2026-11-12 14:49+0000\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+#. module: sale_exception_credit_limit_latam_check
+#: model:ir.model,name:sale_exception_credit_limit_latam_check.model_res_partner
+msgid "Contact"
+msgstr "Contacto"
+
+#. module: sale_exception_credit_limit_latam_check
+#: model:ir.model.fields,field_description:sale_exception_credit_limit_latam_check.field_res_partner__credit_with_confirmed_orders
+#: model:ir.model.fields,field_description:sale_exception_credit_limit_latam_check.field_res_users__credit_with_confirmed_orders
+msgid "Credit Taken"
+msgstr "Crédito tomado"
+
+#. module: sale_exception_credit_limit_latam_check
+#: model:ir.model.fields,field_description:sale_exception_credit_limit_latam_check.field_account_move__display_name
+#: model:ir.model.fields,field_description:sale_exception_credit_limit_latam_check.field_res_partner__display_name
+msgid "Display Name"
+msgstr "Nombre a mostrar"
+
+#. module: sale_exception_credit_limit_latam_check
+#: model:ir.model.fields,field_description:sale_exception_credit_limit_latam_check.field_account_move__id
+#: model:ir.model.fields,field_description:sale_exception_credit_limit_latam_check.field_res_partner__id
+msgid "ID"
+msgstr ""
+
+#. module: sale_exception_credit_limit_latam_check
+#: model:ir.model,name:sale_exception_credit_limit_latam_check.model_account_move
+msgid "Journal Entry"
+msgstr "Asiento contable"
+
+#. module: sale_exception_credit_limit_latam_check
+#: model:ir.model.fields,help:sale_exception_credit_limit_latam_check.field_res_partner__credit_with_confirmed_orders
+#: model:ir.model.fields,help:sale_exception_credit_limit_latam_check.field_res_users__credit_with_confirmed_orders
+msgid ""
+"Total amount this customer owes you (including not invoiced confirmed sale "
+"orders, draft invoices and, when enabled in the settings, the third party "
+"checks on hand)."
+msgstr ""
+"Monto total que le debe este cliente (incluye los pedidos de venta "
+"confirmados sin facturar, las facturas en borrador y, si está activado en "
+"los ajustes, los cheques de terceros en cartera)."
