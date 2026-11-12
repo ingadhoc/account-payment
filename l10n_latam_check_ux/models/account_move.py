@@ -1,5 +1,6 @@
 from odoo import _, api, models
 from odoo.exceptions import UserError
+from odoo.tools import formatLang
 
 
 class AccountMove(models.Model):
@@ -33,3 +34,40 @@ class AccountMove(models.Model):
                     "\n".join("* %s" % payment.display_name for payment in payments),
                 )
             )
+
+    def _build_credit_warning_message(self, record, current_amount=0.0, exclude_current=False, exclude_amount=0.0):
+        """Add the third party checks on hand to the credit limit warning.
+
+        They go on top of the amount of the document instead of the partner ``credit``, which is
+        the accounting debt and must match the partner ledger. Passing them through
+        ``current_amount`` keeps them working when another module rewrites the total without
+        calling super. Invoices and sales orders both build their warning here.
+
+        With ``checks_in_credit`` in the context the total already carries the checks (see
+        ``sale_exception_credit_limit_latam_check``) and this override leaves the warning alone.
+        """
+        if self.env.context.get("checks_in_credit"):
+            return super()._build_credit_warning_message(
+                record, current_amount=current_amount, exclude_current=exclude_current, exclude_amount=exclude_amount
+            )
+        partner = record.partner_id.commercial_partner_id
+        checks_amount = partner._get_on_hand_checks_credit(record.company_id) if partner else 0.0
+        message = super()._build_credit_warning_message(
+            record,
+            current_amount=current_amount + checks_amount,
+            exclude_current=exclude_current,
+            exclude_amount=exclude_amount,
+        )
+        return self._add_checks_credit_warning_line(message, checks_amount, record.company_id)
+
+    def _add_checks_credit_warning_line(self, message, checks_amount, company):
+        if not message or not checks_amount:
+            return message
+        return (
+            message
+            + "\n"
+            + _(
+                "Includes third party checks on hand: %(amount)s",
+                amount=formatLang(self.env, checks_amount, currency_obj=company.currency_id),
+            )
+        )
