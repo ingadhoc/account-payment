@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-02 15:12+0000\n"
-"PO-Revision-Date: 2026-11-02 15:12+0000\n"
+"POT-Creation-Date: 2026-11-12 19:27+0000\n"
+"PO-Revision-Date: 2026-11-12 19:27+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -17,13 +17,37 @@ msgstr ""
 
 #. module: account_payment_early_discount
 #: model_terms:ir.ui.view,arch_db:account_payment_early_discount.view_account_payment_form
-msgid "(difference after discount"
-msgstr "(diferencia después del descuento"
+msgid ""
+"<span>. The payment was cancelled or one of its checks was returned to the "
+"customer: if the discount does not apply anymore, create the debit note by "
+"hand.</span>"
+msgstr ""
+"<span>. El pago se canceló o uno de sus cheques se devolvió al cliente: si el "
+"descuento ya no corresponde, cree la nota de débito manualmente.</span>"
 
 #. module: account_payment_early_discount
-#: model_terms:ir.ui.view,arch_db:account_payment_early_discount.view_move_line_tree
+#: model_terms:ir.ui.view,arch_db:account_payment_early_discount.view_account_payment_form
+msgid ""
+"<span>The early payment discount credit notes created by this payment are "
+"still posted: </span>"
+msgstr ""
+"<span>Las notas de crédito por pronto pago que generó este pago siguen "
+"publicadas: </span>"
+
+#. module: account_payment_early_discount
+#: model:ir.model.fields,help:account_payment_early_discount.field_account_move_line__early_discount_amount_to_pay
+msgid "Amount left to pay with the early payment discount, if paid today."
+msgstr "Importe que falta pagar con el descuento por pronto pago, si se paga hoy."
+
+#. module: account_payment_early_discount
+#: model:ir.model.fields,field_description:account_payment_early_discount.field_account_move_line__early_discount_amount_to_pay
 msgid "Amount with Discount"
 msgstr "Importe con descuento"
+
+#. module: account_payment_early_discount
+#: model:ir.model.fields,field_description:account_payment_early_discount.field_account_payment__early_discount_apply
+msgid "Apply Early Payment Discount"
+msgstr "Aplicar descuento por pronto pago"
 
 #. module: account_payment_early_discount
 #: model:ir.model.fields,help:account_payment_early_discount.field_account_bank_statement_line__is_early_discount
@@ -54,9 +78,20 @@ msgid "Early Discount Available"
 msgstr "Descuento por pronto pago disponible"
 
 #. module: account_payment_early_discount
-#: model:ir.model.fields,field_description:account_payment_early_discount.field_account_payment__early_discount_write_off_warning
-msgid "Early Discount Write Off Warning"
-msgstr "Aviso de ajuste con descuento por pronto pago"
+#: model:ir.model.fields,field_description:account_payment_early_discount.field_account_payment__early_discount_cancel_credit_note_ids
+msgid "Early Discount Credit Notes"
+msgstr "Notas de crédito por pronto pago"
+
+#. module: account_payment_early_discount
+#: model:ir.model.fields,field_description:account_payment_early_discount.field_account_bank_statement_line__early_discount_payment_id
+#: model:ir.model.fields,field_description:account_payment_early_discount.field_account_move__early_discount_payment_id
+msgid "Early Discount Payment"
+msgstr "Pago del descuento por pronto pago"
+
+#. module: account_payment_early_discount
+#: model:ir.model.fields,field_description:account_payment_early_discount.field_account_payment__early_discount_suggested_amount
+msgid "Early Discount Suggested Amount"
+msgstr "Importe sugerido con descuento por pronto pago"
 
 #. module: account_payment_early_discount
 #: model:ir.model.fields,field_description:account_payment_early_discount.field_account_payment__early_discount_amount
@@ -102,15 +137,39 @@ msgid "Journal Item"
 msgstr "Apunte contable"
 
 #. module: account_payment_early_discount
+#: model:ir.model.fields,help:account_payment_early_discount.field_account_payment__early_discount_suggested_amount
+msgid ""
+"Last amount suggested on the payment, to update it when the payment date "
+"changes."
+msgstr ""
+"Último importe sugerido en el pago, para actualizarlo cuando cambia la "
+"fecha del pago."
+
+#. module: account_payment_early_discount
+#: model:ir.model.fields,help:account_payment_early_discount.field_account_bank_statement_line__early_discount_payment_id
+#: model:ir.model.fields,help:account_payment_early_discount.field_account_move__early_discount_payment_id
+msgid "Payment that created this early payment discount credit note."
+msgstr "Pago que generó esta nota de crédito por pronto pago."
+
+#. module: account_payment_early_discount
 #: model:ir.model,name:account_payment_early_discount.model_account_payment
 msgid "Payments"
 msgstr "Pagos"
 
 #. module: account_payment_early_discount
-#: model_terms:ir.ui.view,arch_db:account_payment_early_discount.view_account_payment_form
+#: model:ir.model.fields,help:account_payment_early_discount.field_account_payment__early_discount_warning_credit_note_ids
 msgid ""
-"The payment has a write-off and, with the early payment discount, the "
-"payment exceeds the debt. Check if the write-off is needed."
+"Posted early payment discount credit notes created by this payment, when the"
+" payment was cancelled or one of its checks was returned to the customer."
 msgstr ""
-"El pago tiene un ajuste y, con el descuento por pronto pago, el pago supera"
-" la deuda. Revise si el ajuste es necesario."
+"Notas de crédito por pronto pago publicadas que generó este pago, cuando el "
+"pago se canceló o uno de sus cheques se devolvió al cliente."
+
+#. module: account_payment_early_discount
+#: model:ir.model.fields,help:account_payment_early_discount.field_account_payment__early_discount_apply
+msgid ""
+"Uncheck it so this payment does not apply the early payment discount, "
+"although the invoices get it."
+msgstr ""
+"Desmárquelo para que este pago no aplique el descuento por pronto pago, "
+"aunque las facturas lo tengan."

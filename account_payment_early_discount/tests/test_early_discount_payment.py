@@ -6,6 +6,7 @@
 from datetime import timedelta
 from unittest.mock import patch
 
+from odoo import Command
 from odoo.tests import Form, tagged
 
 from .common import EarlyDiscountCommon
@@ -59,6 +60,25 @@ class TestEarlyDiscountPayment(EarlyDiscountCommon):
         credit_note = self._early_discount_credit_note(invoice)
         self.assertEqual(len(credit_note), 1)
         self.assertAlmostEqual(credit_note.amount_total, 50)
+        self.assertTrue(invoice.currency_id.is_zero(invoice.amount_residual))
+
+    def test_linked_regular_credit_note(self):
+        invoice = self._create_invoice(self.today)
+        regular = self.env["account.move"].create(
+            {
+                "move_type": "out_refund",
+                "partner_id": self.partner.id,
+                "journal_id": self.sale_journal.id,
+                "invoice_date": self.today,
+                "reversed_entry_id": invoice.id,
+                "invoice_line_ids": [Command.create({"name": "Refund", "quantity": 1, "price_unit": 100})],
+            }
+        )
+        regular.action_post()
+        (regular + invoice).line_ids.filtered(lambda line: line.display_type == "payment_term").reconcile()
+        # 900 owed, 5% discount on it
+        self._post_payment(invoice, 855)
+        self.assertAlmostEqual(self._early_discount_credit_note(invoice).amount_total, 45)
         self.assertTrue(invoice.currency_id.is_zero(invoice.amount_residual))
 
     def test_partial_payments_not_completing(self):
@@ -178,6 +198,104 @@ class TestEarlyDiscountPayment(EarlyDiscountCommon):
         self.assertAlmostEqual(credit_note.amount_total, 50)
         self.assertTrue(foreign.is_zero(invoice.amount_residual))
 
+    def test_suggested_amount_foreign_currency_rate_of_payment_date(self):
+        eur = self.env.ref("base.EUR")
+        foreign = eur if self.company.currency_id != eur else self.env.ref("base.USD")
+        foreign.active = True
+        self.env["res.currency.rate"].create(
+            [
+                {"currency_id": foreign.id, "name": self.today - timedelta(days=30), "inverse_company_rate": 1000},
+                {"currency_id": foreign.id, "name": self.today, "inverse_company_rate": 1100},
+            ]
+        )
+        invoice = self._create_invoice(self.today - timedelta(days=5), currency_id=foreign.id)
+        context = invoice.action_register_payment()["context"]
+        with Form(self.env["account.payment"].with_context(**context)) as form:
+            form.journal_id = self.bank_journal
+            self.assertAlmostEqual(form.amount, 1045000)
+            self.assertAlmostEqual(form.early_discount_amount, 50)
+            self.assertAlmostEqual(form.early_discount_difference, 0)
+        form.record.action_post()
+        self.assertAlmostEqual(self._early_discount_credit_note(invoice).amount_total, 50)
+        self.assertTrue(foreign.is_zero(invoice.amount_residual))
+
+    def test_suggested_amount_foreign_currency_follows_date(self):
+        # the rate changes with the payment date, so the suggested amount in company currency changes too
+        eur = self.env.ref("base.EUR")
+        foreign = eur if self.company.currency_id != eur else self.env.ref("base.USD")
+        foreign.active = True
+        self.env["res.currency.rate"].create(
+            [
+                {"currency_id": foreign.id, "name": self.today - timedelta(days=30), "inverse_company_rate": 1000},
+                {"currency_id": foreign.id, "name": self.today - timedelta(days=3), "inverse_company_rate": 1050},
+                {"currency_id": foreign.id, "name": self.today, "inverse_company_rate": 1100},
+            ]
+        )
+        invoice = self._create_invoice(self.today - timedelta(days=5), currency_id=foreign.id)
+        context = invoice.action_register_payment()["context"]
+        with Form(self.env["account.payment"].with_context(**context)) as form:
+            form.journal_id = self.bank_journal
+            self.assertAlmostEqual(form.amount, 1045000)
+            form.date = self.today - timedelta(days=3)
+            self.assertAlmostEqual(form.amount, 997500)
+            self.assertAlmostEqual(form.early_discount_difference, 0)
+            form.date = self.today
+            self.assertAlmostEqual(form.amount, 1045000)
+            # an amount set by the user is kept
+            form.amount = 1000000
+            form.date = self.today - timedelta(days=3)
+            self.assertAlmostEqual(form.amount, 1000000)
+            form.amount = 997500
+        form.record.action_post()
+        self.assertAlmostEqual(self._early_discount_credit_note(invoice).amount_total, 50)
+        self.assertTrue(foreign.is_zero(invoice.amount_residual))
+
+    def test_adjust_difference_after_discount(self):
+        invoice = self._create_invoice(self.today)
+        payment = self._draft_payment(invoice, 960)
+        self.assertAlmostEqual(payment.early_discount_difference, -10)
+        payment.action_adjust_amount_for_difference()
+        self.assertAlmostEqual(payment.amount, 950)
+        self.assertAlmostEqual(payment.early_discount_amount, 50)
+        # nothing left to adjust: the discount is kept
+        payment.action_adjust_amount_for_difference()
+        payment.action_adjust_writeoff_for_difference()
+        self.assertAlmostEqual(payment.amount, 950)
+        self.assertFalse(payment.write_off_amount)
+        payment.amount = 955
+        payment.action_adjust_writeoff_for_difference()
+        self.assertAlmostEqual(payment.write_off_amount, -5)
+        self.assertAlmostEqual(payment.early_discount_amount, 50)
+
+    def test_exclude_discount(self):
+        invoice = self._create_invoice(self.today)
+        context = invoice.action_register_payment()["context"]
+        with Form(self.env["account.payment"].with_context(**context)) as form:
+            form.journal_id = self.bank_journal
+            self.assertAlmostEqual(form.amount, 950)
+            form.early_discount_apply = False
+            self.assertAlmostEqual(form.amount, 1000)
+            self.assertFalse(form.early_discount_amount)
+            self.assertTrue(form.early_discount_available)
+            form.early_discount_apply = True
+            self.assertAlmostEqual(form.amount, 950)
+            self.assertAlmostEqual(form.early_discount_amount, 50)
+            form.early_discount_apply = False
+        form.record.action_post()
+        self.assertFalse(self._early_discount_credit_note(invoice))
+        self.assertTrue(invoice.currency_id.is_zero(invoice.amount_residual))
+
+    def test_exclude_discount_only_on_that_payment(self):
+        # the next payment of the invoice gets the discount again
+        invoice = self._create_invoice(self.today)
+        payment = self._draft_payment(invoice, 950, early_discount_apply=False)
+        payment.action_post()
+        self.assertFalse(self._early_discount_credit_note(invoice))
+        self.assertAlmostEqual(invoice.amount_residual, 50)
+        next_payment = self._draft_payment(invoice, 10)
+        self.assertTrue(next_payment.early_discount_apply)
+        self.assertAlmostEqual(next_payment.early_discount_amount, 50)
+
     def test_draft_payment_discount_depends_on_amount(self):
         invoice = self._create_invoice(self.today)
         payment = self._draft_payment(invoice, 950)
@@ -187,23 +305,6 @@ class TestEarlyDiscountPayment(EarlyDiscountCommon):
         payment.amount = 949
         self.assertFalse(payment.early_discount_amount)
         self.assertAlmostEqual(payment.early_discount_difference, 51)
-
-    def test_write_off_warning(self):
-        write_off_account = self.env["account.account"].search(
-            [("company_ids", "=", self.company.id), ("account_type", "=", "expense")], limit=1
-        )
-        write_off_type = self.env["account.write_off.type"].create(
-            {"name": "Write-off ED", "account_id": write_off_account.id}
-        )
-        invoice = self._create_invoice(self.today)
-        # the write-off covers the discount: the payment exceeds the debt
-        payment = self._draft_payment(invoice, 950, write_off_amount=50, write_off_type_id=write_off_type.id)
-        self.assertAlmostEqual(payment.early_discount_amount, 50)
-        self.assertTrue(payment.early_discount_write_off_warning)
-        # a small write-off to complete the discounted amount is fine
-        payment.write({"amount": 948, "write_off_amount": 2})
-        self.assertAlmostEqual(payment.early_discount_amount, 50)
-        self.assertFalse(payment.early_discount_write_off_warning)
 
     def test_without_payment_pro_uses_native_discount(self):
         self.company.use_payment_pro = False
@@ -216,6 +317,51 @@ class TestEarlyDiscountPayment(EarlyDiscountCommon):
         wizard.action_create_payments()
         self.assertFalse(self._early_discount_credit_note(invoice))
         self.assertTrue(invoice.currency_id.is_zero(invoice.amount_residual))
+
+    def test_cancelled_payment_warns_posted_credit_note(self):
+        invoice = self._create_invoice(self.today)
+        payment = self._post_payment(invoice, 950)
+        credit_note = self._early_discount_credit_note(invoice)
+        self.assertEqual(credit_note.early_discount_payment_id, payment)
+        self.assertFalse(payment.early_discount_warning_credit_note_ids)
+        payment.action_draft()
+        payment.action_cancel()
+        self.assertEqual(payment.early_discount_warning_credit_note_ids, credit_note)
+
+    def test_returned_check_warns_posted_credit_note(self):
+        if "l10n_latam_new_check_ids" not in self.env["account.payment"]._fields:
+            self.skipTest("Checks not installed")
+        invoice = self._create_invoice(self.today)
+        payment = self._post_payment(invoice, 950)
+        credit_note = self._early_discount_credit_note(invoice)
+        check = self.env["l10n_latam.check"].create(
+            {"payment_id": payment.id, "name": "00000001", "payment_date": self.today, "amount": 950}
+        )
+        self.assertFalse(payment.early_discount_warning_credit_note_ids)
+        # the customer debit that the check rejection posts
+        return_method = self.env.ref("l10n_latam_check.account_payment_method_return_third_party_checks")
+        method_lines = self.bank_journal.outbound_payment_method_line_ids
+        return_line = method_lines.filtered(lambda line: line.payment_method_id == return_method)[:1]
+        if not return_line:
+            return_line = method_lines.create(
+                {"journal_id": self.bank_journal.id, "payment_method_id": return_method.id}
+            )
+        return_payment = self.env["account.payment"].create(
+            {
+                "journal_id": self.bank_journal.id,
+                "partner_id": self.partner.id,
+                "partner_type": "customer",
+                "payment_type": "outbound",
+                "amount": 950,
+                "payment_method_line_id": return_line.id,
+            }
+        )
+        check.operation_ids = return_payment
+        payment.invalidate_recordset(["early_discount_warning_credit_note_ids"])
+        self.assertFalse(payment.early_discount_warning_credit_note_ids, "a draft return does not warn")
+        return_payment.state = "in_process"
+        payment.invalidate_recordset(["early_discount_warning_credit_note_ids"])
+        self.assertEqual(payment.early_discount_warning_credit_note_ids, credit_note)
 
     def test_credit_note_left_in_draft(self):
         # a customization that does not post the credit note must not block the payment

@@ -11,18 +11,20 @@ Companies without Payment Pro (`use_payment_pro` disabled) keep the native Odoo 
 ### Credit Note
 - **Automatic**: the credit note is created when the payment that completes the invoice is posted. There is no manual button.
 - **Partial payments**: several payments are accepted, as long as all of them are done within the discount period. Regular credit notes are not payments: they do not have to be within the period.
+- **Linked credit notes**: a regular credit note linked to the invoice reduces the discount, which is computed on what is owed. Credit notes that are not linked to the invoice do not change it.
 - **Taxes**: one discount line per set of taxes of the invoice lines, so VAT and perceptions are refunded in the same proportion. Price-included taxes are respected. Every tax charged on the invoice is refunded, even when the credit note does not reach a minimum of the whole document, such as the minimum base of a perception.
 - **Link to the invoice**: the credit note is created with the credit note wizard, so it is linked to the invoice and gets the document type of the localization.
 - **Date**: the credit note is dated on the day the payment is posted. The payment date is only used to check the discount period.
+- **Cancelled payment or rejected check**: the credit note stays posted and reconciled. If the payment is cancelled, or one of its checks is returned to the customer (like when it is rejected), the payment shows a warning with its credit notes: if the discount does not apply anymore, the debit note is created by hand.
 
 ### Several Invoices
 The payment is spread over the selected debt in the same order Odoo reconciles it: first the invoice due first and, with the same due date, the smaller amount. Every invoice with a valid discount that gets fully paid with its share receives its credit note.
 
 ### Draft Payment
 - **Suggested amount**: new payments suggest the amount with discount instead of the full debt, when opened from the invoice, when debt is added and when the payment date changes. An amount set by the user is kept.
-- **Early Payment Discount**: next to the payment total, the discount to apply and the difference after the discount.
-- **Write-off warning**: if the payment has a write-off and, with the discount, the payment exceeds the debt, a warning is shown. It does not block the payment.
-- **Debt lines**: the **Discount Until** and **Amount with Discount** columns are shown only on the invoices that get the discount if paid today.
+- **Early Payment Discount**: next to the payment total, the discount to apply. With the discount applied, the difference of the payment total is the one after the discount, and the buttons to send it to the amount or to the write-off keep the discount.
+- **Exclude the discount**: the **Apply Early Payment Discount** checkbox turns it off for that payment, when the customer does not take it. The suggested amount goes back to the full debt and no credit note is created. Each payment of the invoice can turn it on or off again.
+- **Debt lines**: the **Discount Until** and **Amount with Discount** columns are shown only on the invoices that get the discount if paid today. **Amount with Discount** is what is left to pay with the discount, after previous payments and linked credit notes.
 
 ## Configuration
 
@@ -51,4 +53,6 @@ The credit note flow is split in methods of `account.move` that can be overridde
 
 - Only customer invoices.
 - Only payment terms with a single line and the **Included** computation.
-- Invoices in a foreign currency: the credit note is in the invoice currency, and the suggested amount converts the discount with the rate Payment Pro uses for the debt, the one of the invoice. If the rate of the payment date is different, the suggested amount does not complete the discounted amount and has to be adjusted by hand.
+- Payments with a write-off: the credit note is created anyway, so if the write-off covers the discount, both are applied and the customer gets a credit.
+- Reconcile on company currency enabled: invoices in a foreign currency do not get the discount, because the payment works in the company currency. Invoices in the company currency are not affected.
+- Invoices in a foreign currency: the credit note is in the invoice currency. The suggested amount converts the discounted residual at the rate of the payment date, so paying it in the company currency gets the discount.

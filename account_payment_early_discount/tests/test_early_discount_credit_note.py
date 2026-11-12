@@ -104,6 +104,33 @@ class TestEarlyDiscountCreditNote(EarlyDiscountCommon):
         self.assertAlmostEqual(credit_note.amount_tax, 1200)
         self.assertAlmostEqual(credit_note.amount_total, invoice.amount_total * 0.05)
 
+    def test_credit_note_after_linked_regular_credit_note(self):
+        # the discount is computed on what is owed after a regular credit note linked to the invoice
+        invoice = self._create_invoice(
+            self.today,
+            lines=[{"name": "A", "quantity": 1, "price_unit": 1000, "tax_ids": [Command.set(self.vat_21.ids)]}],
+        )
+        regular = self.env["account.move"].create(
+            {
+                "move_type": "out_refund",
+                "partner_id": self.partner.id,
+                "journal_id": self.sale_journal.id,
+                "invoice_date": self.today,
+                "reversed_entry_id": invoice.id,
+                "invoice_line_ids": [
+                    Command.create(
+                        {"name": "Refund", "quantity": 1, "price_unit": 100, "tax_ids": [Command.set(self.vat_21.ids)]}
+                    )
+                ],
+            }
+        )
+        regular.action_post()
+        self.assertAlmostEqual(invoice._get_early_discount_amount(), 54.45)
+        credit_note = invoice._create_early_discount_credit_note()
+        self.assertAlmostEqual(credit_note.amount_untaxed, 45)
+        self.assertAlmostEqual(credit_note.amount_tax, 9.45)
+        self.assertAlmostEqual(credit_note.amount_total, 54.45)
+
     def test_post_credit_note(self):
         invoice = self._create_taxed_invoice()
         credit_note = invoice._create_early_discount_credit_note()

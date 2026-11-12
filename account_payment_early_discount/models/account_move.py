@@ -16,6 +16,13 @@ class AccountMove(models.Model):
         readonly=True,
         help="Credit note created by the early payment discount.",
     )
+    early_discount_payment_id = fields.Many2one(
+        "account.payment",
+        copy=False,
+        readonly=True,
+        index="btree_not_null",
+        help="Payment that created this early payment discount credit note.",
+    )
 
     def _is_early_discount_eligible(self, payment_date, amount):
         """Return whether paying ``amount`` (in invoice currency) on ``payment_date`` gets the early discount."""
@@ -26,6 +33,8 @@ class AccountMove(models.Model):
             not self.company_id.use_payment_pro
             or self.move_type != "out_invoice"
             or self.state != "posted"
+            # reconciling on company currency, payments work in company currency and do not apply the discount
+            or (self.company_id.reconcile_on_company_currency and self.currency_id != self.company_currency_id)
             or not term.early_discount
             or term.early_pay_discount_computation != "included"
             or len(term_line) != 1
@@ -45,10 +54,20 @@ class AccountMove(models.Model):
         return self.currency_id.compare_amounts(amount, required) >= 0
 
     def _get_early_discount_amount(self):
-        """Early discount of the invoice according to its payment term, in invoice currency."""
+        """Early discount of the invoice according to its payment term, in invoice currency. Regular credit notes
+        linked to the invoice reduce it in proportion, so the discount is computed on what is owed."""
         self.ensure_one()
         term_line = self.line_ids.filtered(lambda line: line.display_type == "payment_term")
-        return sum(term_line.mapped("amount_currency")) - sum(term_line.mapped("discount_amount_currency"))
+        discount = sum(term_line.mapped("amount_currency")) - sum(term_line.mapped("discount_amount_currency"))
+        credit_notes = self._get_early_discount_regular_credit_notes()
+        if credit_notes and self.amount_total:
+            discount *= max(1 - sum(credit_notes.mapped("amount_total")) / self.amount_total, 0.0)
+        return self.currency_id.round(discount)
+
+    def _get_early_discount_regular_credit_notes(self):
+        """Posted credit notes linked to the invoice that are not early discount ones."""
+        self.ensure_one()
+        return self.reversal_move_ids.filtered(lambda move: move.state == "posted" and not move.is_early_discount)
 
     def _prepare_early_discount_reversal_vals(self):
         """Values for the credit note wizard; the credit note is dated when the payment is posted."""
@@ -61,15 +80,18 @@ class AccountMove(models.Model):
         }
 
     def _prepare_early_discount_line_vals(self):
-        """One credit note line per set of taxes of the invoice lines, for the discount percentage of their base."""
+        """One credit note line per set of taxes of the invoice lines, for the discount percentage of their base.
+        The base of the regular credit notes linked to the invoice is subtracted."""
         self.ensure_one()
         percentage = self.invoice_payment_term_id.discount_percentage / 100
         account = self.company_id.account_journal_early_pay_discount_loss_account_id
         bases = defaultdict(float)
-        for line in self.invoice_line_ids.filtered(lambda line: line.display_type == "product"):
-            taxes = line.tax_ids.filtered(lambda tax: tax.amount_type != "fixed")
-            # same price basis as the invoice line, so price-included taxes are respected
-            bases[taxes] += line.price_unit * line.quantity * (1 - line.discount / 100)
+        moves = [(self, 1)] + [(move, -1) for move in self._get_early_discount_regular_credit_notes()]
+        for move, sign in moves:
+            for line in move.invoice_line_ids.filtered(lambda line: line.display_type == "product"):
+                taxes = line.tax_ids.filtered(lambda tax: tax.amount_type != "fixed")
+                # same price basis as the invoice line, so price-included taxes are respected
+                bases[taxes] += sign * line.price_unit * line.quantity * (1 - line.discount / 100)
         return [
             {
                 "name": _("Early payment discount"),
@@ -79,6 +101,7 @@ class AccountMove(models.Model):
                 "tax_ids": [Command.set(taxes.ids)],
             }
             for taxes, base in bases.items()
+            if self.currency_id.compare_amounts(base * percentage, 0) > 0
         ]
 
     def _create_early_discount_credit_note(self):

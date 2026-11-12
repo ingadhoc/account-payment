@@ -79,6 +79,25 @@ class TestEarlyDiscountEligibility(EarlyDiscountCommon):
         self.company.use_payment_pro = False
         self.assertFalse(invoice._is_early_discount_eligible(self.today, invoice.amount_total))
 
+    def test_reconcile_on_company_currency(self):
+        eur = self.env.ref("base.EUR")
+        foreign = eur if self.company.currency_id != eur else self.env.ref("base.USD")
+        foreign.active = True
+        self.company.reconcile_on_company_currency = True
+        invoice = self._create_invoice(self.today, currency_id=foreign.id)
+        self.assertFalse(invoice._is_early_discount_eligible(self.today, invoice.amount_total))
+        invoice = self._create_invoice(self.today)
+        self.assertTrue(invoice._is_early_discount_eligible(self.today, invoice.amount_total))
+
+    def test_debt_line_amount_with_discount(self):
+        # what is left to pay with the discount, after previous payments
+        invoice = self._create_invoice(self.today)
+        term_line = invoice.line_ids.filtered(lambda line: line.display_type == "payment_term")
+        self.assertAlmostEqual(term_line.early_discount_amount_to_pay, 950)
+        self._pay(invoice, 600, self.today)
+        term_line.invalidate_recordset(["early_discount_amount_to_pay"])
+        self.assertAlmostEqual(term_line.early_discount_amount_to_pay, 350)
+
     def test_debt_line_discount_available(self):
         invoice = self._create_invoice(self.today)
         term_line = invoice.line_ids.filtered(lambda line: line.display_type == "payment_term")

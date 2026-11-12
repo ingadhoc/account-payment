@@ -6,17 +6,35 @@
         <field name="model">account.payment</field>
         <field name="inherit_id" ref="account_payment_pro.view_account_payment_form"/>
         <field name="arch" type="xml">
+            <sheet position="before">
+                <div class="alert alert-warning mb-2" role="alert" invisible="not early_discount_warning_credit_note_ids">
+                    <span>The early payment discount credit notes created by this payment are still posted: </span>
+                    <field name="early_discount_warning_credit_note_ids" widget="x2many_buttons"/>
+                    <span>. The payment was cancelled or one of its checks was returned to the customer: if the discount does not apply anymore, create the debit note by hand.</span>
+                </div>
+            </sheet>
             <div name="payment_total" position="after">
-                <field name="early_discount_write_off_warning" invisible="1"/>
+                <field name="early_discount_suggested_amount" invisible="1"/>
+                <field name="early_discount_available" invisible="1"/>
+                <field name="early_discount_apply" invisible="state != 'draft' or not early_discount_available"/>
                 <label for="early_discount_amount" invisible="state != 'draft' or not early_discount_amount"/>
                 <div name="early_discount_amount" invisible="state != 'draft' or not early_discount_amount">
                     <field name="early_discount_amount" class="oe_inline"/>
-                    <span class="text-muted"> (difference after discount <field name="early_discount_difference" class="oe_inline"/>)</span>
-                    <div class="text-warning" invisible="not early_discount_write_off_warning">
-                        The payment has a write-off and, with the early payment discount, the payment exceeds the debt. Check if the write-off is needed.
-                    </div>
                 </div>
             </div>
+            <!-- with the discount applied, the payment difference shown and adjusted is the one after the discount -->
+            <xpath expr="//div[@name='payment_total']//field[@name='payment_difference']" position="attributes">
+                <attribute name="invisible">early_discount_amount</attribute>
+            </xpath>
+            <xpath expr="//div[@name='payment_total']//field[@name='payment_difference']" position="after">
+                <field name="early_discount_difference" class="oe_inline" invisible="not early_discount_amount"/>
+            </xpath>
+            <xpath expr="//div[@name='payment_total']//button[@name='action_adjust_amount_for_difference']" position="attributes">
+                <attribute name="invisible" add="(early_discount_amount and not early_discount_difference)" separator=" or "/>
+            </xpath>
+            <xpath expr="//div[@name='payment_total']//button[@name='action_adjust_writeoff_for_difference']" position="attributes">
+                <attribute name="invisible" add="(early_discount_amount and not early_discount_difference)" separator=" or "/>
+            </xpath>
         </field>
     </record>
 
@@ -28,7 +46,7 @@
             <field name="amount_residual_currency" position="after">
                 <field name="early_discount_available" column_invisible="True"/>
                 <field name="discount_date" string="Discount Until" optional="show" readonly="True" invisible="not early_discount_available"/>
-                <field name="discount_amount_currency" string="Amount with Discount" optional="show" readonly="True" invisible="not early_discount_available"/>
+                <field name="early_discount_amount_to_pay" optional="show" invisible="not early_discount_available"/>
             </field>
         </field>
     </record>
@@ -41,7 +59,7 @@
             <field name="discount_date" position="attributes">
                 <attribute name="column_invisible">True</attribute>
             </field>
-            <field name="discount_amount_currency" position="attributes">
+            <field name="early_discount_amount_to_pay" position="attributes">
                 <attribute name="column_invisible">True</attribute>
             </field>
         </field>
