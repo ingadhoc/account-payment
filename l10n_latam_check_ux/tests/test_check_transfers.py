@@ -129,17 +129,18 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
             }
         )
 
-    def _create_third_party_check(self, journal, check_number):
+    def _create_third_party_check(self, journal, check_number, partner=None, currency=None, payment_date=None):
         payment = self.env["account.payment"].create(
             {
-                "partner_id": self.partner_a.id,
+                "partner_id": (partner or self.partner_a).id,
                 "payment_type": "inbound",
                 "journal_id": journal.id,
+                "currency_id": (currency or journal.company_id.currency_id).id,
                 "l10n_latam_new_check_ids": [
                     Command.create(
                         {
                             "name": check_number,
-                            "payment_date": fields.Date.add(fields.Date.today(), months=1),
+                            "payment_date": payment_date or fields.Date.add(fields.Date.today(), months=1),
                             "amount": 100.0,
                         }
                     )
@@ -371,6 +372,83 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
         with self.assertRaisesRegex(UserError, "belongs to"):
             wizard.action_confirm()
 
+    # ------------------------------------------------------------------
+    # third party checks on hand in the credit limit (task 52412)
+    # ------------------------------------------------------------------
+    def _set_check_credit(self, value):
+        self.env["ir.config_parameter"].sudo().set_param("l10n_latam_check_ux.add_check_credit", value)
+        # the computes reading it (e.g. the credit taken of sale_exception_credit_limit) are not stored
+        self.env.invalidate_all()
+
+    def _checks_credit(self, partner=None, company=None):
+        return (partner or self.partner_a)._get_on_hand_checks_credit(company or self.company)
+
+    def test_credit_limit_warning_includes_checks_on_hand(self):
+        """Checks on hand go into the credit limit warning, never into ``credit``.
+
+        Receiving the check settles the debt in the books, so ``credit`` goes down; it is the
+        accounting debt and has to match the partner ledger. The checks are added back on top of
+        it only when building the warning, and only with the global setting on.
+        """
+        self.company.account_use_credit_limit = True
+        # with sale_exception_credit_limit installed only this group can set a credit limit
+        if credit_config := self.env.ref("sale_exception_credit_limit.credit_config", raise_if_not_found=False):
+            self.env.user.write({"group_ids": [Command.link(credit_config.id)]})
+        self._create_third_party_check(self.third_party_check_journal, "UX-CREDIT-0010")
+        # already due but still on hand: the money is not in the bank yet, it adds up too
+        self._create_third_party_check(self.third_party_check_journal, "UX-CREDIT-0011", payment_date=self.today)
+        invoice = self.init_invoice("out_invoice", partner=self.partner_a, amounts=[10.0])
+        partner = self.partner_a.with_company(self.company)
+        credit = partner.credit
+        # the invoice alone fits in the limit, the invoice plus the checks on hand do not
+        partner.credit_limit = credit + invoice.amount_total + 150.0
+
+        self._set_check_credit(False)
+        invoice.invalidate_recordset(["partner_credit_warning"])
+        self.assertFalse(invoice.partner_credit_warning, "Without the setting the checks are ignored")
+        self.assertEqual(self._checks_credit(), 0.0)
+
+        self._set_check_credit(True)
+        invoice.invalidate_recordset(["partner_credit_warning"])
+        self.assertEqual(self._checks_credit(), 200.0, "Due or not, both checks are on hand")
+        self.assertIn("checks on hand", invoice.partner_credit_warning)
+        partner.invalidate_recordset(["credit"])
+        self.assertEqual(partner.credit, credit, "Checks never touch the accounting debt")
+
+    def test_check_credit_leaves_out_delivered_checks(self):
+        """A deposited check is not on hand anymore."""
+        self._set_check_credit(True)
+        check = self._create_third_party_check(self.third_party_check_journal, "UX-CREDIT-0020")
+        self.assertEqual(self._checks_credit(), 100.0)
+
+        self.env["l10n_latam.payment.mass.transfer"].with_context(
+            active_model="l10n_latam.check",
+            active_ids=check.ids,
+        ).create({"destination_journal_id": self.company_bank_journal.id})._create_payments()
+        self.assertEqual(check.current_journal_id, self.company_bank_journal)
+        self.assertEqual(self._checks_credit(), 0.0)
+
+    def test_check_credit_of_contacts_goes_to_commercial_partner(self):
+        """The warning reads the commercial partner, so checks received from a contact add up there."""
+        self._set_check_credit(True)
+        contact = self.env["res.partner"].create({"name": "Contact", "parent_id": self.partner_a.id})
+        self._create_third_party_check(self.third_party_check_journal, "UX-CREDIT-0030", partner=contact)
+        self.assertEqual(self._checks_credit(), 100.0)
+
+    def test_check_credit_in_foreign_currency(self):
+        """A check in another currency (e.g. USD checks) is converted to the company currency."""
+        self._set_check_credit(True)
+        self.env["res.currency.rate"].create(
+            {
+                "name": self.today,
+                "currency_id": self.eur_currency.id,
+                "company_id": self.company.id,
+                "rate": 1 / 1000.0,
+            }
+        )
+        self._create_third_party_check(self.third_party_check_journal, "UX-CREDIT-0040", currency=self.eur_currency)
+        self.assertAlmostEqual(self._checks_credit(), 100_000.0)
+
     def test_partner_check_credit_includes_branch_checks(self):
         """El crédito por cheques tiene que abarcar el árbol de compañías, como el de core.
 
@@ -378,16 +456,13 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
         sumar los cheques de una sola compañía deja el total inconsistente: la casa central ve
         las facturas de la sucursal pero no sus cheques.
         """
+        self._set_check_credit(True)
         branch = self._create_branch()
         branch_journal = self._create_check_journal("Branch Third Party Checks", "BTPC1", company=branch)
         self._create_third_party_check(branch_journal, "UX-CREDIT-0001")
 
-        partner_from_parent = self.partner_a.with_company(self.company)
-        partner_from_parent.add_check_credit = False
-        credit_without_checks = partner_from_parent.credit
-        partner_from_parent.add_check_credit = True
-
-        self.assertEqual(partner_from_parent.credit - credit_without_checks, 100.0)
+        self.assertEqual(self._checks_credit(company=self.company), 100.0)
+        self.assertEqual(self._checks_credit(company=branch), 100.0)
 
     def test_mass_transfer_destination_domain_reaches_the_root_company(self):
         """El dominio del diario destino se arma sobre la raíz, no sobre el padre inmediato.
