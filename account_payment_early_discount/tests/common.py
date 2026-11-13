@@ -19,11 +19,11 @@ class EarlyDiscountCommon(common.TransactionCase):
             cls.company.use_receiptbook = True
             cls.env["account.chart.template"]._create_receiptbooks(cls.company)
         cls.bank_journal = cls.env["account.journal"].create({"name": "Bank ED", "type": "bank", "code": "BNKED"})
-        outstanding_account = cls.env["account.account"].search(
+        cls.outstanding_account = cls.env["account.account"].search(
             [("company_ids", "=", cls.company.id), ("account_type", "=", "asset_current")], limit=1
         )
         for pml in cls.bank_journal.inbound_payment_method_line_ids.filtered(lambda x: not x.payment_account_id):
-            pml.payment_account_id = outstanding_account
+            pml.payment_account_id = cls.outstanding_account
         sale_vals = {"name": "Sales ED", "type": "sale", "code": "SALED"}
         if "l10n_latam_use_documents" in cls.env["account.journal"]._fields:
             sale_vals["l10n_latam_use_documents"] = False

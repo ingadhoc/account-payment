@@ -346,6 +346,9 @@ class TestEarlyDiscountPayment(EarlyDiscountCommon):
             return_line = method_lines.create(
                 {"journal_id": self.bank_journal.id, "payment_method_id": return_method.id}
             )
+        # check payment methods need an outstanding account
+        if not return_line.payment_account_id:
+            return_line.payment_account_id = self.outstanding_account
         return_payment = self.env["account.payment"].create(
             {
                 "journal_id": self.bank_journal.id,

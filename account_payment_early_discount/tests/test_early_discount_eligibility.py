@@ -80,6 +80,8 @@ class TestEarlyDiscountEligibility(EarlyDiscountCommon):
         self.assertFalse(invoice._is_early_discount_eligible(self.today, invoice.amount_total))
 
     def test_reconcile_on_company_currency(self):
+        if self.company.country_id.code != "AR":
+            self.skipTest("Reconciling on company currency is only allowed for Argentinian companies")
         eur = self.env.ref("base.EUR")
         foreign = eur if self.company.currency_id != eur else self.env.ref("base.USD")
         foreign.active = True
