@@ -1136,13 +1136,16 @@ class AccountPayment(models.Model):
         aunque la deuda restante sea mayor que el importe.
         """
         for rec in self:
-            if not rec.use_payment_pro or rec.state != "draft":
+            if not rec.use_payment_pro or rec.state != "draft" or not rec.currency_id:
                 continue
             if rec._origin.id:
                 continue
             if not rec.to_pay_move_line_ids:
+                # Sin líneas: si amount quedó stale respecto de to_pay_amount, sincronizar.
+                if not rec.currency_id.is_zero(rec.amount - abs(rec.to_pay_amount)):
+                    rec.amount = abs(rec.to_pay_amount)
                 continue
-            if not rec.payment_difference or not rec.currency_id:
+            if not rec.payment_difference:
                 continue
             if rec.payment_difference <= 0:
                 continue
