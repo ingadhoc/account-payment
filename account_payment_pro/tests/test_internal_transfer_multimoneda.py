@@ -82,7 +82,7 @@ class TestInternalTransferMultimoneda(TestPaymentMultimoneda):
         self.assertTrue(paired, "Debe existir paired payment")
 
         # Ambos posteados
-        self.assertIn(payment.state, ["paid", "in_process"])
+        self.assertIn(payment.state, ["paid", "reconciled"])
         self.assertEqual(paired.move_id.state, "posted")
 
         # Ambos asientos balancean

@@ -28,6 +28,8 @@ class TestWriteOffAndRounding(AccountInvariantsMixin, TransactionCase):
             [("company_id", "=", cls.company.id), ("type", "=", "bank")], limit=1
         )
         cls.product = cls.env.ref("product.product_product_16")
+        # Demo taxes on this product change between versions: the scenarios assume none.
+        cls.product.write({"taxes_id": False, "supplier_taxes_id": False})
         cls.vendor = cls.env["res.partner"].create({"name": "Test Write-off Vendor"})
         write_off_account = cls.env["account.account"].search([("account_type", "=", "expense")], limit=1)
         cls.write_off_type = cls.env["account.write_off.type"].create(
@@ -228,10 +230,10 @@ class TestWriteOffMulticurrency(AccountInvariantsMixin, TransactionCase):
             cls.usd = cls.env.ref("base.USD")
         cls.usd.active = True
         cls.env["res.currency.rate"].create(
-            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-01-01", "rate": 0.001}
+            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2025-12-31", "rate": 0.001}
         )
         cls.env["res.currency.rate"].create(
-            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-02-01", "rate": 1.0 / 1100.0}
+            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-01-31", "rate": 1.0 / 1100.0}
         )
 
         cls.vendor = cls.env["res.partner"].create({"name": "Test Write-off Multicurrency Vendor"})

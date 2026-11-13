@@ -105,7 +105,6 @@ class AccountPayment(models.Model):
         related="destination_journal_id.currency_id",
         string="Destination Journal Currency",
     )
-    commercial_partner_id = fields.Many2one(related="partner_id.commercial_partner_id")
     # MUY IMPORTANTE; NO agregar tracking porque rompe como se calcula (ver commit)
     payment_total = fields.Monetary(
         compute="_compute_payment_total",
@@ -188,6 +187,27 @@ class AccountPayment(models.Model):
     )
     write_off_available = fields.Boolean(compute="_compute_write_off_available")
     use_payment_pro = fields.Boolean(compute="_compute_use_payment_pro")
+    # amount is the gross amount (paid + withheld); the user works with the net one
+    withhold = fields.Selection(compute="_compute_withhold", store=True, readonly=False)
+    withholding_net_amount = fields.Monetary(readonly=False, inverse="_inverse_withholding_net_amount")
+    withholding_net_amount_signed = fields.Monetary(
+        string="Net Amount in Currency",
+        currency_field="currency_id",
+        compute="_compute_withholding_net_amount_signed",
+    )
+    counterpart_currency_net_amount = fields.Monetary(
+        string="Net Amount in Debt Currency",
+        currency_field="counterpart_currency_id",
+        compute="_compute_counterpart_currency_net_amount",
+        inverse="_inverse_counterpart_currency_net_amount",
+        readonly=False,
+    )
+    destination_currency_withholding_amount = fields.Monetary(
+        string="Withholdings",
+        currency_field="destination_currency_id",
+        compute="_compute_destination_currency_withholding_amount",
+        help="Withholdings in the debt currency, at the rate of the payment.",
+    )
     open_move_line_ids = fields.One2many(related="move_id.open_move_line_ids")
     multi_currency_debt = fields.Boolean(
         compute="_compute_multi_currency_debt",
@@ -474,11 +494,107 @@ class AccountPayment(models.Model):
             if not rec.currency_id.is_zero(rec.amount - rec.amount_exact):
                 rec.amount_exact = rec.amount
 
+    @api.depends("withholding_line_ids.amount")
     def _compute_amount(self):
         super()._compute_amount()
+        # the checks are the net amount: the gross one adds the withholdings
+        for rec in self.filtered(lambda x: x._is_latam_check_payment() and x.withholding_line_ids):
+            rec.amount = rec.l10n_latam_checks_amount + rec.withholding_amount
         for rec in self:
             if rec.currency_id and not rec.currency_id.is_zero(rec.amount - rec.amount_exact):
                 rec.amount_exact = rec.amount
+
+    @api.depends("use_payment_pro", "withholding_line_ids.amount", "amount")
+    def _compute_withhold(self):
+        """With payment pro the mode follows the withholding lines instead of being chosen by the user."""
+        for rec in self:
+            if not rec.use_payment_pro:
+                rec.withhold = rec.withhold or "payment"
+            elif not rec.withholding_line_ids:
+                rec.withhold = "payment"
+            elif rec.currency_id.is_zero(rec.amount - rec.withholding_amount):
+                rec.withhold = "withhold"
+            else:
+                rec.withhold = "withhold_pay"
+
+    @api.onchange("withholding_net_amount")
+    def _inverse_withholding_net_amount(self):
+        for rec in self:
+            amount = rec.withholding_net_amount + rec.withholding_amount
+            if rec.currency_id and not rec.currency_id.is_zero(amount - rec.amount):
+                rec.amount_exact = amount
+                rec.amount = amount
+
+    @api.depends("withholding_net_amount", "payment_type")
+    def _compute_withholding_net_amount_signed(self):
+        for rec in self:
+            sign = -1 if rec.payment_type == "outbound" else 1
+            rec.withholding_net_amount_signed = sign * rec.withholding_net_amount
+
+    @api.depends("counterpart_currency_amount", "withholding_amount", "counterpart_rate", "counterpart_currency_id")
+    def _compute_counterpart_currency_net_amount(self):
+        for rec in self:
+            withholding = rec.withholding_amount * (rec.counterpart_rate or 1.0)
+            rec.counterpart_currency_net_amount = rec.counterpart_currency_amount - withholding
+
+    @api.depends(
+        "withholding_amount",
+        "counterpart_rate",
+        "accounting_rate",
+        "counterpart_currency_id",
+        "destination_currency_id",
+    )
+    def _compute_destination_currency_withholding_amount(self):
+        # same A -> B2 conversion as _compute_payment_total
+        for rec in self:
+            if rec.counterpart_currency_id != rec.destination_currency_id:
+                amount = rec.withholding_amount / rec.accounting_rate if rec.accounting_rate else rec.withholding_amount
+            else:
+                amount = rec.withholding_amount * (rec.counterpart_rate or 1.0)
+            rec.destination_currency_withholding_amount = amount
+
+    @api.onchange("counterpart_currency_net_amount")
+    def _inverse_counterpart_currency_net_amount(self):
+        for rec in self:
+            gross = rec.counterpart_currency_net_amount + rec.withholding_amount * (rec.counterpart_rate or 1.0)
+            if rec.counterpart_currency_id and not rec.counterpart_currency_id.is_zero(
+                gross - rec.counterpart_currency_amount
+            ):
+                rec.counterpart_currency_amount = gross
+                rec._inverse_counterpart_currency_amount()
+
+    @api.depends("withholding_line_ids.amount", "accounting_rate")
+    def _compute_amount_company_currency_signed(self):
+        """Without an entry the core converts the gross amount; what goes through the bank is the net one,
+        which is also what the posted payment shows (its liquidity lines)."""
+        super()._compute_amount_company_currency_signed()
+        for rec in self.filtered(lambda x: not x.move_id and x.use_payment_pro and x.withholding_line_ids):
+            if rec.accounting_rate and rec.currency_id != rec.company_currency_id:
+                amount = rec.withholding_net_amount_signed / rec.accounting_rate
+            else:
+                amount = rec.currency_id._convert(
+                    rec.withholding_net_amount_signed, rec.company_currency_id, rec.company_id, rec.date
+                )
+            rec.amount_company_currency_signed = rec.company_currency_id.round(amount)
+
+    def _get_blocking_l10n_latam_warning_msg(self):
+        """The core compares the checks with the payment amount, but with withholdings they pay the net one."""
+        mismatch_msg = _(
+            "The amount of the payment  does not match the amount of the selected check. "
+            "Please try to deselect and select the check again."
+        )
+        msgs = super()._get_blocking_l10n_latam_warning_msg()
+        with_withholdings = self.filtered(
+            lambda x: x.state == "draft" and x._is_latam_check_payment() and x.withholding_line_ids
+        )
+        if not with_withholdings:
+            return msgs
+        msgs = [msg for msg in msgs if msg != mismatch_msg]
+        for rec in self.filtered(lambda x: x.state == "draft" and x._is_latam_check_payment()):
+            checks_amount = sum(rec._get_latam_checks().mapped("amount"))
+            if not rec.currency_id.is_zero(checks_amount - rec.withholding_net_amount):
+                msgs.append(mismatch_msg)
+        return msgs
 
     @api.onchange("currency_id")
     def _onchange_currency_recompute_amount(self):
@@ -515,6 +631,17 @@ class AccountPayment(models.Model):
                 and not rec.currency_id.is_zero(amount - rec.env.context.get("default_amount"))
             ):
                 amount = rec.env.context.get("default_amount")
+            # the withholding lines are in the payment currency as well
+            date = rec.date or fields.Date.context_today(rec)
+            for line in rec.withholding_line_ids:
+                line.update(
+                    {
+                        "base_amount": old_currency._convert(
+                            line.base_amount, new_currency, rec.company_id, date, False
+                        ),
+                        "amount": old_currency._convert(line.amount, new_currency, rec.company_id, date, False),
+                    }
+                )
             rec.update({"amount_exact": amount, "amount": amount})
 
     @api.constrains("to_pay_move_line_ids")
@@ -758,7 +885,8 @@ class AccountPayment(models.Model):
 
         liquidity_lines = res.get("liquidity_lines", [])
         counterpart_lines = res.get("counterpart_lines", [])
-        if not liquidity_lines or not counterpart_lines:
+        # a withholding-only payment has no liquidity line but still needs the adjustments below
+        if not counterpart_lines or (not liquidity_lines and self.withhold != "withhold"):
             return res
 
         if write_off_line_vals:
@@ -1065,9 +1193,9 @@ class AccountPayment(models.Model):
             return self.payment_difference / counterpart if counterpart else self.payment_difference
 
     def action_amount_from_checks(self):
-        """Set amount back to the sum of the checks."""
+        """Set amount back to the sum of the checks plus the withholdings."""
         for rec in self.filtered(lambda x: x.state == "draft" and x._is_latam_check_payment()):
-            rec.amount = sum(rec._get_latam_checks().mapped("amount"))
+            rec.amount = sum(rec._get_latam_checks().mapped("amount")) + rec.withholding_amount
 
     def action_adjust_amount_for_difference(self):
         """Ajusta amount para que payment_difference quede en cero."""
@@ -1151,6 +1279,34 @@ class AccountPayment(models.Model):
             rec.amount = amount if amount > 0 else 0
             rec.amount_exact = amount if amount > 0 else 0
 
+    @api.onchange("withholding_amount")
+    def _onchange_withholding_amount_follow_debt(self):
+        """When the withholdings change (the selected debt, its base, or the partner changed), the gross amount
+        follows the selected debt, up and down and never below zero. Supplier payments only, and not with third
+        party checks, where the checks set the amount."""
+        third_party_checks = (
+            "in_third_party_checks",
+            "out_third_party_checks",
+            "return_third_party_checks",
+            "new_third_party_checks",
+        )
+        for rec in self.filtered(
+            lambda x: x.use_payment_pro
+            and x.state == "draft"
+            and x.partner_type == "supplier"
+            and x.currency_id
+            and x.payment_method_code not in third_party_checks
+        ):
+            amount = max(rec.amount + rec._get_payment_difference_in_currency_a(), 0.0)
+            if not rec.currency_id.is_zero(amount - rec.amount):
+                rec.amount = amount
+                rec.amount_exact = amount
+
+    @api.onchange("partner_id")
+    def _onchange_partner_id_follow_debt(self):
+        """A new partner brings its own debt: the amount follows it, as when the withholdings change."""
+        self.filtered(lambda x: x.partner_id != x._origin.partner_id)._onchange_withholding_amount_follow_debt()
+
     @api.onchange("l10n_latam_new_check_ids")
     def _onchange_new_check_default_amount(self):
         """Al agregar un cheque nuevo, calcular su monto como la diferencia pendiente de pago."""
@@ -1189,7 +1345,7 @@ class AccountPayment(models.Model):
         records -= skip
         internal_transfers = records.filtered(lambda x: x.is_internal_transfer)
 
-        with_payment_pro = self._get_filter_payments(records, ["direct_debit_mandate_id", "pos_session_id"])
+        with_payment_pro = self._get_filter_payments(records, ["mandate_id", "pos_session_id"])
 
         if internal_transfers or not self.env.context.get("pay_now"):
             ((internal_transfers or self) - with_payment_pro).to_pay_move_line_ids = [Command.clear()]
@@ -1286,7 +1442,7 @@ class AccountPayment(models.Model):
         """Return the debt lines that the core reconciliation would actually match."""
         amls = (counterpart_aml + debt_aml).with_context(
             no_exchange_difference=self.env.context.get("no_exchange_difference")
-            or bool(self.env["ir.config_parameter"].sudo().get_param("account.disable_partial_exchange_diff"))
+            or self.env["ir.config_parameter"].sudo().get_bool("account.disable_partial_exchange_diff")
         )
         plan_list, all_amls = amls._optimize_reconciliation_plan([amls])
         values_map = {
@@ -1446,9 +1602,7 @@ class AccountPayment(models.Model):
     @api.model
     def _get_background_send_batch_size(self):
         """Amount of payments that can still be sent synchronously from the UI."""
-        return int(
-            self.env["ir.config_parameter"].sudo().get_param("account_payment_pro.background_send_batch_size", 5)
-        )
+        return self.env["ir.config_parameter"].sudo().get_int("account_payment_pro.background_send_batch_size", 5)
 
     def _queue_background_send(self, send_values=None):
         """Flag the payments so the cron sends their receipt, and wake the cron up.
@@ -1530,7 +1684,7 @@ class AccountPayment(models.Model):
 
         One payment per iteration and per commit: a failure neither rolls back
         the receipts already sent nor stops the rest of the batch."""
-        domain = [("background_send", "=", True), ("state", "in", ("in_process", "paid"))]
+        domain = [("background_send", "=", True), ("state", "in", ("paid", "reconciled"))]
         payments = self.search(domain, order="id", limit=job_count)
         if not payments:
             return

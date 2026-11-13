@@ -31,6 +31,8 @@ class TestPaymentState(AccountInvariantsMixin, TransactionCase):
             [("company_id", "=", cls.company.id), ("type", "=", "general")], limit=1
         )
         cls.product = cls.env.ref("product.product_product_16")
+        # Demo taxes on this product change between versions: the scenarios assume none.
+        cls.product.write({"taxes_id": False, "supplier_taxes_id": False})
         cls.customer = cls.env["res.partner"].create({"name": "Test Payment State Customer"})
 
         # Configuración del escenario: dos diarios de banco que solo difieren en
@@ -62,10 +64,10 @@ class TestPaymentState(AccountInvariantsMixin, TransactionCase):
             cls.usd = cls.env.ref("base.USD")
         cls.usd.active = True
         cls.env["res.currency.rate"].create(
-            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-01-01", "rate": 0.001}
+            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2025-12-31", "rate": 0.001}
         )
         cls.env["res.currency.rate"].create(
-            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-01-05", "rate": 1.0 / 1100.0}
+            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-01-04", "rate": 1.0 / 1100.0}
         )
 
     def _make_invoice(self, amount=10000.0):
