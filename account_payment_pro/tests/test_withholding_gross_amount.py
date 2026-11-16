@@ -192,6 +192,29 @@ class TestWithholdingGrossAmount(AccountTestInvoicingCommon):
         self.assertEqual(sum(liquidity.mapped("balance")), -1960.01)
         self.assertEqual(sum(counterpart.mapped("balance")), 2000.0)
 
+    def test_the_withholdings_total_in_company_currency_matches_the_entry(self):
+        """Paying a debt in company currency from a foreign journal, the withholdings of the header are the ones the
+        entry books: they are not rounded back through the payment currency."""
+        foreign = self.setup_other_currency("EUR", rates=[("2000-01-01", 1.0)])
+        payment = self._payment(currency_id=foreign.id)
+        payment.accounting_rate = 0.5
+        self.assertEqual(payment.counterpart_currency_id, self.company.currency_id)
+        exact = {"base_amount": 2000.0, "amount": 39.99}
+        line_model = type(payment.withholding_line_ids)
+        with patch.object(line_model, "_get_company_currency_amounts", lambda line: exact):
+            payment.invalidate_recordset(["destination_currency_withholding_amount", "counterpart_currency_net_amount"])
+            self.assertEqual(
+                payment.destination_currency_withholding_amount, 39.99, "and not the 40.0 of 20 EUR at 0.5"
+            )
+            payment.action_post()
+
+            liquidity, _counterpart, _writeoff = payment._seek_for_lines()
+            self.assertEqual(
+                payment.counterpart_currency_net_amount,
+                -sum(liquidity.mapped("balance")),
+                "what the header shows paid is what the bank line of the entry shows",
+            )
+
 
 @tagged("post_install", "-at_install")
 class TestWithholdingGrossAmountChecks(TestArCommon):

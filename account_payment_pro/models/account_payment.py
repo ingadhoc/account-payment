@@ -521,10 +521,28 @@ class AccountPayment(models.Model):
             sign = -1 if rec.payment_type == "outbound" else 1
             rec.withholding_net_amount_signed = sign * rec.withholding_net_amount
 
-    @api.depends("counterpart_currency_amount", "withholding_amount", "counterpart_rate", "counterpart_currency_id")
+    def _get_withholding_amount_in(self, currency, rate):
+        """Withholdings in ``currency``, ``rate`` being its units per unit of the payment currency.
+
+        In company currency they are the amounts the entry books: a line in a foreign currency is not
+        rounded back through it, so the header and the entry show the same withholdings.
+        """
+        self.ensure_one()
+        company_currency = self.company_currency_id
+        if currency == company_currency and self.currency_id != company_currency and self.accounting_rate:
+            return sum(line._get_company_currency_amounts()["amount"] for line in self.withholding_line_ids)
+        return self.withholding_amount * rate
+
+    @api.depends(
+        "counterpart_currency_amount",
+        "withholding_amount",
+        "counterpart_rate",
+        "accounting_rate",
+        "counterpart_currency_id",
+    )
     def _compute_counterpart_currency_net_amount(self):
         for rec in self:
-            withholding = rec.withholding_amount * (rec.counterpart_rate or 1.0)
+            withholding = rec._get_withholding_amount_in(rec.counterpart_currency_id, rec.counterpart_rate or 1.0)
             rec.counterpart_currency_net_amount = rec.counterpart_currency_amount - withholding
 
     @api.depends(
@@ -538,15 +556,18 @@ class AccountPayment(models.Model):
         # same A -> B2 conversion as _compute_payment_total
         for rec in self:
             if rec.counterpart_currency_id != rec.destination_currency_id:
-                amount = rec.withholding_amount / rec.accounting_rate if rec.accounting_rate else rec.withholding_amount
+                rate = 1.0 / rec.accounting_rate if rec.accounting_rate else 1.0
             else:
-                amount = rec.withholding_amount * (rec.counterpart_rate or 1.0)
-            rec.destination_currency_withholding_amount = amount
+                rate = rec.counterpart_rate or 1.0
+            rec.destination_currency_withholding_amount = rec._get_withholding_amount_in(
+                rec.destination_currency_id, rate
+            )
 
     @api.onchange("counterpart_currency_net_amount")
     def _inverse_counterpart_currency_net_amount(self):
         for rec in self:
-            gross = rec.counterpart_currency_net_amount + rec.withholding_amount * (rec.counterpart_rate or 1.0)
+            withholding = rec._get_withholding_amount_in(rec.counterpart_currency_id, rec.counterpart_rate or 1.0)
+            gross = rec.counterpart_currency_net_amount + withholding
             if rec.counterpart_currency_id and not rec.counterpart_currency_id.is_zero(
                 gross - rec.counterpart_currency_amount
             ):
