@@ -85,6 +85,12 @@
         </xpath>
 
         <!-- amount is the gross amount: the user keeps typing and seeing the net one -->
+        <label for="amount" position="attributes">
+            <attribute name="invisible">use_payment_pro and withholding_line_ids</attribute>
+        </label>
+        <label for="amount" position="after">
+            <label for="withholding_net_amount" string="Amount" invisible="not use_payment_pro or not withholding_line_ids"/>
+        </label>
         <xpath expr="//div[@name='amount_div']//field[@name='amount']" position="attributes">
             <attribute name="invisible">use_payment_pro and withholding_line_ids</attribute>
         </xpath>
