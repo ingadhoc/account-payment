@@ -7,25 +7,147 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 19.0+e\n"
+"Project-Id-Version: Odoo Server 20.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-24 14:31+0000\n"
-"PO-Revision-Date: 2025-12-26 17:10+0000\n"
+"POT-Creation-Date: 2026-11-18 11:07+0000\n"
+"PO-Revision-Date: 2026-11-18 11:07+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
-"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
-"payment-19-0/account-payment-19-0-account_payment_pro_receiptbook/es/>\n"
+"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-payment-20-0/account-payment-20-0-account_payment_pro_receiptbook/es/>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == "
-"0) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == 0) ? 1 : 2);\n"
 "X-Generator: Weblate 5.10.4\n"
+
+#. module: account_payment_pro_receiptbook
+#: model:ir.module.module,description:base.module_account_payment_pro_receiptbook
+msgid ""
+".. |company| replace:: ADHOC SA\n"
+"\n"
+".. |company_logo| image:: https://raw.githubusercontent.com/ingadhoc/maintainer-tools/master/resources/adhoc-logo.png\n"
+"   :alt: ADHOC SA\n"
+"   :target: https://www.adhoc.com.ar\n"
+"\n"
+".. |icon| image:: https://raw.githubusercontent.com/ingadhoc/maintainer-tools/master/resources/adhoc-icon.png\n"
+"\n"
+".. image:: https://img.shields.io/badge/license-AGPL--3-blue.png\n"
+"   :target: https://www.gnu.org/licenses/agpl\n"
+"   :alt: License: AGPL-3\n"
+"\n"
+"===========================\n"
+"Account Payment receiptbook\n"
+"===========================\n"
+"\n"
+"Adds receiptbooks to the payments of Account Payment Pro. A receiptbook gives\n"
+"customer receipts and vendor payment orders their own numbering, like a\n"
+"document (for example ``RE-X 0001-00000001``), separate from the numbering of\n"
+"the bank or cash journal.\n"
+"\n"
+"Features\n"
+"========\n"
+"\n"
+"* Receiptbooks by company and partner type (customer or vendor), each one with\n"
+"  a document type, a prefix and its own sequence. The sequence can be standard\n"
+"  or \"no gap\".\n"
+"* Two document types: \"RECIBOS X\" (``RE-X``) for customer receipts and\n"
+"  \"ORDEN DE PAGO X\" (``OP-X``) for vendor payments.\n"
+"* When a payment is posted, it takes its number from the receiptbook, and the\n"
+"  journal entry gets the same name and the document type of the receiptbook.\n"
+"  Canceled payments do not take a number.\n"
+"* Payments cannot be posted with an archived receiptbook or with a receiptbook\n"
+"  without a sequence.\n"
+"* Optional email template, sent to the partner when the payment is posted, and\n"
+"  optional partner for the header of the printed receipt.\n"
+"* Other entries of the same bank or cash journal keep the journal numbering and\n"
+"  never take a number from a receiptbook.\n"
+"* Sequence gaps (``made_sequence_gap``) are checked by receiptbook and prefix,\n"
+"  not by journal.\n"
+"* Branches: the combination of prefix, document type and partner type is unique\n"
+"  across a company and its branches. A branch gets the first free prefix\n"
+"  (``0002-``, ``0003-``, ...). With more than one active company, the name of a\n"
+"  receiptbook of a company with branches shows its company.\n"
+"* The Resequence wizard of journal entries works by receiptbook: it can\n"
+"  resequence entries of the same receiptbook from different journals, does not\n"
+"  mix receiptbooks or entries with and without receiptbook, checks that the new\n"
+"  names are not used and then updates the next number of the receiptbook.\n"
+"* A used receiptbook (with posted payments) cannot be deleted.\n"
+"\n"
+"Installation\n"
+"============\n"
+"\n"
+"To install this module, you need to:\n"
+"\n"
+"#. Just install this module. Receiptbooks for customers and vendors are created\n"
+"   in every company with a chart of accounts, and later in each new company\n"
+"   when its chart of accounts is loaded.\n"
+"\n"
+"Configuration\n"
+"=============\n"
+"\n"
+"To configure this module, you need to:\n"
+"\n"
+"#. Go to Accounting > Configuration > Settings and enable \"Use Receiptbook\".\n"
+"   It needs \"Use Payment Pro\", and it is enabled by default for Argentinean\n"
+"   companies that use Payment Pro.\n"
+"#. Go to Accounting > Configuration > Receiptbooks to review or create\n"
+"   receiptbooks: name, partner type, document type, prefix, next number,\n"
+"   sequence implementation, email template and report partner.\n"
+"\n"
+"Usage\n"
+"=====\n"
+"\n"
+"To use this module, you need to:\n"
+"\n"
+"#. Create a customer or vendor payment. The receiptbook of the company and\n"
+"   partner type is set by default, and it can be changed while the payment is\n"
+"   in draft.\n"
+"#. Post the payment: it is numbered with the receiptbook sequence.\n"
+"#. To resequence receipts, enable the developer mode, select the journal\n"
+"   entries of one receiptbook in the list view and use Action > Resequence.\n"
+"\n"
+".. image:: https://odoo-community.org/website/image/ir.attachment/5784_f2813bd/datas\n"
+"   :alt: Try me on Runbot\n"
+"   :target: http://runbot.adhoc.com.ar/\n"
+"\n"
+"Bug Tracker\n"
+"===========\n"
+"\n"
+"Bugs are tracked on `GitHub Issues\n"
+"<https://github.com/ingadhoc/account-payment/issues>`_. In case of trouble, please\n"
+"check there if your issue has already been reported. If you spotted it first,\n"
+"help us smashing it by providing a detailed and welcomed feedback.\n"
+"\n"
+"Credits\n"
+"=======\n"
+"\n"
+"Images\n"
+"------\n"
+"\n"
+"* |company| |icon|\n"
+"\n"
+"Contributors\n"
+"------------\n"
+"\n"
+"Maintainer\n"
+"----------\n"
+"\n"
+"|company_logo|\n"
+"\n"
+"This module is maintained by the |company|.\n"
+"\n"
+"To contribute to this module, please visit https://www.adhoc.com.ar.\n"
+msgstr ""
 
 #. module: account_payment_pro_receiptbook
 #: model:ir.model,name:account_payment_pro_receiptbook.model_account_chart_template
 msgid "Account Chart Template"
-msgstr "Plantilla de plan contable"
+msgstr "Plantilla de plan de cuentas"
+
+#. module: account_payment_pro_receiptbook
+#: model:ir.module.module,shortdesc:base.module_account_payment_pro_receiptbook
+msgid "Account Payment receiptbook"
+msgstr "Talonario de recibos de pago"
 
 #. module: account_payment_pro_receiptbook
 #: model:ir.model,name:account_payment_pro_receiptbook.model_account_payment_receiptbook
@@ -40,7 +162,7 @@ msgstr "Activo"
 #. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__next_number
 msgid "Actual Next Number"
-msgstr ""
+msgstr "Próximo número real"
 
 #. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,help:account_payment_pro_receiptbook.field_l10n_latam_document_type__internal_type
@@ -49,10 +171,10 @@ msgid ""
 "identify the kind of document we are working with. (not only related to "
 "account.move, could be for documents of other models like stock.picking)"
 msgstr ""
-"Análogo a odoo account.move.move_type pero con más opciones que permiten "
-"identificar el tipo de documento con el que estamos trabajando. (no sólo "
-"relacionado con account.move, podría ser para documentos de otros modelos "
-"como stock.picking)"
+"Análogo a account.move.move_type de Odoo, pero con más opciones que te "
+"permiten identificar el tipo de documento con el que trabajas. (No solo se "
+"relaciona con account.move, también puede aplicar a documentos de otros "
+"modelos como stock.picking)"
 
 #. module: account_payment_pro_receiptbook
 #: model_terms:ir.ui.view,arch_db:account_payment_pro_receiptbook.view_receipt_receiptbook_form
@@ -62,10 +184,6 @@ msgstr "Archivado"
 
 #. module: account_payment_pro_receiptbook
 #: model:ir.model,name:account_payment_pro_receiptbook.model_res_company
-msgid "Companies"
-msgstr "Empresas"
-
-#. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__company_id
 msgid "Company"
 msgstr "Empresa"
@@ -83,7 +201,7 @@ msgstr "País"
 #. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,help:account_payment_pro_receiptbook.field_l10n_latam_document_type__country_id
 msgid "Country in which this type of document is valid"
-msgstr "País donde el tipo de documento es valido"
+msgstr "País donde este tipo de documento es válido"
 
 #. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__create_uid
@@ -115,15 +233,8 @@ msgstr "Recibos de Cliente"
 #: model:ir.model.fields,help:account_payment_pro_receiptbook.field_account_payment_receiptbook__implementation
 msgid ""
 "Defines how the sequence assigns numbers:\n"
-"* Standard: numbers are drawn from a PostgreSQL sequence. It is fast, but "
-"the numbering may have gaps (for example if a draft payment is deleted or "
-"two payments are posted concurrently).\n"
-"* No gap: guarantees a strictly consecutive numbering, because a number is "
-"only assigned once the previous one has been assigned. Use it when the legal/"
-"fiscal numbering must not skip values. It is slower than the standard "
-"implementation: to keep numbers consecutive it locks the sequence on every "
-"assignment, so concurrent payments are serialized and have to wait for each "
-"other, which can cause noticeable delays when posting many payments at once."
+"* Standard: numbers are drawn from a PostgreSQL sequence. It is fast, but the numbering may have gaps (for example if a draft payment is deleted or two payments are posted concurrently).\n"
+"* No gap: guarantees a strictly consecutive numbering, because a number is only assigned once the previous one has been assigned. Use it when the legal/fiscal numbering must not skip values. It is slower than the standard implementation: to keep numbers consecutive it locks the sequence on every assignment, so concurrent payments are serialized and have to wait for each other, which can cause noticeable delays when posting many payments at once."
 msgstr ""
 "Define cómo la secuencia asigna los números:\n"
 "* Estándar: los números se obtienen de una secuencia de PostgreSQL. Es "
@@ -149,7 +260,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_res_company__display_name
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_res_config_settings__display_name
 msgid "Display Name"
-msgstr "Nombre a Mostrar"
+msgstr "Mostrar nombre"
 
 #. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__document_type_id
@@ -190,6 +301,8 @@ msgid ""
 "Error!. Please define sequence on the receiptbook related documents to this "
 "payment."
 msgstr ""
+"¡Error! Defina la secuencia en el talonario de recibos de los documentos "
+"relacionados con este pago."
 
 #. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_chart_template__id
@@ -203,13 +316,13 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_res_company__id
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_res_config_settings__id
 msgid "ID"
-msgstr "ID"
+msgstr "ID (identificación)"
 
 #. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,help:account_payment_pro_receiptbook.field_account_payment_receiptbook__mail_template_id
 msgid ""
-"If set an email will be sent to the customer when the related account."
-"payment.group has been posted."
+"If set an email will be sent to the customer when the related "
+"account.payment.group has been posted."
 msgstr ""
 "Si se configura, se enviará un correo electrónico al cliente cuando se haya "
 "publicado la cuenta, pago o  grupo relacionado."
@@ -232,7 +345,7 @@ msgstr "Diario"
 #. module: account_payment_pro_receiptbook
 #: model:ir.model,name:account_payment_pro_receiptbook.model_account_move
 msgid "Journal Entry"
-msgstr "Asiento Contable"
+msgstr "Asiento contable"
 
 #. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__write_uid
@@ -260,6 +373,8 @@ msgid ""
 "Next number that will be used. This number can be incremented frequently so "
 "the displayed value might already be obsolete"
 msgstr ""
+"Próximo número que se usará. Este número puede incrementarse con frecuencia, "
+"por lo que el valor mostrado podría estar desactualizado"
 
 #. module: account_payment_pro_receiptbook
 #: model:l10n_latam.document.type,report_name:account_payment_pro_receiptbook.dc_orden_pago_x
@@ -279,12 +394,12 @@ msgstr "Tipo de Empresa"
 #. module: account_payment_pro_receiptbook
 #: model:ir.model,name:account_payment_pro_receiptbook.model_account_payment_register
 msgid "Pay"
-msgstr "Pagar"
+msgstr "Registrar pago"
 
 #. module: account_payment_pro_receiptbook
 #: model:ir.model,name:account_payment_pro_receiptbook.model_account_payment
-msgid "Payments"
-msgstr "Pagos"
+msgid "Payment"
+msgstr "Pago"
 
 #. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__prefix
@@ -324,7 +439,7 @@ msgstr "Talonarios de Recibos"
 #. module: account_payment_pro_receiptbook
 #: model:ir.model,name:account_payment_pro_receiptbook.model_account_resequence_wizard
 msgid "Remake the sequence of Journal Entries."
-msgstr "Haga de nuevo la secuencia de asientos contables."
+msgstr "Rehaga la secuencia de los asientos contables."
 
 #. module: account_payment_pro_receiptbook
 #: model:ir.model.fields,field_description:account_payment_pro_receiptbook.field_account_payment_receiptbook__report_partner_id
@@ -352,9 +467,12 @@ msgstr "Pagos de Proveedores"
 #: code:addons/account_payment_pro_receiptbook/models/account_payment_receiptbook.py:0
 msgid ""
 "The combination of Prefix, Document Type and Partner Type must be unique "
-"across a company and its branches. There is already a receiptbook with these "
-"values."
+"across a company and its branches. There is already a receiptbook with these"
+" values."
 msgstr ""
+"La combinación de prefijo, tipo de documento y tipo de empresa debe ser única "
+"en una compañía y sus sucursales. Ya existe un talonario de recibos con estos "
+"valores."
 
 #. module: account_payment_pro_receiptbook
 #. odoo-python
@@ -370,8 +488,8 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_payment_pro_receiptbook/__init__.py:0
 msgid ""
-"The sequences of this journal are different for Invoices and Refunds but you "
-"selected some of both types."
+"The sequences of this journal are different for Invoices and Refunds but you"
+" selected some of both types."
 msgstr ""
 "Las secuencias de este diario son diferentes para Facturas y Reembolsos, "
 "pero seleccionó algunos de ambos tipos."
@@ -443,10 +561,3 @@ msgid "You can't delete receiptbook used in publish payments."
 msgstr ""
 "No puede eliminar el talonario de recibos ya que se encuentra utilizado en "
 "pagos publicados."
-
-#~ msgid ""
-#~ "The combination of Company, Prefix, Document Type and Partner Type must "
-#~ "be unique. There is already a receiptbook with these values."
-#~ msgstr ""
-#~ "La combinación de Empresa, Prefijo, Tipo de documento y Tipo de Contacto "
-#~ "debe ser única. Ya existe un talonario de recibos con estos valores."
