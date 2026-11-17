@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 20.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-02 13:43+0000\n"
-"PO-Revision-Date: 2026-11-02 13:43+0000\n"
+"POT-Creation-Date: 2026-11-17 16:17+0000\n"
+"PO-Revision-Date: 2026-11-17 16:17+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -275,6 +275,7 @@ msgid ""
 msgstr ""
 
 #. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_move_line_tree
 msgid "Amount"
 msgstr ""
@@ -292,6 +293,11 @@ msgstr ""
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "Amount in"
+msgstr ""
+
+#. module: account_payment_pro
+#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_tree
+msgid "Amount in Currency"
 msgstr ""
 
 #. module: account_payment_pro
@@ -460,6 +466,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_move_line__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__display_name
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_withholding_line__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_base_language_install__display_name
 #: model:ir.model.fields,field_description:account_payment_pro.field_mail_compose_message__display_name
@@ -542,6 +549,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_move_line__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__id
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_withholding_line__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_write_off_type__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_base_language_install__id
 #: model:ir.model.fields,field_description:account_payment_pro.field_mail_compose_message__id
@@ -675,6 +683,21 @@ msgid "Name"
 msgstr ""
 
 #. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__withholding_net_amount
+msgid "Net Amount"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__withholding_net_amount_signed
+msgid "Net Amount in Currency"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_currency_net_amount
+msgid "Net Amount in Debt Currency"
+msgstr ""
+
+#. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid "No volver a mostrar este aviso para este pago"
 msgstr ""
@@ -781,6 +804,11 @@ msgstr ""
 msgid ""
 "Payment will be automatically matched with the oldest lines of this list (by"
 " maturity date). You can remove any line you dont want to be matched."
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model,name:account_payment_pro.model_account_payment_withholding_line
+msgid "Payment withholding line"
 msgstr ""
 
 #. module: account_payment_pro
@@ -905,6 +933,20 @@ msgstr ""
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__tax_ids
 msgid "Taxes"
+msgstr ""
+
+#. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/account_payment.py:0
+msgid ""
+"The amount of the payment  does not match the amount of the selected check. "
+"Please try to deselect and select the check again."
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__withholding_net_amount
+msgid ""
+"The amount that will actually be paid after deducting withholding taxes."
 msgstr ""
 
 #. module: account_payment_pro
@@ -1068,6 +1110,21 @@ msgstr ""
 msgid ""
 "We tried to send this payment receipt in the background but got this error: "
 "%s"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__withhold
+msgid "Withhold"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__destination_currency_withholding_amount
+msgid "Withholdings"
+msgstr ""
+
+#. module: account_payment_pro
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__destination_currency_withholding_amount
+msgid "Withholdings in the debt currency, at the rate of the payment."
 msgstr ""
 
 #. module: account_payment_pro
