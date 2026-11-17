@@ -93,6 +93,12 @@ class AccountPayment(models.Model):
         store=True,
         copy=False,
     )
+    # Mismo round-trip, para saber cuánto cambiaron las retenciones en el onchange.
+    previous_withholding_amount = fields.Monetary(
+        currency_field="currency_id",
+        store=True,
+        copy=False,
+    )
     amount_exact = fields.Float(
         string="Amount (Exact)",
         digits=0,
@@ -404,6 +410,24 @@ class AccountPayment(models.Model):
     # CODIGO para UX de rate según la moneda mas fuerte. TODO evaluar si mantenemos o simplificamos
     ####
 
+    def _is_rate_inverted(self, from_currency, to_currency):
+        """True when ``to_currency`` is the strong one, so the form asks for the rate as "1 to = X from".
+
+        Reads the theoretical rate of the pair. Without a rate loaded for the date it comes back as 1.0 and the
+        direction would be decided by chance, so the foreign currency is taken as the strong one, which is how
+        the rate is quoted.
+        """
+        self.ensure_one()
+        theoretical_rate = self.env["res.currency"]._get_conversion_rate(
+            from_currency=from_currency,
+            to_currency=to_currency,
+            company=self.company_id,
+            date=self.date or fields.Date.context_today(self),
+        )
+        if theoretical_rate != 1.0:
+            return theoretical_rate < 1.0
+        return from_currency == self.company_currency_id and to_currency != self.company_currency_id
+
     @api.depends("currency_id", "counterpart_currency_id", "company_id", "date")
     def _compute_counterpart_rate_inverted(self):
         """Se fija en el rate teórico A→B1 para determinar si B1 es moneda fuerte (rate < 1.0) y por lo tanto mostrar el rate invertido al usuario (B1→A)"""
@@ -411,13 +435,7 @@ class AccountPayment(models.Model):
             if not rec.currency_id or rec.currency_id == rec.counterpart_currency_id:
                 rec.counterpart_rate_inverted = False
                 continue
-            theoretical_rate = self.env["res.currency"]._get_conversion_rate(
-                from_currency=rec.currency_id,
-                to_currency=rec.counterpart_currency_id,
-                company=rec.company_id,
-                date=rec.date or fields.Date.context_today(rec),
-            )
-            rec.counterpart_rate_inverted = theoretical_rate < 1.0
+            rec.counterpart_rate_inverted = rec._is_rate_inverted(rec.currency_id, rec.counterpart_currency_id)
 
     @api.depends("currency_id", "company_currency_id", "company_id", "date")
     def _compute_accounting_rate_inverted(self):
@@ -428,13 +446,7 @@ class AccountPayment(models.Model):
                 continue
             # Misma dirección que _compute_accounting_rate: _get_conversion_rate(C→A) = A/C.
             # Si A/C < 1.0 (A es la moneda fuerte, ej: USD/ARS = 0.000667), mostramos C/A = 1500.
-            theoretical_rate = self.env["res.currency"]._get_conversion_rate(
-                from_currency=rec.company_currency_id,
-                to_currency=rec.currency_id,
-                company=rec.company_id,
-                date=rec.date or fields.Date.context_today(rec),
-            )
-            rec.accounting_rate_inverted = theoretical_rate < 1.0
+            rec.accounting_rate_inverted = rec._is_rate_inverted(rec.company_currency_id, rec.currency_id)
 
     @api.depends("accounting_rate")
     def _compute_user_accounting_rate(self):
@@ -702,7 +714,18 @@ class AccountPayment(models.Model):
         for vals in vals_list:
             if "amount" in vals and "amount_exact" not in vals:
                 vals["amount_exact"] = vals["amount"]
-        return super().create(vals_list)
+        records = super().create(vals_list)
+        records._sync_previous_withholding_amount()
+        return records
+
+    def _sync_previous_withholding_amount(self):
+        """The onchange reads it to know how much the withholdings moved, so a saved record carries the real total
+        even when it was not created through the form."""
+        for rec in self:
+            if rec.currency_id and not rec.currency_id.is_zero(
+                rec.withholding_amount - rec.previous_withholding_amount
+            ):
+                rec.previous_withholding_amount = rec.withholding_amount
 
     def copy(self, default=None):
         # On copy, to_pay_move_line_ids (copy=False) is recomputed via _add_all,
@@ -740,7 +763,10 @@ class AccountPayment(models.Model):
                 # la company_id se cambia correctamente.
                 if "company_id" in vals and "journal_id" in vals:
                     rec.move_id.journal_id = vals["journal_id"]
-        return super().write(vals)
+        res = super().write(vals)
+        if "withholding_line_ids" in vals and "previous_withholding_amount" not in vals:
+            self._sync_previous_withholding_amount()
+        return res
 
     ##############################
     # desde modelo account.payment
@@ -1312,6 +1338,22 @@ class AccountPayment(models.Model):
             if not rec.currency_id.is_zero(amount - rec.amount):
                 rec.amount = amount
                 rec.amount_exact = amount
+
+    @api.onchange("withholding_amount")
+    def _onchange_withholding_amount_keep_net(self):
+        """Outside a supplier payment the net the user typed stays put: the gross follows the withholdings and
+        the difference shows up as the adjustment to make, as in 19.0, where the amount was the net one and
+        ``_onchange_withholdings`` of l10n_ar_tax only moved it on supplier payments."""
+        for rec in self:
+            delta = rec.withholding_amount - rec.previous_withholding_amount
+            rec.previous_withholding_amount = rec.withholding_amount
+            if not rec.use_payment_pro or rec.state != "draft" or rec.partner_type == "supplier":
+                continue
+            if not rec.currency_id or rec.currency_id.is_zero(delta):
+                continue
+            amount = max(rec.amount + delta, 0.0)
+            rec.amount = amount
+            rec.amount_exact = amount
 
     @api.onchange("partner_id")
     def _onchange_partner_id_follow_debt(self):
