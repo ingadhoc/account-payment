@@ -2,7 +2,7 @@
 # For copyright and license notices, see __manifest__.py file in root directory
 ##############################################################################
 from odoo import _, api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import AccessError, ValidationError
 
 
 class AccountPaymentInvoiceWizard(models.TransientModel):
@@ -229,7 +229,11 @@ class AccountPaymentInvoiceWizard(models.TransientModel):
             line_vals["analytic_distribution"] = self.analytic_distribution
         invoice_vals["invoice_line_ids"] = [(0, 0, line_vals)]
         invoice = self.env["account.move"].create(invoice_vals)
-        invoice.action_post()
+        # Same check as _post, which sudo() skips
+        if not self.env.user.has_group("account.group_account_invoice"):
+            raise AccessError(_("You don't have the access rights to post an invoice."))
+        # Posting may reconcile with an origin invoice the user can't access (e.g. another store)
+        invoice.sudo().action_post()
 
         self.payment_id.to_pay_move_line_ids += invoice.open_move_line_ids
 
