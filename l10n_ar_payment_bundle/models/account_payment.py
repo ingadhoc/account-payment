@@ -359,6 +359,15 @@ class AccountPayment(models.Model):
         for rec in self.filtered("main_payment_id"):
             rec.partner_id = rec.main_payment_id.partner_id
 
+    def write(self, vals):
+        res = super().write(vals)
+        # Linked payments get partner_id from a compute, not from write(), so core never syncs their entries
+        if "partner_id" in vals:
+            # One by one: the patched core _synchronize_to_moves reads self.outstanding_account_id inside its loop
+            for linked in self.link_payment_ids.filtered("move_id"):
+                linked._synchronize_to_moves({"partner_id"})
+        return res
+
     def _compute_payment_difference(self):
         for rec in self.filtered("main_payment_id"):
             payments = rec.main_payment_id.link_payment_ids
