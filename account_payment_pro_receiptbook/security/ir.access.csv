@@ -1,0 +1,4 @@
+id,name,model_id,group_id/id,operation,domain
+account_payment_receiptbook_manager,account_payment_receiptbook_manager,account.payment.receiptbook,account.group_account_manager,crud,
+account_payment_receiptbook_global,account_payment_receiptbook_global,account.payment.receiptbook,base.group_user,r,
+receiptbook_comp_rule,Receiptbook Line multi-company,account.payment.receiptbook,,crud,"[('company_id', 'child_of', company_ids)]"

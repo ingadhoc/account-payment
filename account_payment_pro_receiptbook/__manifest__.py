@@ -16,8 +16,7 @@
         "l10n_latam_invoice_document",
     ],
     "data": [
-        "security/ir.model.access.csv",
-        "security/security.xml",
+        "security/ir.access.csv",
         "views/account_payment_receipt_group.xml",
         "views/account_payment.xml",
         "views/res_company_setting.xml",
