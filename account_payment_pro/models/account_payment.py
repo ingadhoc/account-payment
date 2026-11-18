@@ -392,19 +392,23 @@ class AccountPayment(models.Model):
                 else:
                     rec.destination_currency_id = rec.company_currency_id
 
+    def _get_accounting_rate_for(self, currency):
+        """Rate A→C in native Odoo format for ``currency`` taken as the payment one."""
+        self.ensure_one()
+        if not currency or currency == self.company_currency_id:
+            return 1.0
+        # _get_conversion_rate(from=C, to=A) devuelve A/C, que es el formato Odoo nativo que necesitamos
+        return self.env["res.currency"]._get_conversion_rate(
+            from_currency=self.company_currency_id,
+            to_currency=currency,
+            company=self.company_id,
+            date=self.date or fields.Date.context_today(self),
+        )
+
     @api.depends("currency_id", "company_currency_id", "company_id", "date")
     def _compute_accounting_rate(self):
         for rec in self:
-            if not rec.currency_id or rec.currency_id == rec.company_currency_id:
-                rec.accounting_rate = 1.0
-            else:
-                # _get_conversion_rate(from=C, to=A) devuelve A/C, que es el formato Odoo nativo que necesitamos
-                rec.accounting_rate = self.env["res.currency"]._get_conversion_rate(
-                    from_currency=rec.company_currency_id,
-                    to_currency=rec.currency_id,
-                    company=rec.company_id,
-                    date=rec.date or fields.Date.context_today(rec),
-                )
+            rec.accounting_rate = rec._get_accounting_rate_for(rec.currency_id)
 
     ####
     # CODIGO para UX de rate según la moneda mas fuerte. TODO evaluar si mantenemos o simplificamos
@@ -520,6 +524,11 @@ class AccountPayment(models.Model):
                 rec.withhold = "withhold_pay"
 
     @api.onchange("withholding_net_amount")
+    def _onchange_withholding_net_amount(self):
+        """The onchange lives apart from the inverse: the registry takes the last method of the MRO, so a module
+        overriding the inverse would leave the field without an onchange."""
+        self._inverse_withholding_net_amount()
+
     def _inverse_withholding_net_amount(self):
         for rec in self:
             amount = rec.withholding_net_amount + rec.withholding_amount
@@ -576,6 +585,10 @@ class AccountPayment(models.Model):
             )
 
     @api.onchange("counterpart_currency_net_amount")
+    def _onchange_counterpart_currency_net_amount(self):
+        """The onchange lives apart from the inverse, for the same reason as the counterpart amount one."""
+        self._inverse_counterpart_currency_net_amount()
+
     def _inverse_counterpart_currency_net_amount(self):
         for rec in self:
             withholding = rec._get_withholding_amount_in(rec.counterpart_currency_id, rec.counterpart_rate or 1.0)
@@ -654,17 +667,18 @@ class AccountPayment(models.Model):
                 and not rec.currency_id.is_zero(amount - rec.env.context.get("default_amount"))
             ):
                 amount = rec.env.context.get("default_amount")
-            # the withholding lines are in the payment currency as well
-            date = rec.date or fields.Date.context_today(rec)
-            for line in rec.withholding_line_ids:
-                line.update(
-                    {
-                        "base_amount": old_currency._convert(
-                            line.base_amount, new_currency, rec.company_id, date, False
-                        ),
-                        "amount": old_currency._convert(line.amount, new_currency, rec.company_id, date, False),
-                    }
-                )
+            # the withholding lines are in the payment currency as well, and they follow the rate of the payment
+            # (the one the entry books, which the user can type) and not the one of the day
+            old_rate = rec._get_accounting_rate_for(old_currency)
+            new_rate = rec.accounting_rate
+            if old_rate and new_rate:
+                for line in rec.withholding_line_ids:
+                    line.update(
+                        {
+                            "base_amount": new_currency.round(line.base_amount / old_rate * new_rate),
+                            "amount": new_currency.round(line.amount / old_rate * new_rate),
+                        }
+                    )
             rec.update({"amount_exact": amount, "amount": amount})
 
     @api.constrains("to_pay_move_line_ids")
@@ -1322,7 +1336,18 @@ class AccountPayment(models.Model):
             rec.amount_exact = amount if amount > 0 else 0
 
     @api.onchange("withholding_amount")
-    def _onchange_withholding_amount_follow_debt(self):
+    def _onchange_withholding_amount(self):
+        """Single onchange of the field: the previous total is booked once and each payment takes its branch, so
+        the result does not depend on the order the methods are defined in."""
+        for rec in self:
+            delta = rec.withholding_amount - rec.previous_withholding_amount
+            rec.previous_withholding_amount = rec.withholding_amount
+            if rec.partner_type == "supplier":
+                rec._follow_selected_debt()
+            else:
+                rec._keep_typed_net_amount(delta)
+
+    def _follow_selected_debt(self):
         """When the withholdings change (the selected debt, its base, or the partner changed), the gross amount
         follows the selected debt, up and down and never below zero. Supplier payments only, and not with third
         party checks, where the checks set the amount."""
@@ -1344,26 +1369,23 @@ class AccountPayment(models.Model):
                 rec.amount = amount
                 rec.amount_exact = amount
 
-    @api.onchange("withholding_amount")
-    def _onchange_withholding_amount_keep_net(self):
+    def _keep_typed_net_amount(self, delta):
         """Outside a supplier payment the net the user typed stays put: the gross follows the withholdings and
         the difference shows up as the adjustment to make, as in 19.0, where the amount was the net one and
         ``_onchange_withholdings`` of l10n_ar_tax only moved it on supplier payments."""
-        for rec in self:
-            delta = rec.withholding_amount - rec.previous_withholding_amount
-            rec.previous_withholding_amount = rec.withholding_amount
-            if not rec.use_payment_pro or rec.state != "draft" or rec.partner_type == "supplier":
-                continue
-            if not rec.currency_id or rec.currency_id.is_zero(delta):
-                continue
-            amount = max(rec.amount + delta, 0.0)
-            rec.amount = amount
-            rec.amount_exact = amount
+        self.ensure_one()
+        if not self.use_payment_pro or self.state != "draft":
+            return
+        if not self.currency_id or self.currency_id.is_zero(delta):
+            return
+        amount = max(self.amount + delta, 0.0)
+        self.amount = amount
+        self.amount_exact = amount
 
     @api.onchange("partner_id")
     def _onchange_partner_id_follow_debt(self):
         """A new partner brings its own debt: the amount follows it, as when the withholdings change."""
-        self.filtered(lambda x: x.partner_id != x._origin.partner_id)._onchange_withholding_amount_follow_debt()
+        self.filtered(lambda x: x.partner_id != x._origin.partner_id)._follow_selected_debt()
 
     @api.onchange("l10n_latam_new_check_ids")
     def _onchange_new_check_default_amount(self):

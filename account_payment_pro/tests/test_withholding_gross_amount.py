@@ -177,7 +177,7 @@ class TestWithholdingGrossAmount(WithholdingCommon):
 
         payment.to_pay_move_line_ids = [Command.unlink(debt.filtered(lambda line: line.move_id == bills[0]).id)]
         payment.withholding_line_ids.base_amount = 500.0
-        payment._onchange_withholding_amount_follow_debt()
+        payment._onchange_withholding_amount()
 
         self.assertEqual(payment.amount, 500.0, "the gross amount is the remaining debt")
         self.assertEqual(payment.withholding_net_amount, 490.0)
