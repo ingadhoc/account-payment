@@ -21,8 +21,5 @@ from . import test_post_closed_payments
 from . import test_amount_from_checks
 from . import test_reconcile_covered_debt
 from . import test_withholding_gross_amount
-from . import test_amount_follows_debt
-from . import test_receipt_amount_keeps_net
+from . import test_withholding_entry
 from . import test_rate_direction
-from . import test_withholding_base_lines
-from . import test_reset_receipt_with_withholding

@@ -1,11 +1,11 @@
 # © ADHOC SA
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
-from odoo.addons.account.tests.common import AccountTestInvoicingCommon
-from odoo.tests import Form, tagged
+from odoo.addons.account_payment_pro.tests.common import PaymentProCommon
+from odoo.tests import tagged
 
 
 @tagged("post_install", "-at_install")
-class TestRateDirection(AccountTestInvoicingCommon):
+class TestRateDirection(PaymentProCommon):
     """The form asks for the rate as "1 foreign = X company", also when the base has no rate for the date.
 
     Without one the theoretical rate comes back as 1.0 and the direction used to fall on the wrong side, so a
@@ -15,33 +15,25 @@ class TestRateDirection(AccountTestInvoicingCommon):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.company = cls.company_data["company"]
-        cls.company.use_payment_pro = True
-        cls.bank_journal = cls.company_data["default_journal_bank"]
         cls.no_rate_currency = cls.env["res.currency"].search([("name", "=", "XTS")], limit=1)
         if not cls.no_rate_currency:
             cls.no_rate_currency = cls.env["res.currency"].create({"name": "XTS", "symbol": "XT"})
         cls.no_rate_currency.active = True
         cls.env["res.currency.rate"].search([("currency_id", "=", cls.no_rate_currency.id)]).unlink()
 
-    def _receipt_form(self, invoice):
-        form = Form(
-            self.env["account.payment"].with_context(default_partner_type="customer", default_payment_type="inbound")
-        )
-        form.journal_id = self.bank_journal
-        form.partner_id = invoice.partner_id
-        return form
-
-    def test_the_rate_of_a_debt_without_a_rate_is_asked_the_right_way_round(self):
-        invoice = self.init_invoice(
+    def _invoice_without_a_rate(self, amount=100.0, currency=None):
+        return self.init_invoice(
             "out_invoice",
             partner=self.partner_a,
-            amounts=[100.0],
+            amounts=[amount],
             taxes=[],
-            currency=self.no_rate_currency,
+            currency=currency or self.no_rate_currency,
             post=True,
         )
-        form = self._receipt_form(invoice)
+
+    def test_the_rate_of_a_debt_without_a_rate_is_asked_the_right_way_round(self):
+        invoice = self._invoice_without_a_rate()
+        form = self._receipt_form(invoice.partner_id)
 
         self.assertEqual(form.currency_id, self.company.currency_id, "the payment is in the currency of the journal")
         self.assertEqual(form.counterpart_currency_id, self.no_rate_currency)
@@ -51,15 +43,8 @@ class TestRateDirection(AccountTestInvoicingCommon):
         )
 
     def test_the_rate_the_user_types_divides_the_amount(self):
-        invoice = self.init_invoice(
-            "out_invoice",
-            partner=self.partner_a,
-            amounts=[100.0],
-            taxes=[],
-            currency=self.no_rate_currency,
-            post=True,
-        )
-        form = self._receipt_form(invoice)
+        invoice = self._invoice_without_a_rate()
+        form = self._receipt_form(invoice.partner_id)
 
         form.user_counterpart_rate = 1000.0
         form.amount = 100000.0
@@ -77,11 +62,7 @@ class TestRateDirection(AccountTestInvoicingCommon):
             }
         )
         self.init_invoice("out_invoice", partner=self.partner_a, amounts=[180000.0], taxes=[], post=True)
-        form = Form(
-            self.env["account.payment"].with_context(default_partner_type="customer", default_payment_type="inbound")
-        )
-        form.journal_id = foreign_journal
-        form.partner_id = self.partner_a
+        form = self._receipt_form(self.partner_a, journal=foreign_journal)
 
         self.assertEqual(form.currency_id, self.no_rate_currency)
         self.assertTrue(
@@ -95,15 +76,8 @@ class TestRateDirection(AccountTestInvoicingCommon):
         self.assertEqual(form.counterpart_currency_amount, 180000.0, "180 at 1.000 are 180.000, not 0,18")
 
     def test_typing_the_debt_currency_amount_settles_both(self):
-        invoice = self.init_invoice(
-            "out_invoice",
-            partner=self.partner_a,
-            amounts=[100.0],
-            taxes=[],
-            currency=self.no_rate_currency,
-            post=True,
-        )
-        form = self._receipt_form(invoice)
+        invoice = self._invoice_without_a_rate()
+        form = self._receipt_form(invoice.partner_id)
         form.user_counterpart_rate = 1000.0
 
         form.counterpart_currency_amount = 100.0

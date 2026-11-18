@@ -3,51 +3,17 @@
 from unittest.mock import patch
 
 from odoo import Command, fields
-from odoo.addons.account.tests.common import AccountTestInvoicingCommon
+from odoo.addons.account_payment_pro.tests.common import WithholdingCommon
 from odoo.addons.l10n_ar.tests.common import TestArCommon
 from odoo.tests import Form, tagged
 
 
 @tagged("post_install", "-at_install")
-class TestWithholdingGrossAmount(AccountTestInvoicingCommon):
-    """In 20 the payment amount is the gross one (paid + withheld). With payment pro the user
-    keeps working with the net amount and the withholding mode follows the withholding lines."""
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.company = cls.company_data["company"]
-        cls.company.use_payment_pro = True
-        cls.company.withholding_tax_base_account_id = cls.env["account.account"].create(
-            {"code": "WITHB", "name": "Withholding Tax Base", "account_type": "asset_current"}
-        )
-        cls.withholding_tax = cls.env["account.tax"].create(
-            {
-                "name": "Withholding 2%",
-                "amount_type": "percent",
-                "amount": -2.0,
-                "type_tax_use": "purchase",
-                "is_withholding_tax": True,
-            }
-        )
-        cls.bank_journal = cls.company_data["default_journal_bank"]
-
-    def _payment(self, withholding_base=1000.0, **vals):
-        payment = self.env["account.payment"].create(
-            {
-                "partner_id": self.partner_a.id,
-                "partner_type": "supplier",
-                "payment_type": "outbound",
-                "journal_id": self.bank_journal.id,
-                "amount": 1000.0,
-                **vals,
-            }
-        )
-        if withholding_base:
-            payment.withholding_line_ids = [
-                Command.create({"tax_id": self.withholding_tax.id, "base_amount": withholding_base})
-            ]
-        return payment
+class TestWithholdingGrossAmount(WithholdingCommon):
+    """In 20 the payment amount is the gross one (paid + withheld). With payment pro the user keeps working
+    with the net amount, the withholding mode follows the withholding lines, and the gross amount follows the
+    selected debt only where it did in 19.0.
+    """
 
     def test_the_user_types_the_net_amount_and_the_payment_keeps_the_gross_one(self):
         payment = self._payment()
@@ -99,14 +65,13 @@ class TestWithholdingGrossAmount(AccountTestInvoicingCommon):
         self.company.country_id = self.env.ref("base.ar")
         self.company.reconcile_on_company_currency = True
         # a receipt with a suffered withholding, typed as the certificate says
-        sale_withholding = self.withholding_tax.copy({"type_tax_use": "sale"})
         receipt = self._payment(
             withholding_base=0.0, partner_type="customer", payment_type="inbound", currency_id=foreign.id
         )
         # 1 company unit = 0.5 EUR
         receipt.accounting_rate = 0.5
         receipt.withholding_line_ids = [
-            Command.create({"tax_id": sale_withholding.id, "base_amount": 1000.0, "amount": 20.0})
+            Command.create({"tax_id": self.sale_withholding_tax.id, "base_amount": 1000.0, "amount": 20.0})
         ]
 
         self.assertEqual(receipt.withholding_amount, 20.0)
@@ -147,7 +112,7 @@ class TestWithholdingGrossAmount(AccountTestInvoicingCommon):
     def test_a_foreign_currency_withholding_uses_the_rate_of_the_payment(self):
         foreign = self.setup_other_currency("EUR", rates=[("2000-01-01", 1.0)])
         payment = self._payment(currency_id=foreign.id)
-        # 1 company unit = 0.5 EUR → 1 EUR = 2 company units, not the 1:1 of the day
+        # 1 company unit = 0.5 EUR -> 1 EUR = 2 company units, not the 1:1 of the day
         payment.accounting_rate = 0.5
         payment.action_post()
 
@@ -157,21 +122,6 @@ class TestWithholdingGrossAmount(AccountTestInvoicingCommon):
         self.assertEqual(tax_line.balance, -40.0)
         self.assertEqual(sum(liquidity.mapped("balance")), -1960.0)
         self.assertEqual(sum(counterpart.mapped("balance")), 2000.0)
-
-    def test_the_amount_follows_the_debt_when_the_withholdings_change(self):
-        """Removing a bill changes the base of the withholdings, and then the gross amount follows the remaining
-        debt, as the net one did in 19."""
-        bills = self.init_invoice("in_invoice", partner=self.partner_a, amounts=[1000.0], post=True)
-        bills |= self.init_invoice("in_invoice", partner=self.partner_a, amounts=[500.0], post=True)
-        debt = bills.line_ids.filtered(lambda line: line.account_id.account_type == "liability_payable")
-        payment = self._payment(withholding_base=1500.0, amount=1500.0, to_pay_move_line_ids=[Command.set(debt.ids)])
-
-        payment.to_pay_move_line_ids = [Command.unlink(debt.filtered(lambda line: line.move_id == bills[0]).id)]
-        payment.withholding_line_ids.base_amount = 500.0
-        payment._onchange_withholding_amount_follow_debt()
-
-        self.assertEqual(payment.amount, 500.0, "the gross amount is the remaining debt")
-        self.assertEqual(payment.withholding_net_amount, 490.0)
 
     def test_the_entry_books_the_company_currency_amounts_of_the_line(self):
         """A localization that computes the withholding in company currency gives the exact amounts: the entry books
@@ -215,10 +165,108 @@ class TestWithholdingGrossAmount(AccountTestInvoicingCommon):
                 "what the header shows paid is what the bank line of the entry shows",
             )
 
+    # the gross amount follows the selected debt: supplier payments only, as in 19.0
+
+    def test_the_amount_follows_the_debt_when_the_withholdings_change(self):
+        """Removing a bill changes the base of the withholdings, and then the gross amount follows the remaining
+        debt, as the net one did in 19."""
+        bills = self.init_invoice("in_invoice", partner=self.partner_a, amounts=[1000.0], post=True)
+        bills |= self.init_invoice("in_invoice", partner=self.partner_a, amounts=[500.0], post=True)
+        debt = bills.line_ids.filtered(lambda line: line.account_id.account_type == "liability_payable")
+        payment = self._payment(withholding_base=1500.0, amount=1500.0, to_pay_move_line_ids=[Command.set(debt.ids)])
+
+        payment.to_pay_move_line_ids = [Command.unlink(debt.filtered(lambda line: line.move_id == bills[0]).id)]
+        payment.withholding_line_ids.base_amount = 500.0
+        payment._onchange_withholding_amount_follow_debt()
+
+        self.assertEqual(payment.amount, 500.0, "the gross amount is the remaining debt")
+        self.assertEqual(payment.withholding_net_amount, 490.0)
+
+    def test_changing_the_partner_moves_the_amount_to_its_debt(self):
+        self._bill(self.partner_a, 400.0)
+        bill_b = self._bill(self.partner_b, 100.0)
+        form = self._supplier_payment_form()
+        form.partner_id = self.partner_a
+        self.assertEqual(form.amount, 400.0)
+
+        form.partner_id = self.partner_b
+
+        self.assertEqual(form.amount, bill_b.amount_total, "the amount goes down to the debt of the new partner")
+
+    def test_changing_the_withholdings_moves_the_amount_to_the_debt(self):
+        bill_1 = self._bill(self.partner_a, 100.0)
+        self._bill(self.partner_a, 300.0)
+        form = self._supplier_payment_form(self.partner_a)
+        self.assertEqual(form.amount, 400.0)
+        payment = form.save()
+        payment.withholding_line_ids = [Command.create({"tax_id": self.withholding_tax.id, "base_amount": 400.0})]
+        other_line = payment.to_pay_move_line_ids.filtered(lambda line: line.move_id != bill_1)
+
+        with Form(payment) as form:
+            form.to_pay_move_line_ids.remove(id=other_line.id)
+            with form.withholding_line_ids.edit(0) as line:
+                line.base_amount = 100.0
+
+        self.assertEqual(payment.amount, 100.0, "the gross amount is the selected debt")
+        self.assertEqual(payment.withholding_net_amount, 98.0)
+
+    def test_without_a_change_of_withholdings_the_amount_is_kept(self):
+        bill_1 = self._bill(self.partner_a, 100.0)
+        self._bill(self.partner_a, 300.0)
+        payment = self._payment(withholding_base=0.0, amount=400.0)
+        other_line = payment.to_pay_move_line_ids.filtered(lambda line: line.move_id != bill_1)
+
+        with Form(payment) as form:
+            form.to_pay_move_line_ids.remove(id=other_line.id)
+
+        self.assertEqual(payment.selected_debt, 100.0)
+        self.assertEqual(payment.amount, 400.0, "as in 19.0, removing a bill alone does not touch the amount")
+
+    # in a receipt the net the user typed stays put: the gross grows and the gap goes to the adjustment
+
+    def test_the_withholding_does_not_move_the_amount_of_a_receipt(self):
+        self.init_invoice("out_invoice", partner=self.partner_a, amounts=[1000.0], taxes=[], post=True)
+        form = self._receipt_form(self.partner_a)
+        self.assertEqual(form.amount, 1000.0)
+
+        self._add_withholding(form, 1000.0, self.sale_withholding_tax)
+
+        self.assertEqual(form.withholding_net_amount, 1000.0, "the net the user sees stays where it was")
+        self.assertEqual(form.amount, 1020.0, "the gross grows by the withholding")
+        self.assertEqual(form.payment_total, 1020.0)
+        self.assertEqual(form.payment_difference, -20.0, "the difference is left for the user to adjust")
+
+    def test_editing_the_withholding_moves_the_gross_by_the_delta(self):
+        self.init_invoice("out_invoice", partner=self.partner_a, amounts=[1000.0], taxes=[], post=True)
+        form = self._receipt_form(self.partner_a)
+        self._add_withholding(form, 1000.0, self.sale_withholding_tax)
+
+        with form.withholding_line_ids.edit(0) as line:
+            line.base_amount = 500.0
+
+        self.assertEqual(form.withholding_net_amount, 1000.0, "the net is still the one the user typed")
+        self.assertEqual(form.amount, 1010.0, "only the delta of the withholding moved the gross")
+
+    def test_the_supplier_payment_still_follows_the_debt(self):
+        self.init_invoice("in_invoice", partner=self.partner_a, amounts=[1000.0], taxes=[], post=True)
+        form = self._supplier_payment_form(self.partner_a)
+
+        self._add_withholding(form, 1000.0)
+
+        self.assertEqual(form.amount, 1000.0, "the gross stays on the debt")
+        self.assertEqual(form.withholding_net_amount, 980.0, "the net is what goes through the bank")
+        self.assertEqual(form.payment_difference, 0.0)
+
+    def _bill(self, partner, amount):
+        return self.init_invoice("in_invoice", partner=partner, amounts=[amount], taxes=[], post=True)
+
 
 @tagged("post_install", "-at_install")
 class TestWithholdingGrossAmountChecks(TestArCommon):
-    """With checks the checks are the net amount: the gross one adds the withholdings."""
+    """With checks the checks are the net amount: the gross one adds the withholdings.
+
+    Its own class because the checks need the Argentinian chart of accounts, not the generic company.
+    """
 
     @classmethod
     def setUpClass(cls):
