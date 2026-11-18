@@ -5,6 +5,14 @@ from odoo.exceptions import UserError
 class AccountMove(models.Model):
     _inherit = "account.move"
 
+    def button_cancel(self):
+        """Release the own checks of the canceled entries: reset to draft keeps them linked."""
+        res = super().button_cancel()
+        self.origin_payment_id.l10n_latam_new_check_ids.filtered(
+            lambda check: check.payment_method_code == "own_checks" and check.outstanding_line_id.move_id in self
+        ).write({"outstanding_line_id": False})
+        return res
+
     @api.ondelete(at_uninstall=False)
     def _unlink_except_confirmed_check_payment(self):
         """No dejar borrar el asiento de un pago con cheques mientras el pago sigue confirmado.
