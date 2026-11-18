@@ -814,6 +814,11 @@ class AccountPayment(models.Model):
                 rec.counterpart_currency_amount = amount
 
     @api.onchange("counterpart_currency_amount")
+    def _onchange_counterpart_currency_amount(self):
+        """The onchange lives apart from the inverse: the registry takes the last method of the MRO, so a
+        module overriding the inverse would leave the field without an onchange (l10n_latam_check_ux does)."""
+        self._inverse_counterpart_currency_amount()
+
     def _inverse_counterpart_currency_amount(self):
         for rec in self:
             # Usar amount_exact para comparación precisa
