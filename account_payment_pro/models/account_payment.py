@@ -504,8 +504,19 @@ class AccountPayment(models.Model):
     def _compute_amount(self):
         super()._compute_amount()
         # the checks are the net amount: the gross one adds the withholdings
-        for rec in self.filtered(lambda x: x._is_latam_check_payment() and x.withholding_line_ids):
-            rec.amount = rec.l10n_latam_checks_amount + rec.withholding_amount
+        for rec in self.filtered(
+            lambda x: x.state == "draft" and x._is_latam_check_payment() and x.withholding_line_ids
+        ):
+            # the lines, and not the withholding_amount they add up to: this compute declares them as its
+            # dependency, so the total may still be the old one while they are being recomputed
+            rec.amount = rec.l10n_latam_checks_amount + sum(rec.withholding_line_ids.mapped("amount"))
+        # out of the draft state the amount is the one the payment was confirmed with: l10n_ar_tax numbers the
+        # withholdings inside action_post, and that write on the one2many fires this compute again, where the
+        # checks leave the amount at the net one
+        for rec in self.filtered(
+            lambda x: x.state != "draft" and x._is_latam_check_payment() and x.withholding_line_ids and x.amount_exact
+        ):
+            rec.amount = rec.amount_exact
         for rec in self:
             if rec.currency_id and not rec.currency_id.is_zero(rec.amount - rec.amount_exact):
                 rec.amount_exact = rec.amount
@@ -613,6 +624,12 @@ class AccountPayment(models.Model):
                 )
             rec.amount_company_currency_signed = rec.company_currency_id.round(amount)
 
+    # source string of the core message, to find it among the ones the core returns without reading a translation
+    MISMATCH_CHECK_AMOUNT_MSG = (
+        "The amount of the payment  does not match the amount of the selected check. "
+        "Please try to deselect and select the check again."
+    )
+
     def _get_blocking_l10n_latam_warning_msg(self):
         """The core compares the checks with the payment amount, but with withholdings they pay the net one."""
         mismatch_msg = _(
@@ -625,7 +642,11 @@ class AccountPayment(models.Model):
         )
         if not with_withholdings:
             return msgs
-        msgs = [msg for msg in msgs if msg != mismatch_msg]
+        # the core message is dropped by its position, never by its text: each module translates the same source
+        # string with its own catalog, so comparing the translated ones only matches in English. Both calls run
+        # over the same records and build the list the same way, so the two are aligned.
+        source_msgs = super(AccountPayment, self.with_context(lang="en_US"))._get_blocking_l10n_latam_warning_msg()
+        msgs = [msg for msg, source in zip(msgs, source_msgs) if source != self.MISMATCH_CHECK_AMOUNT_MSG]
         for rec in self.filtered(lambda x: x.state == "draft" and x._is_latam_check_payment()):
             checks_amount = sum(rec._get_latam_checks().mapped("amount"))
             if not rec.currency_id.is_zero(checks_amount - rec.withholding_net_amount):

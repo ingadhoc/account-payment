@@ -5,6 +5,7 @@ from unittest.mock import patch
 from odoo import Command, fields
 from odoo.addons.account_payment_pro.tests.common import WithholdingCommon
 from odoo.addons.l10n_ar.tests.common import TestArCommon
+from odoo.addons.l10n_latam_check.models.account_payment import AccountPayment as LatamCheckPayment
 from odoo.tests import Form, tagged
 
 
@@ -297,7 +298,8 @@ class TestWithholdingGrossAmountChecks(TestArCommon):
             limit=1,
         )
 
-    def test_the_checks_are_the_net_amount(self):
+    def _receipt_with_check(self, check_amount=980.0, withholding_base=1000.0, check_number="00000001"):
+        """A draft receipt collected with a third party check, with one suffered withholding over its base."""
         receipt = Form(
             self.env["account.payment"].with_context(default_payment_type="inbound", default_partner_type="customer")
         )
@@ -305,11 +307,17 @@ class TestWithholdingGrossAmountChecks(TestArCommon):
         receipt.journal_id = self.method_line.journal_id
         receipt.payment_method_line_id = self.method_line
         with receipt.l10n_latam_new_check_ids.new() as check:
-            check.name = "00000001"
+            check.name = check_number
             check.payment_date = fields.Date.today()
-            check.amount = 980.0
+            check.amount = check_amount
         payment = receipt.save()
-        payment.withholding_line_ids = [Command.create({"tax_id": self.withholding_tax.id, "base_amount": 1000.0})]
+        payment.withholding_line_ids = [
+            Command.create({"tax_id": self.withholding_tax.id, "base_amount": withholding_base})
+        ]
+        return payment
+
+    def test_the_checks_are_the_net_amount(self):
+        payment = self._receipt_with_check()
 
         self.assertEqual(payment.amount, 1000.0, "gross = checks + withholdings")
         self.assertEqual(payment.withholding_net_amount, 980.0)
@@ -318,3 +326,48 @@ class TestWithholdingGrossAmountChecks(TestArCommon):
 
         payment.action_amount_from_checks()
         self.assertEqual(payment.amount, 1000.0)
+
+    def test_the_core_check_warning_is_dropped_whatever_the_language(self):
+        """The core message is found by its source string, not by its translation.
+
+        Each module translates the same msgid with its own catalog: the core says "monto" and payment pro
+        "importe", so comparing the translated texts only matched in English and the warning blocked the
+        confirmation of every check payment with withholdings in Spanish.
+
+        Shown in red by comparing the translated texts again: the warning comes back.
+        """
+        payment = self._receipt_with_check()
+        core_translation = "El monto del pago no coincide con el monto del cheque seleccionado."
+
+        def core_msgs(records):
+            # what the core does with the user in Spanish: its own catalog, which payment pro does not share
+            if records.env.context.get("lang") == "en_US":
+                return [records.MISMATCH_CHECK_AMOUNT_MSG]
+            return [core_translation]
+
+        with patch.object(LatamCheckPayment, "_get_blocking_l10n_latam_warning_msg", core_msgs):
+            msgs = payment._get_blocking_l10n_latam_warning_msg()
+
+        self.assertFalse(msgs, "the checks match the net amount, so nothing blocks the payment")
+
+    def test_posting_does_not_move_the_gross_amount(self):
+        """A withholding written once the payment left the draft state does not move its amount.
+
+        l10n_ar_tax numbers the withholdings inside ``action_post``, writing the one2many, and that recomputes
+        the amount: the gross one of a posted payment is the one it was confirmed with.
+
+        Shown in red by dropping the draft guard of ``_compute_amount``: the amount follows the new withholding
+        and the posted payment ends up with another one.
+        """
+        payment = self._receipt_with_check()
+        # the number l10n_ar_tax would give it on post, so the sequence of its tax group is not needed here
+        payment.withholding_line_ids.name = "0001-00000001"
+        payment.action_post()
+        self.assertNotEqual(payment.state, "draft")
+        amount = payment.amount
+
+        # the shape of the write l10n_ar_tax does when it numbers the withholdings of the payment
+        payment.withholding_line_ids = [Command.update(payment.withholding_line_ids.id, {"amount": 25.0})]
+
+        self.assertEqual(payment.amount, amount, "the gross amount is the one the payment was posted with")
+        self.assertEqual(payment.withholding_net_amount, amount - 25.0, "the net one follows from it")
