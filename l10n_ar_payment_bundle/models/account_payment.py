@@ -380,6 +380,29 @@ class AccountPayment(models.Model):
             lambda x: x.is_main_payment and not x.main_payment_id and not (x.write_off_amount or x.withholdings_amount)
         )
 
+    def _prepare_move_lines_per_type(self, write_off_line_vals=None, force_balance=None):
+        res = super()._prepare_move_lines_per_type(write_off_line_vals=write_off_line_vals, force_balance=force_balance)
+        # The main payment amount is always zero: its liquidity line would be a zero line on the bundle journal
+        # account. l10n_ar_tax already drops it when there are withholdings; do the same for write-off only.
+        liquidity_lines = res.get("liquidity_lines", [])
+        if (
+            self.is_main_payment
+            and liquidity_lines
+            and all(self.company_currency_id.is_zero(line["balance"]) for line in liquidity_lines)
+        ):
+            res["liquidity_lines"] = []
+        return res
+
+    def _seek_for_lines(self):
+        liquidity_lines, counterpart_lines, writeoff_lines = super()._seek_for_lines()
+        # Without a liquidity line, core promotes a single write-off line to liquidity. A main payment has
+        # none on purpose, so keep that line as write-off (otherwise amount_company_currency_signed takes it).
+        if self.is_main_payment:
+            promoted = liquidity_lines.filtered(lambda x: x.account_id not in self._get_valid_liquidity_accounts())
+            liquidity_lines -= promoted
+            writeoff_lines |= promoted
+        return liquidity_lines, counterpart_lines, writeoff_lines
+
     def _generate_journal_entry(self, write_off_line_vals=None, force_balance=None, line_ids=None):
         super(AccountPayment, self - self._bypass_journal_entry())._generate_journal_entry(
             write_off_line_vals=write_off_line_vals,
