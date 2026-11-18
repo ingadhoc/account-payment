@@ -156,6 +156,54 @@ class TestBundleReconcile(TransactionCase):
             rounding.matched_amount, 0.5, places=2, msg="El ajuste por redondeo debería quedar imputado"
         )
 
+    def test_main_payment_write_off_without_liquidity_line(self):
+        """Pago principal con solo ajuste (sin retenciones): el asiento no lleva línea de liquidez en cero."""
+        bill = self._create_bill(1000.0)
+        debt_line = bill.line_ids.filtered(lambda x: x.account_id.account_type == "liability_payable")
+        write_off_account = self.env["account.account"].create(
+            {"name": "Redondeo Test", "code": "999901", "account_type": "expense"}
+        )
+        write_off_type = self.env["account.write_off.type"].create(
+            {
+                "name": "Ajuste por redondeo",
+                "company_ids": [Command.set(self.company.ids)],
+                "account_id": write_off_account.id,
+            }
+        )
+
+        main = self.env["account.payment"].create(
+            {
+                "payment_type": "outbound",
+                "partner_type": "supplier",
+                "partner_id": self.partner.id,
+                "journal_id": self.bundle_journal.id,
+                "payment_method_line_id": self.payment_method_line.id,
+                "amount": 0,
+                "to_pay_move_line_ids": [Command.set(debt_line.ids)],
+                "write_off_type_id": write_off_type.id,
+                "write_off_amount": 0.5,
+            }
+        )
+        self._create_linked_payment(main, 999.5, "outbound", self.cash_journal)
+
+        main.action_post()
+
+        self.assertTrue(main.move_id, "El pago principal con ajuste debería tener asiento")
+        lines = main.move_id.line_ids
+        self.assertFalse(
+            lines.filtered(lambda x: x.account_id in main._get_valid_liquidity_accounts()),
+            "No debería quedar una línea de liquidez en cero en el diario del bundle",
+        )
+        write_off_line = lines.filtered(lambda x: x.account_id == write_off_account)
+        self.assertAlmostEqual(abs(write_off_line.balance), 0.5, places=2)
+        liquidity_lines, __, write_off_lines = main._seek_for_lines()
+        self.assertFalse(liquidity_lines, "El ajuste no debería tomarse como liquidez")
+        self.assertEqual(write_off_lines, write_off_line)
+        self.assertAlmostEqual(
+            main.amount_company_currency_signed, 0.0, places=2, msg="El pago principal siempre vale 0 en la compañía"
+        )
+        self.assertTrue(debt_line.full_reconcile_id, "La deuda debería quedar totalmente conciliada")
+
     def test_bundle_same_sign_lines_still_reconcile(self):
         """Control: dos pagos en el mismo sentido que cierran la deuda exacta siguen conciliando."""
         bill = self._create_bill(1000.0)
