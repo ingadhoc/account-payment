@@ -506,7 +506,7 @@ class AccountPayment(models.Model):
             if rec.currency_id and not rec.currency_id.is_zero(rec.amount - rec.amount_exact):
                 rec.amount_exact = rec.amount
 
-    @api.depends("use_payment_pro", "withholding_line_ids.amount", "amount")
+    @api.depends("use_payment_pro", "withholding_amount", "amount")
     def _compute_withhold(self):
         """With payment pro the mode follows the withholding lines instead of being chosen by the user."""
         for rec in self:

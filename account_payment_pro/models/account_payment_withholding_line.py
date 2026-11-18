@@ -15,6 +15,8 @@ class AccountPaymentWithholdingLine(models.Model):
         self.ensure_one()
         company_currency = self.company_id.currency_id
         rate = self.payment_id.accounting_rate
+        if not rate:
+            return {"base_amount": 0.0, "amount": 0.0}
         return {
             "base_amount": company_currency.round(self.base_amount / rate),
             "amount": company_currency.round(self.amount / rate),
@@ -24,19 +26,21 @@ class AccountPaymentWithholdingLine(models.Model):
         """One pair of base journal items per base amount, as in 19.0.
 
         The core books a pair per withholding, so two withholdings over the same base leave four base items
-        instead of two. Pairs that book the same amount on the same account are merged into one that carries
-        the taxes and the tax tags of all of them.
+        instead of two. A base item that books the same amount on the same account as an earlier one is
+        dropped, and the one that stays carries the taxes and the tax tags of both: the amounts are not added
+        up, since they are the same base counted twice.
         """
         values = super()._prepare_withholding_amls_create_values()
         if not self or not self.payment_id.use_payment_pro:
             return values
-        base_values = [vals for vals in values if not vals.get("tax_repartition_line_id")]
-        if len(base_values) < 3:
-            return values
 
-        merged_by_key = {}
-        for vals in base_values:
-            key = json.dumps(
+        kept_by_base = {}
+        merged = []
+        for vals in values:
+            if vals.get("tax_repartition_line_id"):
+                merged.append(vals)
+                continue
+            base = json.dumps(
                 [
                     vals.get("account_id"),
                     vals.get("currency_id"),
@@ -48,16 +52,16 @@ class AccountPaymentWithholdingLine(models.Model):
                 sort_keys=True,
                 default=str,
             )
-            kept = merged_by_key.get(key)
+            kept = kept_by_base.get(base)
             if kept is None:
-                merged_by_key[key] = vals
+                kept_by_base[base] = vals
+                merged.append(vals)
                 continue
             for field in ("tax_ids", "tax_tag_ids"):
                 ids = set(self._get_command_set_ids(kept.get(field))) | set(self._get_command_set_ids(vals.get(field)))
                 if ids:
                     kept[field] = [Command.set(sorted(ids))]
-            values.remove(vals)
-        return values
+        return merged
 
     @staticmethod
     def _get_command_set_ids(commands):

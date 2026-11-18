@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
         <record model="res.groups" id="group_pay_now_customer_invoices">
             <field name="name">Allow pay now on customer invoices</field>
@@ -5,4 +6,4 @@
         <record model="res.groups" id="group_pay_now_vendor_invoices">
             <field name="name">Allow pay now on vendor invoices</field>
         </record>
-        </odoo>
+</odoo>

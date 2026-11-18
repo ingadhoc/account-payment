@@ -19,13 +19,13 @@
         <field name="inherit_id" ref="account.view_account_payment_tree"/>
         <field name="arch" type="xml">
             <!-- amount_signed is the gross amount: show the net one, as the "Amount" column (liquidity lines) does -->
-            <xpath expr="(//field[@name='amount_signed'])[1]" position="attributes">
+            <xpath expr="//field[@name='amount_signed'][@groups='!base.group_multi_currency']" position="attributes">
                 <attribute name="column_invisible">True</attribute>
             </xpath>
-            <xpath expr="(//field[@name='amount_signed'])[2]" position="attributes">
+            <xpath expr="//field[@name='amount_signed'][@groups='base.group_multi_currency']" position="attributes">
                 <attribute name="column_invisible">True</attribute>
             </xpath>
-            <xpath expr="(//field[@name='amount_signed'])[2]" position="after">
+            <xpath expr="//field[@name='amount_signed'][@groups='base.group_multi_currency']" position="after">
                 <field name="withholding_net_amount_signed" string="Amount in Currency" optional="show" groups="base.group_multi_currency"/>
             </xpath>
             <field name="amount_company_currency_signed" position="after">
@@ -217,6 +217,7 @@
         <xpath expr="//field[@name='withholding_line_ids']/ancestor::page[1]" position="attributes">
             <attribute name="invisible">withhold == 'payment' and not (use_payment_pro and display_withholding)</attribute>
         </xpath>
+        <!-- the core field and the editable one above share the name: readonly="1" is what tells them apart -->
         <xpath expr="//field[@name='withholding_net_amount'][@readonly='1']" position="attributes">
             <attribute name="invisible">use_payment_pro</attribute>
         </xpath>
