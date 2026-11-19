@@ -158,7 +158,6 @@ class TestEarlyDiscountCreditNote(EarlyDiscountCommon):
         self.partner.write(
             {
                 "country_id": self.env.ref("base.ar").id,
-                "l10n_latam_identification_type_id": self.env.ref("l10n_ar.it_cuit").id,
                 "vat": "30712345671",
                 "l10n_ar_afip_responsibility_type_id": self.env.ref("l10n_ar.res_IVARI").id,
             }
