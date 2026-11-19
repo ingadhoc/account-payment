@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-17 16:17+0000\n"
-"PO-Revision-Date: 2026-11-17 16:17+0000\n"
+"POT-Creation-Date: 2026-11-19 13:44+0000\n"
+"PO-Revision-Date: 2026-11-19 13:44+0000\n"
 "Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
 "Language-Team: Spanish <https://translation.dev-adhoc.com/projects/"
 "account-payment-19-0/account-payment-19-0-account_payment_pro/es/>\n"
@@ -310,11 +310,6 @@ msgstr "Importe MC"
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "Amount in"
 msgstr "Importe en"
-
-#. module: account_payment_pro
-#: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_tree
-msgid "Amount in Currency"
-msgstr "Importe en moneda"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__analytic_distribution
@@ -720,21 +715,6 @@ msgid "Name"
 msgstr "Nombre"
 
 #. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__withholding_net_amount
-msgid "Net Amount"
-msgstr "Importe neto"
-
-#. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__withholding_net_amount_signed
-msgid "Net Amount in Currency"
-msgstr "Importe neto en moneda"
-
-#. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__counterpart_currency_net_amount
-msgid "Net Amount in Debt Currency"
-msgstr "Importe neto en la moneda de la deuda"
-
-#. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid "No volver a mostrar este aviso para este pago"
 msgstr ""
@@ -851,11 +831,6 @@ msgstr ""
 "desees que se empareje."
 
 #. module: account_payment_pro
-#: model:ir.model,name:account_payment_pro.model_account_payment_withholding_line
-msgid "Payment withholding line"
-msgstr "Línea de retención de pago"
-
-#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__payment_difference
 msgid "Payments Difference"
 msgstr "Diferencia de Pago"
@@ -908,11 +883,6 @@ msgstr "Recibo en cola de envío"
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
 msgid "Recompute the amount from the checks"
 msgstr "Recalcular el importe desde los cheques"
-
-#. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__reconcile_on_company_currency
-msgid "Reconcile On Company Currency"
-msgstr "Conciliar en moneda de la compañía"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__invoice_date
@@ -984,22 +954,6 @@ msgid "Taxes"
 msgstr "Impuestos"
 
 #. module: account_payment_pro
-#. odoo-python
-#: code:addons/account_payment_pro/models/account_payment.py:0
-msgid ""
-"The amount of the payment  does not match the amount of the selected check. "
-"Please try to deselect and select the check again."
-msgstr ""
-"El importe del pago no coincide con el importe del cheque seleccionado. "
-"Intenta deseleccionar y volver a seleccionar el cheque."
-
-#. module: account_payment_pro
-#: model:ir.model.fields,help:account_payment_pro.field_account_payment__withholding_net_amount
-msgid ""
-"The amount that will actually be paid after deducting withholding taxes."
-msgstr "El importe a pagar después de deducir las retenciones de impuestos."
-
-#. module: account_payment_pro
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__destination_journal_currency_id
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__journal_currency_id
 msgid "The currency used to enter statement"
@@ -1032,25 +986,6 @@ msgstr "Los recibos se están enviando en segundo plano."
 #: model:ir.model.fields,help:account_payment_pro.field_account_payment__to_pay_move_line_ids
 msgid "This lines are the ones the user has selected to be paid."
 msgstr "Estas líneas son las que el usuario ha seleccionado para pagar"
-
-#. module: account_payment_pro
-#: model:ir.model.fields,help:account_payment_pro.field_account_payment__reconcile_on_company_currency
-msgid ""
-"This option enables open documents in the payment report when reconciling "
-"debt with secondary currency, if the account doesn't have a currency "
-"configured, then reconcile on company currency. This will avoid all the "
-"automatic exchange rates journal entries by forcing same rate of the "
-"original document being reconcile. IMPORTANT: If you change this setting if "
-"you reconcile any previous item and re-reconcile it, it will be reconciled "
-"with the new mechanism"
-msgstr ""
-"Esta opción permite abrir documentos en el informe de pagos al conciliar "
-"deudas con moneda secundaria. Si la cuenta no tiene una moneda configurada, "
-"entonces se concilia en la moneda de la empresa. Esto evitará todos los "
-"asientos contables automáticos de tipos de cambio al forzar el mismo tipo de "
-"cambio del documento original que se está conciliando. IMPORTANTE: Si "
-"se cambia esta configuración, cualquier ítem anterior que se concilie y se "
-"vuelva a conciliar se hará con el nuevo mecanismo"
 
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__to_pay_amount
@@ -1176,21 +1111,6 @@ msgid ""
 msgstr ""
 "Se intentó enviar este recibo de pago en segundo plano, pero ocurrió este "
 "error: %s"
-
-#. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__withhold
-msgid "Withhold"
-msgstr "Retención"
-
-#. module: account_payment_pro
-#: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__destination_currency_withholding_amount
-msgid "Withholdings"
-msgstr "Retenciones"
-
-#. module: account_payment_pro
-#: model:ir.model.fields,help:account_payment_pro.field_account_payment__destination_currency_withholding_amount
-msgid "Withholdings in the debt currency, at the rate of the payment."
-msgstr "Retenciones en la moneda de la deuda, a la cotización del pago."
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.view_account_payment_form
