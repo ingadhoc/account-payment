@@ -11,7 +11,7 @@ class EarlyDiscountCommon(common.TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.today = fields.Date.today()
+        cls.today = fields.Date.context_today(cls.env.user)
         cls.company = cls.env.company
         cls.company.use_payment_pro = True
         if "use_receiptbook" in cls.company._fields:
