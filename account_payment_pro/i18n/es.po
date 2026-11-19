@@ -988,6 +988,16 @@ msgid "This lines are the ones the user has selected to be paid."
 msgstr "Estas líneas son las que el usuario ha seleccionado para pagar"
 
 #. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/account_payment.py:0
+msgid ""
+"This payment can't collect the debt of %(companies)s. Remove those lines to "
+"continue."
+msgstr ""
+"Este pago no puede cobrar la deuda de %(companies)s. Quite esas líneas para "
+"continuar."
+
+#. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__to_pay_amount
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid "To Pay Amount"
@@ -1149,13 +1159,6 @@ msgstr "Tipo de Ajuste"
 msgid "You can only set amount total if taxes are of type percentage"
 msgstr ""
 "Solo puede establecer el monto total si los impuestos son de tipo porcentaje"
-
-#. module: account_payment_pro
-#. odoo-python
-#: code:addons/account_payment_pro/models/account_payment.py:0
-msgid "You can't create payments for entries belonging to different companies."
-msgstr ""
-"No se pueden crear pagos para asientos que pertenezcan a diferentes compañías"
 
 #. module: account_payment_pro
 #: model:ir.model,name:account_payment_pro.model_account_payment_invoice_wizard
