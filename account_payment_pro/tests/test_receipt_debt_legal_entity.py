@@ -121,6 +121,14 @@ class TestReceiptDebtLegalEntity(AccountTestInvoicingCommon):
         )
         self.assertEqual(self._debt_listed(self.other_entity, self.other_entity).company_id, self.other_entity)
 
+    def test_without_the_group_it_lists_the_selected_companies_of_the_legal_entity(self):
+        """Without the group nothing changes: the legal entity, cut to the selected companies."""
+        self.env.user.group_ids -= self.env.ref("account_ux.group_read_branch_debt")
+        every_company = self.parent + self.same_entity + self.other_entity
+
+        self.assertEqual(self._debt_listed(self.parent, self.parent).company_id, self.parent)
+        self.assertEqual(self._debt_listed(self.parent, every_company).company_id, self.parent + self.same_entity)
+
     def test_add_all_takes_the_debt_of_several_companies(self):
         """Antes, "Add All" con deuda en dos compañías rechazaba el pago por "different companies"."""
         journal = self.env["account.journal"].create(

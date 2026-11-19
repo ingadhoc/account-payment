@@ -1272,13 +1272,11 @@ class AccountPayment(models.Model):
             to_pay_partners = rec.to_pay_move_line_ids.mapped("partner_id")
             if len(to_pay_partners) > 1:
                 raise ValidationError(_("All to pay lines must be of the same partner"))
-            if rec.to_pay_move_line_ids.company_id - rec._get_to_pay_companies():
+            if forbidden_companies := rec.to_pay_move_line_ids.company_id - rec._get_to_pay_companies():
                 raise ValidationError(
                     _(
                         "This payment can't collect the debt of %(companies)s. Remove those lines to continue.",
-                        companies=", ".join(
-                            (rec.to_pay_move_line_ids.company_id - rec._get_to_pay_companies()).mapped("name")
-                        ),
+                        companies=", ".join(forbidden_companies.mapped("name")),
                     )
                 )
             if to_pay_partners and to_pay_partners != rec.partner_id.commercial_partner_id:
