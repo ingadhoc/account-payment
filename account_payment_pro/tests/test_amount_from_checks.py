@@ -59,6 +59,10 @@ class TestAmountFromChecks(TestArCommon):
         return receipt
 
     def test_amount_from_checks_after_changing_debt(self):
+        if self.env["ir.module.module"].search_count(
+            [("name", "=", "account_payment_pro_htl"), ("state", "=", "installed")]
+        ):
+            self.skipTest("account_payment_pro_htl keeps the checks amount when the debt changes")
         receipt = self._receipt_form("new_third_party_checks")
         with receipt.l10n_latam_new_check_ids.new() as check:
             check.name = "00000001"
