@@ -23,12 +23,12 @@
                     <button name="action_early_discount_exclude" type="object"
                         class="btn btn-link btn-sm p-0 ms-1" title="Do not apply the discount on this payment"
                         invisible="not early_discount_apply">
-                        <i class="fa fa-arrow-left"/> Exclude
+                        <i class="oi" data-icon="arrow_back"/> Exclude
                     </button>
                     <button name="action_early_discount_recalculate" type="object"
                         class="btn btn-link btn-sm p-0 ms-1" title="Apply the discount again on this payment"
                         invisible="early_discount_apply">
-                        <i class="fa fa-arrow-left"/> Recalculate
+                        <i class="oi" data-icon="arrow_back"/> Recalculate
                     </button>
                 </div>
             </div>
