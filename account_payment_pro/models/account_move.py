@@ -21,9 +21,8 @@ class AccountMove(models.Model):
     )
 
     def refresh_invoice_currency_rate(self):
-        """The entry of a payment pro payment is built at the rate of the payment, so there is nothing to refresh.
-        Refreshing it would convert its withholding tax lines again from the payment currency and lose the company
-        currency amounts they were booked with."""
+        """The entry of a payment pro payment is built at the rate of the payment, so there is nothing to refresh:
+        doing it would value its lines again at the rate of the day."""
         return super(
             AccountMove, self.filtered(lambda move: not move.origin_payment_id.use_payment_pro)
         ).refresh_invoice_currency_rate()

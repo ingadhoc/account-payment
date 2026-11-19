@@ -19,7 +19,6 @@
         "account_internal_transfer",
         "l10n_latam_check",
         "account_ux",
-        "l10n_account_withholding_tax",
     ],
     "data": [
         "security/payment_security.xml",
