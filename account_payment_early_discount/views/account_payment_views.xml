@@ -32,6 +32,28 @@
                     </button>
                 </div>
             </div>
+            <!-- with the discount applied, the payment difference shown and adjusted is the one after the discount -->
+            <xpath expr="//div[@name='payment_total']//field[@name='payment_difference']" position="attributes">
+                <attribute name="invisible">early_discount_amount</attribute>
+            </xpath>
+            <xpath expr="//div[@name='payment_total']//field[@name='payment_difference']" position="after">
+                <field name="early_discount_difference" class="oe_inline" invisible="not early_discount_amount"/>
+            </xpath>
+            <xpath expr="//div[@name='payment_total']//button[@name='action_adjust_amount_for_difference']" position="attributes">
+                <attribute name="invisible" add="(early_discount_amount and not early_discount_difference)" separator=" or "/>
+            </xpath>
+            <xpath expr="//div[@name='payment_total']//button[@name='action_adjust_writeoff_for_difference']" position="attributes">
+                <attribute name="invisible" add="(early_discount_amount and not early_discount_difference)" separator=" or "/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- the debts page comes from this view of Payment Pro, applied after the payment form -->
+    <record id="view_account_payment_form_debts" model="ir.ui.view">
+        <field name="name">account.payment.form.debts.early.discount</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account_payment_pro.latam_check_view_account_payment_form_inherited"/>
+        <field name="arch" type="xml">
             <!-- own list of the debt, so the early discount columns follow the payment date; the add line dialog keeps
                  using the list of Payment Pro, which has no parent payment -->
             <field name="to_pay_move_line_ids" position="inside">
@@ -56,19 +78,6 @@
                     <field name="company_id" column_invisible="True" readonly="True"/>
                 </list>
             </field>
-            <!-- with the discount applied, the payment difference shown and adjusted is the one after the discount -->
-            <xpath expr="//div[@name='payment_total']//field[@name='payment_difference']" position="attributes">
-                <attribute name="invisible">early_discount_amount</attribute>
-            </xpath>
-            <xpath expr="//div[@name='payment_total']//field[@name='payment_difference']" position="after">
-                <field name="early_discount_difference" class="oe_inline" invisible="not early_discount_amount"/>
-            </xpath>
-            <xpath expr="//div[@name='payment_total']//button[@name='action_adjust_amount_for_difference']" position="attributes">
-                <attribute name="invisible" add="(early_discount_amount and not early_discount_difference)" separator=" or "/>
-            </xpath>
-            <xpath expr="//div[@name='payment_total']//button[@name='action_adjust_writeoff_for_difference']" position="attributes">
-                <attribute name="invisible" add="(early_discount_amount and not early_discount_difference)" separator=" or "/>
-            </xpath>
         </field>
     </record>
 

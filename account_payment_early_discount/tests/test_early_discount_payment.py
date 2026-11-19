@@ -237,7 +237,7 @@ class TestEarlyDiscountPayment(EarlyDiscountCommon):
         self.env["res.currency.rate"].create(
             [
                 {"currency_id": foreign.id, "name": self.today - timedelta(days=30), "inverse_company_rate": 1000},
-                {"currency_id": foreign.id, "name": self.today, "inverse_company_rate": 1100},
+                {"currency_id": foreign.id, "name": self.today - timedelta(days=1), "inverse_company_rate": 1100},
             ]
         )
         invoice = self._create_invoice(self.today - timedelta(days=5), currency_id=foreign.id)
@@ -259,8 +259,8 @@ class TestEarlyDiscountPayment(EarlyDiscountCommon):
         self.env["res.currency.rate"].create(
             [
                 {"currency_id": foreign.id, "name": self.today - timedelta(days=30), "inverse_company_rate": 1000},
-                {"currency_id": foreign.id, "name": self.today - timedelta(days=3), "inverse_company_rate": 1050},
-                {"currency_id": foreign.id, "name": self.today, "inverse_company_rate": 1100},
+                {"currency_id": foreign.id, "name": self.today - timedelta(days=4), "inverse_company_rate": 1050},
+                {"currency_id": foreign.id, "name": self.today - timedelta(days=1), "inverse_company_rate": 1100},
             ]
         )
         invoice = self._create_invoice(self.today - timedelta(days=5), currency_id=foreign.id)
@@ -395,7 +395,7 @@ class TestEarlyDiscountPayment(EarlyDiscountCommon):
         check.operation_ids = return_payment
         payment.invalidate_recordset(["early_discount_warning_credit_note_ids"])
         self.assertFalse(payment.early_discount_warning_credit_note_ids, "a draft return does not warn")
-        return_payment.state = "in_process"
+        return_payment.state = "paid"
         payment.invalidate_recordset(["early_discount_warning_credit_note_ids"])
         self.assertEqual(payment.early_discount_warning_credit_note_ids, credit_note)
 
