@@ -67,6 +67,8 @@ class AccountMove(models.Model):
                 "journal_id": self.journal_id.id,
                 "partner_id": self.partner_id.id,
                 "currency_id": self.currency_id.id,
+                # the credit note wizard copies the tax mode of the invoice
+                "document_tax_mode": self.document_tax_mode,
                 "date": fields.Date.context_today(self),
             }
         )
