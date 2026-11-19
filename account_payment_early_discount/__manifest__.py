@@ -19,7 +19,7 @@
 ##############################################################################
 {
     "name": "Account Payment Early Discount",
-    "version": "19.0.1.0.0",
+    "version": "20.0.1.0.0",
     "category": "Technical",
     "author": "ADHOC SA",
     "website": "https://www.adhoc.com.ar",
@@ -29,7 +29,7 @@
     "data": [
         "views/account_payment_views.xml",
     ],
-    "installable": False,
+    "installable": True,
     "auto_install": False,
     "application": False,
 }
