@@ -23,7 +23,9 @@ class AccountPayment(models.Model):
         store=True,
         readonly=False,
     )
-    net_amount = fields.Monetary(compute="_compute_net_amount", inverse="_inverse_net_amount")
+    net_amount = fields.Monetary(
+        string="Amount Without Surcharge", compute="_compute_net_amount", inverse="_inverse_net_amount"
+    )
 
     @api.depends("available_card_ids", "payment_type")
     def _compute_financing_plan(self):
