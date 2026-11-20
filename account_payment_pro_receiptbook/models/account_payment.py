@@ -15,6 +15,7 @@ class AccountPayment(models.Model):
         store=True,
         domain="[('partner_type', '=', partner_type)]",
     )
+    use_receiptbook = fields.Boolean(related="company_id.use_receiptbook")
 
     def write(self, vals):
         if "receiptbook_id" in vals and any(rec.receiptbook_id.id != vals["receiptbook_id"] for rec in self):

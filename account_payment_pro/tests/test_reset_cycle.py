@@ -35,6 +35,8 @@ class TestResetCycle(AccountInvariantsMixin, TransactionCase):
         )
         cls.bank_journal.outbound_payment_method_line_ids.payment_account_id = cls.bank_journal.default_account_id
         cls.product = cls.env.ref("product.product_product_16")
+        # Demo taxes on this product change between versions: the scenarios assume none.
+        cls.product.write({"taxes_id": False, "supplier_taxes_id": False})
         cls.vendor = cls.env["res.partner"].create({"name": "Test Reset Cycle Vendor"})
         write_off_account = cls.env["account.account"].search([("account_type", "=", "expense")], limit=1)
         cls.write_off_type = cls.env["account.write_off.type"].create(

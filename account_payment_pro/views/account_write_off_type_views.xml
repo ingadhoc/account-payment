@@ -47,6 +47,6 @@
 		<field name="res_model">account.write_off.type</field>
 		<field name="view_mode">list,form</field>
 	</record>
-	<menuitem action="action_account_write_off_type" id="menu_write_off_type" parent="account.root_payment_menu" sequence="21" />
+	<menuitem action="action_account_write_off_type" id="menu_write_off_type" parent="account.menu_finance_configuration" sequence="21" />
 
 </odoo>

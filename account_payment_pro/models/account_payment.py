@@ -104,7 +104,6 @@ class AccountPayment(models.Model):
         related="destination_journal_id.currency_id",
         string="Destination Journal Currency",
     )
-    commercial_partner_id = fields.Many2one(related="partner_id.commercial_partner_id")
     # MUY IMPORTANTE; NO agregar tracking porque rompe como se calcula (ver commit)
     payment_total = fields.Monetary(
         compute="_compute_payment_total",
@@ -366,23 +365,45 @@ class AccountPayment(models.Model):
                 else:
                     rec.destination_currency_id = rec.company_currency_id
 
+    def _get_accounting_rate_for(self, currency):
+        """Rate A→C in native Odoo format for ``currency`` taken as the payment one."""
+        self.ensure_one()
+        if not currency or currency == self.company_currency_id:
+            return 1.0
+        # _get_conversion_rate(from=C, to=A) devuelve A/C, que es el formato Odoo nativo que necesitamos
+        return self.env["res.currency"]._get_conversion_rate(
+            from_currency=self.company_currency_id,
+            to_currency=currency,
+            company=self.company_id,
+            date=self.date or fields.Date.context_today(self),
+        )
+
     @api.depends("currency_id", "company_currency_id", "company_id", "date")
     def _compute_accounting_rate(self):
         for rec in self:
-            if not rec.currency_id or rec.currency_id == rec.company_currency_id:
-                rec.accounting_rate = 1.0
-            else:
-                # _get_conversion_rate(from=C, to=A) devuelve A/C, que es el formato Odoo nativo que necesitamos
-                rec.accounting_rate = self.env["res.currency"]._get_conversion_rate(
-                    from_currency=rec.company_currency_id,
-                    to_currency=rec.currency_id,
-                    company=rec.company_id,
-                    date=rec.date or fields.Date.context_today(rec),
-                )
+            rec.accounting_rate = rec._get_accounting_rate_for(rec.currency_id)
 
     ####
     # CODIGO para UX de rate según la moneda mas fuerte. TODO evaluar si mantenemos o simplificamos
     ####
+
+    def _is_rate_inverted(self, from_currency, to_currency):
+        """True when ``to_currency`` is the strong one, so the form asks for the rate as "1 to = X from".
+
+        Reads the theoretical rate of the pair. Without a rate loaded for the date it comes back as 1.0 and the
+        direction would be decided by chance, so the foreign currency is taken as the strong one, which is how
+        the rate is quoted.
+        """
+        self.ensure_one()
+        theoretical_rate = self.env["res.currency"]._get_conversion_rate(
+            from_currency=from_currency,
+            to_currency=to_currency,
+            company=self.company_id,
+            date=self.date or fields.Date.context_today(self),
+        )
+        if theoretical_rate != 1.0:
+            return theoretical_rate < 1.0
+        return from_currency == self.company_currency_id and to_currency != self.company_currency_id
 
     @api.depends("currency_id", "counterpart_currency_id", "company_id", "date")
     def _compute_counterpart_rate_inverted(self):
@@ -391,13 +412,7 @@ class AccountPayment(models.Model):
             if not rec.currency_id or rec.currency_id == rec.counterpart_currency_id:
                 rec.counterpart_rate_inverted = False
                 continue
-            theoretical_rate = self.env["res.currency"]._get_conversion_rate(
-                from_currency=rec.currency_id,
-                to_currency=rec.counterpart_currency_id,
-                company=rec.company_id,
-                date=rec.date or fields.Date.context_today(rec),
-            )
-            rec.counterpart_rate_inverted = theoretical_rate < 1.0
+            rec.counterpart_rate_inverted = rec._is_rate_inverted(rec.currency_id, rec.counterpart_currency_id)
 
     @api.depends("currency_id", "company_currency_id", "company_id", "date")
     def _compute_accounting_rate_inverted(self):
@@ -408,13 +423,7 @@ class AccountPayment(models.Model):
                 continue
             # Misma dirección que _compute_accounting_rate: _get_conversion_rate(C→A) = A/C.
             # Si A/C < 1.0 (A es la moneda fuerte, ej: USD/ARS = 0.000667), mostramos C/A = 1500.
-            theoretical_rate = self.env["res.currency"]._get_conversion_rate(
-                from_currency=rec.company_currency_id,
-                to_currency=rec.currency_id,
-                company=rec.company_id,
-                date=rec.date or fields.Date.context_today(rec),
-            )
-            rec.accounting_rate_inverted = theoretical_rate < 1.0
+            rec.accounting_rate_inverted = rec._is_rate_inverted(rec.company_currency_id, rec.currency_id)
 
     @api.depends("accounting_rate")
     def _compute_user_accounting_rate(self):
@@ -466,6 +475,15 @@ class AccountPayment(models.Model):
 
     def _compute_amount(self):
         super()._compute_amount()
+        self._adjust_computed_amount()
+        self._sync_amount_exact()
+
+    def _adjust_computed_amount(self):
+        """Hook between the amount the core computes and the sync of amount_exact, for a module that pays an
+        amount of its own."""
+
+    def _sync_amount_exact(self):
+        """Keep amount_exact on the amount."""
         for rec in self:
             if rec.currency_id and not rec.currency_id.is_zero(rec.amount - rec.amount_exact):
                 rec.amount_exact = rec.amount
@@ -505,7 +523,12 @@ class AccountPayment(models.Model):
                 and not rec.currency_id.is_zero(amount - rec.env.context.get("default_amount"))
             ):
                 amount = rec.env.context.get("default_amount")
+            rec._on_currency_changed(old_currency)
             rec.update({"amount_exact": amount, "amount": amount})
+
+    def _on_currency_changed(self, old_currency):
+        """Hook of the currency onchange, for what else is in the payment currency and has to follow it.
+        The new rate is already the one of ``accounting_rate``; the old one comes from ``old_currency``."""
 
     @api.constrains("to_pay_move_line_ids")
     def _check_to_pay_lines_account(self):
@@ -640,6 +663,11 @@ class AccountPayment(models.Model):
                 rec.counterpart_currency_amount = amount
 
     @api.onchange("counterpart_currency_amount")
+    def _onchange_counterpart_currency_amount(self):
+        """The onchange lives apart from the inverse: the registry takes the last method of the MRO, so a
+        module overriding the inverse would leave the field without an onchange (l10n_latam_check_ux does)."""
+        self._inverse_counterpart_currency_amount()
+
     def _inverse_counterpart_currency_amount(self):
         for rec in self:
             # Usar amount_exact para comparación precisa
@@ -748,7 +776,7 @@ class AccountPayment(models.Model):
 
         liquidity_lines = res.get("liquidity_lines", [])
         counterpart_lines = res.get("counterpart_lines", [])
-        if not liquidity_lines or not counterpart_lines:
+        if not counterpart_lines or (not liquidity_lines and not self._books_no_liquidity_line()):
             return res
 
         if write_off_line_vals:
@@ -1043,6 +1071,11 @@ class AccountPayment(models.Model):
         for rec in self:
             rec.payment_difference = rec.to_pay_amount - rec.payment_total
 
+    def _books_no_liquidity_line(self):
+        """True for a payment whose entry has no liquidity line on purpose and still needs the adjustments of
+        ``_prepare_move_lines_per_type``. False here: payment pro always pays through a journal."""
+        return False
+
     def _get_payment_difference_in_currency_a(self):
         """Convierte payment_difference (B2) a moneda A (currency_id del pago)."""
         self.ensure_one()
@@ -1179,7 +1212,7 @@ class AccountPayment(models.Model):
         records -= skip
         internal_transfers = records.filtered(lambda x: x.is_internal_transfer)
 
-        with_payment_pro = self._get_filter_payments(records, ["direct_debit_mandate_id", "pos_session_id"])
+        with_payment_pro = self._get_filter_payments(records, ["mandate_id", "pos_session_id"])
 
         if internal_transfers or not self.env.context.get("pay_now"):
             ((internal_transfers or self) - with_payment_pro).to_pay_move_line_ids = [Command.clear()]
@@ -1276,7 +1309,7 @@ class AccountPayment(models.Model):
         """Return the debt lines that the core reconciliation would actually match."""
         amls = (counterpart_aml + debt_aml).with_context(
             no_exchange_difference=self.env.context.get("no_exchange_difference")
-            or bool(self.env["ir.config_parameter"].sudo().get_param("account.disable_partial_exchange_diff"))
+            or self.env["ir.config_parameter"].sudo().get_bool("account.disable_partial_exchange_diff")
         )
         plan_list, all_amls = amls._optimize_reconciliation_plan([amls])
         values_map = {
@@ -1436,9 +1469,7 @@ class AccountPayment(models.Model):
     @api.model
     def _get_background_send_batch_size(self):
         """Amount of payments that can still be sent synchronously from the UI."""
-        return int(
-            self.env["ir.config_parameter"].sudo().get_param("account_payment_pro.background_send_batch_size", 5)
-        )
+        return self.env["ir.config_parameter"].sudo().get_int("account_payment_pro.background_send_batch_size", 5)
 
     def _queue_background_send(self, send_values=None):
         """Flag the payments so the cron sends their receipt, and wake the cron up.
@@ -1520,7 +1551,7 @@ class AccountPayment(models.Model):
 
         One payment per iteration and per commit: a failure neither rolls back
         the receipts already sent nor stops the rest of the batch."""
-        domain = [("background_send", "=", True), ("state", "in", ("in_process", "paid"))]
+        domain = [("background_send", "=", True), ("state", "in", ("paid", "reconciled"))]
         payments = self.search(domain, order="id", limit=job_count)
         if not payments:
             return

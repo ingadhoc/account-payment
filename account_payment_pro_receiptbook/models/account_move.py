@@ -1,4 +1,5 @@
 from odoo import api, fields, models
+from odoo.tools import SQL
 
 
 class AccountMove(models.Model):
@@ -16,13 +17,11 @@ class AccountMove(models.Model):
         o no desde un payment group
         """
         if self.journal_id.type in ("cash", "bank", "credit") and not self.receiptbook_id:
-            where_string, param = super(
-                AccountMove, self.with_context(without_receiptbook_id=True)
-            )._get_last_sequence_domain(relaxed)
-            where_string += " AND receiptbook_id is Null"
-        else:
-            where_string, param = super(AccountMove, self)._get_last_sequence_domain(relaxed)
-        return where_string, param
+            condition = super(AccountMove, self.with_context(without_receiptbook_id=True))._get_last_sequence_domain(
+                relaxed
+            )
+            return SQL("%s AND receiptbook_id IS NULL", condition)
+        return super()._get_last_sequence_domain(relaxed)
 
     @api.model
     def _search(self, domain, *args, **kwargs):

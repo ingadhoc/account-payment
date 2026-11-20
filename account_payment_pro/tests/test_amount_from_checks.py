@@ -73,8 +73,8 @@ class TestAmountFromChecks(TestArCommon):
         self.assertEqual(payment.amount, 1_000_000)
         self.assertEqual(payment.payment_difference, 200_000)
         payment.action_post()
-        # in_process or paid depending on the journal outstanding account
-        self.assertIn(payment.state, ("in_process", "paid"))
+        # paid or reconciled depending on the journal outstanding account
+        self.assertIn(payment.state, ("paid", "reconciled"))
 
     def test_amount_from_checks_ignores_other_methods(self):
         receipt = self._receipt_form("manual")

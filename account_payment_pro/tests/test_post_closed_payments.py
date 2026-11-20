@@ -48,7 +48,7 @@ class TestPostClosedPayments(AccountTestInvoicingCommon):
 
         (draft | canceled).action_post()
 
-        self.assertEqual(draft.state, "in_process")
+        self.assertEqual(draft.state, "paid")
         self.assertEqual(canceled.state, "canceled")
         self.assertFalse(canceled.move_id)
 
@@ -59,4 +59,4 @@ class TestPostClosedPayments(AccountTestInvoicingCommon):
 
         payment.action_post()
 
-        self.assertEqual(payment.state, "in_process")
+        self.assertEqual(payment.state, "paid")

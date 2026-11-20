@@ -31,13 +31,13 @@ class TestResetAndRecomputeRate(AccountInvariantsMixin, TransactionCase):
             cls.usd = cls.env.ref("base.USD")
         cls.usd.active = True
         cls.env["res.currency.rate"].create(
-            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-01-01", "rate": 0.001}
+            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2025-12-31", "rate": 0.001}
         )
         cls.env["res.currency.rate"].create(
-            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-02-01", "rate": 1.0 / 1100.0}
+            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-01-31", "rate": 1.0 / 1100.0}
         )
         cls.env["res.currency.rate"].create(
-            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-03-01", "rate": 1.0 / 1200.0}
+            {"currency_id": cls.usd.id, "company_id": cls.company.id, "name": "2026-02-28", "rate": 1.0 / 1200.0}
         )
 
         cls.vendor = cls.env["res.partner"].create({"name": "Test Reset Recompute Rate Vendor"})
@@ -119,4 +119,9 @@ class TestResetAndRecomputeRate(AccountInvariantsMixin, TransactionCase):
 
         with self.subTest("la factura sigue saldada en ambas monedas"):
             self.assertEqual(bill.amount_residual, 0.0)
-            self.assertEqual(self.company.currency_id.round(sum(bill.line_ids.mapped("amount_residual"))), 0.0)
+            self.assertEqual(
+                self.company.currency_id.round(
+                    sum(bill.line_ids.filtered(lambda line: line.account_id.reconcile).mapped("amount_residual"))
+                ),
+                0.0,
+            )
