@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 19.0+e\n"
+"Project-Id-Version: Odoo Server 20.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-25 17:16+0000\n"
-"PO-Revision-Date: 2025-11-25 17:16+0000\n"
+"POT-Creation-Date: 2026-11-20 15:44+0000\n"
+"PO-Revision-Date: 2026-11-20 15:44+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -16,10 +16,93 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: account_payment_financial_surcharge
+#: model:ir.module.module,description:base.module_account_payment_financial_surcharge
+msgid ""
+".. |company| replace:: ADHOC SA\n"
+"\n"
+".. |company_logo| image:: https://raw.githubusercontent.com/ingadhoc/maintainer-tools/master/resources/adhoc-logo.png\n"
+"   :alt: ADHOC SA\n"
+"   :target: https://www.adhoc.com.ar\n"
+"\n"
+".. |icon| image:: https://raw.githubusercontent.com/ingadhoc/maintainer-tools/master/resources/adhoc-icon.png\n"
+"\n"
+".. image:: https://img.shields.io/badge/license-AGPL--3-blue.png\n"
+"   :target: https://www.gnu.org/licenses/agpl\n"
+"   :alt: License: AGPL-3\n"
+"\n"
+"=======================================\n"
+"Payments with Financial Surchange\n"
+"=======================================\n"
+"\n"
+"The module allows the management of financial surcharges when the client opts for installment payments or\n"
+"financing options. This is common in industries such as retail or financial services, where deferred payment\n"
+"options are offered. The main functionality is to automatically add a financial surcharge to the payment\n"
+"amount based on predefined criteria in \"Cards\".\n"
+"\n"
+"Installation\n"
+"============\n"
+"\n"
+"To install this module, you need to:\n"
+"\n"
+"#. This module is auto-installed\n"
+"\n"
+"Configuration\n"
+"=============\n"
+"\n"
+"To configure this module, you need to:\n"
+"\n"
+"#. Go to ...\n"
+"\n"
+"Usage\n"
+"=====\n"
+"\n"
+"To use this module, you need to:\n"
+"\n"
+"#. For this module to work you will need the setting 'Use payment pro module' activated for your company\n"
+"\n"
+".. image:: https://odoo-community.org/website/image/ir.attachment/5784_f2813bd/datas\n"
+"   :alt: Try me on Runbot\n"
+"   :target: http://runbot.adhoc.com.ar/\n"
+"\n"
+"Bug Tracker\n"
+"===========\n"
+"\n"
+"Bugs are tracked on `GitHub Issues\n"
+"<https://github.com/ingadhoc/account_payment/issues>`_. In case of trouble, please\n"
+"check there if your issue has already been reported. If you spotted it first,\n"
+"help us smashing it by providing a detailed and welcomed feedback.\n"
+"\n"
+"Credits\n"
+"=======\n"
+"\n"
+"Images\n"
+"------\n"
+"\n"
+"* |company| |icon|\n"
+"\n"
+"Contributors\n"
+"------------\n"
+"\n"
+"Maintainer\n"
+"----------\n"
+"\n"
+"|company_logo|\n"
+"\n"
+"This module is maintained by the |company|.\n"
+"\n"
+"To contribute to this module, please visit https://www.adhoc.com.ar.\n"
+msgstr ""
+
+#. module: account_payment_financial_surcharge
 #: model_terms:ir.ui.view,arch_db:account_payment_financial_surcharge.res_config_settings_view_form
 msgid ""
 "<span class=\"fa fa-lg fa-building-o\" title=\"Values set here are company-"
 "specific.\"/>"
+msgstr ""
+
+#. module: account_payment_financial_surcharge
+#: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_payment__net_amount
+msgid "Amount Without Surcharge"
 msgstr ""
 
 #. module: account_payment_financial_surcharge
@@ -70,18 +153,18 @@ msgid "Journal Item"
 msgstr ""
 
 #. module: account_payment_financial_surcharge
-#: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_payment__net_amount
-msgid "Net Amount"
+#: model:ir.model,name:account_payment_financial_surcharge.model_account_payment
+msgid "Payment"
 msgstr ""
 
 #. module: account_payment_financial_surcharge
 #: model:ir.model,name:account_payment_financial_surcharge.model_account_payment_method_line
-msgid "Payment Methods"
+msgid "Payment Method Line"
 msgstr ""
 
 #. module: account_payment_financial_surcharge
-#: model:ir.model,name:account_payment_financial_surcharge.model_account_payment
-msgid "Payments"
+#: model:ir.module.module,shortdesc:base.module_account_payment_financial_surcharge
+msgid "Payments with Financial Surchange"
 msgstr ""
 
 #. module: account_payment_financial_surcharge

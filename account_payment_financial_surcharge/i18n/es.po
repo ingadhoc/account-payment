@@ -33,6 +33,11 @@ msgstr ""
 "\"Los valores configurados aquí son específicos de la empresa.\"/>"
 
 #. module: account_payment_financial_surcharge
+#: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_payment__net_amount
+msgid "Amount Without Surcharge"
+msgstr "Monto sin recargo"
+
+#. module: account_payment_financial_surcharge
 #: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_payment__card_id
 msgid "Card"
 msgstr "Tarjeta"
@@ -78,11 +83,6 @@ msgstr "Plan de Cuotas"
 #: model:ir.model,name:account_payment_financial_surcharge.model_account_move_line
 msgid "Journal Item"
 msgstr "Apunte contable"
-
-#. module: account_payment_financial_surcharge
-#: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_payment__net_amount
-msgid "Net Amount"
-msgstr "Monto Neto"
 
 #. module: account_payment_financial_surcharge
 #: model:ir.model,name:account_payment_financial_surcharge.model_account_payment_method_line
