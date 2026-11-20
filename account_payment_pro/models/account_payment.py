@@ -648,11 +648,27 @@ class AccountPayment(models.Model):
             self = self.with_company(self.company_id.id)
         super(AccountPayment, self)._compute_available_journal_ids()
 
-    @api.depends("amount", "amount_exact", "counterpart_rate", "counterpart_currency_id", "currency_id")
+    @api.depends(
+        "amount",
+        "amount_exact",
+        "accounting_rate",
+        "counterpart_rate",
+        "counterpart_currency_id",
+        "currency_id",
+        "l10n_latam_new_check_ids.amount",
+        "l10n_latam_move_check_ids.amount",
+    )
     def _compute_counterpart_currency_amount(self):
         for rec in self:
             amount = rec.amount_exact or rec.amount
-            if rec.counterpart_currency_id and rec.counterpart_currency_id != rec.currency_id:
+            if rec._has_counterpart_amount_per_check():
+                # Same as the journal entry: each check line is rounded on its own, at the entry rate.
+                rate = amount / rec.accounting_rate / rec.amount
+                rec.counterpart_currency_amount = sum(
+                    rec.company_currency_id.round(check.amount * rate)
+                    for check in rec.l10n_latam_new_check_ids | rec.l10n_latam_move_check_ids
+                )
+            elif rec.counterpart_currency_id and rec.counterpart_currency_id != rec.currency_id:
                 if rec.counterpart_rate:
                     # amount está en A, convertir a B1 usando counterpart_rate
                     rec.counterpart_currency_amount = amount * rec.counterpart_rate
@@ -665,11 +681,14 @@ class AccountPayment(models.Model):
     @api.onchange("counterpart_currency_amount")
     def _onchange_counterpart_currency_amount(self):
         """The onchange lives apart from the inverse: the registry takes the last method of the MRO, so a
-        module overriding the inverse would leave the field without an onchange (l10n_latam_check_ux does)."""
+        module overriding the inverse would leave the field without an onchange."""
         self._inverse_counterpart_currency_amount()
 
     def _inverse_counterpart_currency_amount(self):
         for rec in self:
+            # With several checks the difference is the rounding remainder, not an amount typed by the user.
+            if rec._has_counterpart_amount_per_check():
+                continue
             # Usar amount_exact para comparación precisa
             amount_to_compare = rec.amount_exact if rec.amount_exact else rec.amount
             if rec.counterpart_currency_id and not rec.counterpart_currency_id.is_zero(
@@ -683,6 +702,16 @@ class AccountPayment(models.Model):
                 else:
                     rec.amount_exact = 0
                     rec.amount = 0
+
+    def _has_counterpart_amount_per_check(self):
+        """Whether the counterpart amount is the sum of each check converted on its own."""
+        self.ensure_one()
+        return bool(
+            self.counterpart_currency_id == self.company_currency_id
+            and self.accounting_rate
+            and self.amount
+            and len(self.l10n_latam_new_check_ids | self.l10n_latam_move_check_ids) > 1
+        )
 
     @api.depends(
         "accounting_rate", "counterpart_currency_id", "currency_id", "company_currency_id", "company_id", "date"

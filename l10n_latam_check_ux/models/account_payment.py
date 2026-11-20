@@ -435,50 +435,6 @@ class AccountPayment(models.Model):
 
         return vals
 
-    @api.depends("l10n_latam_new_check_ids.amount", "l10n_latam_move_check_ids.amount")
-    def _compute_counterpart_currency_amount(self):
-        """Con varios cheques, el importe mostrado se arma como el del asiento: cheque por cheque.
-
-        El campo es de `account_payment_pro` y convierte el total de una sola vez; el asiento redondea
-        cada línea de cheque por separado y suma. Esa diferencia se veía como un centavo entre el
-        importe del pago y su propia línea contable (ticket 123832). Se usa la misma cotización que el
-        asiento —la que sale de `amount_exact`, no la del campo— porque si no vuelve a diferir justo
-        en los flujos donde el usuario tipea el importe.
-
-        El resto de los pagos ni pasa por acá.
-        """
-        per_check = self.filtered(lambda pay: pay._has_counterpart_amount_per_check())
-        super(AccountPayment, self - per_check)._compute_counterpart_currency_amount()
-        for pay in per_check:
-            rate = (pay.amount_exact or pay.amount) / pay.accounting_rate / pay.amount
-            pay.counterpart_currency_amount = sum(
-                pay.company_currency_id.round(check.amount * rate)
-                for check in pay.l10n_latam_new_check_ids | pay.l10n_latam_move_check_ids
-            )
-
-    def _inverse_counterpart_currency_amount(self):
-        """El reparto por cheque no es un importe tipeado por el usuario.
-
-        El inverse de `account_payment_pro` deduce el importe del pago del que muestra la
-        contrapartida, y así recupera precisión cuando el importe llega de una sincronización (tarea
-        65829). Pero con varios cheques la diferencia es el resto de repartir, no un importe nuevo:
-        aplicarlo correría el `amount` del pago y los cheques dejarían de sumarlo (ticket 123832).
-        """
-        for pay in self:
-            if pay._has_counterpart_amount_per_check():
-                continue
-            super(AccountPayment, pay)._inverse_counterpart_currency_amount()
-
-    def _has_counterpart_amount_per_check(self):
-        """Si el importe de la contrapartida lo arma el reparto cheque por cheque."""
-        self.ensure_one()
-        return bool(
-            self.counterpart_currency_id == self.company_currency_id
-            and self.accounting_rate
-            and self.amount
-            and len(self.l10n_latam_new_check_ids | self.l10n_latam_move_check_ids) > 1
-        )
-
     def _prepare_move_liquidity_lines(self, default_values):
         """Valúa todos los cheques a la cotización que el asiento ya dio por buena.
 
