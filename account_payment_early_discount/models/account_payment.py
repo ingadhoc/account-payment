@@ -97,7 +97,7 @@ class AccountPayment(models.Model):
                     rec.amount = rec.amount - rec._early_discount_to_payment_currency(discount)
                     rec.amount_exact = rec.amount
             if rec.currency_id.compare_amounts(rec.amount, previous_amount):
-                rec.early_discount_suggested_amount = rec.amount
+                rec.early_discount_suggested_amount = rec._get_early_discount_typed_amount()
 
     @api.onchange("date", "early_discount_apply")
     def _onchange_early_discount_suggested_amount(self):
@@ -125,7 +125,10 @@ class AccountPayment(models.Model):
             # with a debt in another currency the difference changes with the rate, so the last suggestion is checked too
             is_suggestion = (
                 rec.early_discount_suggested_amount
-                and rec.currency_id.compare_amounts(rec.amount, rec.early_discount_suggested_amount) == 0
+                and rec.currency_id.compare_amounts(
+                    rec._get_early_discount_typed_amount(), rec.early_discount_suggested_amount
+                )
+                == 0
             )
             if not is_suggestion and not any(
                 currency.is_zero(rec.payment_difference - suggested) for suggested in (0.0, term_discount)
@@ -136,7 +139,7 @@ class AccountPayment(models.Model):
             discount = rec._get_early_discount_to_apply()
             rec.amount = rec._get_early_discount_suggested_amount(discount)
             rec.amount_exact = rec.amount
-            rec.early_discount_suggested_amount = rec.amount
+            rec.early_discount_suggested_amount = rec._get_early_discount_typed_amount()
 
     def action_adjust_amount_for_difference(self):
         # with the early discount applied, adjust the difference after the discount, so the discount is kept
@@ -202,6 +205,14 @@ class AccountPayment(models.Model):
         if self.counterpart_currency_id != self.destination_currency_id:
             return amount * (self.accounting_rate or 1.0)
         return amount / (self.counterpart_rate or 1.0)
+
+    def _get_early_discount_typed_amount(self):
+        """Amount the user works with: the net one when the payment has withholdings, since the amount includes
+        them and changes when they are added."""
+        self.ensure_one()
+        if "withholding_net_amount" in self._fields:
+            return self.withholding_net_amount
+        return self.amount
 
     def _get_early_discount_suggested_amount(self, discount):
         """Payment amount that leaves only ``discount`` as payment difference. It is computed from the debt and not
