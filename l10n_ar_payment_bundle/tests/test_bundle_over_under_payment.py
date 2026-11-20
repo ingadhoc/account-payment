@@ -21,7 +21,7 @@ class TestBundleOverUnderPayment(AccountInvariantsMixin, TransactionCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.company = cls.env["res.company"].search(
-            [("l10n_ar_tax_base_account_id", "!=", False), ("partner_id.country_id.code", "=", "AR")], limit=1
+            [("chart_template", "like", "ar_"), ("partner_id.country_id.code", "=", "AR")], limit=1
         )
         cls.env = cls.env(context=dict(cls.env.context, allowed_company_ids=cls.company.ids))
         cls.env.user.company_id = cls.company
@@ -61,7 +61,7 @@ class TestBundleOverUnderPayment(AccountInvariantsMixin, TransactionCase):
             {
                 "name": "Test Bundle Over Under Vendor",
                 "company_id": False,
-                "l10n_latam_identification_type_id": cls.env.ref("l10n_ar.it_cuit").id,
+                "country_id": cls.env.ref("base.ar").id,
                 "l10n_ar_afip_responsibility_type_id": cls.env.ref("l10n_ar.res_IVARI").id,
                 "vat": "30710158270",
             }

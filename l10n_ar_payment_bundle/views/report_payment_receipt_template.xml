@@ -18,7 +18,6 @@
         <field name="model">account.payment</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">l10n_ar_payment_bundle.report_payment_receipt_bundle</field>
-        <field name="report_file">l10n_ar_payment_bundle.report_payment_receipt_bundle</field>
         <field name="binding_model_id" ref="model_account_payment"/>
         <field name="binding_type">report</field>
         <field name="binding_view_types">list</field>

@@ -70,6 +70,12 @@ class AccountPayment(models.Model):
         for rec in self:
             rec.is_main_payment = rec.payment_method_line_id.payment_method_id.code == "payment_bundle"
 
+    def _compute_state(self):
+        super()._compute_state()
+        # The main payment keeps the Paid state: without a liquidity line the core would turn it Reconciled,
+        # and the actual state of each payment method is the one of its linked payment.
+        self.filtered(lambda x: x.is_main_payment and x.state == "reconciled").state = "paid"
+
     @api.onchange("company_id", "partner_id")
     def _onchange_company_id(self):
         """si cambia partner o company por ahora limpiamos los pagos, eventualmente podríamos hacer partner_id computado
@@ -96,11 +102,14 @@ class AccountPayment(models.Model):
             else:
                 rec.payment_total_signed = rec.payment_total
 
-    @api.depends("link_payment_ids.payment_total_signed")
+    @api.depends("link_payment_ids.payment_total_signed", "is_main_payment", "destination_currency_withholding_amount")
     def _compute_payment_total(self):
         super()._compute_payment_total()
         for rec in self:
             rec.payment_total += sum(rec.link_payment_ids.mapped("payment_total_signed"))
+            # the main payment amount is zero, so its withholdings are not in the gross amount
+            if rec.is_main_payment:
+                rec.payment_total += rec.destination_currency_withholding_amount
 
     @api.depends("main_payment_id.payment_difference")
     def _compute_to_pay_amount(self):
@@ -159,13 +168,13 @@ class AccountPayment(models.Model):
         super(AccountPayment, self - self.filtered("main_payment_id"))._onchange_counterpart_currency_id_filter_lines()
 
     @api.depends("main_payment_id")
-    def _compute_l10n_ar_withholding_line_ids(self):
+    def _compute_withholding_line_ids(self):
         with_main_payments = self.filtered("main_payment_id")
         for rec in with_main_payments:
-            rec.l10n_ar_withholding_line_ids = False
-        super(AccountPayment, self - with_main_payments)._compute_l10n_ar_withholding_line_ids()
+            rec.withholding_line_ids = False
+        super(AccountPayment, self - with_main_payments)._compute_withholding_line_ids()
 
-    @api.depends("is_main_payment", "withholdings_amount")
+    @api.depends("is_main_payment", "withholding_amount")
     def _compute_amount(self):
         main_paments = self.filtered("is_main_payment")
         main_paments.amount = 0.0
@@ -181,14 +190,6 @@ class AccountPayment(models.Model):
         main_payments.amount = 0
         main_payments.amount_exact = 0
         super(AccountPayment, self - main_payments)._onchange_to_pay_lines_adjust_amount()
-
-    @api.onchange("withholdings_amount")
-    def _onchange_withholdings(self):
-        """dejamos este onchange además del compute_amount porque "le gana" en ejecución y, si cambian retenciones le asignaba un amount"""
-        main_payments = self.filtered("is_main_payment")
-        main_payments.amount = 0
-        main_payments.amount_exact = 0
-        super(AccountPayment, self - main_payments)._onchange_withholdings()
 
     @api.onchange("currency_id")
     def _onchange_currency_recompute_amount(self):
@@ -226,12 +227,12 @@ class AccountPayment(models.Model):
         for rec in linked:
             # Neteo de los linkeados vía payment_total_signed (una devolución resta, no suma).
             # payment_total viene en B2/destination_currency_id, misma moneda que selected_debt
-            # y withholdings_amount.
+            # y destination_currency_withholding_amount.
             total_linked_in_b = sum(rec.main_payment_id.link_payment_ids.mapped("payment_total_signed"))
             rec.payment_difference = (
                 abs(rec.main_payment_id.to_pay_amount)
                 - total_linked_in_b
-                - rec.main_payment_id.withholdings_amount
+                - rec.main_payment_id.destination_currency_withholding_amount
                 - rec.main_payment_id.write_off_amount
             )
         super(AccountPayment, self - linked)._compute_payment_difference()
@@ -377,20 +378,29 @@ class AccountPayment(models.Model):
         # Only main bundle payments (is_main_payment, no main_payment_id) without write-off or withholdings skip journal entry.
         # Linked payments and regular payments always create journal entries, including write-off.
         return self.filtered(
-            lambda x: x.is_main_payment and not x.main_payment_id and not (x.write_off_amount or x.withholdings_amount)
+            lambda x: x.is_main_payment and not x.main_payment_id and not (x.write_off_amount or x.withholding_amount)
         )
 
     def _prepare_move_lines_per_type(self, write_off_line_vals=None, force_balance=None):
         res = super()._prepare_move_lines_per_type(write_off_line_vals=write_off_line_vals, force_balance=force_balance)
-        # The main payment amount is always zero: its liquidity line would be a zero line on the bundle journal
-        # account. l10n_ar_tax already drops it when there are withholdings; do the same for write-off only.
         liquidity_lines = res.get("liquidity_lines", [])
-        if (
-            self.is_main_payment
-            and liquidity_lines
-            and all(self.company_currency_id.is_zero(line["balance"]) for line in liquidity_lines)
-        ):
-            res["liquidity_lines"] = []
+        counterpart_lines = res.get("counterpart_lines", [])
+        if not (self.is_main_payment and liquidity_lines and counterpart_lines):
+            return res
+        # The main payment amount is always zero, but since 20.0 the amount is the gross one and the core takes the
+        # withholdings out of the liquidity line: the debt would get zero and the bundle journal the withholdings.
+        # The main payment moves no money, so what the liquidity line carries settles the debt instead.
+        counterpart = counterpart_lines[0]
+        counterpart["balance"] += sum(line["balance"] for line in liquidity_lines)
+        if counterpart.get("currency_id") == self.company_currency_id.id:
+            counterpart["amount_currency"] = counterpart["balance"]
+        elif counterpart.get("currency_id") == self.currency_id.id:
+            counterpart["amount_currency"] += sum(line["amount_currency"] for line in liquidity_lines)
+        else:
+            withholding = self._get_withholding_amount_in(self.counterpart_currency_id, self.counterpart_rate or 1.0)
+            sign = 1 if counterpart["balance"] >= 0 else -1
+            counterpart["amount_currency"] += sign * withholding
+        res["liquidity_lines"] = []
         return res
 
     def _seek_for_lines(self):

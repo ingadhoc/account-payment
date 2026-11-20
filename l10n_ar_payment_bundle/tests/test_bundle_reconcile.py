@@ -203,6 +203,7 @@ class TestBundleReconcile(TransactionCase):
             main.amount_company_currency_signed, 0.0, places=2, msg="El pago principal siempre vale 0 en la compañía"
         )
         self.assertTrue(debt_line.full_reconcile_id, "La deuda debería quedar totalmente conciliada")
+        self.assertEqual(main.state, "paid", "El pago principal se queda en Pagado")
 
     def test_bundle_same_sign_lines_still_reconcile(self):
         """Control: dos pagos en el mismo sentido que cierran la deuda exacta siguen conciliando."""
