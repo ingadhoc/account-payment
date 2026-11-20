@@ -113,3 +113,35 @@ class TestMassTransferDestinationDomain(TransactionCase):
         }
         self.assertTrue(bundle_ids)
         self.assertFalse(reachable & self.env["account.journal"].browse(bundle_ids))
+
+    def test_to_journal_domain_matches_the_effective_currency(self):
+        """A journal without currency and one with the company currency set are the same currency."""
+        company_currency = self.root.currency_id
+        other_currency = (
+            self.env["res.currency"]
+            .with_context(active_test=False)
+            .search([("id", "!=", company_currency.id), ("name", "in", ("USD", "EUR"))], limit=1)
+        )
+        other_currency.active = True
+        same_currency_journal = self.env["account.journal"].create(
+            {
+                "name": "Root Bank Company Currency",
+                "type": "bank",
+                "code": "RBCC",
+                "company_id": self.root.id,
+                "currency_id": company_currency.id,
+            }
+        )
+        other_currency_journal = self.env["account.journal"].create(
+            {
+                "name": "Root Bank Other Currency",
+                "type": "bank",
+                "code": "RBOC",
+                "company_id": self.root.id,
+                "currency_id": other_currency.id,
+            }
+        )
+        reachable = self.env["account.journal"].search(self._wizard().to_journal_domain)
+        self.assertIn(self.root_bank_journal, reachable)
+        self.assertIn(same_currency_journal, reachable)
+        self.assertNotIn(other_currency_journal, reachable)
