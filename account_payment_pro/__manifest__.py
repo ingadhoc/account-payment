@@ -17,7 +17,7 @@
         # TODO mover esto a modulo puente
         "l10n_latam_invoice_document",
         "account_internal_transfer",
-        "l10n_latam_check",
+        "l10n_latam_check_ux",
         "account_ux",
     ],
     "data": [
