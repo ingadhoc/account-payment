@@ -108,6 +108,15 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
     def _wth_move_lines(self, payment):
         return payment.move_id.line_ids.filtered(lambda x: x.account_id == self.account_tax_wth)
 
+    def _assert_main_settles_debt(self, main, balance, amount_currency=None):
+        """The withholdings of the main payment settle the debt, and nothing goes to the bundle journal."""
+        payable = main.move_id.line_ids.filtered(lambda x: x.account_id.account_type == "liability_payable")
+        self.assertAlmostEqual(sum(payable.mapped("balance")), balance, places=2)
+        if amount_currency is not None:
+            self.assertAlmostEqual(sum(payable.mapped("amount_currency")), amount_currency, places=2)
+        self.assertFalse(main.move_id.line_ids.filtered(lambda x: x.account_id == main.outstanding_account_id))
+        self.assertEqual(main.state, "paid", "The main payment keeps the Paid state")
+
     def _create_main_payment(self, invoice, fiscal_position=None, **kw):
         """Crea el pago principal del bundle (amount=0, is_main_payment=True).
 
@@ -287,6 +296,8 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         self.assertTrue(main.move_id, "Main con retenciones genera asiento")
         wth_ml = self._wth_move_lines(main)
         self.assertAlmostEqual(abs(wth_ml.balance), 300, places=2)
+        self._assert_main_settles_debt(main, 300)
+        self.assertAlmostEqual(invoice.amount_residual, 0, places=2)
 
     # ==================================================================
     # B.3 — Bundle deuda USD, linked mixtos ARS + USD (A≠B para ARS linked)
@@ -378,9 +389,11 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
         self.assertTrue(main.move_id)
         wth_ml = self._wth_move_lines(main)
         self.assertAlmostEqual(abs(wth_ml.balance), 36_000, places=0)
+        self._assert_main_settles_debt(main, 36_000, amount_currency=30)
 
         # Pago intencional parcial: 500+500+30 = 1030 USD de 1210 USD total
         self.assertEqual(invoice.payment_state, "partial", "1030 USD pagados de 1210 USD → debe quedar parcial")
+        self.assertAlmostEqual(invoice.amount_residual, 180, places=2)
 
     def test_b3_linked_usd_uses_forced_main_counterpart_rate(self):
         """B.3.x · Main con deuda USD y counterpart rate forzado.
@@ -836,3 +849,160 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
             msg="difference = 12100 - (-12100) = 24200 (con abs daría 0, enmascarando el signo)",
         )
         self.assertAlmostEqual(linked_refund.payment_difference, 24_200, places=2)
+
+    # ==================================================================
+    # F — Life cycle of a main payment with withholdings
+    # ==================================================================
+
+    def _write_off_type(self):
+        account = self.env["account.account"].create(
+            {
+                "name": "Ajuste Bundle Test",
+                "code": "WOBT",
+                "account_type": "expense",
+                "company_ids": [Command.set(self.company.ids)],
+            }
+        )
+        return self.env["account.write_off.type"].create(
+            {"name": "Ajuste Bundle Test", "company_ids": [Command.set(self.company.ids)], "account_id": account.id}
+        )
+
+    def _assert_balanced(self, payments):
+        for payment in payments.filtered("move_id"):
+            self.assertAlmostEqual(sum(payment.move_id.line_ids.mapped("balance")), 0, places=2)
+
+    def test_f1_withholding_and_write_off(self):
+        """The withholding and the write-off of the main payment both settle the debt."""
+        invoice = self._create_invoice(10_000, self.ars)
+        write_off_type = self._write_off_type()
+        main = self._create_main_payment(invoice, write_off_type_id=write_off_type.id, write_off_amount=100)
+        linked = self._add_linked_payment(main, self.bank_ars, 11_700)
+        self.assertAlmostEqual(linked.payment_difference, 0, places=2)
+
+        main.action_post()
+
+        self._assert_main_settles_debt(main, 400)
+        write_off_line = main.move_id.line_ids.filtered(lambda x: x.account_id == write_off_type.account_id)
+        self.assertAlmostEqual(write_off_line.balance, -100, places=2)
+        self.assertAlmostEqual(main.amount_company_currency_signed, 0, places=2)
+        self._assert_balanced(main | linked)
+        self.assertAlmostEqual(invoice.amount_residual, 0, places=2)
+
+    def test_f2_reset_to_draft_edit_and_post_again(self):
+        """Reset a posted bundle to draft, edit a linked payment and post it again."""
+        invoice = self._create_invoice(10_000, self.ars)
+        main = self._create_main_payment(invoice)
+        linked = self._add_linked_payment(main, self.bank_ars, 11_800)
+        main.action_post()
+        main_name, linked_name = main.name, linked.name
+
+        main.action_draft()
+        self.assertEqual(main.state, "draft")
+        self.assertEqual(linked.state, "draft")
+        self.assertAlmostEqual(invoice.amount_residual, 12_100, places=2)
+        # a write on a draft main payment that keeps its entry syncs it again
+        main.memo = "Edited"
+        payable = main.move_id.line_ids.filtered(lambda x: x.account_id.account_type == "liability_payable")
+        self.assertAlmostEqual(sum(payable.mapped("balance")), 300, places=2)
+        linked.amount = 11_000
+
+        main.action_post()
+
+        self.assertEqual((main.name, linked.name), (main_name, linked_name))
+        self.assertEqual(main.state, "paid")
+        self.assertIn(linked.state, ("paid", "reconciled"))
+        self.assertEqual(len(main.withholding_line_ids), 1)
+        self._assert_main_settles_debt(main, 300)
+        self._assert_balanced(main | linked)
+        self.assertAlmostEqual(invoice.amount_residual, 800, places=2)
+
+    def test_f3_cancel(self):
+        """Cancelling the main payment cancels its linked payments and gives the debt back."""
+        invoice = self._create_invoice(10_000, self.ars)
+        main = self._create_main_payment(invoice)
+        linked = self._add_linked_payment(main, self.bank_ars, 11_800)
+        main.action_post()
+
+        main.action_draft()
+        main.action_cancel()
+
+        self.assertEqual(main.state, "canceled")
+        self.assertEqual(linked.state, "canceled")
+        self.assertAlmostEqual(invoice.amount_residual, 12_100, places=2)
+
+    def test_f4_only_withholding_without_linked_payments(self):
+        """A main payment with only its withholding settles that part of the debt."""
+        invoice = self._create_invoice(10_000, self.ars)
+        main = self._create_main_payment(invoice)
+
+        main.action_post()
+
+        self._assert_main_settles_debt(main, 300)
+        self._assert_balanced(main)
+        self.assertAlmostEqual(invoice.amount_residual, 11_800, places=2)
+        self.assertEqual(invoice.payment_state, "partial")
+
+    def test_f5_customer_receipt(self):
+        """A customer receipt with two payment methods, without withholdings: the main payment has no entry."""
+        sale_journal = self.env["account.journal"].create(
+            {
+                "name": "Ventas Test",
+                "type": "sale",
+                "code": "VTEST",
+                "company_id": self.company.id,
+                "l10n_latam_use_documents": False,
+            }
+        )
+        invoice = self.env["account.move"].create(
+            {
+                "partner_id": self.partner.id,
+                "invoice_date": self.today,
+                "move_type": "out_invoice",
+                "journal_id": sale_journal.id,
+                "invoice_line_ids": [
+                    Command.create(
+                        {"name": "Test", "quantity": 1, "price_unit": 10_000, "tax_ids": [Command.set(self.tax_21.ids)]}
+                    )
+                ],
+            }
+        )
+        invoice.action_post()
+        debt = invoice.line_ids.filtered(lambda x: x.account_id.account_type == "asset_receivable")
+        bundle_in = self.bundle_journal.inbound_payment_method_line_ids.filtered(lambda x: x.code == "payment_bundle")
+        main = self.env["account.payment"].create(
+            {
+                "journal_id": self.bundle_journal.id,
+                "partner_id": self.partner.id,
+                "partner_type": "customer",
+                "payment_type": "inbound",
+                "payment_method_line_id": bundle_in.id,
+                "date": self.today,
+                "amount": 0,
+                "to_pay_move_line_ids": [Command.set(debt.ids)],
+            }
+        )
+        linked = self._add_linked_payment(main, self.cash_ars, 2_100) | self._add_linked_payment(
+            main, self.bank_ars, 10_000
+        )
+
+        main.action_post()
+
+        self.assertFalse(main.move_id, "Without withholdings or write-off the main payment has no entry")
+        self.assertEqual(main.state, "paid")
+        self.assertTrue(set(linked.mapped("state")) <= {"paid", "reconciled"})
+        self._assert_balanced(linked)
+        self.assertAlmostEqual(invoice.amount_residual, 0, places=2)
+
+    def test_f6_receipt_and_certificate_render(self):
+        """The receipt of the main payment and the certificate of its withholding render."""
+        invoice = self._create_invoice(10_000, self.ars)
+        main = self._create_main_payment(invoice)
+        self._add_linked_payment(main, self.bank_ars, 11_800)
+        main.action_post()
+
+        receipt, __ = self.env["ir.actions.report"]._render_qweb_html("account.action_report_payment_receipt", main.ids)
+        self.assertRegex(receipt.decode(), r"11[.,]800")
+        certificate, __ = self.env["ir.actions.report"]._render_qweb_html(
+            "l10n_ar_tax.action_report_withholding_certificate", main.withholding_line_ids.ids
+        )
+        self.assertRegex(certificate.decode(), r"300[.,]00")
