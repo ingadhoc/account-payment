@@ -282,6 +282,68 @@ class TestEarlyDiscountPayment(EarlyDiscountCommon):
         self.assertAlmostEqual(self._early_discount_credit_note(invoice).amount_total, 50)
         self.assertTrue(foreign.is_zero(invoice.amount_residual))
 
+    def test_suggested_amount_with_customer_withholding(self):
+        # the amount includes the withholdings, so the suggestion follows the net amount the user works with
+        if "l10n_ar_base_minimum_threshold" not in self.env["account.tax"]._fields:
+            self.skipTest("Argentinian taxes not installed")
+        account = self.env["account.account"].create(
+            {
+                "name": "Withholding ED",
+                "code": "WTHED",
+                "account_type": "asset_current",
+                "company_ids": [Command.set(self.company.ids)],
+            }
+        )
+        if not self.company.withholding_tax_base_account_id:
+            # the withholding lines need a base account, which only some charts of accounts set
+            self.company.withholding_tax_base_account_id = self.env["account.account"].create(
+                {
+                    "name": "Withholding Base ED",
+                    "code": "WTHBED",
+                    "account_type": "asset_current",
+                    "company_ids": [Command.set(self.company.ids)],
+                }
+            )
+        repartition = [
+            Command.create({"repartition_type": "base"}),
+            Command.create({"repartition_type": "tax", "account_id": account.id}),
+        ]
+        withholding = self.env["account.tax"].create(
+            {
+                "name": "Withholding 3% ED",
+                "type_tax_use": "sale",
+                "is_withholding_tax": True,
+                "amount": -3,
+                "tax_group_id": self.env["account.tax.group"].create({"name": "Withholding ED"}).id,
+                "l10n_ar_withholding_tax_type": "iibb_untaxed",
+                "invoice_repartition_line_ids": repartition,
+                "refund_repartition_line_ids": repartition,
+            }
+        )
+        invoice = self._create_invoice(self.today)
+        context = invoice.action_register_payment()["context"]
+        with Form(self.env["account.payment"].with_context(**context, default_journal_id=self.bank_journal.id)) as form:
+            self.assertAlmostEqual(form.amount, 950)
+            with form.withholding_line_ids.new() as line:
+                line.tax_id = withholding
+                line.name = "CERT-ED"
+                line.base_amount = 950
+                line.amount = 28.5
+            self.assertAlmostEqual(form.withholding_net_amount, 950)
+            form.date = self.today + timedelta(days=15)
+            self.assertAlmostEqual(form.amount, 1000)
+            form.date = self.today
+            self.assertAlmostEqual(form.amount, 950)
+            self.assertAlmostEqual(form.withholding_net_amount, 921.5)
+        payment = form.record
+        payment.action_early_discount_exclude()
+        self.assertAlmostEqual(payment.amount, 1000)
+        payment.action_early_discount_recalculate()
+        self.assertAlmostEqual(payment.amount, 950)
+        payment.action_post()
+        self.assertAlmostEqual(self._early_discount_credit_note(invoice).amount_total, 50)
+        self.assertTrue(invoice.currency_id.is_zero(invoice.amount_residual))
+
     def test_adjust_difference_after_discount(self):
         invoice = self._create_invoice(self.today)
         payment = self._draft_payment(invoice, 960)
