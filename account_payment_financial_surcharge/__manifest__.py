@@ -1,6 +1,6 @@
 {
     "name": "Payments with Financial Surchange",
-    "version": "19.0.1.1.0",
+    "version": "20.0.1.0.0",
     "author": "ADHOC SA",
     "license": "AGPL-3",
     "category": "Payment",
@@ -9,7 +9,6 @@
         "card_installment",
     ],
     "data": [
-        "views/card_installment_view.xml",
         "views/account_journal_views.xml",
         "views/account_payment_views.xml",
         "views/account_move_views.xml",
@@ -17,6 +16,6 @@
     ],
     "demo": [],
     "images": [],
-    "installable": False,
+    "installable": True,
     "auto_install": False,
 }
