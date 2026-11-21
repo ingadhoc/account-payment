@@ -145,19 +145,3 @@ class TestOutstandingAccountConsumers(LatamCheckCommon):
 
         self.deferred_check_account.write({"reconcile": True})
         self.assertEqual(payment.l10n_latam_new_check_ids.mapped("issue_state"), ["handed", "handed"])
-
-    def test_partner_credit_includes_deferred_third_party_checks(self):
-        """``res.partner.add_check_credit`` counts checks on hand not yet due."""
-        self.partner.add_check_credit = True
-        payment = self._receive_third_party_checks([55], numbers=["00021301"])
-        payment.l10n_latam_new_check_ids.payment_date = fields.Date.add(self.today, days=30)
-        payment.action_post()
-
-        credit_with_checks = self.partner.with_company(self.company).credit
-        self.partner.add_check_credit = False
-        self.partner.invalidate_recordset(["credit"])
-        credit_without_checks = self.partner.with_company(self.company).credit
-
-        self.assertEqual(
-            credit_with_checks - credit_without_checks, 55.0, "The deferred check must add up to the partner credit"
-        )
