@@ -10,7 +10,7 @@
                     <t t-foreach="invoice_ids.invoice_line_ids" t-as="line">
                         <tr>
                             <td><span t-esc="line.quantity"/></td>
-                            <td><span t-field="line.name"/></td>
+                            <td><span t-field="line.label"/></td>
                             <td class="text-right">
                                 <span t-field="line.price_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
                             </td>
