@@ -20,4 +20,9 @@ from . import test_background_send_receipts
 from . import test_post_closed_payments
 from . import test_amount_from_checks
 from . import test_reconcile_covered_debt
+<<<<<<< a906e529cd2571f11d9797795b0f27fabc290f48
 from . import test_rate_direction
+||||||| c5797d20fb5e24e5e6625843bf5c3fbbbb6bb23c
+=======
+from . import test_receipt_branch_debt_no_access
+>>>>>>> 7cfac36b1346af3e6e973d0fe341cbce8bf26bd7

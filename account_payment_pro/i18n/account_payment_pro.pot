@@ -6,8 +6,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 20.0+e\n"
 "Report-Msgid-Bugs-To: \n"
+<<<<<<< a906e529cd2571f11d9797795b0f27fabc290f48
 "POT-Creation-Date: 2026-11-19 13:44+0000\n"
 "PO-Revision-Date: 2026-11-19 13:44+0000\n"
+||||||| c5797d20fb5e24e5e6625843bf5c3fbbbb6bb23c
+"POT-Creation-Date: 2026-10-29 13:36+0000\n"
+"PO-Revision-Date: 2026-10-29 13:36+0000\n"
+=======
+"POT-Creation-Date: 2026-11-16 18:10+0000\n"
+"PO-Revision-Date: 2026-11-16 18:10+0000\n"
+>>>>>>> 7cfac36b1346af3e6e973d0fe341cbce8bf26bd7
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -937,6 +945,42 @@ msgid "This lines are the ones the user has selected to be paid."
 msgstr ""
 
 #. module: account_payment_pro
+<<<<<<< a906e529cd2571f11d9797795b0f27fabc290f48
+||||||| c5797d20fb5e24e5e6625843bf5c3fbbbb6bb23c
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__reconcile_on_company_currency
+msgid ""
+"This option enables open documents in the payment report when reconciling "
+"debt with secondary currency, if the account doesn't have a currency "
+"configured, then reconcile on company currency. This will avoid all the "
+"automatic exchange rates journal entries by forcing same rate of the "
+"original document being reconcile. IMPORTANT: If you change this setting if "
+"you reconcile any previous item and re-reconcile it, it will be reconciled "
+"with the new mechanism"
+msgstr ""
+
+#. module: account_payment_pro
+=======
+#: model:ir.model.fields,help:account_payment_pro.field_account_payment__reconcile_on_company_currency
+msgid ""
+"This option enables open documents in the payment report when reconciling "
+"debt with secondary currency, if the account doesn't have a currency "
+"configured, then reconcile on company currency. This will avoid all the "
+"automatic exchange rates journal entries by forcing same rate of the "
+"original document being reconcile. IMPORTANT: If you change this setting if "
+"you reconcile any previous item and re-reconcile it, it will be reconciled "
+"with the new mechanism"
+msgstr ""
+
+#. module: account_payment_pro
+#. odoo-python
+#: code:addons/account_payment_pro/models/account_payment.py:0
+msgid ""
+"This payment can't collect the debt of %(companies)s. Remove those lines to "
+"continue."
+msgstr ""
+
+#. module: account_payment_pro
+>>>>>>> 7cfac36b1346af3e6e973d0fe341cbce8bf26bd7
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment__to_pay_amount
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid "To Pay Amount"
@@ -1088,13 +1132,6 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_payment_pro/wizards/account_payment_invoice_wizard.py:0
 msgid "You can only set amount total if taxes are of type percentage"
-msgstr ""
-
-#. module: account_payment_pro
-#. odoo-python
-#: code:addons/account_payment_pro/models/account_payment.py:0
-msgid ""
-"You can't create payments for entries belonging to different companies."
 msgstr ""
 
 #. module: account_payment_pro
