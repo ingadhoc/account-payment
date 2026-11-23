@@ -87,8 +87,9 @@ class AccountMove(models.Model):
                 )
             )
 
-            payment.amount = abs(payment.payment_difference)
-            payment.amount_exact = abs(payment.payment_difference)
+            # payment_difference está en la moneda de la deuda (B2); el ajuste la
+            # convierte a la moneda del pago (A) antes de fijar amount/amount_exact.
+            payment.action_adjust_amount_for_difference()
             payment.action_post()
             rec.write({"matched_payment_ids": [(4, payment.id)]})
 
