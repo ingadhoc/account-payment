@@ -20,20 +20,20 @@
             </t>
         <p>
             El/los cual/es se financiará en <strong><span t-field="doc.installment_id.divisor"/> Cuotas</strong>
-            iguales, mensuales y consecutivas de <strong><span t-raw="installments[0]['amount']" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></strong>.
+            iguales, mensuales y consecutivas de <strong><span t-out="installments[0]['amount']" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></strong>.
         </p>
         <!-- <p>
             Cada cuota estará compuesta por <strong><span t-field="doc.installment_capital_amount" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></strong> en concepto de capital, y
             <strong><span t-field="doc.installment_interest_amount" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></strong> en concepto de intereses.
         </p> -->
         <p>
-            La tasa de interés efectiva es del <strong><span t-raw="round((doc.installment_id.surcharge_coefficient -1 ) * 100,2)"/>%</strong>.
+            La tasa de interés efectiva es del <strong><span t-out="round((doc.installment_id.surcharge_coefficient -1 ) * 100,2)"/>%</strong>.
         </p>
         <table class="table table-sm  table-striped">
             <tr t-foreach="installments" t-as="installment">
-                <td>Fee N. <span t-raw="installment['divisor']"/></td>
-                <td><span t-raw="installment['date_maturity']"/></td>
-                <td><span t-raw="installment['amount']" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                <td>Fee N. <span t-out="installment['divisor']"/></td>
+                <td><span t-out="installment['date_maturity']"/></td>
+                <td><span t-out="installment['amount']" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
             </tr>
         </table>
 
