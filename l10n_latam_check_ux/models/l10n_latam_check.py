@@ -143,15 +143,18 @@ class l10nLatamAccountPaymentCheck(models.Model):
     )
     def _compute_can_reject(self):
         for rec in self:
-            if rec.payment_method_code != "new_third_party_checks" or rec.payment_id.state in ("draft", "cancel"):
+            if rec.payment_method_code != "new_third_party_checks" or rec.payment_id.state in ("draft", "canceled"):
                 rec.can_reject = False
                 continue
 
             # Already returned to customer (rejection already processed).
             # We include both return_third_party_checks and out_third_party_checks because
             # some journals might not have the specific "return" method configured.
+            # Deposits and wallet transfers are outbound out_third_party_checks payments too (with the
+            # default partner_type "customer"), so internal transfers are left out.
             if any(
-                op.state == "posted"
+                op.state not in ("draft", "canceled")
+                and not op.is_internal_transfer
                 and op.payment_type == "outbound"
                 and op.partner_type == "customer"
                 and op.payment_method_code in ("return_third_party_checks", "out_third_party_checks")

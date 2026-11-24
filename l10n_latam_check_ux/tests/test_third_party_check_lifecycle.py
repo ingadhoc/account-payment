@@ -6,7 +6,7 @@ from odoo import (
     Command,
     fields as ofields,
 )
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 from odoo.tests.common import tagged
 
 from .common import LatamCheckCommon
@@ -96,6 +96,16 @@ class TestThirdPartyCheckLifecycle(LatamCheckCommon):
         for payment in (inbound + outbound).filtered(lambda pay: pay.move_id):
             self.assert_payment_invariants(payment, "pase de cartera revertido")
         return inbound
+
+    def assert_check_cannot_be_rejected_again(self, check):
+        """A check already returned to the customer is out of circulation:
+        rejecting it again would charge the customer's debt twice."""
+        check.invalidate_recordset()
+        self.assertFalse(check.can_reject, "un cheque ya devuelto al cliente no es rechazable")
+        with self.assertRaises(UserError):
+            self.env["account.check.reject.wizard"].with_context(
+                active_model="l10n_latam.check", active_ids=check.ids
+            ).create({"date": self.today, "rejected_journal_id": self.third_party_journal.id})
 
     def _on_hand_in(self, journal):
         """Checks currently in that journal's wallet."""
@@ -280,16 +290,9 @@ class TestThirdPartyCheckLifecycle(LatamCheckCommon):
         ``test_deposit_to_bank`` en ``test_third_party_checks_ux.py`` — no
         se repite acá.
 
-        Escenario declarado y NO implementado: el control positivo de que un
-        cheque ya devuelto al cliente no se puede volver a rechazar
-        (``can_reject`` debería quedar en ``False``). ``_compute_can_reject``
-        compara ``op.state == "posted"``, pero ``account.payment.state``
-        nunca vale eso (sus valores son draft/in_process/paid/canceled/
-        rejected) — la guarda no dispara nunca y el cheque queda rechazable
-        dos veces. Es un bug de producto, no de este test: escribir
-        ``assertTrue(check.can_reject)`` acá blindaría el bug como si fuera
-        el comportamiento esperado. Se retoma cuando se corrija
-        ``l10n_latam_check_ux/models/l10n_latam_check.py:106-110``.
+        También cubre que un cheque ya rechazado no se puede volver a
+        rechazar: la devolución al cliente lo saca de circulación, y un
+        segundo rechazo le cargaría la deuda dos veces.
         """
         income = self._create_account("TCHKINC", "Test Check Income", "income")
         invoice = self.env["account.move"].create(
@@ -324,6 +327,7 @@ class TestThirdPartyCheckLifecycle(LatamCheckCommon):
             self._transfer(check, self.bank_journal, step=1)
             self.assertEqual(check.current_journal_id, self.bank_journal)
             self.assertNotIn(check, self._on_hand_in(self.third_party_journal), "depositado, ya no está en cartera")
+            self.assertTrue(check.can_reject, "depositado, el cheque es rechazable: el depósito no es una devolución")
 
         with self.subTest("el banco lo rechaza: sale de circulación y la deuda se reabre"):
             wizard = (
@@ -334,6 +338,9 @@ class TestThirdPartyCheckLifecycle(LatamCheckCommon):
             wizard.action_confirm()
             self.assertFalse(check.current_journal_id, "un cheque rechazado no vuelve a ninguna cartera")
             self.assert_partner_balance(self.partner, 20000.0, msg="la deuda se reabre por el importe del cheque")
+
+        with self.subTest("ya rechazado, no se puede volver a rechazar"):
+            self.assert_check_cannot_be_rejected_again(check)
 
         with self.subTest("el rechazo genera un apunte conciliable contra el banco"):
             # Caso B del wizard (cheque depositado): la transferencia saliente
@@ -370,3 +377,47 @@ class TestThirdPartyCheckLifecycle(LatamCheckCommon):
                 self.partner, 0.0, msg="sin doble crédito: la deuda cierra en cero, no en negativo"
             )
             self.assertFalse(check.current_journal_id, "el rechazado sigue fuera de cualquier cartera")
+
+    def test_endorsed_check_rejection_cannot_be_rejected_again(self):
+        """Cheque endosado a un proveedor y rechazado: el wizard lo recupera
+        del proveedor y lo devuelve al cliente (caso A). Después de eso el
+        cheque no se puede volver a rechazar."""
+        receipt = self._receive([20000.0], ["00000051"])
+        check = receipt.l10n_latam_new_check_ids
+        self.assertFalse(check.can_reject, "en cartera todavía no es rechazable")
+
+        endorsement = self._deliver_third_party_checks(check)
+        endorsement.action_post()
+        self._stamp_operation(endorsement, 10)
+        check.invalidate_recordset()
+        self.assertTrue(check.can_reject, "endosado a un proveedor, el cheque es rechazable")
+
+        self.env["account.check.reject.wizard"].with_context(
+            active_model="l10n_latam.check", active_ids=check.ids
+        ).create({"date": self.today, "rejected_journal_id": self.rejected_journal.id}).action_confirm()
+        self.assertFalse(check.current_journal_id, "un cheque rechazado no vuelve a ninguna cartera")
+        self.assert_check_cannot_be_rejected_again(check)
+
+    def test_check_returned_to_customer_by_hand_cannot_be_rejected(self):
+        """Cheque en cartera devuelto al cliente a mano, con un pago saliente
+        de tipo cliente y método 'Third Party Check (out)'. Ya está en manos
+        del cliente: rechazarlo le volvería a cargar la deuda."""
+        receipt = self._receive([20000.0], ["00000061"])
+        check = receipt.l10n_latam_new_check_ids
+
+        manual_return = self.env["account.payment"].create(
+            {
+                "payment_type": "outbound",
+                "partner_type": "customer",
+                "partner_id": self.partner.id,
+                "journal_id": self.third_party_journal.id,
+                "company_id": self.company.id,
+                "date": self.today,
+                "payment_method_line_id": self.out_third_party_line.id,
+                "l10n_latam_move_check_ids": [Command.set(check.ids)],
+            }
+        )
+        manual_return.action_post()
+        self._stamp_operation(manual_return, 10)
+        self.assertFalse(check.current_journal_id, "devuelto al cliente, el cheque sale de cartera")
+        self.assert_check_cannot_be_rejected_again(check)
