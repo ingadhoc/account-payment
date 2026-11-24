@@ -48,7 +48,12 @@ class AccountLoanRegister(models.TransientModel):
 
     note = fields.Text(string="Internal Note")
 
-    loan_terms = fields.Html(related="company_id.loan_terms", string="Terms & Conditions", readonly=False)
+    loan_terms = fields.Html(
+        string="Terms & Conditions",
+        compute="_compute_loan_terms",
+        store=True,
+        readonly=False,
+    )
 
     def _get_loan_installemnts(self):
         installments = []
@@ -75,6 +80,11 @@ class AccountLoanRegister(models.TransientModel):
                 "account_payment_loan.loan_description", {"doc": record}
             )
         (self - with_instament).loan_description = ""
+
+    @api.depends("company_id")
+    def _compute_loan_terms(self):
+        for record in self:
+            record.loan_terms = record.company_id.loan_terms
 
     @api.depends("move_line_ids")
     def _compute_currency_id(self):
@@ -143,8 +153,7 @@ class AccountLoanRegister(models.TransientModel):
             "journal_id": self.company_id._get_loan_setting("loan_journal_id").id,
             "company_id": self.company_id.id,
             "ref": ref,
-            "loan_description": "%s %s <p>%s</p>"
-            % (self.loan_description, self.company_id.loan_terms, self.note or ""),
+            "loan_description": "%s %s <p>%s</p>" % (self.loan_description, self.loan_terms or "", self.note or ""),
             "line_ids": [],
         }
         debit_total = credit_total = 0.0
