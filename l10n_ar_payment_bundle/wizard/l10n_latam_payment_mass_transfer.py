@@ -21,7 +21,7 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
         currency and one with the company currency set are the same currency.
         """
         for rec in self:
-            companies = rec.company_ids | rec.from_journal_id.company_id
+            companies = (rec.company_ids | rec.from_journal_id.company_id)._origin
             bundle_journal_ids = [
                 journal_id
                 for company in companies
