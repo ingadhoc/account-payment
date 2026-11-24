@@ -384,6 +384,24 @@ class AccountPayment(models.Model):
     # CODIGO para UX de rate según la moneda mas fuerte. TODO evaluar si mantenemos o simplificamos
     ####
 
+    def _is_rate_inverted(self, from_currency, to_currency):
+        """True when ``to_currency`` is the strong one, so the form asks for the rate as "1 to = X from".
+
+        Reads the theoretical rate of the pair. Without a rate loaded for the date it comes back as 1.0 and the
+        direction would be decided by chance, so the foreign currency is taken as the strong one, which is how
+        the rate is quoted.
+        """
+        self.ensure_one()
+        theoretical_rate = self.env["res.currency"]._get_conversion_rate(
+            from_currency=from_currency,
+            to_currency=to_currency,
+            company=self.company_id,
+            date=self.date or fields.Date.context_today(self),
+        )
+        if theoretical_rate != 1.0:
+            return theoretical_rate < 1.0
+        return from_currency == self.company_currency_id and to_currency != self.company_currency_id
+
     @api.depends("currency_id", "counterpart_currency_id", "company_id", "date")
     def _compute_counterpart_rate_inverted(self):
         """Se fija en el rate teórico A→B1 para determinar si B1 es moneda fuerte (rate < 1.0) y por lo tanto mostrar el rate invertido al usuario (B1→A)"""
@@ -391,13 +409,7 @@ class AccountPayment(models.Model):
             if not rec.currency_id or rec.currency_id == rec.counterpart_currency_id:
                 rec.counterpart_rate_inverted = False
                 continue
-            theoretical_rate = self.env["res.currency"]._get_conversion_rate(
-                from_currency=rec.currency_id,
-                to_currency=rec.counterpart_currency_id,
-                company=rec.company_id,
-                date=rec.date or fields.Date.context_today(rec),
-            )
-            rec.counterpart_rate_inverted = theoretical_rate < 1.0
+            rec.counterpart_rate_inverted = rec._is_rate_inverted(rec.currency_id, rec.counterpart_currency_id)
 
     @api.depends("currency_id", "company_currency_id", "company_id", "date")
     def _compute_accounting_rate_inverted(self):
@@ -408,13 +420,7 @@ class AccountPayment(models.Model):
                 continue
             # Misma dirección que _compute_accounting_rate: _get_conversion_rate(C→A) = A/C.
             # Si A/C < 1.0 (A es la moneda fuerte, ej: USD/ARS = 0.000667), mostramos C/A = 1500.
-            theoretical_rate = self.env["res.currency"]._get_conversion_rate(
-                from_currency=rec.company_currency_id,
-                to_currency=rec.currency_id,
-                company=rec.company_id,
-                date=rec.date or fields.Date.context_today(rec),
-            )
-            rec.accounting_rate_inverted = theoretical_rate < 1.0
+            rec.accounting_rate_inverted = rec._is_rate_inverted(rec.company_currency_id, rec.currency_id)
 
     @api.depends("accounting_rate")
     def _compute_user_accounting_rate(self):
@@ -659,6 +665,11 @@ class AccountPayment(models.Model):
                 rec.counterpart_currency_amount = amount
 
     @api.onchange("counterpart_currency_amount")
+    def _onchange_counterpart_currency_amount(self):
+        """The onchange lives apart from the inverse: the registry takes the last method of the MRO, so a
+        module overriding the inverse would leave the field without an onchange."""
+        self._inverse_counterpart_currency_amount()
+
     def _inverse_counterpart_currency_amount(self):
         for rec in self:
             # Usar amount_exact para comparación precisa
