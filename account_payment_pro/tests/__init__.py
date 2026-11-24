@@ -22,3 +22,4 @@ from . import test_amount_from_checks
 from . import test_reconcile_covered_debt
 from . import test_rate_direction
 from . import test_receipt_branch_debt_no_access
+from . import test_currency_round_trip
