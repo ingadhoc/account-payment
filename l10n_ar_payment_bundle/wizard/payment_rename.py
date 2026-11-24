@@ -1,3 +1,5 @@
+import re
+
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
@@ -53,9 +55,13 @@ class PaymentRenameWizard(models.TransientModel):
 
         # Update the payment name for main and linked payments
         old_name = self.payment_id.name
+        # A paid payment takes the name of its entry back, so the entry of the main payment is renamed too
+        self.payment_id.move_id.name = self.new_name
         self.payment_id.write({"name": self.new_name})
-        for i, payment in enumerate(self.payment_id.link_payment_ids):
-            new_linked_name = f"{self.new_name} ({i + 1})"
+        for i, payment in enumerate(self.payment_id.link_payment_ids.sorted("id"), start=1):
+            # Each linked payment keeps its number: the default order puts (2) before (1)
+            suffix = match.group(1) if (match := re.search(r"\((\d+)\)$", payment.name or "")) else i
+            new_linked_name = f"{self.new_name} ({suffix})"
             payment.name = new_linked_name
             payment.move_id.name = new_linked_name  # Update the move name to keep it in sync with the payment name
 

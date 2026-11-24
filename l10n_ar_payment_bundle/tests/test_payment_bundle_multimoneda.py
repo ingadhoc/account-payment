@@ -817,3 +817,25 @@ class TestPaymentBundle(TestPaymentWithholdingMultimoneda):
             msg="difference = 12100 - (-12100) = 24200 (con abs daría 0, enmascarando el signo)",
         )
         self.assertAlmostEqual(linked_refund.payment_difference, 24_200, places=2)
+
+    def test_f3_rename_survives_reset_to_draft(self):
+        """Renaming a posted bundle renames the entries too and each linked payment keeps its number."""
+        invoice = self._create_invoice(10_000, self.ars)
+        main = self._create_main_payment(invoice)
+        first = self._add_linked_payment(main, self.cash_ars, 1_800)
+        second = self._add_linked_payment(main, self.bank_ars, 10_000)
+        main.action_post()
+        self.assertEqual((first.name, second.name), (f"{main.name} (1)", f"{main.name} (2)"))
+        prefix, number = main.name.rsplit("-", 1)
+        new_name = f"{prefix}-{int(number) + 50:0{len(number)}d}"
+
+        wizard = self.env["payment.rename.wizard"].with_context(active_id=main.id).create({"new_name": new_name})
+        wizard.action_rename_payment()
+
+        self.assertEqual((first.name, second.name), (f"{new_name} (1)", f"{new_name} (2)"), "linked numbers")
+        self.assertEqual((main.name, main.move_id.name), (new_name, new_name), "main entry renamed")
+        main.action_draft()
+        self.assertEqual(main.name, new_name, "after draft")
+        main.action_post()
+        self.assertEqual(main.name, new_name, "after repost")
+        self.assertEqual((first.name, second.name), (f"{new_name} (1)", f"{new_name} (2)"), "linked after repost")
