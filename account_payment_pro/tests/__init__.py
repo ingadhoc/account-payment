@@ -1,3 +1,4 @@
 from . import test_account_paymet_pro_unit_test
 from . import test_post_closed_payments
 from . import test_reconcile_covered_debt
+from . import test_currency_round_trip

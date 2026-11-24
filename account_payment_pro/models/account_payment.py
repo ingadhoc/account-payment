@@ -381,13 +381,28 @@ class AccountPayment(models.Model):
                     False,
                 )
             )
+            # Back in company currency, give back the exact default amount (no rounding
+            # drift) only if the amount was still the default one before the change, so
+            # that an amount changed on purpose (partial payment, total net of
+            # withholdings) is converted instead of replaced.
+            default_amount = rec.env.context.get("default_amount")
             if (
-                rec.env.context.get("default_amount")
+                default_amount
                 and rec.currency_id == rec.company_currency_id
                 and rec.currency_id.is_zero(rec._origin.amount_exact)
-                and not rec.currency_id.is_zero(amount - rec.env.context.get("default_amount"))
+                and not rec.currency_id.is_zero(amount - default_amount)
+                and old_currency.is_zero(
+                    old_amount
+                    - rec.company_currency_id._convert(
+                        default_amount,
+                        old_currency,
+                        rec.company_id,
+                        rec.date or fields.Date.context_today(rec),
+                        False,
+                    )
+                )
             ):
-                amount = rec.env.context.get("default_amount")
+                amount = default_amount
             rec.update({"amount_exact": amount, "amount": amount})
 
     @api.depends(
