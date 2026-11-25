@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_payment_form" model="ir.ui.view">
+        <field name="name">account.payment.form.breakdown</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account_payment_pro.latam_check_view_account_payment_form_inherited"/>
+        <field name="arch" type="xml">
+            <button name="remove_all" position="after">
+                <button name="action_open_breakdown_wizard" string="Break Down Amount" type="object"
+                    invisible="state != 'draft' or not to_pay_move_line_ids"/>
+            </button>
+            <page name="debts" position="after">
+                <page string="Breakdown" name="breakdown" invisible="state != 'draft' or not breakdown_ids">
+                    <div class="alert alert-warning" role="alert" invisible="not breakdown_mismatch">
+                        The breakdown does not add up to the payment amount. Difference:
+                        <field name="breakdown_difference" class="oe_inline"/>
+                    </div>
+                    <field name="breakdown_mismatch" invisible="1"/>
+                    <field name="breakdown_ids">
+                        <list editable="bottom" create="0">
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="move_id"/>
+                            <field name="date_maturity"/>
+                            <field name="amount_residual" sum="Total"/>
+                            <field name="amount" sum="Total"/>
+                        </list>
+                    </field>
+                </page>
+            </page>
+        </field>
+    </record>
+</odoo>
