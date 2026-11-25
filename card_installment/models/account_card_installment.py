@@ -9,6 +9,9 @@ from odoo.exceptions import ValidationError
 class AccountCardInstallment(models.Model):
     _name = "account.card.installment"
     _description = "amount to add for collection in installments"
+    # The display name is the plan and its card, so the card has to be searchable too: the name
+    # of a plan is often just the number of installments, and nobody remembers which card it is on.
+    _rec_names_search = ["name", "card_id.name"]
 
     card_id = fields.Many2one(
         "account.card",
