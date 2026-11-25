@@ -182,3 +182,14 @@ class TestCardInstallment(TransactionCase):
             empty_card = self.env["account.card"].create({"name": "Empty Card", "company_id": self.company.id})
             with self.assertRaises(AccessError), self.env.cr.savepoint():
                 empty_card.with_user(user).unlink()
+
+    def test_a_plan_is_found_by_its_card(self):
+        """The plan name is usually just the number of installments, so the card has to match too."""
+        by_card = self.env["account.card.installment"].name_search("Test Card")
+        self.assertEqual(
+            {plan[0] for plan in by_card},
+            {self.plan_one.id, self.plan_three.id},
+            "every plan of the card is found by the name of the card",
+        )
+        by_name = self.env["account.card.installment"].name_search("3 with")
+        self.assertEqual({plan[0] for plan in by_name}, {self.plan_three.id})
