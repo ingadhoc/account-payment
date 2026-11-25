@@ -6,3 +6,4 @@ from . import test_bundle_two_currencies
 from . import test_bundle_over_under_payment
 from . import test_bundle_inherited_move
 from . import test_mass_transfer_domain
+from . import test_bundle_mass_transfer_destination
