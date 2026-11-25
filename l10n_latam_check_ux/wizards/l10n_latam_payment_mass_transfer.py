@@ -23,6 +23,21 @@ class L10nLatamPaymentMassTransfer(models.TransientModel):
         comodel_name="account.payment.method.line",
         compute="_compute_available_destination_payment_method_line_ids",
     )
+    # Deposit and transfer are the same operation; the mode only narrows the destination journals
+    transfer_mode = fields.Selection(
+        [("deposit", "Deposit"), ("transfer", "Transfer")],
+        help="Deposit: the checks go to a bank journal. Transfer: they go to a journal that is not a bank, "
+        "such as another third party checks journal or a branch.",
+    )
+
+    @api.constrains("transfer_mode", "to_journal_id")
+    def _check_transfer_mode_destination(self):
+        for wizard in self:
+            journal_type = wizard.to_journal_id.type
+            if wizard.transfer_mode == "deposit" and journal_type != "bank":
+                raise ValidationError(_("Checks can only be deposited on a bank journal."))
+            if wizard.transfer_mode == "transfer" and journal_type == "bank":
+                raise ValidationError(_("To move checks to a bank journal, use Deposit."))
 
     @api.depends("to_journal_id")
     def _compute_available_destination_payment_method_line_ids(self):

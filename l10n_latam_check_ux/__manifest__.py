@@ -19,7 +19,7 @@
 ##############################################################################
 {
     "name": "Latam Check UX",
-    "version": "20.0.1.0.0",
+    "version": "20.0.1.1.0",
     "category": "Accounting",
     "sequence": 14,
     "summary": "",
@@ -39,6 +39,7 @@
         "wizards/account_check_reject_wizard_view.xml",
         "views/account_payment_view.xml",
         "views/l10n_latam_check_view.xml",
+        "views/check_dashboard_views.xml",
         "views/account_journal_view.xml",
         "views/report_payment_receipt_templates.xml",
         "views/res_partner_view.xml",
@@ -47,6 +48,11 @@
         "reports/report_checks_to_date.xml",
         "security/ir.access.csv",
     ],
+    "assets": {
+        "web.assets_backend": [
+            "l10n_latam_check_ux/static/src/check_dashboard/*",
+        ],
+    },
     "demo": [],
     "installable": True,
     "auto_install": True,

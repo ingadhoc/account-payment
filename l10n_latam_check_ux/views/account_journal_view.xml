@@ -9,6 +9,7 @@
             <xpath expr="//page[@id='outbound_payment_settings']//group[@name='outgoing_payment']" position="inside">
             <group string="Latam Checks">
                 <field name="check_add_debit_button"/>
+                <field name="l10n_latam_rejected_checks" invisible="type not in ('bank', 'cash')"/>
             </group>
             </xpath>
         </field>

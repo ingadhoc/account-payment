@@ -43,6 +43,15 @@ class AccountCheckRejectWizard(models.TransientModel):
                     _("Check '%s' cannot be rejected. Only third-party checks in valid states can be rejected.")
                     % check.name
                 )
+        if "rejected_journal_id" in fields_list and not res.get("rejected_journal_id"):
+            res["rejected_journal_id"] = (
+                self.env["account.journal"]
+                .search(
+                    [("l10n_latam_rejected_checks", "=", True), ("company_id", "in", checks.company_id.ids)],
+                    limit=1,
+                )
+                .id
+            )
         return res
 
     @api.depends_context("active_ids")

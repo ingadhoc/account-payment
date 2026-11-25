@@ -14,3 +14,4 @@ from . import test_checks_to_date_report
 from . import test_journal_debit_button
 from . import test_check_bank
 from . import test_own_check_cancel
+from . import test_check_state_actions

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="l10n_latam_check_ux.CheckDashboard">
+        <div class="o_action o_l10n_latam_check_dashboard">
+            <ControlPanel/>
+            <div class="o_content p-3">
+                <t t-foreach="sections" t-as="section" t-key="section.key">
+                    <h4 class="mt-2 mb-3" t-out="section.name"/>
+                    <div class="row g-3 mb-4">
+                        <t t-foreach="section.cards" t-as="card" t-key="card.key">
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <div t-attf-class="card h-100 o_check_dashboard_card o_check_dashboard_card_{{ card.key }}"
+                                     role="button"
+                                     t-on-click="() => this.openCard(section, card)">
+                                    <div class="card-body">
+                                        <div class="text-muted small text-uppercase" t-out="card.label"/>
+                                        <div class="fs-3 fw-bold" t-out="card.count"/>
+                                        <t t-foreach="card.amounts" t-as="amount" t-key="amount_index">
+                                            <div class="small" t-out="formatAmount(amount)"/>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

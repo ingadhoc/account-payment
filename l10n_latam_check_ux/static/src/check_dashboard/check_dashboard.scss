@@ -1,0 +1,25 @@
+.o_l10n_latam_check_dashboard {
+    .o_check_dashboard_card {
+        cursor: pointer;
+        border-left-width: 4px;
+
+        &:hover {
+            box-shadow: $box-shadow-sm;
+        }
+    }
+    .o_check_dashboard_card_on_hand,
+    .o_check_dashboard_card_handed {
+        border-left-color: $info;
+    }
+    .o_check_dashboard_card_deposited,
+    .o_check_dashboard_card_debited {
+        border-left-color: $success;
+    }
+    .o_check_dashboard_card_endorsed,
+    .o_check_dashboard_card_due_week {
+        border-left-color: $warning;
+    }
+    .o_check_dashboard_card_rejected {
+        border-left-color: $danger;
+    }
+}

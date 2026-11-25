@@ -21,6 +21,9 @@
                 <attribute name="readonly">not user_can_write</attribute>
             </field>
             <!-- The bank of the check comes first; the bank account is computed from it and can still be changed among the accounts of that bank -->
+            <field name="current_journal_id" position="after">
+                <field name="check_state" invisible="issue_state"/>
+            </field>
             <field name="bank_account_id" position="before">
                 <field name="bank_id" invisible="issue_state" readonly="not user_can_write"/>
             </field>
@@ -57,7 +60,9 @@
         <field name="arch" type="xml">
             <list position="inside">
                 <header>
-                    <button name="%(action_debit_check_wizard)d" type="action" string="Debit check"/>
+                    <button name="action_check_debit" type="object" string="Debit"/>
+                    <button name="action_check_void" type="object" string="Void"
+                            confirm="Voiding a check cancels it and generates a new entry that re-opens the debt."/>
                 </header>
             </list>
             <xpath expr="//field[@name='payment_date']" position="before">
@@ -97,6 +102,8 @@
         <field name="arch" type="xml">
             <xpath expr="//filter[@name='payment_date']" position="after">
                 <filter string="Last 90 days" name="last_90_days" domain="[('payment_date', '&gt;=', (context_today() - relativedelta(days=90)).strftime('%Y-%m-%d'))]" />
+                <separator/>
+                <filter string="Due This Week" name="due_week" domain="[('payment_date', '&gt;=', context_today().strftime('%Y-%m-%d')), ('payment_date', '&lt;=', (context_today() + relativedelta(days=7)).strftime('%Y-%m-%d'))]"/>
             </xpath>
         </field>
     </record>
@@ -109,6 +116,17 @@
             <field name="bank_account_id" position="replace">
                 <field name="bank_id"/>
             </field>
+            <filter name="checks_on_hand" position="before">
+                <filter string="In Portfolio" name="check_state_on_hand" domain="[('check_state', '=', 'on_hand')]"/>
+                <filter string="Deposited" name="check_state_deposited" domain="[('check_state', '=', 'deposited')]"/>
+                <filter string="Endorsed" name="check_state_endorsed" domain="[('check_state', '=', 'endorsed')]"/>
+                <filter string="Rejected" name="check_state_rejected" domain="[('check_state', '=', 'rejected')]"/>
+                <filter string="Returned" name="check_state_returned" domain="[('check_state', '=', 'returned')]"/>
+                <separator/>
+            </filter>
+            <filter name="groupby_current_journal" position="after">
+                <filter name="groupby_check_state" string="State" context="{'group_by': 'check_state'}"/>
+            </filter>
         </field>
     </record>
 
@@ -117,9 +135,23 @@
         <field name="model">l10n_latam.check</field>
         <field name="inherit_id" ref="l10n_latam_check.view_account_third_party_check_tree"/>
         <field name="arch" type="xml">
-            <xpath expr="//list/header/button[@name='%(l10n_latam_check.action_view_l10n_latam_payment_mass_transfer)d']" position="after">
-                <button name="%(action_reject_check_wizard)d" type="action" string="Reject Check"/>
+            <!-- Each action checks the state of the selected checks before opening its wizard (task 80427).
+                 Deposit and Transfer reuse the core transfer wizard, narrowing the destination journals. -->
+            <xpath expr="//list/header/button[@name='%(l10n_latam_check.action_view_l10n_latam_payment_mass_transfer)d']" position="replace">
+                <button name="action_check_deposit" type="object" string="Deposit"/>
+                <button name="action_check_transfer" type="object" string="Transfer"/>
+                <button name="action_check_endorse" type="object" string="Endorse"/>
+                <button name="action_check_return" type="object" string="Return to Customer"/>
+                <button name="action_check_reject" type="object" string="Reject"/>
             </xpath>
+            <field name="current_journal_id" position="after">
+                <field name="check_state" widget="badge"
+                       decoration-info="check_state == 'on_hand'"
+                       decoration-success="check_state == 'deposited'"
+                       decoration-warning="check_state == 'endorsed'"
+                       decoration-danger="check_state == 'rejected'"
+                       decoration-muted="check_state == 'returned'"/>
+            </field>
         </field>
     </record>
 </odoo>
