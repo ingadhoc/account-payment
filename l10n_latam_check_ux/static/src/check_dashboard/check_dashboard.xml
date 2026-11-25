@@ -1,30 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <t t-name="l10n_latam_check_ux.CheckDashboard">
-        <div class="o_action o_l10n_latam_check_dashboard">
-            <ControlPanel/>
-            <div class="o_content p-3">
-                <t t-foreach="sections" t-as="section" t-key="section.key">
-                    <h4 class="mt-2 mb-3" t-out="section.name"/>
-                    <div class="row g-3 mb-4">
-                        <t t-foreach="section.cards" t-as="card" t-key="card.key">
-                            <div class="col-6 col-md-4 col-xl-2">
-                                <div t-attf-class="card h-100 o_check_dashboard_card o_check_dashboard_card_{{ card.key }}"
-                                     role="button"
-                                     t-on-click="() => this.openCard(section, card)">
-                                    <div class="card-body">
-                                        <div class="text-muted small text-uppercase" t-out="card.label"/>
-                                        <div class="fs-3 fw-bold" t-out="card.count"/>
-                                        <t t-foreach="card.amounts" t-as="amount" t-key="amount_index">
-                                            <div class="small" t-out="formatAmount(amount)"/>
-                                        </t>
-                                    </div>
-                                </div>
-                            </div>
-                        </t>
+        <div class="o_l10n_latam_check_dashboard container-fluid py-2">
+            <div class="row g-2">
+                <t t-foreach="this.state.cards" t-as="card" t-key="card.key">
+                    <div class="col-6 col-md-4 col-xl-2">
+                        <a href="#"
+                           t-attf-class="btn w-100 h-100 text-start o_check_dashboard_card o_check_dashboard_card_{{ card.key }} {{ card.count ? '' : 'opacity-50' }}"
+                           t-att-title="card.label"
+                           t-on-click.prevent="() => this.applyCard(card)">
+                            <div class="small text-uppercase text-truncate" t-out="card.label"/>
+                            <div class="fs-3 fw-bold" t-out="card.count"/>
+                            <t t-foreach="card.amounts" t-as="amount" t-key="amount.currency_id">
+                                <div class="small" t-out="this.formatAmount(amount)"/>
+                            </t>
+                        </a>
                     </div>
                 </t>
             </div>
         </div>
+    </t>
+
+    <t t-name="l10n_latam_check_ux.CheckListRenderer" t-inherit="web.ListRenderer" t-inherit-mode="primary">
+        <xpath expr="//div[hasclass('o_list_renderer')]" position="before">
+            <CheckDashboard section="this.checkDashboardSection" t-key="this.props.list.id"/>
+        </xpath>
     </t>
 </templates>

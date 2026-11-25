@@ -1,26 +1,27 @@
 import { registry } from "@web/core/registry";
-import { useService } from "@web/core/utils/hooks";
-import { ControlPanel } from "@web/search/control_panel/control_panel";
+import { ORM } from "@web/core/orm_plugin";
 import { formatMonetary } from "@web/views/fields/formatters";
-import { standardActionServiceProps } from "@web/webclient/actions/action_plugin";
+import { listView } from "@web/views/list/list_view";
+import { ListRenderer } from "@web/views/list/list_renderer";
 
-import { Component, onWillStart, useProps } from "@odoo/owl";
+import { Component, onWillStart, proxy, t, usePlugin, useProps } from "@odoo/owl";
 
 /**
- * Checks dashboard: one card per check state, with count and amount, for third party and own checks.
- * Each card opens the checks list filtered by its state.
+ * KPI cards shown on top of a checks list: one per check state, with count and amount, plus the checks due
+ * this week. A click applies the filters of the card on the list, replacing the current search.
  */
 export class CheckDashboard extends Component {
     static template = "l10n_latam_check_ux.CheckDashboard";
-    static components = { ControlPanel };
 
-    props = useProps(standardActionServiceProps);
+    props = useProps({ section: t.string() });
+    orm = usePlugin(ORM);
 
     setup() {
-        this.orm = useService("orm");
-        this.actionService = useService("action");
+        this.state = proxy({ cards: [] });
         onWillStart(async () => {
-            this.sections = await this.orm.call("l10n_latam.check", "get_check_dashboard_data", []);
+            this.state.cards = await this.orm.call("l10n_latam.check", "get_check_dashboard_data", [
+                this.props.section,
+            ]);
         });
     }
 
@@ -28,13 +29,36 @@ export class CheckDashboard extends Component {
         return formatMonetary(amount.amount, { currencyId: amount.currency_id });
     }
 
-    async openCard(section, card) {
-        const action = await this.orm.call("l10n_latam.check", "action_open_dashboard_card", [
-            section.key,
-            card.key,
-        ]);
-        return this.actionService.doAction(action);
+    applyCard(card) {
+        const searchModel = this.env.searchModel;
+        const items = searchModel.getSearchItems((item) => card.filters.includes(item.name));
+        searchModel.query.length = 0;
+        for (const item of items) {
+            searchModel.toggleSearchItem(item.id);
+        }
     }
 }
 
-registry.category("actions").add("l10n_latam_check_dashboard", CheckDashboard);
+export class ThirdPartyCheckListRenderer extends ListRenderer {
+    static template = "l10n_latam_check_ux.CheckListRenderer";
+    static components = { ...ListRenderer.components, CheckDashboard };
+
+    get checkDashboardSection() {
+        return "third_party";
+    }
+}
+
+export class OwnCheckListRenderer extends ThirdPartyCheckListRenderer {
+    get checkDashboardSection() {
+        return "own";
+    }
+}
+
+registry.category("views").add("l10n_latam_third_party_check_list", {
+    ...listView,
+    Renderer: ThirdPartyCheckListRenderer,
+});
+registry.category("views").add("l10n_latam_own_check_list", {
+    ...listView,
+    Renderer: OwnCheckListRenderer,
+});

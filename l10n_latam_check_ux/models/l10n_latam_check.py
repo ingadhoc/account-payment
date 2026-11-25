@@ -72,6 +72,11 @@ class l10nLatamAccountPaymentCheck(models.Model):
         help="Where the check stands. Third party checks: in portfolio, deposited, endorsed, rejected or returned. "
         "Own checks: issued, debited or voided.",
     )
+    operations_summary = fields.Text(
+        string="Operations",
+        compute="_compute_operations_summary",
+        help="Payments of the third party check, one per line, oldest first.",
+    )
 
     @api.depends(
         "payment_method_line_id.code",
@@ -115,6 +120,21 @@ class l10nLatamAccountPaymentCheck(models.Model):
         if journal.type == "cash":
             return "on_hand"
         return False
+
+    @api.depends(
+        "payment_method_line_id.code",
+        "payment_id.state",
+        "payment_id.name",
+        "operation_ids.state",
+        "operation_ids.name",
+        "operation_ids.l10n_latam_move_check_ids_operation_date",
+    )
+    def _compute_operations_summary(self):
+        third_party_checks = self.filtered(lambda c: c.payment_method_line_id.code == "new_third_party_checks")
+        (self - third_party_checks).operations_summary = False
+        for rec in third_party_checks:
+            # one payment per line, oldest first: Text fields keep line breaks in the list
+            rec.operations_summary = "\n".join(rec._get_operations().mapped("name"))
 
     def _compute_user_can_write(self):
         for rec in self:
@@ -451,20 +471,14 @@ class l10nLatamAccountPaymentCheck(models.Model):
     # ------------------------------------------------------------------
     @api.model
     def _get_dashboard_sections(self):
-        third_party_name = _("Third Party Checks")
-        own_name = _("Own Checks")
         return {
             "third_party": {
-                "name": third_party_name,
-                "action": "l10n_latam_check.action_third_party_check",
                 "domain": [("payment_method_line_id.code", "=", "new_third_party_checks")],
                 "states": [state for state, _label in THIRD_PARTY_CHECK_STATES],
                 "due_state": "on_hand",
                 "filters": {state: "check_state_%s" % state for state, _label in THIRD_PARTY_CHECK_STATES},
             },
             "own": {
-                "name": own_name,
-                "action": "l10n_latam_check.action_own_check",
                 "domain": [("payment_method_line_id.code", "=", "own_checks")],
                 "states": [state for state, _label in OWN_CHECK_STATES],
                 "due_state": "handed",
@@ -479,48 +493,45 @@ class l10nLatamAccountPaymentCheck(models.Model):
         return [("payment_date", ">=", today), ("payment_date", "<=", today + timedelta(days=7))]
 
     @api.model
-    def get_check_dashboard_data(self):
-        """Count and amount of checks per state, for the active companies.
+    def get_check_dashboard_data(self, section_key):
+        """Cards of the KPIs shown on top of a checks list: count and amount per state, for the active companies.
 
-        Amounts are grouped by currency: checks in different currencies are never added up.
+        Amounts are grouped by currency: checks in different currencies are never added up. Each card carries the
+        names of the search filters that show its checks.
         """
-        state_labels = dict(self._fields["check_state"]._description_selection(self.env))
-        company_domain = [("company_id", "in", self.env.companies.ids)]
-        sections = []
-        for key, section in self._get_dashboard_sections().items():
-            base_domain = company_domain + section["domain"]
-            groups = self._read_group(
-                base_domain + [("check_state", "in", section["states"])],
-                ["check_state", "payment_id.currency_id"],
-                ["__count", "amount:sum"],
-            )
-            cards = {
-                state: {"key": state, "label": state_labels[state], "count": 0, "amounts": []}
-                for state in section["states"]
-            }
-            for state, currency, count, amount in groups:
-                cards[state]["count"] += count
-                cards[state]["amounts"].append({"currency_id": currency.id, "amount": amount})
-            due = {"key": "due_week", "label": _("Due This Week"), "count": 0, "amounts": []}
-            for currency, count, amount in self._read_group(
-                base_domain + [("check_state", "=", section["due_state"])] + self._get_dashboard_due_domain(),
-                ["payment_id.currency_id"],
-                ["__count", "amount:sum"],
-            ):
-                due["count"] += count
-                due["amounts"].append({"currency_id": currency.id, "amount": amount})
-            sections.append({"key": key, "name": section["name"], "cards": list(cards.values()) + [due]})
-        return sections
-
-    @api.model
-    def action_open_dashboard_card(self, section_key, card_key):
-        """Open the checks list of a dashboard card, filtered with a facet the user can remove."""
         section = self._get_dashboard_sections()[section_key]
-        action = self.env["ir.actions.act_window"]._for_xml_id(section["action"])
+        state_labels = dict(self._fields["check_state"]._description_selection(self.env))
+        base_domain = [("company_id", "in", self.env.companies.ids)] + section["domain"]
         filters = section["filters"]
-        if card_key == "due_week":
-            context = {"search_default_%s" % filters[section["due_state"]]: 1, "search_default_due_week": 1}
-        else:
-            context = {"search_default_%s" % filters[card_key]: 1}
-        action["context"] = context
-        return action
+        cards = {
+            state: {
+                "key": state,
+                "label": state_labels[state],
+                "count": 0,
+                "amounts": [],
+                "filters": [filters[state]],
+            }
+            for state in section["states"]
+        }
+        for state, currency, count, amount in self._read_group(
+            base_domain + [("check_state", "in", section["states"])],
+            ["check_state", "payment_id.currency_id"],
+            ["__count", "amount:sum"],
+        ):
+            cards[state]["count"] += count
+            cards[state]["amounts"].append({"currency_id": currency.id, "amount": amount})
+        due = {
+            "key": "due_week",
+            "label": _("Due This Week"),
+            "count": 0,
+            "amounts": [],
+            "filters": [filters[section["due_state"]], "due_week"],
+        }
+        for currency, count, amount in self._read_group(
+            base_domain + [("check_state", "=", section["due_state"])] + self._get_dashboard_due_domain(),
+            ["payment_id.currency_id"],
+            ["__count", "amount:sum"],
+        ):
+            due["count"] += count
+            due["amounts"].append({"currency_id": currency.id, "amount": amount})
+        return list(cards.values()) + [due]

@@ -68,6 +68,21 @@ class TestCheckStateActions(LatamCheckCommon):
             self._reject(endorsed)
             self.assertEqual(endorsed.check_state, "returned")
 
+    def test_operations_summary_lists_the_payments_of_the_check(self):
+        check = self._receive([100.0], ["00080091"])
+        self._endorse(check)
+        self._reject(check)
+        self.assertEqual(
+            check.operations_summary.splitlines(),
+            check._get_operations().mapped("name"),
+            "One payment per line, oldest first",
+        )
+        self.assertEqual(check.operations_summary.splitlines()[0], check.payment_id.name)
+
+        payment = self._create_own_check_payment([100.0], numbers=["00080093"])
+        payment.action_post()
+        self.assertFalse(payment.l10n_latam_new_check_ids.operations_summary, "Own checks have no summary")
+
     def test_check_in_the_rejected_journal_is_rejected(self):
         """The rejected checks journal is of type cash: the flag goes before "in portfolio"."""
         check = self._receive([100.0], ["00080011"])
@@ -167,8 +182,7 @@ class TestCheckStateActions(LatamCheckCommon):
         self._deposit(deposited)
         self._endorse(endorsed)
 
-        sections = {section["key"]: section for section in self.env["l10n_latam.check"].get_check_dashboard_data()}
-        cards = {card["key"]: card for card in sections["third_party"]["cards"]}
+        cards = {card["key"]: card for card in self.env["l10n_latam.check"].get_check_dashboard_data("third_party")}
         third_party_checks = self.env["l10n_latam.check"].search(
             [("payment_method_line_id.code", "=", "new_third_party_checks"), ("company_id", "=", self.company.id)]
         )
@@ -181,8 +195,15 @@ class TestCheckStateActions(LatamCheckCommon):
         self.assertGreaterEqual(cards["on_hand"]["count"], 1)
         self.assertGreaterEqual(cards["due_week"]["count"], 1, "The checks are payable today")
 
-    def test_dashboard_card_opens_the_list_filtered_by_its_state(self):
-        action = self.env["l10n_latam.check"].action_open_dashboard_card("third_party", "deposited")
-        self.assertEqual(action["context"], {"search_default_check_state_deposited": 1})
-        action = self.env["l10n_latam.check"].action_open_dashboard_card("own", "due_week")
-        self.assertEqual(action["context"], {"search_default_checks_handed": 1, "search_default_due_week": 1})
+    def test_dashboard_cards_use_filters_of_their_list(self):
+        """Each card applies search filters that exist on the list it is shown on."""
+        check_model = self.env["l10n_latam.check"]
+        for section, search_view in (
+            ("third_party", "l10n_latam_check.view_account_payment_third_party_checks_search"),
+            ("own", "l10n_latam_check.view_account_payment_search"),
+        ):
+            arch = check_model.get_view(self.env.ref(search_view).id, "search")["arch"]
+            for card in check_model.get_check_dashboard_data(section):
+                for filter_name in card["filters"]:
+                    with self.subTest(section=section, card=card["key"], filter=filter_name):
+                        self.assertIn('name="%s"' % filter_name, arch)

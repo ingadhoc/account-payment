@@ -1,11 +1,7 @@
 .o_l10n_latam_check_dashboard {
     .o_check_dashboard_card {
-        cursor: pointer;
+        border: 1px solid $border-color;
         border-left-width: 4px;
-
-        &:hover {
-            box-shadow: $box-shadow-sm;
-        }
     }
     .o_check_dashboard_card_on_hand,
     .o_check_dashboard_card_handed {
