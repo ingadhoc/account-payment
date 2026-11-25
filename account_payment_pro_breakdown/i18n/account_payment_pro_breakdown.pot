@@ -1,0 +1,380 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_payment_pro_breakdown
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 20.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-25 20:47+0000\n"
+"PO-Revision-Date: 2026-11-25 20:47+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: account_payment_pro_breakdown
+#: model:ir.module.module,description:base.module_account_payment_pro_breakdown
+msgid ""
+"# Account Payment Pro Breakdown\n"
+"\n"
+"## Description\n"
+"\n"
+"Lets the user decide how much of a payment goes to each selected debt, when the payment settles only part of them. Without it, Odoo spreads the payment by due date and the user cannot choose.\n"
+"\n"
+"Payments that do not use the breakdown behave as before.\n"
+"\n"
+"## Main Features\n"
+"\n"
+"### Breakdown Wizard\n"
+"- **Break Down Amount**: on a draft payment with selected debts, the button next to **Remove All** opens a wizard with one line per debt, by due date, with its amount due and the amount to allocate.\n"
+"- **Fixed amount**: the payment amount is not edited nor recalculated: it is only broken down. The amounts must add up to it, and a debt cannot receive more than it owes.\n"
+"- **Currency**: the amounts are in the currency of the debts, the same one the debts show.\n"
+"\n"
+"### Breakdown Tab\n"
+"- **Breakdown**: once saved, a tab next to **Debts** shows each debt with its amount. In draft the amounts can be edited and the lines deleted; deleting all of them leaves the payment as before. When the amounts do not add up to the payment, the tab shows the difference.\n"
+"- **Posted payments**: the tab stays read-only, as a record of how the payment was broken down.\n"
+"\n"
+"### Journal Entry\n"
+"- **One counterpart line per debt**: the counterpart of the entry is split by the breakdown. The liquidity lines do not change, so a payment with several checks works the same.\n"
+"- **Reconciliation**: on posting, each part is reconciled with its own debt and what was not allocated stays open. Debts in another currency keep the rate of the payment for each part, and the exchange difference is booked per debt.\n"
+"- **Back to draft**: the entry follows the breakdown again on the next posting, and editing the payment in draft keeps the parts while they still add up.\n"
+"\n"
+"### Posting Checks\n"
+"A payment with a breakdown cannot be posted when the amounts do not add up to the payment, a debt of the breakdown is no longer selected, a debt receives more than it owes now, or the payment has a write-off or withholdings.\n"
+"\n"
+"## Known Limits\n"
+"\n"
+"- **Write-off and withholdings**: a payment with any of them cannot be broken down yet.\n"
+"- **Payment bundle**: not supported.\n"
+"\n"
+"## Usage\n"
+"\n"
+"1. Create a customer receipt or a supplier payment and select the debts.\n"
+"2. Click **Break Down Amount**, set the amount for each debt and confirm.\n"
+"3. Check the **Breakdown** tab and post the payment.\n"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#. odoo-python
+#: code:addons/account_payment_pro_breakdown/models/account_payment.py:0
+msgid ""
+"%(payment)s has a breakdown and write-off or withholdings, which can't be "
+"combined yet. Remove the breakdown or the write-off and withholdings."
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.constraint,message:account_payment_pro_breakdown.constraint_account_payment_breakdown_unique_debt_per_payment
+msgid "A debt can only appear once in the breakdown of a payment."
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.module.module,shortdesc:base.module_account_payment_pro_breakdown
+msgid "Account Payment Pro Breakdown"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard__allocated_amount
+msgid "Allocated Amount"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown__amount
+msgid "Amount"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown__amount_residual
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard_line__amount_residual
+msgid "Amount Due"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model,name:account_payment_pro_breakdown.model_account_payment_breakdown
+msgid "Amount of a payment allocated to a debt"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard_line__amount
+msgid "Amount to Allocate"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model_terms:ir.ui.view,arch_db:account_payment_pro_breakdown.view_account_payment_form
+msgid "Break Down Amount"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model,name:account_payment_pro_breakdown.model_account_payment_breakdown_wizard
+msgid "Break down a payment between its debts"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.module.module,summary:base.module_account_payment_pro_breakdown
+msgid ""
+"Break down a payment between the selected debts, with an amount for each one"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment__breakdown_ids
+#: model_terms:ir.ui.view,arch_db:account_payment_pro_breakdown.view_account_payment_form
+msgid "Breakdown"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_move_line__breakdown_debt_line_id
+msgid "Breakdown Debt"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment__breakdown_difference
+msgid "Breakdown Difference"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment__breakdown_mismatch
+msgid "Breakdown Mismatch"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown__company_id
+msgid "Company"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model_terms:ir.ui.view,arch_db:account_payment_pro_breakdown.account_payment_breakdown_wizard_view_form
+msgid "Confirm"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown__currency_id
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard__currency_id
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard_line__currency_id
+msgid "Counterpart Currency"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown__create_uid
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard__create_uid
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard_line__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown__create_date
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard__create_date
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard_line__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown__move_line_id
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard_line__move_line_id
+msgid "Debt"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model,name:account_payment_pro_breakdown.model_account_payment_breakdown_wizard_line
+msgid "Debt in the breakdown of a payment"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard__difference
+msgid "Difference"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model_terms:ir.ui.view,arch_db:account_payment_pro_breakdown.account_payment_breakdown_wizard_view_form
+msgid "Discard"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_move_line__display_name
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment__display_name
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown__display_name
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard__display_name
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard_line__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown__date_maturity
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard_line__date_maturity
+msgid "Due Date"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_move_line__id
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment__id
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown__id
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard__id
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard_line__id
+msgid "ID"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#. odoo-python
+#: code:addons/account_payment_pro_breakdown/models/account_payment.py:0
+msgid ""
+"In the breakdown of %(payment)s these debts receive more than they owe: "
+"%(debts)s"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown__move_id
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard_line__move_id
+msgid "Journal Entry"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model,name:account_payment_pro_breakdown.model_account_move_line
+msgid "Journal Item"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown__write_uid
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard__write_uid
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard_line__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown__write_date
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard__write_date
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard_line__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard__line_ids
+msgid "Line"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,help:account_payment_pro_breakdown.field_account_move_line__breakdown_debt_line_id
+msgid ""
+"On a counterpart line of a broken down payment, the debt this part is "
+"reconciled with."
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#. odoo-python
+#: code:addons/account_payment_pro_breakdown/models/account_payment.py:0
+msgid "Only draft payments can be broken down."
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#. odoo-python
+#: code:addons/account_payment_pro_breakdown/models/account_payment.py:0
+msgid "Only payments to a partner that use Payment Pro can be broken down."
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model,name:account_payment_pro_breakdown.model_account_payment
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown__payment_id
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard__payment_id
+msgid "Payment"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard__total_amount
+msgid "Payment Amount"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#. odoo-python
+#: code:addons/account_payment_pro_breakdown/models/account_payment.py:0
+#: model_terms:ir.ui.view,arch_db:account_payment_pro_breakdown.account_payment_breakdown_wizard_view_form
+msgid "Payment Breakdown"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,help:account_payment_pro_breakdown.field_account_payment__breakdown_difference
+msgid "Payment amount minus the amounts allocated in the breakdown."
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#. odoo-python
+#: code:addons/account_payment_pro_breakdown/models/account_payment.py:0
+msgid "Payments with write-off or withholdings can't be broken down yet."
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#. odoo-python
+#: code:addons/account_payment_pro_breakdown/models/account_payment.py:0
+msgid "Select the debts to pay first."
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#. odoo-python
+#: code:addons/account_payment_pro_breakdown/wizards/account_payment_breakdown_wizard.py:0
+msgid "The amount allocated to a debt can't be negative."
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.constraint,message:account_payment_pro_breakdown.constraint_account_payment_breakdown_positive_amount
+msgid "The amount allocated to a debt must be positive."
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#. odoo-python
+#: code:addons/account_payment_pro_breakdown/wizards/account_payment_breakdown_wizard.py:0
+msgid ""
+"The amounts must add up to the payment amount. Difference: %(difference)s"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model_terms:ir.ui.view,arch_db:account_payment_pro_breakdown.view_account_payment_form
+msgid "The breakdown does not add up to the payment amount. Difference:"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#. odoo-python
+#: code:addons/account_payment_pro_breakdown/models/account_payment.py:0
+msgid ""
+"The breakdown of %(payment)s does not add up to the payment amount. "
+"Difference: %(difference)s"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#. odoo-python
+#: code:addons/account_payment_pro_breakdown/models/account_payment.py:0
+msgid ""
+"The breakdown of %(payment)s does not match its journal entry. Break down "
+"the amount again."
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#. odoo-python
+#: code:addons/account_payment_pro_breakdown/models/account_payment.py:0
+msgid ""
+"The breakdown of %(payment)s has debts that are no longer selected: "
+"%(debts)s. Break down the amount again."
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#. odoo-python
+#: code:addons/account_payment_pro_breakdown/wizards/account_payment_breakdown_wizard.py:0
+msgid "These debts would receive more than they owe: %(debts)s"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,help:account_payment_pro_breakdown.field_account_payment_breakdown__date_maturity
+#: model:ir.model.fields,help:account_payment_pro_breakdown.field_account_payment_breakdown_wizard_line__date_maturity
+msgid ""
+"This field is used for payable and receivable journal entries. You can put "
+"the limit date for the payment of this line."
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model_terms:ir.ui.view,arch_db:account_payment_pro_breakdown.account_payment_breakdown_wizard_view_form
+#: model_terms:ir.ui.view,arch_db:account_payment_pro_breakdown.view_account_payment_form
+msgid "Total"
+msgstr ""
+
+#. module: account_payment_pro_breakdown
+#: model:ir.model.fields,field_description:account_payment_pro_breakdown.field_account_payment_breakdown_wizard_line__wizard_id
+msgid "Wizard"
+msgstr ""
