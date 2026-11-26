@@ -46,13 +46,14 @@ class AccountPayment(models.Model):
         super(AccountPayment, self - main_payments)._compute_early_discount_amount()
         (self - main_payments).bundle_early_discount_applied = 0.0
         for rec in main_payments:
-            available = rec._get_bundle_early_discount_available()
-            amount = available if rec.early_discount_apply else 0.0
-            rec.early_discount_available = bool(available)
+            discounts = rec._get_early_discount_if_paid()
+            apply = discounts and rec.early_discount_apply
+            amount = sum(discounts.values()) if apply else 0.0
+            rec.early_discount_available = bool(discounts)
             rec.early_discount_amount = amount
             rec.early_discount_difference = rec.payment_difference - amount
             rec.bundle_early_discount_applied = (
-                sum(rec._early_discount_allocation().values()) if rec.early_discount_apply else 0.0
+                sum(rec._early_discount_allocation(discounts=discounts).values()) if apply else 0.0
             )
 
     @api.depends("main_payment_id.early_discount_amount")
@@ -60,15 +61,3 @@ class AccountPayment(models.Model):
         super()._compute_payment_difference()
         for rec in self.filtered("main_payment_id"):
             rec.payment_difference -= rec.main_payment_id.early_discount_amount
-
-    def _get_bundle_early_discount_available(self):
-        """Early discount of the selected debt if the bundle pays all of it, as the amount with discount is
-        suggested on a regular payment."""
-        self.ensure_one()
-        currency = self.destination_currency_id or self.company_currency_id
-        return sum(
-            line.move_id._get_early_discount_amount()
-            for line in self._get_early_discount_debt_lines()
-            if line.currency_id == currency
-            and line.move_id._is_early_discount_eligible(self.date, self._get_early_discount_residual(line))
-        )
