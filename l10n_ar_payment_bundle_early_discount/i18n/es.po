@@ -21,11 +21,6 @@ msgid "Display Name"
 msgstr "Nombre a mostrar"
 
 #. module: l10n_ar_payment_bundle_early_discount
-#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle_early_discount.view_account_payment_form
-msgid "Early Payment Discount"
-msgstr "Descuento por pronto pago"
-
-#. module: l10n_ar_payment_bundle_early_discount
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle_early_discount.field_account_payment__bundle_early_discount_applied
 msgid "Early Payment Discount Applied"
 msgstr "Descuento por pronto pago aplicado"
