@@ -52,9 +52,12 @@ class AccountPayment(models.Model):
     )
     def _compute_early_discount_amount(self):
         for rec in self:
-            available = sum(rec._early_discount_allocation().values()) if rec._is_early_discount_payment() else 0.0
-            amount = available if rec.early_discount_apply else 0.0
-            rec.early_discount_available = bool(available)
+            discounts = rec._get_early_discount_if_paid() if rec._is_early_discount_payment() else {}
+            applied = (
+                rec._early_discount_allocation(discounts=discounts) if discounts and rec.early_discount_apply else {}
+            )
+            amount = sum(applied.values())
+            rec.early_discount_available = bool(discounts)
             rec.early_discount_amount = amount
             rec.early_discount_difference = rec.payment_difference - amount
 
@@ -91,12 +94,15 @@ class AccountPayment(models.Model):
         for rec, previous_amount in zip(self, previous_amounts):
             if rec._origin.id or not rec._is_early_discount_payment():
                 continue
-            if rec.destination_currency_id.is_zero(rec.payment_difference):
+            # an amount that pays the debt is a suggestion, also if it does not change here
+            is_debt = rec.destination_currency_id.is_zero(rec.payment_difference)
+            if is_debt:
                 discount = rec._get_early_discount_to_apply()
                 if discount:
-                    rec.amount = rec.amount - rec._early_discount_to_payment_currency(discount)
+                    # computed from the debt, since the payment difference is rounded in the currency of the total
+                    rec.amount = rec._get_early_discount_suggested_amount(discount)
                     rec.amount_exact = rec.amount
-            if rec.currency_id.compare_amounts(rec.amount, previous_amount):
+            if is_debt or rec.currency_id.compare_amounts(rec.amount, previous_amount):
                 rec.early_discount_suggested_amount = rec.amount
 
     @api.onchange("date", "early_discount_apply")
@@ -131,32 +137,40 @@ class AccountPayment(models.Model):
                 currency.is_zero(rec.payment_difference - suggested) for suggested in (0.0, term_discount)
             ):
                 continue
-            rec.amount = rec._get_early_discount_suggested_amount(0.0)
-            rec.amount_exact = rec.amount
-            discount = rec._get_early_discount_to_apply()
-            rec.amount = rec._get_early_discount_suggested_amount(discount)
+            rec.amount = rec._get_early_discount_suggested_amount(rec._get_early_discount_to_apply())
             rec.amount_exact = rec.amount
             rec.early_discount_suggested_amount = rec.amount
 
     def action_adjust_amount_for_difference(self):
-        # with the early discount applied, adjust the difference after the discount, so the discount is kept
-        discounted = self.filtered("early_discount_amount")
-        for rec in discounted:
-            if rec.destination_currency_id.is_zero(rec.early_discount_difference):
+        # with the early discount, adjust to the debt minus the discount, even if the amount is lower now
+        differences = self._get_early_discount_difference_to_apply()
+        for rec, difference in differences.items():
+            if rec.destination_currency_id.is_zero(difference):
                 continue
-            amount = rec.amount_exact + rec._early_discount_to_payment_currency(rec.early_discount_difference)
+            amount = rec.amount_exact + rec._early_discount_to_payment_currency(difference)
             if amount >= 0:
                 rec.amount_exact = amount
                 rec.amount = amount
+        discounted = self.filtered(lambda x: x in differences)
         return super(AccountPayment, self - discounted).action_adjust_amount_for_difference()
 
     def action_adjust_writeoff_for_difference(self):
-        # with the early discount applied, send to write-off only the difference after the discount
-        discounted = self.filtered("early_discount_amount")
-        for rec in discounted:
-            if not rec.destination_currency_id.is_zero(rec.early_discount_difference):
-                rec.write_off_amount += rec.early_discount_difference
+        # with the early discount, send to write-off only what is missing to get it, even if the amount is lower now
+        differences = self._get_early_discount_difference_to_apply()
+        for rec, difference in differences.items():
+            if not rec.destination_currency_id.is_zero(difference):
+                rec.write_off_amount += difference
+        discounted = self.filtered(lambda x: x in differences)
         return super(AccountPayment, self - discounted).action_adjust_writeoff_for_difference()
+
+    def _get_early_discount_difference_to_apply(self):
+        """Payment difference after the early discount each payment applies once it pays all the selected debt,
+        for the payments that apply one."""
+        differences = {}
+        for rec in self.filtered(lambda x: x._is_early_discount_payment()):
+            if discount := rec._get_early_discount_to_apply():
+                differences[rec] = rec.payment_difference - discount
+        return differences
 
     def _reconcile_after_post(self):
         # with the payment already posted, the credit notes are created before reconciling it, so the payment
@@ -191,9 +205,21 @@ class AccountPayment(models.Model):
         )
 
     def _get_early_discount_to_apply(self):
-        """Early discount the payment applies, unless it is turned off on the payment."""
+        """Early discount the payment applies once it pays all the selected debt, unless it is turned off on the
+        payment."""
         self.ensure_one()
-        return sum(self._early_discount_allocation().values()) if self.early_discount_apply else 0.0
+        return sum(self._get_early_discount_if_paid().values()) if self.early_discount_apply else 0.0
+
+    def _get_early_discount_if_paid(self):
+        """Early discount of every selected invoice that gets it if the payment pays all the selected debt on its
+        date, whatever its amount now."""
+        self.ensure_one()
+        currency = self.destination_currency_id or self.company_currency_id
+        discounts = {}
+        for line in self._get_early_discount_debt_lines().filtered(lambda line: line.currency_id == currency):
+            if discount := line.move_id._get_early_discount_if_paid(self.date):
+                discounts[line.move_id] = discount
+        return discounts
 
     def _early_discount_to_payment_currency(self, amount):
         """Convert an amount in the currency of the payment total to the payment currency, as Payment Pro does
@@ -235,28 +261,31 @@ class AccountPayment(models.Model):
             )
         )
 
-    def _early_discount_allocation(self, apply=False):
+    def _early_discount_allocation(self, apply=False, discounts=None):
         """Spread the payment over the selected debt by due date and return the early discount of every invoice
-        that gets fully paid within the discount period. With ``apply`` the credit notes are created."""
+        that gets fully paid within the discount period. With ``apply`` the credit notes are created. ``discounts``
+        are the ones of ``_get_early_discount_if_paid``, when they are already computed."""
         self.ensure_one()
+        if discounts is None:
+            discounts = self._get_early_discount_if_paid()
         currency = self.destination_currency_id or self.company_currency_id
         credits = self.to_pay_move_line_ids.filtered(lambda line: line.amount_residual < 0)
         available = self.payment_total - sum(self._get_early_discount_residual(line) for line in credits)
-        discounts = {}
+        applied = {}
         for line in self._get_early_discount_debt_lines():
             if currency.compare_amounts(available, 0) <= 0:
                 break
             invoice = line.move_id
             residual = self._get_early_discount_residual(line)
-            if line.currency_id == currency and invoice._is_early_discount_eligible(self.date, available):
+            discount = discounts.get(invoice, 0.0)
+            # the invoice gets the discount only if what is left of the payment covers its residual after it
+            if discount and currency.compare_amounts(available, residual - discount) >= 0:
                 if apply:
                     invoice._apply_early_discount().early_discount_payment_id = self
                     # a credit note left in draft by a customization does not reduce the residual
                     discount = residual - self._get_early_discount_residual(line)
-                else:
-                    discount = invoice._get_early_discount_amount()
                 if discount:
-                    discounts[invoice] = discount
+                    applied[invoice] = discount
                 residual -= discount
             available -= residual
-        return discounts
+        return applied

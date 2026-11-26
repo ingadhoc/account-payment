@@ -210,6 +210,20 @@ class TestEarlyDiscountPayment(EarlyDiscountCommon):
             form.date = self.today - timedelta(days=3)
             self.assertAlmostEqual(form.amount, 990)
 
+    def test_user_amount_before_debt_kept(self):
+        # an amount set before the debt is selected is not a suggestion, so a date change keeps it
+        invoice = self._create_invoice(self.today)
+        context = {"default_payment_type": "inbound", "default_partner_type": "customer"}
+        with Form(self.env["account.payment"].with_context(**context)) as form:
+            form.journal_id = self.bank_journal
+            form.amount = 2000
+            form.partner_id = invoice.partner_id
+            term_line = invoice.line_ids.filtered(lambda line: line.display_type == "payment_term")
+            self.assertIn(term_line, form.to_pay_move_line_ids)
+            self.assertAlmostEqual(form.amount, 2000)
+            form.date = self.today - timedelta(days=1)
+            self.assertAlmostEqual(form.amount, 2000)
+
     def test_suggested_amount_foreign_currency(self):
         eur = self.env.ref("base.EUR")
         foreign = eur if self.company.currency_id != eur else self.env.ref("base.USD")
@@ -298,6 +312,45 @@ class TestEarlyDiscountPayment(EarlyDiscountCommon):
         payment.action_adjust_writeoff_for_difference()
         self.assertAlmostEqual(payment.write_off_amount, -5)
         self.assertAlmostEqual(payment.early_discount_amount, 50)
+
+    def test_adjust_amount_not_covering_discounted_total(self):
+        invoice = self._create_invoice(self.today)
+        other = self._create_invoice_without_discount(due_days=60)
+        for amount in (0, 500):
+            payment = self._draft_payment(invoice + other, amount)
+            self.assertFalse(payment.early_discount_amount)
+            self.assertTrue(payment.early_discount_available)
+            payment.action_adjust_amount_for_difference()
+            self.assertAlmostEqual(payment.amount, 1450)
+            self.assertAlmostEqual(payment.early_discount_amount, 50)
+            self.assertAlmostEqual(payment.early_discount_difference, 0)
+        payment.action_post()
+        self.assertAlmostEqual(self._early_discount_credit_note(invoice).amount_total, 50)
+        self.assertTrue(invoice.currency_id.is_zero(invoice.amount_residual))
+        self.assertTrue(other.currency_id.is_zero(other.amount_residual))
+
+    def test_adjust_writeoff_not_covering_discounted_total(self):
+        # the write-off covers only what is missing to get the discount
+        invoice = self._create_invoice(self.today)
+        payment = self._draft_payment(invoice, 800)
+        payment.action_adjust_writeoff_for_difference()
+        self.assertAlmostEqual(payment.write_off_amount, 150)
+        self.assertAlmostEqual(payment.early_discount_amount, 50)
+        self.assertAlmostEqual(payment.early_discount_difference, 0)
+
+    def test_adjust_without_discount_to_apply(self):
+        invoice = self._create_invoice(self.today)
+        payment = self._draft_payment(invoice, 0, early_discount_apply=False)
+        payment.action_adjust_amount_for_difference()
+        self.assertAlmostEqual(payment.amount, 1000)
+        payment = self._draft_payment(invoice, 800, early_discount_apply=False)
+        payment.action_adjust_writeoff_for_difference()
+        self.assertAlmostEqual(payment.write_off_amount, 200)
+        expired = self._create_invoice(self.today - timedelta(days=11))
+        payment = self._draft_payment(expired, 0)
+        self.assertFalse(payment.early_discount_available)
+        payment.action_adjust_amount_for_difference()
+        self.assertAlmostEqual(payment.amount, 1000)
 
     def test_exclude_discount(self):
         invoice = self._create_invoice(self.today)
