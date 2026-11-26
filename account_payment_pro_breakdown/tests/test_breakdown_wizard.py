@@ -3,6 +3,7 @@
 # directory
 ##############################################################################
 
+from odoo import fields
 from odoo.exceptions import UserError
 from odoo.tests import Form, tagged
 
@@ -16,13 +17,20 @@ class TestBreakdownWizard(BreakdownCommon):
         self.debts = self._debt(80000) + self._debt(80000)
         self.payment = self._payment(100000, self.debts)
 
-    def test_wizard_lists_the_selected_debts(self):
-        action = self.payment.action_open_breakdown_wizard()
+    def test_wizard_lists_the_selected_debts_by_due_date(self):
+        earlier = self._debt(50000, date=fields.Date.subtract(self.today, days=10))
+        payment = self._payment(100000, self.debts + earlier)
+        action = payment.action_open_breakdown_wizard()
         wizard = Form(self.env[action["res_model"]].with_context(**action["context"])).save()
         self.assertEqual(wizard.total_amount, 100000)
-        self.assertEqual(wizard.line_ids.move_line_id, self.debts)
-        self.assertEqual(wizard.line_ids.mapped("amount_residual"), [80000, 80000])
-        self.assertEqual(wizard.line_ids.mapped("amount"), [0, 0])
+        self.assertEqual(wizard.line_ids.move_line_id.ids, (earlier + self.debts).ids)
+        self.assertEqual(wizard.line_ids.mapped("amount_residual"), [50000, 80000, 80000])
+        self.assertEqual(wizard.line_ids.mapped("amount"), [0, 0, 0])
+
+    def test_remove_all_drops_the_breakdown(self):
+        self._break_down(self.payment, [60000, 40000])
+        self.payment.remove_all()
+        self.assertFalse(self.payment.breakdown_ids)
 
     def test_amounts_must_add_up_to_the_payment(self):
         with self.assertRaisesRegex(UserError, "add up to the payment amount"):

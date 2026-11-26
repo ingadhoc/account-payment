@@ -14,7 +14,7 @@ Payments that do not use the breakdown behave as before.
 - **Currency**: the amounts are in the currency of the debts, the same one the debts show.
 
 ### Breakdown Tab
-- **Breakdown**: once saved, a tab next to **Debts** shows each debt with its amount. In draft the amounts can be edited and the lines deleted; deleting all of them leaves the payment as before. When the amounts do not add up to the payment, the tab shows the difference.
+- **Breakdown**: once saved, a tab next to **Debts** shows each debt with its amount. In draft the amounts can be edited and the lines deleted; deleting all of them leaves the payment as before. When the amounts do not add up to the payment, the tab shows the difference. **Remove All** also deletes the breakdown.
 - **Posted payments**: the tab is hidden; the **Paid** tab already shows how much each debt received.
 
 ### Journal Entry

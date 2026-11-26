@@ -211,6 +211,10 @@ class AccountPayment(models.Model):
                 to_reconcile.reconcile()
         return super()._reconcile_after_post()
 
+    def remove_all(self):
+        self.breakdown_ids.unlink()
+        return super().remove_all()
+
     def action_open_breakdown_wizard(self):
         self.ensure_one()
         if reason := self._get_breakdown_unavailable_reason():

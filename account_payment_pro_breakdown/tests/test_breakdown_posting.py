@@ -118,6 +118,31 @@ class TestBreakdownPosting(BreakdownCommon):
         self.assertResiduals(debts, [400, 600], field="amount_residual_currency")
         self.assertResiduals(debts, [440000, 660000])
 
+    def test_foreign_currency_rounding_goes_to_the_last_part(self):
+        self.env["res.currency.rate"].create(
+            {
+                "name": self.today,
+                "currency_id": self.foreign_currency.id,
+                "company_id": self.company.id,
+                "inverse_company_rate": 1000,
+            }
+        )
+        debts = (
+            self._debt(1000, currency=self.foreign_currency)
+            + self._debt(1000, currency=self.foreign_currency)
+            + self._debt(1000, currency=self.foreign_currency)
+        )
+        payment = self._payment(1, debts)
+        # 1000 at 1000.001 is 1000001: a third of it does not round to the cent.
+        payment.counterpart_rate = 1 / 1000.001
+        payment.counterpart_currency_amount = 1000
+        self._break_down(payment, [333.33, 333.33, 333.34])
+        payment.action_post()
+        counterparts = self._counterparts(payment)
+        self.assertEqual(counterparts.mapped("amount_currency"), [-333.33, -333.33, -333.34])
+        self.assertEqual(counterparts.mapped("balance"), [-333330.33, -333330.33, -333340.34])
+        self.assertResiduals(debts, [666.67, 666.67, 666.66], field="amount_residual_currency")
+
 
 @tagged("post_install", "-at_install")
 class TestBreakdownBlocks(BreakdownCommon):
