@@ -4,16 +4,64 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 19.0+e\n"
+"Project-Id-Version: Odoo Server 20.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-20 16:02+0000\n"
-"PO-Revision-Date: 2026-11-20 16:02+0000\n"
+"POT-Creation-Date: 2026-11-26 19:05+0000\n"
+"PO-Revision-Date: 2026-11-26 19:05+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
+
+#. module: l10n_ar_payment_bundle_early_discount
+#: model:ir.module.module,description:base.module_l10n_ar_payment_bundle_early_discount
+msgid ""
+"# Argentinean Payment Bundle Early Discount\n"
+"\n"
+"## Description\n"
+"\n"
+"Technical bridge module between **Argentinean Payment bundle** and **Account Payment Early Discount**. On a payment bundle, the early payment discount is decided once, on the main payment, and the linked payments follow it.\n"
+"\n"
+"It is installed automatically when both modules are installed.\n"
+"\n"
+"## Main Features\n"
+"\n"
+"### Date of the Discount\n"
+"- **Main payment date**: the discount period is always checked with the date of the main payment.\n"
+"- **Linked payments**: their dates do not change the discount. A linked payment dated after the discount period still gets the discount if the main payment is within it.\n"
+"- **Date change**: changing the date of the main payment out of the discount period removes the discount, and the linked payments go back to the full debt.\n"
+"\n"
+"### Main Payment\n"
+"- **Single decision**: the **Exclude** and **Recalculate** buttons are only on the main payment. The linked payments do not show the discount and cannot turn it on or off.\n"
+"- **Amount**: the amount of the main payment stays zero, as in any bundle. The discount does not change it.\n"
+"- **Difference**: while the bundle is built, the difference of the main payment already has the discount it gets if the linked payments pay all the selected debt.\n"
+"- **Early Payment Discount**: the label and the buttons are always shown. The amount is shown only once the linked payments pay a discounted invoice, and it is the discount applied if the bundle is posted now. With several invoices, only the ones already paid count.\n"
+"- **Credit notes**: posting the bundle creates the credit notes once, from the main payment. They belong to the main payment.\n"
+"- **Returned check**: if a check of a linked payment is returned to the customer, the main payment shows the warning with its credit notes.\n"
+"\n"
+"### Linked Payments\n"
+"- **Suggested amount**: the difference of a linked payment already has the discount of the main payment, so **→ Amount** suggests the amount with discount.\n"
+"- **Excluded discount**: with the discount excluded on the main payment, the linked payments suggest the full debt and no credit note is created.\n"
+"\n"
+"## Usage\n"
+"\n"
+"1. Create and post customer invoices with a payment term with early discount.\n"
+"2. Register a payment from the invoices and select the **Multiple payments** journal. The date of this main payment is the one that decides the discount.\n"
+"3. Add the linked payments. **→ Amount** suggests what is left to pay with discount.\n"
+"4. Optionally, use **Exclude** on the main payment when the customer does not take the discount.\n"
+"5. Post the main payment. The credit notes are created and the invoices get paid.\n"
+"\n"
+"## Limitations\n"
+"\n"
+"- The amount of a linked payment is not changed when the discount is excluded or recalculated on the main payment once the linked payment has an amount. If the customer already paid the full debt and the discount is recalculated, the credit note is created anyway and the customer gets a credit.\n"
+msgstr ""
+
+#. module: l10n_ar_payment_bundle_early_discount
+#: model:ir.module.module,shortdesc:base.module_l10n_ar_payment_bundle_early_discount
+msgid "Argentinean Payment Bundle Early Discount"
+msgstr ""
 
 #. module: l10n_ar_payment_bundle_early_discount
 #: model:ir.model.fields,field_description:l10n_ar_payment_bundle_early_discount.field_account_payment__display_name
@@ -39,5 +87,12 @@ msgstr ""
 
 #. module: l10n_ar_payment_bundle_early_discount
 #: model:ir.model,name:l10n_ar_payment_bundle_early_discount.model_account_payment
-msgid "Payments"
+msgid "Payment"
+msgstr ""
+
+#. module: l10n_ar_payment_bundle_early_discount
+#: model:ir.module.module,summary:base.module_l10n_ar_payment_bundle_early_discount
+msgid ""
+"Technical bridge module for l10n_ar_payment_bundle and "
+"account_payment_early_discount"
 msgstr ""
