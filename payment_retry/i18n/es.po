@@ -1,0 +1,343 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* payment_retry
+#
+# Translators:
+# ADHOC - Bot <transbot@adhoc.com.ar>, 2025
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-26 12:30+0000\n"
+"PO-Revision-Date: 2025-12-26 17:10+0000\n"
+"Last-Translator: carla spiaggi <sca@adhoc.inc>\n"
+"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
+"payment-19-0/account-payment-19-0-payment_retry/es/>\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == "
+"0) ? 1 : 2);\n"
+"X-Generator: Weblate 5.10.4\n"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__amount_residual
+msgid "Amount Due"
+msgstr "Monto adeudado"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__amount_to_pay
+msgid "Amount To Pay"
+msgstr "Monto a Pagar"
+
+#. module: payment_retry
+#: model_terms:ir.ui.view,arch_db:payment_retry.payment_transaction_retry_view_form
+msgid "Are you sure you want to create these payments?"
+msgstr "Está seguro de que desea crear estos pagos?"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__asynchronous_process
+msgid "Asynchronous Process"
+msgstr "Proceso asincrónico"
+
+#. module: payment_retry
+#. odoo-python
+#: code:addons/payment_retry/wizards/payment_transaction_retry.py:0
+msgid "Check Partner(s) Email(s)"
+msgstr "Verificar el correo electrónico del/de los contacto(s)"
+
+#. module: payment_retry
+#: model_terms:ir.ui.view,arch_db:payment_retry.payment_transaction_retry_view_form
+msgid "Check similar"
+msgstr "Verificar similares"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__commercial_partner_id
+msgid "Commercial Entity"
+msgstr "Entidad comercial"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__company_id
+msgid "Company"
+msgstr "Empresa"
+
+#. module: payment_retry
+#: model:ir.model,name:payment_retry.model_electronic_payment_pending_confirm
+msgid "Confirm a manual payment while an electronic payment is on course"
+msgstr "Confirmar un pago manual mientras hay un pago electrónico en curso"
+
+#. module: payment_retry
+#: model_terms:ir.ui.view,arch_db:payment_retry.payment_transaction_retry_view_form
+msgid "Create payments"
+msgstr "Crear Pagos"
+
+#. module: payment_retry
+#: model_terms:ir.ui.view,arch_db:payment_retry.payment_transaction_retry_view_form
+msgid "Create payments without check"
+msgstr "Crear pagos sin verificación"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_electronic_payment_pending_confirm__create_uid
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__create_uid
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_electronic_payment_pending_confirm__create_date
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__create_date
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__currency_id
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: payment_retry
+#: model_terms:ir.ui.view,arch_db:payment_retry.electronic_payment_pending_confirm_view_form
+#: model_terms:ir.ui.view,arch_db:payment_retry.payment_transaction_retry_view_form
+msgid "Discard"
+msgstr "Descartar"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_account_move__display_name
+#: model:ir.model.fields,field_description:payment_retry.field_electronic_payment_pending_confirm__display_name
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction__display_name
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__display_name
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__display_name
+msgid "Display Name"
+msgstr "Nombre a Mostrar"
+
+#. module: payment_retry
+#: model:ir.model.fields.selection,name:payment_retry.selection__account_move__status_in_payment__electronic_pending
+msgid "Electronic payment"
+msgstr "Pago Electrónico"
+
+#. module: payment_retry
+#. odoo-python
+#: code:addons/payment_retry/models/account_move.py:0
+#: model_terms:ir.ui.view,arch_db:payment_retry.electronic_payment_pending_confirm_view_form
+msgid "Electronic payment on course"
+msgstr "Pago electrónico en curso"
+
+#. module: payment_retry
+#: model:ir.actions.server,name:payment_retry.payment_asynchronous_process_ir_actions_server
+msgid "Enviar transacciones de pago"
+msgstr "Enviar transacciones de pago"
+
+#. module: payment_retry
+#. odoo-python
+#: code:addons/payment_retry/models/payment_transaction.py:0
+msgid "Error al enviar request tx id %i: %s"
+msgstr "Error al enviar solicitud tx id %i: %s"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_account_bank_statement_line__has_pending_transaction
+#: model:ir.model.fields,field_description:payment_retry.field_account_move__has_pending_transaction
+msgid "Has Pending Transaction"
+msgstr "Tiene una transacción pendiente"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_account_move__id
+#: model:ir.model.fields,field_description:payment_retry.field_electronic_payment_pending_confirm__id
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction__id
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__id
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__id
+msgid "ID"
+msgstr "ID"
+
+#. module: payment_retry
+#: model_terms:ir.ui.view,arch_db:payment_retry.payment_transaction_retry_view_form
+msgid ""
+"IMPORTANTE! Tener en cuenta que está generando más de 20 transacciones, esto "
+"se realizará de forma asincrónica y puede llegar a demorar el envío de los "
+"pagos"
+msgstr ""
+"IMPORTANTE! Tener en cuenta que está generando más de 20 transacciones, esto "
+"se realizará de forma asincrónica y puede llegar a demorar el envío de los "
+"pagos"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__invoice_id
+msgid "Invoice"
+msgstr "Factura"
+
+#. module: payment_retry
+#: model:ir.model,name:payment_retry.model_account_move
+msgid "Journal Entry"
+msgstr "Asiento Contable"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_electronic_payment_pending_confirm__write_uid
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__write_uid
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__write_uid
+msgid "Last Updated by"
+msgstr "Última modificación por"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_electronic_payment_pending_confirm__write_date
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__write_date
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__write_date
+msgid "Last Updated on"
+msgstr "Última Actualización el"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__line_ids
+msgid "Line"
+msgstr "Línea"
+
+#. module: payment_retry
+#: model_terms:ir.ui.view,arch_db:payment_retry.payment_transaction_retry_view_form
+msgid "Lines"
+msgstr "Líneas"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__message
+msgid "Message"
+msgstr "Mensaje"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_electronic_payment_pending_confirm__move_ids
+msgid "Move"
+msgstr "Asiento"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__partner_id
+msgid "Partner"
+msgstr "Contacto"
+
+#. module: payment_retry
+#. odoo-python
+#: code:addons/payment_retry/wizards/payment_transaction_retry.py:0
+msgid "Partner(s) should have an email address."
+msgstr "Los contactos deben tener una dirección de correo electrónico."
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__payment_token_id
+msgid "Payment Token"
+msgstr "Token de pago"
+
+#. module: payment_retry
+#: model:ir.model,name:payment_retry.model_payment_transaction
+msgid "Payment Transaction"
+msgstr "Transacción de pago"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__percentage
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__percentage
+msgid "Percentage"
+msgstr "Porcentaje"
+
+#. module: payment_retry
+#: model_terms:ir.ui.view,arch_db:payment_retry.payment_transaction_retry_view_form
+msgid "Percentage:"
+msgstr "Porcentaje:"
+
+#. module: payment_retry
+#: model_terms:ir.ui.view,arch_db:payment_retry.electronic_payment_pending_confirm_view_form
+msgid "Register payment anyway"
+msgstr "Registrar el pago de todas formas"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry_lines__retry_id
+msgid "Retry"
+msgstr "Procesar de nuevo"
+
+#. module: payment_retry
+#: model:ir.actions.server,name:payment_retry.action_payment_transaction_retry_wizard
+msgid "Retry payment"
+msgstr "Reintentar el pago"
+
+#. module: payment_retry
+#. odoo-python
+#: code:addons/payment_retry/wizards/payment_transaction_retry.py:0
+msgid "Retry payments"
+msgstr "Reintentar los pagos"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_account_bank_statement_line__status_in_payment
+#: model:ir.model.fields,field_description:payment_retry.field_account_move__status_in_payment
+msgid "Status In Payment"
+msgstr "Estado en pago"
+
+#. module: payment_retry
+#: model:ir.model.fields,help:payment_retry.field_account_bank_statement_line__has_pending_transaction
+#: model:ir.model.fields,help:payment_retry.field_account_move__has_pending_transaction
+msgid ""
+"Technical field to know if there is an electronic payment on course for this "
+"invoice."
+msgstr ""
+"Campo técnico para saber si hay un pago electrónico en curso para esta "
+"factura."
+
+#. module: payment_retry
+#. odoo-python
+#: code:addons/payment_retry/wizards/electronic_payment_pending_confirm.py:0
+msgid ""
+"The payment is being registered manually while the electronic payment %s is "
+"still on course."
+msgstr ""
+"El pago se está registrando manualmente mientras el pago electrónico %s "
+"sigue en curso."
+
+#. module: payment_retry
+#: model_terms:ir.ui.view,arch_db:payment_retry.electronic_payment_pending_confirm_view_form
+msgid ""
+"There is an electronic payment on course for this invoice. If the customer "
+"ends up\n"
+"                        paying it online, that payment will be registered "
+"too and the invoice will be paid twice."
+msgstr ""
+"Existe un pago electrónico en curso para esta factura. Si el cliente "
+"finalmente lo paga en línea, ese pago también se registrará y la factura "
+"quedará pagada dos veces."
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__validate_emails
+msgid "Validate Emails"
+msgstr "Validar correos electrónicos"
+
+#. module: payment_retry
+#. odoo-python
+#: code:addons/payment_retry/wizards/payment_transaction_retry.py:0
+msgid "View Partner(s)"
+msgstr "Ver Contacto(s)"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction_retry__warnings
+msgid "Warnings"
+msgstr "Advertencias"
+
+#. module: payment_retry
+#: model:ir.model.fields,field_description:payment_retry.field_payment_transaction__asynchronous_process
+msgid "asynchronous_process"
+msgstr "asynchronous_process"
+
+#. module: payment_retry
+#. odoo-python
+#: code:addons/payment_retry/wizards/payment_transaction_retry.py:0
+msgid ""
+"odoo: A similar transaction of %.2f %s for %s via %s was created on %s and "
+"is currently in state %s.\n"
+msgstr ""
+"odoo: Una transacción similar de %.2f %s para %s via %s fue creada en %s y "
+"actualmente se encuentra en el estado %s.\n"
+
+#. module: payment_retry
+#: model:ir.model,name:payment_retry.model_payment_transaction_retry
+msgid "payment transaction retry"
+msgstr "Reintento de transacción de pago"
+
+#. module: payment_retry
+#: model:ir.model,name:payment_retry.model_payment_transaction_retry_lines
+msgid "payment transaction retry lines"
+msgstr "Líneas de reintento de transacción de pago"
+
+#. module: payment_retry
+#: model_terms:ir.ui.view,arch_db:payment_retry.payment_transaction_retry_view_form
+msgid "retry"
+msgstr "Reintentar"

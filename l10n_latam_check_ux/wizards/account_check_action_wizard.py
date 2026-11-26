@@ -1,0 +1,133 @@
+##############################################################################
+# For copyright and license notices, see __manifest__.py file in module root
+# directory
+##############################################################################
+from odoo import _, fields, models
+from odoo.exceptions import UserError
+
+
+class AccountCheckActionWizard(models.TransientModel):
+    _name = "account.check.action.wizard"
+    _description = "Account Check Action Wizard"
+
+    date = fields.Date(
+        default=fields.Date.context_today,
+        required=True,
+    )
+
+    def action_confirm(self):
+        """Este método sirve para hacer el débito de cheques con cuenta outstanding desde los payments con método de pago de cheques."""
+        checks = self.env["l10n_latam.check"].browse(self.env.context.get("active_ids", False))
+        if checks.filtered(lambda x: not x.check_add_debit_button):
+            raise UserError(_("At least one check is in a journal where the 'Add Debit Date' option is not enabled."))
+        for check in checks:
+            if self.date < check.payment_id.date:
+                raise UserError(
+                    _("La fecha del débito del cheque %s no puede ser inferior a la fecha de emisión del mismo %s.")
+                    % (self.date, check.payment_id.date)
+                )
+            # Línea del cheque a conciliar.
+            move_line_id = check.outstanding_line_id.ids
+            # Obtenemos la cuenta outstanding del método de pago pentientes "manual" del diario del pago o bien la "Cuenta de pagos pentientes" de la compañía.
+            outstanding_account = self._get_outstanding_account(check)
+            # Obtenemos fecha, importe, pasamos cuenta outstanding y el diario asignado es el mismo que se está editando.
+            label = f"Débito cheque nro {check.name}"
+            new_mv_line_dicts = {
+                "label": label,
+                "amount": abs(sum(check.outstanding_line_id.mapped("balance"))),
+                "account_id": outstanding_account.id,
+                "journal_id": check.original_journal_id.id,
+                "move_line_ids": move_line_id,
+                "date": self.date,
+            }
+            # si existe account.reconcile.wizard (Enterprise)
+            if self.sudo()._has_reconcile_wizard():
+                wizard = (
+                    self.env["account.reconcile.wizard"]
+                    .with_context(active_model="account.move.line", active_ids=move_line_id)
+                    .create(new_mv_line_dicts)
+                )
+                wizard.reconcile()
+                # El label repite el número de cheque, que puede existir en más de una
+                # sucursal: sin el filtro de compañía el link podría apuntar al asiento de otra.
+                debit_move = self.env["account.move"].search(
+                    [
+                        ("line_ids.name", "=", label),
+                        ("date", "=", self.date),
+                        ("company_id", "=", check.company_id.id),
+                    ],
+                    limit=1,
+                )
+            else:
+                amount = abs(sum(check.outstanding_line_id.mapped("balance")))
+                if not amount:
+                    raise UserError(_("No se pudo determinar el importe a debitar para el cheque %s.") % check.name)
+                move_vals = {
+                    "date": self.date,
+                    "journal_id": check.original_journal_id.id,
+                    "ref": label,
+                    "line_ids": [
+                        (
+                            0,
+                            0,
+                            {
+                                "name": label,
+                                "account_id": check.outstanding_line_id.account_id.id,
+                                "debit": amount,
+                                "credit": 0.0,
+                                "partner_id": check.partner_id.id,
+                            },
+                        ),
+                        (
+                            0,
+                            0,
+                            {
+                                "name": label,
+                                "account_id": outstanding_account.id,
+                                "debit": 0.0,
+                                "credit": amount,
+                                "partner_id": check.partner_id.id,
+                            },
+                        ),
+                    ],
+                }
+                debit_move = self.env["account.move"].create(move_vals)
+                debit_move.action_post()
+                lines_to_reconcile = check.outstanding_line_id | debit_move.line_ids.filtered(
+                    lambda l: l.account_id == check.outstanding_line_id.account_id
+                )
+                if lines_to_reconcile and len(lines_to_reconcile) == 2:
+                    lines_to_reconcile.reconcile()
+            if debit_move:
+                check.message_post(
+                    body=f'El cheque nro "{check.name}" ha sido debitado. ' + debit_move._get_html_link()
+                )
+            else:
+                check.message_post(
+                    body=f'El cheque nro "{check.name}" ha sido debitado, pero no se encontró el asiento asociado.'
+                )
+
+    def _has_reconcile_wizard(self):
+        # account.reconcile.wizard only exists with account_accountant (Enterprise)
+        return "account.reconcile.wizard" in self.env
+
+    def _get_outstanding_account(self, check):
+        """Obtenemos la cuenta para hacer el débito de cheques y hacemos las validaciones correspondientes.
+        Siempre necesitamos que se encuentre establecido un método de pago manual en el diario para poder
+        hacer el débito, no vamos a buscar la cuenta outstanding en configuración en caso de que no esté
+        establecido el método de pago manual. Primero buscamos método de pago con code manual y nombre
+        'Manual' y si no lo encuentra buscamos el primer método de pago manual que se creó.
+        """
+        journal = check.original_journal_id
+        journal_manual_payment_method = journal.outbound_payment_method_line_ids.filtered(lambda x: x.code == "manual")
+        if not journal_manual_payment_method:
+            raise UserError(
+                _("No es posible crear un nuevo débito de cheque sin un método de pagos 'manual' en el diario %s.")
+                % (journal.display_name)
+            )
+        # si hay mas de un método de pago con code code manual tratamos de buscar uno con name Manual, si no lo hay usamos el primero
+        if len(journal_manual_payment_method) > 1:
+            if journal_manual_payment_method.filtered(lambda x: x.name == "Manual"):
+                journal_manual_payment_method = journal_manual_payment_method.filtered(lambda x: x.name == "Manual")
+            journal_manual_payment_method = journal_manual_payment_method.sorted()[0]
+        return journal_manual_payment_method.payment_account_id

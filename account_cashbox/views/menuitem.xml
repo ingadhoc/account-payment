@@ -1,0 +1,11 @@
+<odoo>
+    <record id="menu_pop_dashboard" model="ir.ui.menu">
+        <field name="group_ids" eval="[Command.link(ref('account.group_account_invoice'))]"/>
+    </record>
+    <record id="account_internal_transfer.menu_action_account_payments_transfer" model="ir.ui.menu">
+        <field name="group_ids" eval="[Command.link(ref('account.group_account_invoice'))]"/>
+    </record>
+    <record id="account.menu_finance" model="ir.ui.menu">
+        <field name="group_ids" eval="[Command.link(ref('account.group_account_invoice'))]"/>
+    </record>
+</odoo>

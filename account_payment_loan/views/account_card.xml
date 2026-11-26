@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="account_card_form" model="ir.ui.view">
+        <field name="name">account_card.form</field>
+        <field name="model">account.card</field>
+        <field name="inherit_id" ref="card_installment.account_card_form"/>
+        <field name="arch" type="xml">
+            <field name="company_id" position="after">
+                <field name="is_loan"/>
+                <field name="loan_due_method" required="is_loan" invisible="not is_loan"/>
+                <field name="due_day" required="loan_due_method == 'next_day_number'" invisible="not is_loan or loan_due_method == 'create_day'"/>
+            </field>
+            <field name="installment" position="attributes">
+                <attribute name="column_invisible">parent.is_loan</attribute>
+            </field>
+            <field name="bank_discount" position="attributes">
+                <attribute name="column_invisible">parent.is_loan</attribute>
+            </field>
+        </field>
+    </record>
+    <menuitem action="card_installment.action_account_card" id="card_installment.menu_account_card" parent="account.root_payment_menu" sequence="20" />
+    <menuitem action="card_installment.action_card_installment" id="card_installment.menu_account_finacial_plans" parent="account.root_payment_menu" sequence="21" />
+</odoo>

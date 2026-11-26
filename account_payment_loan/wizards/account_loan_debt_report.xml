@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_loan_debt_report_form" model="ir.ui.view">
+        <field name="name">account.loan.debt.report.form</field>
+        <field name="model">account.loan.debt.report</field>
+        <field name="arch" type="xml">
+            <form string="Loan Registration">
+                <sheet>
+                    <group>
+                        <group>
+                            <label for="partner_id" string="Customer"/>
+                            <field name="partner_id" nolabel="1" readonly="True"/>
+                        </group>
+                        <group >
+                            <field name="loan_move_id" nolabel="1" placeholder="Filter loans"  domain="[('id', 'in', available_loan_move_ids), ('loan_move_ids', '=', False)]"/>
+                        </group>
+                    </group>
+                    <group>
+                        <span>
+                            <field name="move_line_ids" invisible="loan_move_id" domain="[('move_id', 'in', available_loan_move_ids),('amount_residual','>', 0)]" widget="many2many_checkboxes"/>
+                            <field name="move_line_ids"
+                                invisible="not loan_move_id"
+                                domain="[('amount_residual','>', 0), ('move_id', 'in', available_loan_move_ids), '|', ('move_id.loan_move_ids', '=', loan_move_id),('move_id', '=', loan_move_id)]"
+                                widget="many2many_checkboxes"/>
+                        </span>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="financial_surchage"/>
+                        </group>
+                        <group>
+                            <field name="amount_to_pay"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Pay selected lines" type="object" name="action_payment_items" class="btn-primary"/>
+                    <button string="refinance loans" type="object" name="action_refinancial_loan"/>
+                    <button string="Debt" type="object" class="link" name="action_set_financial_surcharge"/>
+                    <button string="Cancel" class="link" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

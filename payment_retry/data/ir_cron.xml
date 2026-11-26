@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+    <record id="payment_asynchronous_process" model="ir.cron">
+        <field name="name">Enviar transacciones de pago</field>
+        <field name="model_id" ref="payment.model_payment_transaction"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_asynchronous_process()</field>
+        <field name="interval_number">10</field>
+        <field name="interval_type">minutes</field>
+    </record>
+</odoo>

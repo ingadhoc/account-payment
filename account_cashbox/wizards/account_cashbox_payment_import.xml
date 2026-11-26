@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="cashbox_payment_import_view_form" model="ir.ui.view">
+        <field name="name">cashbox_payment_import.view.form</field>
+        <field name="model">account.cashbox.payment.import</field>
+        <field name="arch" type="xml">
+            <form string="">
+                <sheet>
+                    <field name="cashbox_session_id" invisible="1"/>
+                    <field name="available_journal_ids" invisible="1"/>
+                    <group>
+                        <field name="payment_ids" domain="[('cashbox_session_id','=', False), ('journal_id', 'in', available_journal_ids)]"></field>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_import_payment" type="object" string="Import"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="cashbox_payent_import_action" model="ir.actions.act_window">
+        <field name="name">Import</field>
+        <field name="res_model">account.cashbox.payment.import</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

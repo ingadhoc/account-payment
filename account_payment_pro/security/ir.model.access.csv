@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_account_payment_invoice_wizard,access_account_payment_invoice_wizard,model_account_payment_invoice_wizard,base.group_user,1,1,1,0
+access_account_write_off_type_all,access_account_write_off_type,model_account_write_off_type,base.group_user,1,0,0,0
+access_account_write_off_type_admin,access_account_write_off_type,model_account_write_off_type,account.group_account_manager,1,1,1,1

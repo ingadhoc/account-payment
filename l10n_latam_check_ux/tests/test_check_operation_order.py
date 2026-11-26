@@ -1,0 +1,446 @@
+# © ADHOC SA
+# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+from datetime import timedelta
+
+from odoo import Command, fields
+from odoo.addons.account.tests.common import AccountTestInvoicingCommon
+from odoo.exceptions import ValidationError
+from odoo.tests import tagged
+
+
+@tagged("post_install", "-at_install")
+class TestCheckOperationOrder(AccountTestInvoicingCommon):
+    """El orden de la cadena de operaciones de un cheque lo da la confirmación, no el borrador.
+
+    De ese orden dependen el diario actual del cheque (si sigue en cartera) y el bloqueo para
+    restablecer un pago a borrador. Cuando el orden se deduce de ``create_date``, una orden de pago
+    que estuvo un rato en borrador queda al principio de la cadena aunque se confirme última: el
+    cheque entregado sigue figurando disponible y la OP no se puede corregir (tickets 126339 y
+    126474).
+
+    El setup no usa ``L10nLatamCheckTest``: ese common arma una compañía argentina con
+    ``setup_other_company()``, y sobre una base con ``saas_client_account`` instalado eso choca
+    contra su constraint de moneda-vs-país. Armamos el diario acá, como ya hace
+    ``test_check_payment_journal_entry``.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # Diario de efectivo con cheques de terceros: es el tipo de diario donde el core habilita
+        # estos métodos de pago, y liquidan contra una cuenta puente, no contra la de efectivo.
+        cls.check_journal = cls.env["account.journal"].create(
+            {
+                "name": "Third Party Checks Order",
+                "code": "TPCOR",
+                "type": "cash",
+                "company_id": cls.company_data["company"].id,
+                "inbound_payment_method_line_ids": [
+                    Command.create(
+                        {
+                            "payment_method_id": cls.env.ref(
+                                "l10n_latam_check.account_payment_method_new_third_party_checks"
+                            ).id,
+                            "payment_account_id": cls.inbound_payment_method_line.payment_account_id.id,
+                        }
+                    )
+                ],
+                "outbound_payment_method_line_ids": [
+                    Command.create(
+                        {
+                            "payment_method_id": cls.env.ref(
+                                "l10n_latam_check.account_payment_method_out_third_party_checks"
+                            ).id,
+                            "payment_account_id": cls.outbound_payment_method_line.payment_account_id.id,
+                        }
+                    )
+                ],
+            }
+        )
+        cls.in_check_line = cls.check_journal.inbound_payment_method_line_ids.filtered(
+            lambda line: line.code == "new_third_party_checks"
+        )
+        cls.out_check_line = cls.check_journal.outbound_payment_method_line_ids.filtered(
+            lambda line: line.code == "out_third_party_checks"
+        )
+        # Where the checks are deposited: a check that left the portfolio journal is no longer
+        # available, the same as one handed over to a vendor.
+        cls.deposit_journal = cls.env["account.journal"].create(
+            {
+                "name": "Checks Deposit",
+                "code": "TPCDP",
+                "type": "cash",
+                "company_id": cls.company_data["company"].id,
+                "inbound_payment_method_line_ids": [
+                    Command.create(
+                        {
+                            "payment_method_id": cls.env.ref(
+                                "l10n_latam_check.account_payment_method_in_third_party_checks"
+                            ).id,
+                            "payment_account_id": cls.inbound_payment_method_line.payment_account_id.id,
+                        }
+                    )
+                ],
+            }
+        )
+
+    def _create_receipt(self, check_number="00000101"):
+        """Recibo de cliente donde nace el cheque de terceros."""
+        payment = self.env["account.payment"].create(
+            {
+                "partner_id": self.partner_a.id,
+                "payment_type": "inbound",
+                "journal_id": self.check_journal.id,
+                "payment_method_line_id": self.in_check_line.id,
+                "l10n_latam_new_check_ids": [
+                    Command.create(
+                        {
+                            "name": check_number,
+                            "payment_date": fields.Date.add(fields.Date.today(), months=1),
+                            "amount": 100.0,
+                        }
+                    )
+                ],
+            }
+        )
+        payment.action_post()
+        return payment
+
+    def _create_draft_delivery(self):
+        """Orden de pago a proveedor, todavía sin el cheque cargado."""
+        return self.env["account.payment"].create(
+            {
+                "partner_id": self.partner_a.id,
+                "payment_type": "outbound",
+                "amount": 100.0,
+                "journal_id": self.check_journal.id,
+                "payment_method_line_id": self.out_check_line.id,
+            }
+        )
+
+    def _force_create_date(self, payment, create_date):
+        """``create_date`` no es escribible por ORM y es justamente la variable del caso."""
+        self.env.cr.execute(
+            "UPDATE account_payment SET create_date = %s WHERE id = %s",
+            (create_date, payment.id),
+        )
+        payment.invalidate_recordset(["create_date"])
+
+    def _deliver_check_created_before_the_receipt(self, check_number="00000101"):
+        """Reproduce el flujo reportado: OP en borrador → recibo confirmado → OP confirmada."""
+        delivery = self._create_draft_delivery()
+        self._force_create_date(delivery, "2026-08-25 09:00:00")
+
+        receipt = self._create_receipt(check_number)
+        check = receipt.l10n_latam_new_check_ids
+        self._force_create_date(receipt, "2026-08-25 11:00:00")
+
+        delivery.l10n_latam_move_check_ids = [Command.set(check.ids)]
+        delivery.action_post()
+        return receipt, delivery, check
+
+    def test_delivery_confirmed_last_is_the_last_operation(self):
+        """Confirmar último deja al pago último en la cadena, aunque su borrador sea el más viejo."""
+        receipt, delivery, check = self._deliver_check_created_before_the_receipt("00000101")
+
+        self.assertEqual(
+            check._get_last_operation(),
+            delivery,
+            "La última operación del cheque debe ser la entrega, que fue lo último confirmado.",
+        )
+        self.assertGreaterEqual(
+            delivery.l10n_latam_move_check_ids_operation_date,
+            receipt.l10n_latam_move_check_ids_operation_date,
+            "La entrega se confirmó después del recibo, su fecha de operación no puede ser anterior.",
+        )
+
+    def test_delivered_check_is_not_available_anymore(self):
+        """El síntoma de los tickets: el cheque entregado seguía disponible en la cartera."""
+        __, __, check = self._deliver_check_created_before_the_receipt("00000102")
+
+        self.assertFalse(
+            check.current_journal_id,
+            "El cheque entregado a un proveedor no debe seguir disponible en la cartera.",
+        )
+
+    def test_delivery_can_be_reset_to_draft(self):
+        """El otro síntoma: no dejaba corregir la OP porque la creía anterior al recibo."""
+        __, delivery, __ = self._deliver_check_created_before_the_receipt("00000103")
+
+        delivery.action_draft()
+
+        self.assertEqual(delivery.state, "draft")
+
+    def test_receipt_cannot_be_reset_to_draft_once_delivered(self):
+        """Contracara: con la cadena bien ordenada, el recibo ya no es la última operación.
+
+        Es lo que protege el caso del ticket 123455, donde re-confirmar el recibo lo mandaba al
+        final de la cadena y devolvía el cheque a la cartera.
+        """
+        receipt, __, __ = self._deliver_check_created_before_the_receipt("00000104")
+
+        with self.assertRaisesRegex(ValidationError, "not the last operation"):
+            receipt.action_draft()
+
+    def test_canceled_receipt_can_be_reset_to_draft(self):
+        """A canceled payment leaves its check without confirmed operations, so nothing blocks it."""
+        receipt = self._create_receipt("00000105")
+        receipt.action_cancel()
+        self.assertFalse(receipt.l10n_latam_new_check_ids._get_last_operation())
+
+        receipt.action_draft()
+
+        self.assertEqual(receipt.state, "draft")
+
+    def _deliver_and_cancel(self, check_number):
+        """OP que entrega un cheque de terceros y después se cancela: el cheque vuelve a la cartera."""
+        receipt = self._create_receipt(check_number)
+        check = receipt.l10n_latam_new_check_ids
+        delivery = self._create_draft_delivery()
+        delivery.l10n_latam_move_check_ids = [Command.set(check.ids)]
+        delivery.action_post()
+        delivery.action_draft()
+        delivery.action_cancel()
+        return receipt, delivery, check
+
+    def test_canceled_delivery_can_be_reset_to_draft(self):
+        """The receipt is still the last operation, but it is earlier than the canceled delivery."""
+        receipt, delivery, check = self._deliver_and_cancel("00000112")
+        self.assertEqual(check._get_last_operation(), receipt)
+
+        delivery.action_draft()
+
+        self.assertEqual(delivery.state, "draft")
+
+    def test_canceled_delivery_cannot_be_reset_to_draft_once_the_check_moved_again(self):
+        """A delivery confirmed after the cancellation is later in the chain, so it blocks."""
+        __, delivery, check = self._deliver_and_cancel("00000113")
+        second_delivery = self._create_draft_delivery()
+        second_delivery.l10n_latam_move_check_ids = [Command.set(check.ids)]
+        second_delivery.action_post()
+
+        with self.assertRaisesRegex(ValidationError, "not the last operation"):
+            delivery.action_draft()
+
+    def test_draft_payment_has_no_operation_date(self):
+        """A draft is not an operation yet, so it has no operation date until it is confirmed."""
+        delivery = self._create_draft_delivery()
+
+        self.assertFalse(
+            delivery.l10n_latam_move_check_ids_operation_date,
+            "A payment that was never confirmed should not have an operation date.",
+        )
+
+    def test_operation_date_is_the_confirmation_not_the_creation(self):
+        """The date is when the payment was confirmed, not when someone started loading it."""
+        before_posting = fields.Datetime.now()
+        __, delivery, __ = self._deliver_check_created_before_the_receipt("00000106")
+
+        self.assertGreaterEqual(
+            delivery.l10n_latam_move_check_ids_operation_date,
+            before_posting,
+            "The operation date must be the confirmation, even though create_date is from August.",
+        )
+
+    def test_reconfirming_a_payment_keeps_it_last(self):
+        """Correcting a payment does not reorder the chain, even though the date is rewritten.
+
+        The operation date is recomputed on every confirmation, and that is safe because
+        ``action_draft`` only lets the last operation of the chain go back to draft: whatever is
+        re-confirmed was already the last one.
+        """
+        __, delivery, check = self._deliver_check_created_before_the_receipt("00000107")
+
+        delivery.action_draft()
+        delivery.action_post()
+
+        self.assertEqual(check._get_last_operation(), delivery)
+        self.assertFalse(
+            check.current_journal_id,
+            "Correcting the payment order should not bring the handed over check back.",
+        )
+
+    def test_fixing_an_operation_date_updates_the_current_journal(self):
+        """Reordering the chain has to move the check on its own.
+
+        ``current_journal_id`` is stored and the core only depends on the operations' state, so
+        every correction of a date --a migration script, an import, a manual fix-- left the check
+        in the journal of the operation that was the last one before the fix.
+
+        The core only keeps a journal while the check has more inbound than outbound operations,
+        so the chain is a receipt and an internal transfer to another checks journal.
+        """
+        receipt = self._create_receipt("00000108")
+        check = receipt.l10n_latam_new_check_ids
+        destination_journal = self.env["account.journal"].create(
+            {
+                "name": "Third Party Checks Order Destination",
+                "code": "TPCOD",
+                "type": "cash",
+                "company_id": self.company_data["company"].id,
+                "inbound_payment_method_line_ids": [
+                    Command.create(
+                        {
+                            "payment_method_id": self.env.ref(
+                                "l10n_latam_check.account_payment_method_in_third_party_checks"
+                            ).id,
+                            "payment_account_id": self.inbound_payment_method_line.payment_account_id.id,
+                        }
+                    )
+                ],
+            }
+        )
+        transfer = self.env["account.payment"].create(
+            {
+                "partner_id": self.company_data["company"].partner_id.id,
+                "payment_type": "outbound",
+                "is_internal_transfer": True,
+                "journal_id": self.check_journal.id,
+                "destination_journal_id": destination_journal.id,
+                "payment_method_line_id": self.out_check_line.id,
+                "l10n_latam_move_check_ids": [Command.set(check.ids)],
+                "amount": 100.0,
+            }
+        )
+        transfer.action_post()
+        self.assertEqual(check.current_journal_id, destination_journal)
+
+        # Put the receipt after the transfer: the receipt becomes the last operation again.
+        receipt.l10n_latam_move_check_ids_operation_date = (
+            transfer.paired_internal_transfer_payment_id.l10n_latam_move_check_ids_operation_date
+            + timedelta(seconds=10)
+        )
+
+        self.assertEqual(check._get_last_operation(), receipt)
+        self.assertEqual(
+            check.current_journal_id,
+            self.check_journal,
+            "With the receipt as the last operation the check is back in its journal.",
+        )
+
+    def test_operations_confirmed_in_the_same_second_are_still_ordered(self):
+        """Dos pagos confirmados en el mismo instante igual tienen que quedar ordenados.
+
+        La fecha de operación tiene precisión de segundo, así que dos confirmaciones seguidas
+        compartirían fecha, y el desempate por id sigue el orden de creación: la OP, creada antes,
+        quedaría primera. Confirmar la deja un segundo después de la última operación confirmada.
+        """
+        delivery = self._create_draft_delivery()
+        self._force_create_date(delivery, "2026-08-25 09:00:00")
+
+        receipt = self._create_receipt("00000105")
+        check = receipt.l10n_latam_new_check_ids
+        self._force_create_date(receipt, "2026-08-25 09:00:00")
+
+        delivery.l10n_latam_move_check_ids = [Command.set(check.ids)]
+        delivery.action_post()
+
+        self.assertEqual(check._get_last_operation(), delivery)
+
+    def _deposit(self, check):
+        wizard = (
+            self.env["l10n_latam.payment.mass.transfer"]
+            .with_context(active_model="l10n_latam.check", active_ids=check.ids)
+            .create(
+                {
+                    "payment_date": fields.Date.today(),
+                    "destination_journal_id": self.deposit_journal.id,
+                }
+            )
+        )
+        return wizard._create_payments()
+
+    def test_reposting_a_receipt_keeps_the_deposited_check_out_of_the_portfolio(self):
+        """ "Post Payments" on a receipt that is already confirmed must not undo a later deposit.
+
+        It is the case of the ticket: the receipt went back to the end of the chain and the
+        deposited check showed up again as available.
+        """
+        receipt = self._create_receipt("00000109")
+        check = receipt.l10n_latam_new_check_ids
+        self._deposit(check)
+        self.assertEqual(check.current_journal_id, self.deposit_journal)
+        last_operation = check._get_last_operation()
+        receipt_date = receipt.l10n_latam_move_check_ids_operation_date
+
+        receipt.action_post()
+
+        self.assertEqual(check._get_last_operation(), last_operation)
+        self.assertEqual(check.current_journal_id, self.deposit_journal)
+        self.assertEqual(receipt.l10n_latam_move_check_ids_operation_date, receipt_date)
+
+    def test_reposting_a_receipt_keeps_the_check_delivered(self):
+        """The same with a check handed over to a vendor: it must not come back to the portfolio."""
+        receipt, delivery, check = self._deliver_check_created_before_the_receipt("00000110")
+        receipt_date = receipt.l10n_latam_move_check_ids_operation_date
+
+        receipt.action_post()
+
+        self.assertEqual(check._get_last_operation(), delivery)
+        self.assertFalse(check.current_journal_id)
+        self.assertEqual(receipt.l10n_latam_move_check_ids_operation_date, receipt_date)
+
+    def test_reposting_a_receipt_with_its_entry_in_draft_keeps_the_check_delivered(self):
+        """Whatever happens to the entry, the check must not move."""
+        receipt, delivery, check = self._deliver_check_created_before_the_receipt("00000111")
+        receipt.move_id.button_draft()
+
+        receipt.action_post()
+
+        self.assertEqual(check._get_last_operation(), delivery)
+        self.assertFalse(check.current_journal_id)
+
+    def _register_payment(self, invoice, vals):
+        """Pay from the invoice "Pay" button, which opens the standard wizard without payment_pro."""
+        if "use_payment_pro" in self.env["res.company"]._fields:
+            self.company_data["company"].use_payment_pro = False
+        return (
+            self.env["account.payment.register"]
+            .with_context(active_model="account.move", active_ids=invoice.ids)
+            .create(vals)
+            ._create_payments()
+        )
+
+    def _register_receipt(self, check_number):
+        invoice = self.init_invoice("out_invoice", partner=self.partner_a, amounts=[100.0], post=True)
+        return self._register_payment(
+            invoice,
+            {
+                "journal_id": self.check_journal.id,
+                "payment_method_line_id": self.in_check_line.id,
+                "l10n_latam_new_check_ids": [
+                    Command.create({"name": check_number, "payment_date": fields.Date.today(), "amount": 100.0})
+                ],
+            },
+        )
+
+    def test_check_received_from_the_register_wizard_is_in_its_journal(self):
+        """The wizard creates the payment already in process, so action_post did not set its date."""
+        receipt = self._register_receipt("00000114")
+        check = receipt.l10n_latam_new_check_ids
+
+        self.assertTrue(receipt.l10n_latam_move_check_ids_operation_date)
+        self.assertEqual(check._get_last_operation(), receipt)
+        self.assertEqual(check.current_journal_id, self.check_journal)
+
+    def test_check_delivered_from_the_register_wizard_leaves_the_portfolio(self):
+        """A check handed over from the wizard goes after its receipt in the chain."""
+        receipt = self._register_receipt("00000115")
+        check = receipt.l10n_latam_new_check_ids
+        bill = self.init_invoice("in_invoice", partner=self.partner_a, amounts=[100.0], post=True)
+
+        delivery = self._register_payment(
+            bill,
+            {
+                "journal_id": self.check_journal.id,
+                "payment_method_line_id": self.out_check_line.id,
+                "l10n_latam_move_check_ids": [Command.set(check.ids)],
+            },
+        )
+
+        self.assertGreater(
+            delivery.l10n_latam_move_check_ids_operation_date,
+            receipt.l10n_latam_move_check_ids_operation_date,
+        )
+        self.assertEqual(check._get_last_operation(), delivery)
+        self.assertFalse(check.current_journal_id)

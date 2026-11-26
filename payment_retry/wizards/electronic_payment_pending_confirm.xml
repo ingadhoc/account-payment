@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="electronic_payment_pending_confirm_view_form" model="ir.ui.view">
+        <field name="name">electronic.payment.pending.confirm.view.form</field>
+        <field name="model">electronic.payment.pending.confirm</field>
+        <field name="arch" type="xml">
+            <form string="Electronic payment on course">
+                <field name="move_ids" invisible="1"/>
+                <div class="alert alert-warning mb-0" role="alert">
+                    <p class="mb-0">
+                        There is an electronic payment on course for this invoice. If the customer ends up
+                        paying it online, that payment will be registered too and the invoice will be paid twice.
+                    </p>
+                </div>
+                <footer>
+                    <button name="action_confirm" string="Register payment anyway" type="object" class="btn-primary"/>
+                    <button string="Discard" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

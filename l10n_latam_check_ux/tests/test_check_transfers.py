@@ -1,0 +1,419 @@
+from odoo import Command, fields
+from odoo.addons.account.tests.common import AccountTestInvoicingCommon
+from odoo.exceptions import UserError, ValidationError
+from odoo.tests.common import tagged
+
+
+@tagged("post_install_l10n", "post_install", "-at_install")
+class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.today = fields.Date.today()
+        cls.ar = ar = cls.env.ref("base.ar")
+
+        cls.company = cls.company_data["company"]
+        cls.company_bank_journal = cls.company_data["default_journal_bank"] or cls.env["account.journal"].search(
+            [("company_id", "=", cls.company.id), ("type", "=", "bank")], limit=1
+        )
+        cls.company_journal = cls.env["account.journal"].search(
+            [("company_id", "=", cls.company.id), ("type", "=", "sale")], limit=1
+        )
+        third_party_checks_journals = cls.env["account.journal"].search(
+            [
+                ("company_id", "=", cls.company.id),
+                ("inbound_payment_method_line_ids.code", "=", "in_third_party_checks"),
+                ("inbound_payment_method_line_ids.code", "=", "new_third_party_checks"),
+                (
+                    "outbound_payment_method_line_ids.code",
+                    "in",
+                    ("out_third_party_checks", "return_third_party_checks"),
+                ),
+            ]
+        )
+        if len(third_party_checks_journals) < 2:
+            if len(third_party_checks_journals) == 0:
+                third_party_checks_journals |= cls._create_check_journal("Third Party Checks", "TPC")
+            third_party_checks_journals |= cls._create_check_journal("Rejected Third Party Checks", "RTC")
+
+        cls.third_party_check_journal = third_party_checks_journals[:1]
+        cls.rejected_check_journal = third_party_checks_journals[1:2]
+
+        cls.assertTrue(cls.company_bank_journal.ids, "A bank journal is required to run this test")
+        cls.assertTrue(
+            cls.third_party_check_journal.ids,
+            "Third party check journal was not created so we can run the tests",
+        )
+        cls.assertTrue(
+            cls.rejected_check_journal.ids,
+            "Rejected check journal was not created so we can run the tests",
+        )
+
+        outbound_method_commands = []
+        if not cls.company_bank_journal.outbound_payment_method_line_ids.filtered(
+            lambda method: method.code == "own_checks"
+        ):
+            outbound_method_commands.append(
+                Command.create(
+                    {
+                        "payment_method_id": cls.env.ref("l10n_latam_check.account_payment_method_own_checks").id,
+                        "name": "Own Checks",
+                        "payment_account_id": cls.outbound_payment_method_line.payment_account_id.id,
+                    }
+                )
+            )
+        if not cls.company_bank_journal.outbound_payment_method_line_ids.filtered(
+            lambda method: method.code == "out_third_party_checks"
+        ):
+            outbound_method_commands.append(
+                Command.create(
+                    {
+                        "payment_method_id": cls.env.ref(
+                            "l10n_latam_check.account_payment_method_out_third_party_checks"
+                        ).id,
+                        "name": "Rejected Check",
+                        "payment_account_id": cls.outbound_payment_method_line.payment_account_id.id,
+                    }
+                )
+            )
+        if outbound_method_commands:
+            cls.company_bank_journal.write({"outbound_payment_method_line_ids": outbound_method_commands})
+
+        if "use_payment_pro" in cls.company._fields:
+            cls.company.use_payment_pro = True
+        cls.eur_currency = cls.env["res.currency"].with_context(active_test=False).search([("name", "=", "EUR")])
+        cls.eur_currency.active = True
+        cls.partner_ri = cls.env["res.partner"].create(dict(name="RI Partner", vat="34278580484", country_id=ar.id))
+
+    @classmethod
+    def _create_check_journal(cls, name, code, company=None):
+        inbound_account_id = cls.inbound_payment_method_line.payment_account_id.id
+        outbound_account_id = cls.outbound_payment_method_line.payment_account_id.id
+        return cls.env["account.journal"].create(
+            {
+                "name": name,
+                "code": code,
+                "type": "cash",
+                "company_id": (company or cls.company).id,
+                "inbound_payment_method_line_ids": [
+                    Command.create(
+                        {
+                            "payment_method_id": cls.env.ref(
+                                "l10n_latam_check.account_payment_method_new_third_party_checks"
+                            ).id,
+                            "name": "Receive Third Party Checks",
+                            "payment_account_id": inbound_account_id,
+                        }
+                    ),
+                    Command.create(
+                        {
+                            "payment_method_id": cls.env.ref(
+                                "l10n_latam_check.account_payment_method_in_third_party_checks"
+                            ).id,
+                            "name": "Receive Existing Third Party Checks",
+                            "payment_account_id": inbound_account_id,
+                        }
+                    ),
+                ],
+                "outbound_payment_method_line_ids": [
+                    Command.create(
+                        {
+                            "payment_method_id": cls.env.ref(
+                                "l10n_latam_check.account_payment_method_out_third_party_checks"
+                            ).id,
+                            "name": "Deliver Third Party Checks",
+                            "payment_account_id": outbound_account_id,
+                        }
+                    )
+                ],
+            }
+        )
+
+    def _create_third_party_check(self, journal, check_number):
+        payment = self.env["account.payment"].create(
+            {
+                "partner_id": self.partner_a.id,
+                "payment_type": "inbound",
+                "journal_id": journal.id,
+                "l10n_latam_new_check_ids": [
+                    Command.create(
+                        {
+                            "name": check_number,
+                            "payment_date": fields.Date.add(fields.Date.today(), months=1),
+                            "amount": 100.0,
+                        }
+                    )
+                ],
+                "payment_method_line_id": journal._get_available_payment_method_lines("inbound")
+                .filtered(lambda x: x.code == "new_third_party_checks")[:1]
+                .id,
+            }
+        )
+        payment.action_post()
+        return payment.l10n_latam_new_check_ids
+
+    def _create_branch(self, name="Branch", parent=None):
+        """Sucursal que comparte el plan de cuentas de su padre.
+
+        Las propiedades company dependent del partner hay que setearlas para la sucursal
+        para poder postear pagos en ella.
+        """
+        parent = parent or self.company
+        branch = self.env["res.company"].create({"name": name, "parent_id": parent.id})
+        self.partner_a.with_company(branch).write(
+            {
+                "property_account_receivable_id": self.company_data["default_account_receivable"].id,
+                "property_account_payable_id": self.company_data["default_account_payable"].id,
+            }
+        )
+        branch.transfer_account_id = self.company.transfer_account_id
+        return branch
+
+    def test_deposit_third_party_check_to_bank(self):
+        check = self._create_third_party_check(self.third_party_check_journal, "UX-DEP-0001")
+        bank_journal = self.company_bank_journal
+
+        self.env["l10n_latam.payment.mass.transfer"].with_context(
+            active_model="l10n_latam.check",
+            active_ids=check.ids,
+        ).create(
+            {
+                "destination_journal_id": bank_journal.id,
+            }
+        )._create_payments()
+
+        self.assertEqual(check.current_journal_id, bank_journal)
+
+    def test_check_operations_keep_branch_company_operations(self):
+        """Un cheque puede viajar entre compañías de la misma jerarquía (sucursales).
+
+        Las operaciones de la sucursal de origen tienen que seguir visibles en el historial del
+        cheque después de transferirlo a un diario de la compañía padre.
+        """
+        branch = self._create_branch()
+        self.assertTrue(branch.transfer_account_id, "An internal transfer account is required to run this test")
+        branch_journal = self._create_check_journal("Branch Third Party Checks", "BTPC", company=branch)
+        check = self._create_third_party_check(branch_journal, "UX-BRANCH-0001")
+        receipt = check.payment_id
+
+        # transferring checks between branches is only allowed from the internal transfer menu: the
+        # branch hands the checks over to the parent company
+        transfer = self.env["account.payment"].create(
+            {
+                "partner_id": branch.partner_id.id,
+                "payment_type": "outbound",
+                "is_internal_transfer": True,
+                "journal_id": branch_journal.id,
+                "destination_company_id": self.company.id,
+                "destination_journal_id": self.third_party_check_journal.id,
+                "payment_method_line_id": branch_journal._get_available_payment_method_lines("outbound")
+                .filtered(lambda x: x.code == "out_third_party_checks")[:1]
+                .id,
+                "l10n_latam_move_check_ids": [Command.set(check.ids)],
+                "amount": 100.0,
+            }
+        )
+        transfer.action_post()
+
+        self.assertEqual(check.current_journal_id, self.third_party_check_journal)
+        # the operations of the check live in two companies of the same tree
+        self.assertEqual(receipt.company_id, branch)
+        self.assertEqual(transfer.paired_internal_transfer_payment_id.company_id, self.company)
+
+        visible_operations = self.env["account.payment"].browse(check.button_open_check_operations()["domain"][0][2])
+        self.assertEqual(visible_operations, receipt | check.operation_ids)
+
+    def test_canceled_branch_transfer_returns_the_check_to_the_branch(self):
+        """Cancelar la transferencia de la sucursal a la compañía padre devuelve el cheque a la
+        sucursal: su diario y su compañía."""
+        branch = self._create_branch()
+        branch_journal = self._create_check_journal("Branch Third Party Checks", "BTPC", company=branch)
+        check = self._create_third_party_check(branch_journal, "UX-BRANCH-0002")
+        transfer = self.env["account.payment"].create(
+            {
+                "partner_id": branch.partner_id.id,
+                "payment_type": "outbound",
+                "is_internal_transfer": True,
+                "journal_id": branch_journal.id,
+                "destination_company_id": self.company.id,
+                "destination_journal_id": self.third_party_check_journal.id,
+                "payment_method_line_id": branch_journal._get_available_payment_method_lines("outbound")
+                .filtered(lambda x: x.code == "out_third_party_checks")[:1]
+                .id,
+                "l10n_latam_move_check_ids": [Command.set(check.ids)],
+                "amount": 100.0,
+            }
+        )
+        transfer.action_post()
+        with self.subTest("transferido, el cheque es de la compañía padre"):
+            self.assertEqual(check.company_id, self.company)
+
+        # the inbound leg is the last operation of the check, so the transfer is undone from there
+        paired = transfer.paired_internal_transfer_payment_id
+        paired.action_draft()
+        paired.action_cancel()
+        self.assertEqual((transfer | paired).mapped("state"), ["canceled", "canceled"])
+        with self.subTest("cancelada la transferencia, vuelve a la sucursal"):
+            self.assertEqual(check.current_journal_id, branch_journal)
+            self.assertEqual(check.company_id, branch)
+
+    def test_bank_rejection_receives_in_rejected_journal(self):
+        check = self._create_third_party_check(self.third_party_check_journal, "UX-REJ-0001")
+        bank_journal = self.company_bank_journal
+
+        self.env["l10n_latam.payment.mass.transfer"].with_context(
+            active_model="l10n_latam.check",
+            active_ids=check.ids,
+        ).create(
+            {
+                "destination_journal_id": bank_journal.id,
+            }
+        )._create_payments()
+
+        self.env["l10n_latam.payment.mass.transfer"].with_context(
+            active_model="l10n_latam.check",
+            active_ids=check.ids,
+        ).create(
+            {
+                "destination_journal_id": self.rejected_check_journal.id,
+            }
+        )._create_payments()
+
+        last_operation = check._get_last_operation()
+        self.assertEqual(check.current_journal_id, self.rejected_check_journal)
+        self.assertEqual(last_operation.payment_type, "inbound")
+        self.assertEqual(last_operation.payment_method_line_id.code, "in_third_party_checks")
+
+    def test_internal_transfer_own_checks_bank_to_cash(self):
+        bank_journal = self.company_bank_journal
+        cash_journal = self.env["account.journal"].search(
+            [
+                ("company_id", "=", bank_journal.company_id.id),
+                ("type", "=", "cash"),
+            ],
+            limit=1,
+        )
+        self.assertTrue(cash_journal, "A cash journal is required to run this test")
+
+        own_checks_method = bank_journal._get_available_payment_method_lines("outbound").filtered(
+            lambda x: x.code == "own_checks"
+        )[:1]
+        self.assertTrue(own_checks_method, "Bank journal must have own_checks payment method")
+
+        payment = self.env["account.payment"].create(
+            {
+                "partner_id": self.partner_ri.id,
+                "payment_type": "outbound",
+                "journal_id": bank_journal.id,
+                "destination_journal_id": cash_journal.id,
+                "is_internal_transfer": True,
+                "payment_method_line_id": own_checks_method.id,
+                "l10n_latam_new_check_ids": [
+                    Command.create(
+                        {
+                            "payment_date": fields.Date.add(fields.Date.today(), months=1),
+                            "amount": 250.0,
+                        }
+                    )
+                ],
+            }
+        )
+        payment.action_post()
+
+        self.assertEqual(payment.payment_method_line_id.code, "own_checks")
+        self.assertTrue(payment.paired_internal_transfer_payment_id)
+        self.assertEqual(payment.paired_internal_transfer_payment_id.journal_id, cash_journal)
+
+    def test_inbound_internal_transfer_rejects_checks_from_other_current_journal(self):
+        check_on_hand = self._create_third_party_check(self.third_party_check_journal, "UX-MIX-0001")
+        check_rejected = self._create_third_party_check(self.rejected_check_journal, "UX-MIX-0002")
+
+        payment_method_in = self.rejected_check_journal._get_available_payment_method_lines("inbound").filtered(
+            lambda x: x.code == "in_third_party_checks"
+        )[:1]
+
+        with self.assertRaisesRegex(ValidationError, "All selected checks must belong to the source journal"):
+            self.env["account.payment"].create(
+                {
+                    "partner_id": self.partner_ri.id,
+                    "payment_type": "inbound",
+                    "is_internal_transfer": True,
+                    "journal_id": self.rejected_check_journal.id,
+                    "destination_journal_id": self.third_party_check_journal.id,
+                    "payment_method_line_id": payment_method_in.id,
+                    "l10n_latam_move_check_ids": [Command.set((check_on_hand | check_rejected).ids)],
+                    "amount": 200.0,
+                }
+            )
+
+    def test_reject_wizard_requires_a_journal_of_the_check_company(self):
+        """Rechazar contra un diario de otra compañía migraría el cheque de compañía.
+
+        `check_company` no lo frena porque en branches Odoo acepta registros de la compañía
+        padre sobre una hija, así que la validación tiene que ser explícita.
+        """
+        check = self._create_third_party_check(self.third_party_check_journal, "UX-REJ-COMP-0001")
+        self.env["l10n_latam.payment.mass.transfer"].with_context(
+            active_model="l10n_latam.check",
+            active_ids=check.ids,
+        ).create({"destination_journal_id": self.company_bank_journal.id})._create_payments()
+
+        branch = self._create_branch()
+        branch_rejected_journal = self._create_check_journal("Branch Rejected Checks", "BRJC", company=branch)
+
+        wizard = (
+            self.env["account.check.reject.wizard"]
+            .with_context(active_model="l10n_latam.check", active_ids=check.ids)
+            .create({"rejected_journal_id": branch_rejected_journal.id})
+        )
+
+        self.assertEqual(wizard.company_id, self.company)
+        with self.assertRaisesRegex(UserError, "belongs to"):
+            wizard.action_confirm()
+
+    def test_partner_check_credit_includes_branch_checks(self):
+        """El crédito por cheques tiene que abarcar el árbol de compañías, como el de core.
+
+        `_credit_debit_get` de core agrega los apuntes con `child_of` sobre la raíz, así que
+        sumar los cheques de una sola compañía deja el total inconsistente: la casa central ve
+        las facturas de la sucursal pero no sus cheques.
+        """
+        branch = self._create_branch()
+        branch_journal = self._create_check_journal("Branch Third Party Checks", "BTPC1", company=branch)
+        self._create_third_party_check(branch_journal, "UX-CREDIT-0001")
+
+        partner_from_parent = self.partner_a.with_company(self.company)
+        partner_from_parent.add_check_credit = False
+        credit_without_checks = partner_from_parent.credit
+        partner_from_parent.add_check_credit = True
+
+        self.assertEqual(partner_from_parent.credit - credit_without_checks, 100.0)
+
+    def test_mass_transfer_destination_domain_reaches_the_root_company(self):
+        """El dominio del diario destino se arma sobre la raíz, no sobre el padre inmediato.
+
+        Con una jerarquía de más de dos niveles, `parent_id` se queda en la compañía
+        intermedia y deja afuera del dominio a la casa central y a las otras ramas.
+        """
+        branch = self._create_branch()
+        sub_branch = self._create_branch(name="Sub branch", parent=branch)
+        sub_branch_journal = self._create_check_journal("Sub Branch Checks", "SBC", company=sub_branch)
+        check = self._create_third_party_check(sub_branch_journal, "UX-ROOT-0001")
+
+        wizard = (
+            self.env["l10n_latam.payment.mass.transfer"]
+            .with_context(active_model="l10n_latam.check", active_ids=check.ids)
+            .create({})
+        )
+
+        self.assertEqual(wizard.main_company_id, self.company)
+
+    def test_mass_transfer_view_exposes_the_fields_of_the_destination_domain(self):
+        """El desplegable del diario destino queda vacío si la vista no trae `main_company_id`.
+
+        El dominio de `destination_journal_id` lo lee, y el cliente web evalúa los dominios solo
+        con los campos que la vista carga: sin el campo, `main_company_id` es False, el `child_of`
+        no matchea ninguna compañía y el usuario no puede elegir ningún diario.
+        """
+        view = self.env["l10n_latam.payment.mass.transfer"].get_view()
+        self.assertIn("main_company_id", view["models"]["l10n_latam.payment.mass.transfer"])

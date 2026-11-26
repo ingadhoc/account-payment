@@ -1,0 +1,67 @@
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
+
+
+class L10nLatamPaymentMassTransfer(models.TransientModel):
+    _inherit = "l10n_latam.payment.mass.transfer"
+
+    cashbox_session_id = fields.Many2one(
+        "account.cashbox.session",
+        string="POP Session",
+        store=True,
+        compute="_compute_cashbox_session_id",
+        readonly=False,
+    )
+    requiere_account_cashbox_session = fields.Boolean(
+        compute="_compute_requiere_account_cashbox_session",
+        compute_sudo=False,
+    )
+    cashbox_session_ids_domain = fields.Binary(compute="_compute_cashbox_session_ids_domain")
+
+    @api.depends_context("uid")
+    # dummy depends para que se compute(no estamos seguros porque solo con el depends_context no computa)
+    @api.depends("destination_journal_id")
+    def _compute_requiere_account_cashbox_session(self):
+        self.requiere_account_cashbox_session = self.env.user.requiere_account_cashbox_session
+
+    @api.depends("destination_journal_id")
+    def _compute_cashbox_session_id(self):
+        for rec in self:
+            session_ids = (
+                self.env["account.cashbox.session"]
+                .search([("state", "=", "opened"), "|", ("user_ids", "=", self.env.uid), ("user_ids", "=", False)])
+                .filtered(lambda x: rec.destination_journal_id in x.cashbox_id.journal_ids)
+            )
+            if rec.cashbox_session_id in session_ids:
+                # keep the choice of the user while it is still a valid session
+                continue
+            if len(session_ids) == 1:
+                rec.cashbox_session_id = session_ids.id
+            else:
+                rec.cashbox_session_id = False
+
+    def _create_payments(self):
+        self.ensure_one()
+        if self.env.user.requiere_account_cashbox_session and not self.cashbox_session_id:
+            raise UserError(_("Your user requires to use payment session on each tranfer"))
+        # Envio el contexto  paired_transfer en True para poder crear la
+        # transferencia son cashbox durante la creacion y setearla sobre
+        # la primera y no la paires
+        payments = super(L10nLatamPaymentMassTransfer, self.with_context(paired_transfer=True))._create_payments()
+        payments.cashbox_session_id = self.cashbox_session_id.id
+        return payments
+
+    @api.depends("destination_journal_id", "company_id")
+    @api.depends_context("uid")
+    def _compute_cashbox_session_ids_domain(self):
+        for rec in self:
+            cashbox_ids = self.env["account.cashbox"].search([("journal_ids", "in", rec.destination_journal_id.ids)])
+            session_ids = cashbox_ids.mapped("current_concurrent_session_ids").ids
+            rec.cashbox_session_ids_domain = [
+                ("state", "=", "opened"),
+                ("company_id", "=", rec.company_id.id),
+                ("id", "in", session_ids),
+                "|",
+                ("user_ids", "=", self.env.uid),
+                ("user_ids", "=", False),
+            ]

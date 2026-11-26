@@ -1,0 +1,13 @@
+<odoo>
+
+    <record id="view_move_form_cashbox_inherit" model="ir.ui.view">
+        <field name="name">account.move.form.cashbox.inherit</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='ref']" position="before">
+                <field name="cashbox_session_id" invisible="not cashbox_session_id or move_type != 'entry'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

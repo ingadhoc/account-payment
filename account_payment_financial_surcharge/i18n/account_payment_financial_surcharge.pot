@@ -1,0 +1,107 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_payment_financial_surcharge
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-25 17:16+0000\n"
+"PO-Revision-Date: 2025-11-25 17:16+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: account_payment_financial_surcharge
+#: model_terms:ir.ui.view,arch_db:account_payment_financial_surcharge.res_config_settings_view_form
+msgid ""
+"<span class=\"fa fa-lg fa-building-o\" title=\"Values set here are company-"
+"specific.\"/>"
+msgstr ""
+
+#. module: account_payment_financial_surcharge
+#: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_payment__card_id
+msgid "Card"
+msgstr ""
+
+#. module: account_payment_financial_surcharge
+#: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_payment__available_card_ids
+#: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_payment_method_line__available_card_ids
+msgid "Cards"
+msgstr ""
+
+#. module: account_payment_financial_surcharge
+#: model:ir.model,name:account_payment_financial_surcharge.model_res_config_settings
+msgid "Config Settings"
+msgstr ""
+
+#. module: account_payment_financial_surcharge
+#: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_move_line__display_name
+#: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_payment__display_name
+#: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_payment_method_line__display_name
+#: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_res_config_settings__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: account_payment_financial_surcharge
+#: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_payment__financing_surcharge
+msgid "Financing Surcharge"
+msgstr ""
+
+#. module: account_payment_financial_surcharge
+#: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_move_line__id
+#: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_payment__id
+#: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_payment_method_line__id
+#: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_res_config_settings__id
+msgid "ID"
+msgstr ""
+
+#. module: account_payment_financial_surcharge
+#: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_payment__installment_id
+msgid "Installment plan"
+msgstr ""
+
+#. module: account_payment_financial_surcharge
+#: model:ir.model,name:account_payment_financial_surcharge.model_account_move_line
+msgid "Journal Item"
+msgstr ""
+
+#. module: account_payment_financial_surcharge
+#: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_account_payment__net_amount
+msgid "Net Amount"
+msgstr ""
+
+#. module: account_payment_financial_surcharge
+#: model:ir.model,name:account_payment_financial_surcharge.model_account_payment_method_line
+msgid "Payment Methods"
+msgstr ""
+
+#. module: account_payment_financial_surcharge
+#: model:ir.model,name:account_payment_financial_surcharge.model_account_payment
+msgid "Payments"
+msgstr ""
+
+#. module: account_payment_financial_surcharge
+#: model:ir.model.fields,field_description:account_payment_financial_surcharge.field_res_config_settings__product_surcharge_id
+msgid "Product for use in financial surcharge"
+msgstr ""
+
+#. module: account_payment_financial_surcharge
+#: model_terms:ir.ui.view,arch_db:account_payment_financial_surcharge.res_config_settings_view_form
+msgid "Product to use in financing plans"
+msgstr ""
+
+#. module: account_payment_financial_surcharge
+#: model_terms:ir.ui.view,arch_db:account_payment_financial_surcharge.res_config_settings_view_form
+msgid ""
+"Select a product that will be used when applying a financing plan in "
+"payments."
+msgstr ""
+
+#. module: account_payment_financial_surcharge
+#: model_terms:ir.ui.view,arch_db:account_payment_financial_surcharge.view_account_payment_form
+msgid "Surcharge"
+msgstr ""

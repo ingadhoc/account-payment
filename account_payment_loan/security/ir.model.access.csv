@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_account_loan_register,access.account.loan.register,model_account_loan_register,account.group_account_invoice,1,1,1,0
+access_account_loan_debt_report,access.account.loan.register,model_account_loan_debt_report,account.group_account_invoice,1,1,1,0
+access_account_loan_extra_charges,access.account.extra.charges,model_account_loan_extra_charges,account.group_account_invoice,1,1,1,0

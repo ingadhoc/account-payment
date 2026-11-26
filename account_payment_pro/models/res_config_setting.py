@@ -1,0 +1,27 @@
+from odoo import fields, models
+
+
+class ResConfigSettings(models.TransientModel):
+    _inherit = "res.config.settings"
+
+    use_payment_pro = fields.Boolean(
+        related="company_id.use_payment_pro",
+        readonly=False,
+    )
+
+    payment_receipt_full_ref = fields.Boolean(
+        related="company_id.payment_receipt_full_ref",
+        readonly=False,
+    )
+
+    group_pay_now_customer_invoices = fields.Boolean(
+        "Allow pay now on customer invoices?",
+        implied_group="account_payment_pro.group_pay_now_customer_invoices",
+    )
+    group_pay_now_vendor_invoices = fields.Boolean(
+        "Allow pay now on vendor invoices?",
+        help="Allow users to choose a payment journal on invoices so that "
+        "invoice is automatically paid after invoice validation. A payment "
+        "will be created using choosen journal",
+        implied_group="account_payment_pro.group_pay_now_vendor_invoices",
+    )

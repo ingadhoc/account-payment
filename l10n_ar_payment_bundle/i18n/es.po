@@ -1,0 +1,465 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* l10n_ar_payment_bundle
+#
+# Translators:
+# ADHOC - Bot <transbot@adhoc.com.ar>, 2025
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-15 15:38+0000\n"
+"PO-Revision-Date: 2026-04-23 18:41+0000\n"
+"Last-Translator: julia elizondo <jue@adhoc.inc>\n"
+"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
+"payment-19-0/account-payment-19-0-l10n_ar_payment_bundle/es/>\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == "
+"0) ? 1 : 2);\n"
+"X-Generator: Weblate 5.10.4\n"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model,name:l10n_ar_payment_bundle.model_account_chart_template
+msgid "Account Chart Template"
+msgstr "Plantilla de plan de cuentas"
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
+msgid "Amount"
+msgstr "Monto"
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
+msgid "Amount (DC)"
+msgstr "Importe (Moneda deuda)"
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
+msgid "Amount (JC)"
+msgstr "Importe (MD)"
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
+msgid "Amount in Debt Currency"
+msgstr "Importe en moneda de la deuda"
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
+msgid "Amount on journal currency"
+msgstr "Importe en moneda del diario"
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_payment_rename_wizard_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model,name:l10n_ar_payment_bundle.model_l10n_latam_payment_mass_transfer
+msgid "Checks Mass Transfers"
+msgstr ""
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model,name:l10n_ar_payment_bundle.model_res_company
+msgid "Companies"
+msgstr "Empresas"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__counterpart_currency_id
+msgid "Counterpart Currency"
+msgstr "Moneda de Imputación"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__current_name
+msgid "Current Name"
+msgstr "Nombre Actual"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__partner_id
+msgid "Customer/Vendor"
+msgstr "Cliente/Proveedor"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_l10n_latam_payment_mass_transfer__destination_journal_id
+msgid "Destination Journal"
+msgstr ""
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_l10n_latam_payment_mass_transfer__destination_journal_domain
+msgid "Destination Journal Domain"
+msgstr ""
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_chart_template__display_name
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_journal__display_name
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_move_line__display_name
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__display_name
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment_method__display_name
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment_register__display_name
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_resequence_wizard__display_name
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_l10n_latam_payment_mass_transfer__display_name
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__display_name
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_res_company__display_name
+msgid "Display Name"
+msgstr "Nombre para mostrar"
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_payment_rename_wizard_form
+msgid "Enter new payment name..."
+msgstr "Ingresar nuevo nombre del pago..."
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_chart_template__id
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_journal__id
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_move_line__id
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__id
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment_method__id
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment_register__id
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_resequence_wizard__id
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_l10n_latam_payment_mass_transfer__id
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__id
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_res_company__id
+msgid "ID"
+msgstr "ID"
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_from_bundle_form
+msgid ""
+"IMPORTANT: Linked draft validation must be done from main receipt. Draft "
+"validation of a linked payment is only used for corrections and advanced use "
+"cases. Are you sure you want to continue?"
+msgstr ""
+"IMPORTANTE: La validación del borrador vinculado debe realizarse desde el "
+"recibo principal. La validación del borrador de un pago vinculado solo se "
+"utiliza para correcciones y casos de uso avanzados. ¿Seguro que desea "
+"continuar?"
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
+msgid ""
+"IMPORTANT: Linked payment validation must be done from main receipt. Manual "
+"validation of a linked payment is only used for corrections and advanced use "
+"cases. Are you sure you want to continue?"
+msgstr ""
+"IMPORTANTE: La validación de un pago vinculado debe realizarse desde el "
+"recibo principal. La validación manual de un pago vinculado solo se utiliza "
+"para correcciones y casos de uso avanzados. ¿Seguro que desea continuar?"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__is_main_payment
+msgid "Is Main Payment"
+msgstr "Es pago principal"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model,name:l10n_ar_payment_bundle.model_account_journal
+msgid "Journal"
+msgstr "Diario"
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_move_bundle_list
+msgid "Journal Entries"
+msgstr ""
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
+msgid "Journal Entry"
+msgstr "Asiento Contable"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model,name:l10n_ar_payment_bundle.model_account_move_line
+msgid "Journal Item"
+msgstr ""
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__write_uid
+msgid "Last Updated by"
+msgstr "Última vez editado por"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__write_date
+msgid "Last Updated on"
+msgstr "Última vez editado el"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__link_payment_ids
+msgid "Link Payment"
+msgstr "Pago vinculado"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__link_payments_total
+msgid "Link Payments Total"
+msgstr "Total de pagos vinculados"
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_search_bundle
+msgid "Linked Payments"
+msgstr "Pagos vinculados"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__main_payment_id
+msgid "Main Payment"
+msgstr "Pago principal"
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_search_bundle
+msgid "Main Payments"
+msgstr "Pagos principales"
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/models/account_chart_template.py:0
+msgid "Multiple payments"
+msgstr "Pagos múltiples"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__new_name
+msgid "New Name"
+msgstr "Nuevo Nombre"
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_move_bundle_list
+msgid "Number"
+msgstr ""
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
+msgid "Paid Bills"
+msgstr "Facturas pagadas"
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
+msgid "Paid Invoices"
+msgstr "Facturas pagadas"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model,name:l10n_ar_payment_bundle.model_account_payment_register
+msgid "Pay"
+msgstr "Pagar"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_payment_rename_wizard__payment_id
+msgid "Payment"
+msgstr "Pago"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model,name:l10n_ar_payment_bundle.model_account_payment_method
+msgid "Payment Methods"
+msgstr "Métodos de Pago"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.actions.report,name:l10n_ar_payment_bundle.action_report_receipt_bundle
+msgid "Payment Receipt bundled"
+msgstr "Recibo de Pago agrupado"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model,name:l10n_ar_payment_bundle.model_payment_rename_wizard
+msgid "Payment Rename Wizard"
+msgstr "Asistente para Renombrar Pago"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__payment_total
+msgid "Payment Total"
+msgstr "Total Pago"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__payment_total_signed
+msgid "Payment Total (signed)"
+msgstr ""
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/models/account_journal.py:0
+msgid ""
+"Payment bundle method requires Payment PRO to be enabled in the company "
+"configuration."
+msgstr ""
+"El método de pago agrupado requiere que Payment PRO esté habilitado en la "
+"configuración de la compañía."
+
+#. module: l10n_ar_payment_bundle
+#: model:account.payment.method,name:l10n_ar_payment_bundle.account_payment_in_payment_bundle
+#: model:account.payment.method,name:l10n_ar_payment_bundle.account_payment_out_payment_bundle
+msgid "Payment multiple"
+msgstr "Pago Múltiple"
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/wizard/payment_rename.py:0
+msgid "Payment name changed from '%s' to '%s'"
+msgstr "El nombre del pago cambió de '%s' a '%s'"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model,name:l10n_ar_payment_bundle.model_account_payment
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
+msgid "Payments"
+msgstr "Pagos"
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
+msgid "Payments Amount"
+msgstr "Importe de Pagos"
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/wizard/payment_rename.py:0
+msgid "Please enter a new name for the payment."
+msgstr "Por favor ingrese un nuevo nombre para el pago."
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model,name:l10n_ar_payment_bundle.model_account_resequence_wizard
+msgid "Remake the sequence of Journal Entries."
+msgstr "Rehaga la secuencia de los asientos contables."
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_payment_rename_wizard_form
+msgid "Rename"
+msgstr "Renombrar"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.actions.act_window,name:l10n_ar_payment_bundle.action_payment_rename_wizard
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_payment_rename_wizard_form
+msgid "Rename Payment"
+msgstr "Renombrar Pago"
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_form
+msgid "Reset To Draft"
+msgstr "Restablecer a borrador"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__show_move_button
+msgid "Show Move Button"
+msgstr "Mostrar botón Mover"
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
+msgid ""
+"The counterpart currency of a linked payment must match the main payment's "
+"counterpart currency."
+msgstr ""
+"La moneda de contrapartida de un pago vinculado debe coincidir con la moneda "
+"de contrapartida del pago principal."
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
+msgid "The main payment and linked payment must belong to the same company."
+msgstr ""
+"El pago principal y el pago vinculado deben pertenecer a la misma compañía."
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
+msgid "The main payment and linked payments must belong to the same company."
+msgstr ""
+"El pago principal y los pagos vinculados deben pertenecer a la misma "
+"compañía."
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
+msgid ""
+"The main payment must have a name before a linked payment can be posted."
+msgstr ""
+"El pago principal debe tener un nombre para que se pueda publicar un pago "
+"vinculado."
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
+msgid "The payment bundle amount always must be Zero"
+msgstr "El importe del pago principal siempre debe ser cero"
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
+msgid ""
+"The payment type of the main payment differs from one or more linked "
+"payments. Note that the main payment type only impacts withholdings and "
+"write-offs."
+msgstr ""
+"El tipo de pago del pago principal difiere de uno o más pagos vinculados. "
+"Tenga en cuenta que el tipo de pago principal solo afecta a las Retenciones "
+"y a los Ajustes."
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,help:l10n_ar_payment_bundle.field_account_payment__to_pay_move_line_ids
+msgid "This lines are the ones the user has selected to be paid."
+msgstr "Estas líneas son las que el usuario ha seleccionado para pagar"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__to_pay_move_line_ids
+msgid "To Pay Lines"
+msgstr "Líneas a Pagar"
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_move_bundle_list
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_custom_list
+msgid "Total"
+msgstr "Total"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment_register__use_payment_pro
+msgid "Use Payment Pro"
+msgstr "Usar Payment Pro"
+
+#. module: l10n_ar_payment_bundle
+#: model_terms:ir.ui.view,arch_db:l10n_ar_payment_bundle.view_account_payment_from_bundle_form
+msgid ""
+"WARNING: Validating a linked payment directly is intended only for "
+"corrections or advanced scenarios. It is recommended to validate linked "
+"payments through the main receipt. Do you want to proceed?"
+msgstr ""
+"ADVERTENCIA: La validación directa de un pago vinculado solo se utiliza para "
+"correcciones o casos de uso avanzados. Se recomienda validar los pagos "
+"vinculados a través del recibo principal. ¿Desea continuar?"
+
+#. module: l10n_ar_payment_bundle
+#: model:ir.model.fields,field_description:l10n_ar_payment_bundle.field_account_payment__warnings
+msgid "Warnings"
+msgstr "Advertencias"
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/models/account_journal.py:0
+msgid ""
+"You cannot assign a currency to journals that use the payment bundle payment "
+"method."
+msgstr ""
+"No puede asignar una Moneda a los diarios que utilizan el método de pago de "
+"Múltiples Pagos."
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/wizard/account_resequence.py:0
+msgid ""
+"You cannot resequence moves linked to a bundle payment. Please resequence "
+"the payment instead."
+msgstr ""
+"No puede resecuenciar movimientos vinculados a un pago múltiple. Por favor "
+"resecuencie el pago en su lugar."
+
+#. module: l10n_ar_payment_bundle
+#. odoo-python
+#: code:addons/l10n_ar_payment_bundle/models/account_payment.py:0
+msgid "id"
+msgstr ""

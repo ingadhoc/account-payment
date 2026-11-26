@@ -1,0 +1,43 @@
+from odoo import _, api, models
+from odoo.exceptions import UserError
+
+
+class AccountMove(models.Model):
+    _inherit = "account.move"
+
+    def button_cancel(self):
+        """Release the own checks of the canceled entries: reset to draft keeps them linked."""
+        res = super().button_cancel()
+        self.origin_payment_id.l10n_latam_new_check_ids.filtered(
+            lambda check: check.payment_method_code == "own_checks" and check.outstanding_line_id.move_id in self
+        ).write({"outstanding_line_id": False})
+        return res
+
+    @api.ondelete(at_uninstall=False)
+    def _unlink_except_confirmed_check_payment(self):
+        """No dejar borrar el asiento de un pago con cheques mientras el pago sigue confirmado.
+
+        Si se borra el asiento y se vuelve a postear el pago (account_ux regenera el asiento que
+        falta), el cheque queda con el diario actual equivocado: ``current_journal_id`` se computa
+        con la última operación del cheque ordenada por ``(date, write_date, id)``, y el repost
+        manda al final el ``write_date`` de la operación reposteada, así que una recepción vieja
+        pasa a tapar la transferencia posterior. Para ajustar el asiento hay que restablecer el
+        pago a borrador, que es el camino que recomputa las operaciones del cheque.
+
+        Igual que en los ondelete de core, ``force_delete`` sigue siendo la salida programática
+        (por ejemplo el borrado del asiento en borrador que hace ``account.payment.action_cancel``).
+        """
+        if self.env.context.get("force_delete"):
+            return
+        payments = self.origin_payment_id.filtered(
+            lambda payment: payment._is_latam_check_payment() and payment.state not in ("draft", "canceled")
+        )
+        if payments:
+            raise UserError(
+                _(
+                    "You cannot delete the journal entry of a payment with checks while the payment is confirmed. "
+                    "If you need to adjust the journal entry, reset the payment to draft first.\n"
+                    "Payments:\n%s",
+                    "\n".join("* %s" % payment.display_name for payment in payments),
+                )
+            )

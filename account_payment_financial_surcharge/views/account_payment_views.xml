@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_payment_form" model="ir.ui.view">
+        <field name="name">account.payment.form</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="arch" type="xml">
+            <field name="payment_method_line_id" position="after">
+                <label for="card_id" invisible="not available_card_ids or payment_type != 'inbound'"/>
+                <div class="o_row" invisible="not available_card_ids or payment_type != 'inbound'">
+                    <field
+                        name="card_id"
+                        options="{'no_create': True, 'no_open': True}"
+                        domain="[('id', 'in', available_card_ids)]"
+                        required="available_card_ids and payment_type == 'inbound'"
+                        readonly= "state != 'draft'"
+                    />
+                    <field
+                        name="installment_id"
+                        options="{'no_create': True, 'no_open': True}"
+                        domain="[('card_id', '=', card_id)]"
+                        required="card_id and payment_type =='inbound'"
+                        readonly= "state != 'draft'"
+                    />
+                </div>
+
+                <label for="net_amount" invisible="not financing_surcharge"/>
+                <div invisible="not financing_surcharge" class="row">
+                    <field name="net_amount" class="oe_inline"/>
+                    <span invisible="state != 'draft'" class="oe_inline text-muted"> (<label for="financing_surcharge" string="Surcharge"/> <field name="financing_surcharge" class="oe_inline"/>)</span>
+                </div>
+
+            </field>
+        </field>
+    </record>
+
+</odoo>

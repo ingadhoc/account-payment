@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_l10n_latam_payment_mass_transfer_form" model="ir.ui.view">
+        <field name="name">l10n_latam.payment.mass.transfer.form</field>
+        <field name="model">l10n_latam.payment.mass.transfer</field>
+        <field name="inherit_id" ref="l10n_latam_check.view_l10n_latam_payment_mass_transfer_form"/>
+        <field name="arch" type="xml">
+            <field name="destination_journal_id" position="after">
+                <field name="cashbox_session_ids_domain" invisible="1"/>
+                <field name="requiere_account_cashbox_session" invisible="1"/>
+                <!-- filtramos por usuario para que a los admin solo les aparezcan en donde estan involucrados. Total siendo admin se pueden agregar en la que quieran -->
+                <field
+                    name="cashbox_session_id"
+                    domain="cashbox_session_ids_domain"
+                    required="requiere_account_cashbox_session"/>
+            </field>
+        </field>
+    </record>
+</odoo>

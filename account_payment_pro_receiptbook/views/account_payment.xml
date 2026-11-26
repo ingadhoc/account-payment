@@ -1,0 +1,12 @@
+<odoo>
+    <record id="view_account_payment_form" model="ir.ui.view">
+        <field name="name">account.payment.form</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="arch" type="xml">
+            <field name="memo" position="after">
+                <field name="receiptbook_id" invisible="is_internal_transfer or not use_payment_pro" readonly="state != 'draft'" required="state == 'draft'" options='{"no_create": True}'/>
+            </field>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,3 @@
+id,sequence,code,name,report_name,internal_type,doc_code_prefix
+dc_recibo_x,780,,RECIBOS X,RECIBO,customer_payment,RE-X
+dc_orden_pago_x,800,,ORDEN DE PAGO X,ORDEN DE PAGO,supplier_payment,OP-X

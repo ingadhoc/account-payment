@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="payment_transaction_retry_view_form" model="ir.ui.view">
+        <field name="name">payment_transaction_retry.view.form</field>
+        <field name="model">payment.transaction.retry</field>
+        <field name="arch" type="xml">
+            <form string="retry">
+                <div class="m-0" name="warnings" invisible="not warnings">
+                    <field name="warnings" class="o_field_html" widget="actionable_errors"/>
+                </div>
+                <sheet>
+
+                    <div class="oe_right">
+                        <label for='percentage' string="Percentage:" class="col-4"/>
+                        <field name="percentage" class="col-2"/> %
+                    </div>
+                    <field colspan="2" name="line_ids">
+                        <list string="Lines" decoration-danger="not payment_token_id or not amount_to_pay"  editable="bottom"  create="false">
+                            <field name="commercial_partner_id" column_invisible="True"/>
+                            <field name="invoice_id"/>
+                            <field name="partner_id" optional="show"/>
+                            <field name="amount_residual" optional="hide"/>
+                            <field name="payment_token_id" domain="[('partner_id', 'child_of', commercial_partner_id)]"/>
+                            <field name="amount_to_pay"/>
+                            <field name="percentage"/>
+                            <field name="currency_id"  column_invisible="True"/>
+                        </list>
+                    </field>
+                    <group>
+
+                        <field name="asynchronous_process" invisible="True"></field>
+                        <div class="alert alert-info" colspan="2" role="alert" invisible="not asynchronous_process">
+                            IMPORTANTE! Tener en cuenta que está generando más de 20 transacciones, esto se realizará de forma asincrónica y puede llegar a demorar el envío de los pagos
+                        </div>
+                    </group>
+                </sheet>
+                <footer>
+
+                    <button string="Create payments" invisible="not validate_emails or message" type="object" name="action_create_payments" class="btn-primary" data-hotkey="q"/>
+                    <button string="Create payments without check" confirm="Are you sure you want to create these payments?" context="{'bypass_check_similar_transactions': True}" invisible="not validate_emails or not message" type="object" name="action_create_payments" class="btn-danger" data-hotkey="q"/>
+                    <button string="Discard" class="btn-secondary" special="cancel" data-hotkey="z" />
+                    <button string="Check similar" invisible="not validate_emails" type="object" name="action_check_for_similar_transactions" class="btn-link" data-hotkey="c"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_payment_transaction_retry_wizard" model="ir.actions.server">
+        <field name="name">Retry payment</field>
+        <field name="model_id" ref="payment_retry.model_payment_transaction_retry"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+            action = model.action_open_wizard()
+        </field>
+    </record>
+</odoo>

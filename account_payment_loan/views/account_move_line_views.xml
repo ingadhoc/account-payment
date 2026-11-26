@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_move_line_payment_tree" model="ir.ui.view">
+        <field name="name">account.move.line.inherit.view.list</field>
+        <field name="model">account.move.line</field>
+        <field name="inherit_id" ref="account_ux.view_move_line_payment_tree"/>
+        <field name="arch" type="xml">
+            <groupby name="partner_id">
+                <button name="action_loan_debt_report" type="object" icon="fa-money" title="Loan"/>
+                <button name="action_add_extra_charges" type="object" icon="fa-plus" title="Loan Extra Charges"/>
+            </groupby>
+        </field>
+    </record>
+</odoo>

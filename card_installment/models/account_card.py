@@ -1,0 +1,31 @@
+##############################################################################
+# For copyright and license notices, see __manifest__.py file in module root
+# directory
+##############################################################################
+from odoo import fields, models
+
+
+class AccountCard(models.Model):
+    _name = "account.card"
+    _description = "Credit Card"
+    _check_company_auto = True
+
+    name = fields.Char(
+        "name",
+        required=True,
+    )
+    installment_ids = fields.One2many(
+        "account.card.installment",
+        "card_id",
+        string="Installments",
+    )
+    company_id = fields.Many2one("res.company", default=lambda self: self.env.company.id)
+    active = fields.Boolean(default=True)
+
+    def map_card_values(self):
+        self.ensure_one()
+        return {
+            "name": self.name,
+            "id": self.id,
+            "installments": [],
+        }

@@ -1,0 +1,101 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_payment_multi
+# 
+# Translators:
+# Juan José Scarafía <scarafia.juanjose@gmail.com>, 2025
+# Gonzalo, 2025
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-07-22 12:06+0000\n"
+"PO-Revision-Date: 2025-05-09 16:24+0000\n"
+"Last-Translator: Gonzalo, 2025\n"
+"Language-Team: Spanish (https://app.transifex.com/adhoc/teams/46451/es/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Language: es\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
+
+#. module: account_payment_multi
+#: model_terms:ir.ui.view,arch_db:account_payment_multi.portal_my_invoices_payment
+msgid "<strong class=\"oe_zeroAmount\">Select invoices to pay</strong>"
+msgstr "<strong class=\"oe_zeroAmount\">Seleccionar facturas a pagar</strong>"
+
+#. module: account_payment_multi
+#: model_terms:ir.ui.view,arch_db:account_payment_multi.portal_selected_invoices_page
+msgid "Amount"
+msgstr "Importe"
+
+#. module: account_payment_multi
+#. odoo-python
+#: code:addons/account_payment_multi/models/company.py:0
+msgid "Batch Payment Number Sequence"
+msgstr "Secuencia de pagos por lote"
+
+#. module: account_payment_multi
+#: model:ir.model.fields,field_description:account_payment_multi.field_res_company__batch_payment_sequence_id
+msgid "Batch Payment Sequence"
+msgstr "Secuencia de pagos por lote"
+
+#. module: account_payment_multi
+#: model:ir.model,name:account_payment_multi.model_res_company
+msgid "Companies"
+msgstr "Compañías"
+
+#. module: account_payment_multi
+#. odoo-python
+#: code:addons/account_payment_multi/controllers/portal.py:0
+msgid ""
+"Impossible to pay all the selected invoices if they don't share the same "
+"currency."
+msgstr ""
+"Imposible pagar todas las facturas seleccionadas si no comparten la misma "
+"moneda."
+
+#. module: account_payment_multi
+#: model_terms:ir.ui.view,arch_db:account_payment_multi.portal_my_invoices_payment
+msgid "Pay Now"
+msgstr "Pagar Ahora"
+
+#. module: account_payment_multi
+#: model_terms:ir.ui.view,arch_db:account_payment_multi.portal_my_invoices_payment
+msgid "Pay Selected"
+msgstr "Pagar Facturas Seleccionadas"
+
+#. module: account_payment_multi
+#: model_terms:ir.ui.view,arch_db:account_payment_multi.portal_my_invoices_payment
+msgid "Pay now"
+msgstr "Pagar Ahora"
+
+#. module: account_payment_multi
+#. odoo-python
+#: code:addons/account_payment_multi/controllers/portal.py:0
+msgid "Please log in to pay your selected invoices"
+msgstr "Por favor, inicie sesión para pagar las facturas seleccionadas."
+
+#. module: account_payment_multi
+#: model_terms:ir.ui.view,arch_db:account_payment_multi.portal_selected_invoices_page
+msgid "Reference"
+msgstr "Referencia"
+
+#. module: account_payment_multi
+#. odoo-python
+#: code:addons/account_payment_multi/controllers/portal.py:0
+msgid "Selected invoices should share the same company."
+msgstr "Las facturas seleccionadas deben pertenecer a la misma empresa."
+
+#. module: account_payment_multi
+#. odoo-python
+#: code:addons/account_payment_multi/controllers/portal.py:0
+msgid "Selected invoices should share the same currency."
+msgstr "Las facturas seleccionadas deben compartir la misma moneda."
+
+#. module: account_payment_multi
+#. odoo-python
+#: code:addons/account_payment_multi/controllers/portal.py:0
+msgid "Selected invoices should share the same partner."
+msgstr "Las facturas seleccionadas deben compartir el mismo contacto."

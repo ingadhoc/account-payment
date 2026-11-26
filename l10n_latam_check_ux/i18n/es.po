@@ -1,0 +1,740 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* l10n_latam_check_ux
+#
+# Translators:
+# ADHOC - Bot <transbot@adhoc.com.ar>, 2025
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-03 14:12+0000\n"
+"PO-Revision-Date: 2026-04-23 18:41+0000\n"
+"Last-Translator: julia elizondo <jue@adhoc.inc>\n"
+"Language-Team: Spanish <https://translation.dev-adhoc.com/projects/account-"
+"payment-19-0/account-payment-19-0-l10n_latam_check_ux/es/>\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == "
+"0) ? 1 : 2);\n"
+"X-Generator: Weblate 5.10.4\n"
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid ""
+"%d deposited check(s): bank outgoing transfer + customer debit will be "
+"created."
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid ""
+"%d endorsed check(s): supplier receipt + customer debit will be created."
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.actions.report,print_report_name:l10n_latam_check_ux.checks_to_date_report
+msgid "'Cheques a fecha - %s' % (object.to_date)"
+msgstr "'Cheques a fecha - %s' % (object.to_date)"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.report_account_transfer_document
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.report_payment_receipt_document
+msgid "<span>Amount</span>"
+msgstr "<span>Importe</span>"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.report_account_transfer_document
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.report_payment_receipt_document
+msgid "<span>Bank</span>"
+msgstr "<span>Banco</span>"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.report_account_transfer_document
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.report_payment_receipt_document
+msgid "<span>Check Number</span>"
+msgstr "<span>Numero de Cheque</span>"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.report_account_transfer_document
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.report_payment_receipt_document
+msgid "<span>Issuer VAT</span>"
+msgstr "<span>CUIT del Emisor</span>"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.report_account_transfer_document
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.report_payment_receipt_document
+msgid "<span>Payment date</span>"
+msgstr "<span>Fecha de Pago</span>"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid ""
+"<strong>\n"
+"                                <span>Total</span>\n"
+"                                </strong>"
+msgstr ""
+"<strong>\n"
+"                                <span>Total</span>\n"
+"                                </strong>"
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/l10n_latam_payment_mass_transfer.py:0
+msgid "A second payment has been created: "
+msgstr "Se ha creado un segundo pago:"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model,name:l10n_latam_check_ux.model_account_account
+msgid "Account"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model,name:l10n_latam_check_ux.model_account_check_action_wizard
+msgid "Account Check Action Wizard"
+msgstr "Asistente de Acción de Verificación de Cuenta"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model,name:l10n_latam_check_ux.model_l10n_latam_check
+msgid "Account payment check"
+msgstr "Cuenta de Pago de Cheque"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_reject_wizard__case_description
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_reject_wizard_form_view
+msgid "Action Summary"
+msgstr "Descripción de la Acción"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_res_partner__add_check_credit
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_res_users__add_check_credit
+msgid "Agregar Crédito de Cheques"
+msgstr "Agregar Crédito de Cheques"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_journal__check_add_debit_button
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__check_add_debit_button
+msgid "Agregar botón de débito"
+msgstr "Agregar botón de débito"
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+#: code:addons/l10n_latam_check_ux/wizards/l10n_latam_payment_mass_transfer.py:0
+msgid "All selected checks must belong to the same company."
+msgstr "Todos los cheques seleccionados deben pertenecer a la misma empresa."
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_action_wizard.py:0
+msgid ""
+"At least one check is in a journal where the 'Add Debit Date' option is not "
+"enabled."
+msgstr ""
+"Al menos uno de los cheques está en un diario donde la opción \"Agregar "
+"fecha de débito\" no está habilitada."
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__available_destination_payment_method_line_ids
+msgid "Available Destination Payment Method Line"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__bank_id
+msgid "Bank"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__can_reject
+msgid "Can Reject"
+msgstr "Puede Rechazar"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_action_wizard_form_view
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_reject_wizard_form_view
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_to_date_report_view
+msgid "Cancelar"
+msgstr "Cancelar"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__check_ids
+msgid "Check"
+msgstr "Cheque"
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/models/account_payment.py:0
+msgid "Check %(check_number)s - %(suffix)s"
+msgstr "Cheque %(check_number)s - %(suffix)s"
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid ""
+"Check '%s' cannot be rejected. Only third-party checks in valid states can "
+"be rejected."
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid "Check '%s' is not a third-party check and cannot be rejected."
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.actions.act_window,name:l10n_latam_check_ux.action_debit_check_wizard
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_action_wizard_form_view
+msgid "Check Action"
+msgstr "Acción de cheque"
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/models/l10n_latam_check.py:0
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid "Check Operations"
+msgstr "Operaciones de Cheques"
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid "Check rejection - bank transfer: %s"
+msgstr "Rechazo de cheque - transferencia bancaria: %s"
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid "Check rejection - customer debit: %s"
+msgstr "Rechazo de cheque - débito al cliente: %s"
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid "Check rejection - recovery from supplier: %s"
+msgstr "Rechazo de cheque - recuperación del proveedor: %s"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model,name:l10n_latam_check_ux.model_l10n_latam_payment_mass_transfer
+msgid "Checks Mass Transfers"
+msgstr "Transferencia Masiva de Cheques"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_to_date_report_view
+msgid "Cheques a Fecha"
+msgstr "Cheques a Fecha"
+
+#. module: l10n_latam_check_ux
+#: model:ir.actions.act_window,name:l10n_latam_check_ux.action_account_check_to_date_report
+#: model:ir.actions.report,name:l10n_latam_check_ux.checks_to_date_report
+#: model:ir.ui.menu,name:l10n_latam_check_ux.menu_account_check_to_date_report
+msgid "Cheques a fecha"
+msgstr "Cheques a fecha"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Cheques de terceros"
+msgstr "Cheques de terceros"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Cheques propios"
+msgstr "Cheques propios"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_reject_wizard__company_id
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__company_id
+msgid "Company"
+msgstr "Empresa"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,help:l10n_latam_check_ux.field_account_check_reject_wizard__company_id
+msgid ""
+"Company of the checks being rejected. The rejection is always processed "
+"within it."
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Compañía"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Compañía:"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__company_ids
+msgid "Compañías"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,help:l10n_latam_check_ux.field_account_check_to_date_report_wizard__company_ids
+msgid "Compañías tildadas en el selector. El reporte incluye exactamente esas."
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_action_wizard_form_view
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_reject_wizard_form_view
+msgid "Confirm"
+msgstr "Confirmar"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_to_date_report_view
+msgid "Confirmar"
+msgstr "Confirmar"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model,name:l10n_latam_check_ux.model_res_partner
+msgid "Contact"
+msgstr "Contacto"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_action_wizard__create_uid
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_reject_wizard__create_uid
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_action_wizard__create_date
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_reject_wizard__create_date
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Cuit"
+msgstr "CUIT"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_action_wizard__date
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_reject_wizard__date
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__date
+msgid "Date"
+msgstr "Fecha"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.l10n_latam_check_view_form
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.view_account_own_check_tree
+msgid "Debit check"
+msgstr "Debitar Cheque"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__destination_journal_id
+msgid "Destination Journal"
+msgstr "Diario Destino"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__destination_payment_method_line_id
+msgid "Destination Journal Payment Method"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__journal_id
+msgid "Diario"
+msgstr "Diario"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Diario:"
+msgstr "Diario:"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_account__display_name
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_action_wizard__display_name
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_reject_wizard__display_name
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__display_name
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_journal__display_name
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_move__display_name
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_payment__display_name
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_payment_method_line__display_name
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_payment_register__display_name
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__display_name
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__display_name
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_res_partner__display_name
+msgid "Display Name"
+msgstr "Nombre a Mostrar"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Empresa"
+msgstr "Empresa"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Fecha contable"
+msgstr "Fecha contable"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Fecha de pago"
+msgstr "Fecha de pago"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__to_date
+msgid "Hasta Fecha"
+msgstr "Hasta Fecha"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_account__id
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_action_wizard__id
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_reject_wizard__id
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__id
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_journal__id
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_move__id
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_payment__id
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_payment_method_line__id
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_payment_register__id
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__id
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__id
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_res_partner__id
+msgid "ID"
+msgstr "ID"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,help:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__split_payment
+msgid ""
+"If this option is selected, each check will be registered as an individual "
+"payment instead of being grouped into a single payment."
+msgstr ""
+"Si se selecciona esta opción, cada cheque se registrará como un pago "
+"individual en lugar de agruparse en un solo pago."
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Importe"
+msgstr "Importe"
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/l10n_latam_payment_mass_transfer.py:0
+msgid ""
+"In order to transfer checks between branches you need to use internal "
+"transfer menu."
+msgstr ""
+"Para transferir cheques entre sucursales, necesitas usar el menú de "
+"transferencia interna."
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__issuer_vat
+msgid "Issuer Vat"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model,name:l10n_latam_check_ux.model_account_journal
+msgid "Journal"
+msgstr "Diario"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model,name:l10n_latam_check_ux.model_account_move
+msgid "Journal Entry"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,help:l10n_latam_check_ux.field_account_check_reject_wizard__rejected_journal_id
+msgid ""
+"Journal used for rejected third-party checks (e.g. 'Cheques de Terceros "
+"Rechazados')."
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_action_wizard.py:0
+msgid ""
+"La fecha del débito del cheque %s no puede ser inferior a la fecha de "
+"emisión del mismo %s."
+msgstr ""
+"La fecha del débito del cheque %s no puede ser inferior a la fecha de "
+"emisión del mismo %s."
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.view_account_payment_search
+msgid "Last 90 days"
+msgstr "Últimos 90 días"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_action_wizard__write_uid
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_reject_wizard__write_uid
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__write_uid
+msgid "Last Updated by"
+msgstr "Última modificación por"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_action_wizard__write_date
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_reject_wizard__write_date
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__write_date
+msgid "Last Updated on"
+msgstr "Última Actualización el"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.view_account_journal_form_inherited
+msgid "Latam Checks"
+msgstr "Cheques LATAM"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Listado de cheques pendientes al"
+msgstr "Listado de cheques pendientes al"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__main_company_id
+msgid "Main Company"
+msgstr "Empresa Principal"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__memo
+msgid "Memo"
+msgstr "Memo"
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid "No checks selected."
+msgstr "No se han seleccionado cheques."
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_action_wizard.py:0
+msgid ""
+"No es posible crear un nuevo débito de cheque sin un método de pagos "
+"'manual' en el diario %s."
+msgstr ""
+"No es posible crear un nuevo débito de cheque sin un método de pagos "
+"'manual' en el diario %s."
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_action_wizard.py:0
+msgid "No se pudo determinar el importe a debitar para el cheque %s."
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__name
+msgid "Number"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.checks_to_date
+msgid "Número"
+msgstr "Número"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__operation_ids
+msgid "Operation"
+msgstr "Operación"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_payment__l10n_latam_move_check_ids_operation_date
+msgid "Operation Date"
+msgstr "Fecha de Operación"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__outstanding_line_id
+msgid "Outstanding Line"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model,name:l10n_latam_check_ux.model_account_payment_register
+msgid "Pay"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__payment_date
+msgid "Payment Date"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model,name:l10n_latam_check_ux.model_account_payment_method_line
+msgid "Payment Methods"
+msgstr "Métodos de Pago"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,help:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__destination_payment_method_line_id
+msgid ""
+"Payment method line used on the inbound payment created in the destination "
+"journal. It determines the outstanding account of that payment."
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model,name:l10n_latam_check_ux.model_account_payment
+msgid "Payments"
+msgstr "Pagos"
+
+#. module: l10n_latam_check_ux
+#: model:ir.actions.act_window,name:l10n_latam_check_ux.action_reject_check_wizard
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_reject_wizard_form_view
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.l10n_latam_check_view_form
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.view_account_third_party_check_tree_reject
+msgid "Reject Check"
+msgstr "Rechazar Cheque"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model,name:l10n_latam_check_ux.model_account_check_reject_wizard
+msgid "Reject Third Party Check Wizard"
+msgstr "Asistente de Rechazo de Cheque de Terceros"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_reject_wizard__rejected_journal_id
+msgid "Rejected Checks Journal"
+msgstr "Diario de Cheques Rechazados"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,help:l10n_latam_check_ux.field_account_journal__check_add_debit_button
+#: model:ir.model.fields,help:l10n_latam_check_ux.field_l10n_latam_check__check_add_debit_button
+msgid ""
+"Si marca esta opción podrá debitar los cheques con un botón desde los "
+"mismos. Para realizar el asiento de débito se buscará un método de pago "
+"saliente del tipo Manual con nombre Manual, si no se encuentra uno se "
+"utilizará el primero que sea del tipo Manual (sin importar el nombre). Se "
+"utilizará luego la cuenta configurada en dicho método de ese método de pago."
+msgstr ""
+"Si marca esta opción podrá debitar los cheques con un botón desde los "
+"mismos. Para realizar el asiento de débito se buscará un método de pago "
+"saliente del tipo Manual con nombre Manual, si no se encuentra uno se "
+"utilizará el primero que sea del tipo Manual (sin importar el nombre). Se "
+"utilizará luego la cuenta configurada en dicho método de ese método de pago."
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__split_payment
+msgid "Split Payment"
+msgstr "Separar pagos"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__payment_state
+msgid "State"
+msgstr "Estado"
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/l10n_latam_payment_mass_transfer.py:0
+msgid ""
+"The destination payment method %(method)s cannot receive checks on the "
+"destination journal %(journal)s."
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid ""
+"The journal '%(journal)s' belongs to '%(journal_company)s' but the check "
+"belongs to '%(company)s'."
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid ""
+"The journal '%s' needs an inbound payment method of type 'Third Party Check "
+"(in)' to receive rejected checks from the supplier."
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid ""
+"The journal '%s' needs an inbound payment method of type 'Third Party Check "
+"(in)' to receive the transferred rejected check."
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid ""
+"The journal '%s' needs an outbound payment method compatible with third-"
+"party checks (e.g. 'out_third_party_checks') to transfer the rejected check."
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
+msgid ""
+"The journal '%s' needs an outbound payment method of type 'Return Third "
+"Party Check' or 'Third Party Check (out)' to return the rejected check to "
+"the customer and generate the debt."
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/wizards/l10n_latam_payment_mass_transfer.py:0
+msgid "This payment has been created from: "
+msgstr "Este pago ha sido creado desde: "
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.view_account_own_check_tree
+msgid "Total"
+msgstr "Total"
+
+#. module: l10n_latam_check_ux
+#: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_check__user_can_write
+msgid "User Can Write"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/models/account_move.py:0
+msgid ""
+"You cannot delete the journal entry of a payment with checks while the "
+"payment is confirmed. If you need to adjust the journal entry, reset the "
+"payment to draft first.\n"
+"Payments:\n"
+"%s"
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/models/account_payment_method_line.py:0
+msgid ""
+"You cannot delete this payment method because it has associated checks. You "
+"must first delete or reassign all related checks."
+msgstr ""
+"No puede eliminar este método de pago porque tiene cheques asociados. "
+"Primero debe eliminar o reasignar todos los cheques relacionados."
+
+#. module: l10n_latam_check_ux
+#. odoo-python
+#: code:addons/l10n_latam_check_ux/models/account_payment.py:0
+msgid ""
+"You cannot reset this operation to draft because it is not the last "
+"operation for the checks."
+msgstr ""
+
+#. module: l10n_latam_check_ux
+#: model:ir.model,name:l10n_latam_check_ux.model_account_check_to_date_report_wizard
+msgid "account.check.to_date.report.wizard"
+msgstr "account.check.to_date.report.wizard"
+
+#. module: l10n_latam_check_ux
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_action_wizard_form_view
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_reject_wizard_form_view
+#: model_terms:ir.ui.view,arch_db:l10n_latam_check_ux.account_check_to_date_report_view
+msgid "or"
+msgstr "o"
+
+#~ msgid ""
+#~ "Operation not allowed: To transfer the checks, you must be operating in "
+#~ "the same company where the checks are registered. Please switch to the "
+#~ "appropriate company and try again."
+#~ msgstr ""
+#~ "Operación no permitida: Para transferir los cheques, debes estar operando "
+#~ "en la misma empresa en la que están registrados los cheques. Por favor, "
+#~ "cambia a la empresa correspondiente e inténtalo de nuevo."
+
+#~ msgid ""
+#~ "Check '%s' is not a third-party check and cannot be rejected with this "
+#~ "wizard."
+#~ msgstr ""
+#~ "El cheque '%s' no es un cheque de terceros y no puede ser rechazado con "
+#~ "este asistente."
+
+#~ msgid "Check rejected. Payments generated: %s"
+#~ msgstr "Cheque rechazado. Pagos generados: %s"

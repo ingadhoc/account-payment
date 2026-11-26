@@ -1,0 +1,25 @@
+from . import (
+    test_account_paymet_pro_unit_test,
+    test_checks_payment_pro,
+    test_exchange_difference,
+    test_exchange_difference_edge_cases,
+    test_exchange_difference_partial,
+    test_internal_transfer_multimoneda,
+    test_manual_amount_on_debt_change,
+    test_own_check_currency,
+    test_partner_ledger_sign,
+    test_pay_now,
+    test_payment_multimoneda,
+    test_payment_state,
+    test_reset_and_recompute_rate,
+    test_reset_cycle,
+    test_write_off_and_rounding,
+)
+from . import test_receipt_debt_legal_entity
+from . import test_background_send_receipts
+from . import test_post_closed_payments
+from . import test_amount_from_checks
+from . import test_reconcile_covered_debt
+from . import test_rate_direction
+from . import test_receipt_branch_debt_no_access
+from . import test_currency_round_trip

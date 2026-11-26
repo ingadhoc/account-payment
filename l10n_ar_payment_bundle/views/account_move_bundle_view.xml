@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Cuando el asiento es de un pago (origin_payment_id), el botón "1 Payment" ya cubre el acceso.
+         El botón "Payments" quedaría duplicado, así que lo ocultamos en ese caso. -->
+    <record id="view_account_move_hide_payments_btn" model="ir.ui.view">
+        <field name="name">account.move.hide.payments.btn</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <button name="open_payments" position="attributes">
+                <attribute name="invisible" separator=" or " add="origin_payment_id"/>
+            </button>
+        </field>
+    </record>
+
+    <record id="view_account_move_bundle_list" model="ir.ui.view">
+        <field name="name">account.move.bundle.list</field>
+        <field name="model">account.move</field>
+        <field name="arch" type="xml">
+            <list string="Journal Entries" create="false" edit="false"
+                  decoration-info="state == 'draft'">
+                <field name="name" string="Number"/>
+                <field name="date"/>
+                <field name="amount_total_signed" string="Total" sum="Total" decoration-bf="1"/>
+            </list>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem action="action_account_card" id="menu_account_card" parent="account.root_payment_menu" sequence="20" />
+    <menuitem action="action_card_installment" id="menu_account_finacial_plans" parent="account.root_payment_menu" sequence="21" />
+</odoo>

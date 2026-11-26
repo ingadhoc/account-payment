@@ -1,0 +1,472 @@
+import json
+from unittest.mock import patch
+
+from odoo import Command, fields
+from odoo.addons.account.tests.common import AccountTestInvoicingCommon
+from odoo.exceptions import UserError, ValidationError
+from odoo.tests import tagged
+
+
+@tagged("post_install", "-at_install")
+class TestAccountPaymentProReceiptbookUnitTest(AccountTestInvoicingCommon):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+    @classmethod
+    def get_default_groups(cls):
+        groups = super().get_default_groups()
+        product_mgmt_group = cls.env.ref(
+            "product_management_group.group_products_management",
+            raise_if_not_found=False,
+        )
+        if product_mgmt_group:
+            groups |= product_mgmt_group
+        return groups
+
+    @classmethod
+    def setup_armageddon_tax(cls, tax_name, company_data, **kwargs):
+        # Ensure a tax group exists for the company's fiscal country so that
+        # _compute_tax_group_id (which searches without sudo) can find one.
+        # This is necessary when running at_install tests against a localised
+        # company where country/fiscal-country state becomes inconsistent during
+        # AccountTestInvoicingCommon.setup_independent_company.
+        company = company_data["company"]
+        fiscal_country = company.account_fiscal_country_id or company.country_id
+        TaxGroup = cls.env["account.tax.group"].sudo()
+        for country_id in ([fiscal_country.id] if fiscal_country else []) + [False]:
+            if not TaxGroup.search(
+                [
+                    ("company_id", "parent_of", company.ids),
+                    ("country_id", "=", country_id),
+                ],
+                limit=1,
+            ):
+                TaxGroup.create(
+                    {
+                        "name": "Test Tax Group",
+                        "company_id": company.id,
+                        "country_id": country_id,
+                    }
+                )
+        return super().setup_armageddon_tax(tax_name, company_data, **kwargs)
+
+    def setUp(self):
+        super().setUp()
+        self.today = fields.Date.today()
+        self.company = self.env.company
+        self.company_bank_journal = self.env["account.journal"].search(
+            [("company_id", "=", self.company.id), ("type", "=", "bank")], limit=1
+        )
+        self.company_sale_journal = self.env["account.journal"].search(
+            [("company_id", "=", self.company.id), ("type", "=", "sale")], limit=1
+        )
+        self.company.use_payment_pro = True
+        self.company.use_receiptbook = True
+        ar = self.env.ref("base.ar")
+        self.partner_ri = self.env["res.partner"].create(dict(name="RI Partner", vat="34278580484", country_id=ar.id))
+        self.receiptbook = self.env["account.payment.receiptbook"].search(
+            [("company_id", "=", self.company.id), ("name", "=", "Customer Receipts")]
+        )
+
+    def test_create_payment_with_receiptbook(self):
+        invoice = self.env["account.move"].create(
+            {
+                "partner_id": self.partner_ri.id,
+                "invoice_date": self.today,
+                "move_type": "out_invoice",
+                "journal_id": self.company_sale_journal.id,
+                "company_id": self.company.id,
+                "invoice_line_ids": [
+                    Command.create(
+                        {
+                            "product_id": self.env.ref("product.product_product_16").id,
+                            "quantity": 1,
+                            "price_unit": 100,
+                        }
+                    ),
+                ],
+            }
+        )
+        invoice.action_post()
+        receiptbook_id = self.env["account.payment.receiptbook"].search(
+            [("company_id", "=", self.company.id), ("name", "=", "Customer Receipts")]
+        )
+        name = "%s %s%s" % (
+            receiptbook_id.document_type_id.doc_code_prefix,
+            receiptbook_id.prefix,
+            str(1).zfill(8),
+        )
+
+        vals = {
+            "journal_id": self.company_bank_journal.id,
+            "amount": invoice.amount_total,
+            "date": self.today,
+        }
+        action_context = invoice.action_register_payment()["context"]
+        payment = self.env["account.payment"].with_context(**action_context).create(vals)
+        payment.action_post()
+        self.assertEqual(payment.name, name, "no se tomo la secuencia correcta del pago")
+
+    def test_payment_amount_update(self):
+        """Test creating a payment, posting it, resetting to draft, updating amount, and validating name."""
+        payment = self.env["account.payment"].create(
+            {
+                "amount": 100,
+                "payment_type": "inbound",
+                "partner_id": self.partner_a.id,
+                "journal_id": self.company_bank_journal.id,
+                "date": self.today,
+                "company_id": self.company.id,
+                "receiptbook_id": self.receiptbook.id,
+            }
+        )
+
+        # Post the payment
+        payment.action_post()
+        original_name = payment.name
+
+        # Reset to draft
+        payment.action_draft()
+
+        # Update the amount
+        payment.amount = 200
+
+        # Post again
+        payment.action_post()
+
+        # Validate that the name remains the same
+        self.assertEqual(
+            payment.name,
+            original_name,
+            "The payment name should remain the same after updating the amount.",
+        )
+
+    def test_payment_name_uniqueness(self):
+        """
+        Create 2 payments with bank and cash journals, post them,
+        try to resequence the first one with the name of the second and validate ValidationError.
+        """
+        # Search for cash journal (fallback to searching/creating if company_data entry is missing)
+        cash_journal = False
+        try:
+            cash_journal = self.company_data.get("default_journal_cash")
+        except Exception:
+            cash_journal = False
+        if not cash_journal:
+            cash_journal = self.env["account.journal"].search(
+                [("company_id", "=", self.company.id), ("type", "=", "cash")], limit=1
+            )
+        if not cash_journal:
+            cash_journal = self.env["account.journal"].create(
+                {"type": "cash", "name": "Cash", "company_id": self.company.id}
+            )
+        self.assertTrue(self.company_bank_journal, "No bank journal found")
+        self.assertTrue(cash_journal, "No cash journal found")
+        if cash_journal:
+            (cash_journal.outbound_payment_method_line_ids + cash_journal.inbound_payment_method_line_ids).write(
+                {"payment_account_id": cash_journal.default_account_id.id}
+            )
+
+        (
+            self.company_bank_journal.outbound_payment_method_line_ids
+            + self.company_bank_journal.inbound_payment_method_line_ids
+        ).write({"payment_account_id": self.company_bank_journal.default_account_id.id})
+
+        # Create first payment (bank)
+        payment1 = self.env["account.payment"].create(
+            {
+                "amount": 100,
+                "payment_type": "inbound",
+                "partner_id": self.partner_ri.id,
+                "journal_id": self.company_bank_journal.id,
+                "date": self.today,
+                "company_id": self.company.id,
+                "receiptbook_id": self.receiptbook.id,
+            }
+        )
+        payment1.action_post()
+        payment1.filtered(lambda p: not p.move_id)._generate_journal_entry()
+
+        # Create second payment (cash)
+        payment2 = self.env["account.payment"].create(
+            {
+                "amount": 200,
+                "payment_type": "inbound",
+                "partner_id": self.partner_ri.id,
+                "journal_id": cash_journal.id,
+                "date": self.today,
+                "company_id": self.company.id,
+                "receiptbook_id": self.receiptbook.id,
+            }
+        )
+        payment2.action_post()
+        payment2.filtered(lambda p: not p.move_id)._generate_journal_entry()
+
+        # Try to resequence the first payment with the name of the second
+        resequence_wizard = self.env["account.resequence.wizard"].create(
+            {
+                "move_ids": [(6, 0, [payment1.move_id.id])],
+                "ordering": "keep",
+                "new_values": json.dumps(
+                    {
+                        str(payment1.move_id.id): {
+                            "new_by_name": payment2.name,
+                            "new_by_date": payment2.name,
+                        }
+                    }
+                ),
+                "first_name": payment2.name,
+            }
+        )
+        with self.assertRaises(ValidationError) as cm:
+            resequence_wizard.resequence()
+        self.assertIn("already exist", str(cm.exception))
+
+    def _enable_payment_accounts(self, journal):
+        """Payments need an outstanding account on the journal's method lines."""
+        (journal.outbound_payment_method_line_ids + journal.inbound_payment_method_line_ids).write(
+            {"payment_account_id": journal.default_account_id.id}
+        )
+
+    def _post_receipt(self, receiptbook=None, amount=100):
+        """Post a payment on ``receiptbook`` and return its journal entry."""
+        payment = self.env["account.payment"].create(
+            {
+                "amount": amount,
+                "payment_type": "inbound",
+                "partner_id": self.partner_ri.id,
+                "journal_id": self.company_bank_journal.id,
+                "date": self.today,
+                "company_id": self.company.id,
+                "receiptbook_id": (receiptbook or self.receiptbook).id,
+            }
+        )
+        payment.action_post()
+        payment.filtered(lambda p: not p.move_id)._generate_journal_entry()
+        return payment.move_id
+
+    def test_made_sequence_gap_within_receiptbook(self):
+        """A hole in the receiptbook numbering flags the move that follows it.
+
+        Numbers are asserted relative to each other: ``ir.sequence`` is backed by
+        a postgres sequence, which is not rolled back with the test transaction,
+        so the receiptbook does not necessarily start at 1 on every run.
+        """
+        self._enable_payment_accounts(self.company_bank_journal)
+        first, second, third = (self._post_receipt() for _ in range(3))
+        self.assertEqual(second.sequence_number, first.sequence_number + 1)
+        self.assertEqual(third.sequence_number, second.sequence_number + 1)
+
+        (first + second + third)._update_receiptbook_made_sequence_gap()
+        # A move whose predecessor exists makes no gap. Nothing is asserted about
+        # `first`: the numbers below it were consumed by other runs.
+        self.assertFalse(second.made_sequence_gap)
+        self.assertFalse(third.made_sequence_gap)
+
+        # Removing the middle entry frees its number, so the next one makes the gap.
+        second.button_draft()
+        second.with_context(force_delete=True).unlink()
+
+        third._update_receiptbook_made_sequence_gap()
+        self.assertTrue(third.made_sequence_gap, "the move after the hole should be flagged")
+
+    def test_made_sequence_gap_scoped_to_receiptbook(self):
+        """The detection is scoped to the receiptbook, not to the journal.
+
+        Both receiptbooks number their moves in the same bank journal, so a hole
+        in one of them must not flag the moves of the other.
+        """
+        self._enable_payment_accounts(self.company_bank_journal)
+        other_receiptbook = self.env["account.payment.receiptbook"].create(
+            {
+                "name": "Other Customer Receipts",
+                "partner_type": "customer",
+                "company_id": self.company.id,
+                "document_type_id": self.receiptbook.document_type_id.id,
+                "prefix": "0099-",
+            }
+        )
+        first, second = (self._post_receipt() for _ in range(2))
+        other_first, other_second = (self._post_receipt(receiptbook=other_receiptbook) for _ in range(2))
+        self.assertNotEqual(first.sequence_prefix, other_first.sequence_prefix)
+        self.assertEqual(other_second.sequence_number, other_first.sequence_number + 1)
+
+        # Free the first number of the main receiptbook: only its own successor
+        # makes a gap, the other receiptbook is untouched.
+        first.button_draft()
+        first.with_context(force_delete=True).unlink()
+
+        (second + other_second)._update_receiptbook_made_sequence_gap()
+        self.assertTrue(second.made_sequence_gap)
+        self.assertFalse(
+            other_second.made_sequence_gap,
+            "a hole in one receiptbook must not flag the moves of another one",
+        )
+
+    def test_made_sequence_gap_writes_only_on_change(self):
+        """``made_sequence_gap`` is only written on the moves whose value changes.
+
+        Every assignment is a ``write`` on ``account.move`` and drags the
+        overrides of the installed modules, so recomputing an already consistent
+        set of moves must not write at all, and correcting stale values must take
+        a couple of grouped writes instead of one per move.
+        """
+        self._enable_payment_accounts(self.company_bank_journal)
+        moves = self.env["account.move"].browse()
+        for _i in range(5):
+            moves |= self._post_receipt()
+        moves._update_receiptbook_made_sequence_gap()
+        expected = {move.id: move.made_sequence_gap for move in moves}
+
+        AccountMove = type(self.env["account.move"])
+        origin = AccountMove.write
+        written = []
+
+        def spy(records, vals):
+            if "made_sequence_gap" in vals:
+                written.append((set(records.ids), vals["made_sequence_gap"]))
+            return origin(records, vals)
+
+        # Nothing changed: the recompute must not write at all.
+        with patch.object(AccountMove, "write", spy):
+            moves._update_receiptbook_made_sequence_gap()
+        self.assertFalse(written, "recomputing a consistent set of moves should not write")
+
+        # Flip every stored value bypassing the ORM, then recompute.
+        self.env.cr.execute(
+            "UPDATE account_move SET made_sequence_gap = NOT COALESCE(made_sequence_gap, FALSE) WHERE id IN %s",
+            (tuple(moves.ids),),
+        )
+        self.env.invalidate_all()
+        with patch.object(AccountMove, "write", spy):
+            moves._update_receiptbook_made_sequence_gap()
+
+        self.assertEqual({move.id: move.made_sequence_gap for move in moves}, expected)
+        self.assertLessEqual(
+            len(written),
+            2,
+            "correcting %d moves should take at most two grouped writes, got %d" % (len(moves), len(written)),
+        )
+
+    def _create_branch(self):
+        """Minimal branch under the test AR company (reuses its chart)."""
+        return self.env["res.company"].create({"name": "Test Branch", "parent_id": self.company.id})
+
+    def test_branch_prefix_constraint(self):
+        """A branch cannot reuse a receiptbook prefix of its parent tree."""
+        RB = self.env["account.payment.receiptbook"]
+        branch = self._create_branch()
+        doc_type = self.receiptbook.document_type_id
+        # Same prefix/document_type/partner_type as the parent 0001- receiptbook -> blocked.
+        with self.assertRaises(UserError):
+            RB.create(
+                {
+                    "name": "Branch dup",
+                    "partner_type": "customer",
+                    "company_id": branch.id,
+                    "document_type_id": doc_type.id,
+                    "prefix": self.receiptbook.prefix,
+                }
+            )
+        # A free prefix is accepted.
+        rb = RB.create(
+            {
+                "name": "Branch ok",
+                "partner_type": "customer",
+                "company_id": branch.id,
+                "document_type_id": doc_type.id,
+                "prefix": "0099-",
+            }
+        )
+        self.assertTrue(rb.id)
+
+    def test_branch_default_prefix(self):
+        """Auto-created branch receiptbooks pick the first free prefix in the tree."""
+        branch = self._create_branch()
+        self.env["account.chart.template"]._create_receiptbooks(branch)
+        branch_rb = self.env["account.payment.receiptbook"].search(
+            [("company_id", "=", branch.id), ("partner_type", "=", "customer")], limit=1
+        )
+        # Parent keeps 0001-, so the branch bumps to 0002-.
+        self.assertEqual(branch_rb.prefix, "0002-")
+
+    def test_branch_prefix_collision_migration(self):
+        """_resolve_branch_prefix_collisions reassigns the branch and keeps the root."""
+        RB = self.env["account.payment.receiptbook"]
+        branch = self._create_branch()
+        branch_rb = RB.create(
+            {
+                "name": "Branch cust",
+                "partner_type": "customer",
+                "company_id": branch.id,
+                "document_type_id": self.receiptbook.document_type_id.id,
+                "prefix": "0050-",
+            }
+        )
+        # Force a legacy collision with the parent prefix, bypassing the constraint.
+        self.env.cr.execute(
+            "UPDATE account_payment_receiptbook SET prefix=%s WHERE id=%s",
+            (self.receiptbook.prefix, branch_rb.id),
+        )
+        self.env.invalidate_all()
+        self.assertEqual(branch_rb.prefix, self.receiptbook.prefix)
+
+        reassigned = RB._resolve_branch_prefix_collisions()
+        self.assertIn(branch_rb, reassigned)
+        self.assertNotEqual(branch_rb.prefix, self.receiptbook.prefix)
+        self.assertEqual(self.receiptbook.prefix, "0001-")
+        self.assertEqual(branch_rb.sequence_id.prefix, branch_rb.prefix)
+        # Idempotent: a second run reassigns nothing.
+        self.assertFalse(RB._resolve_branch_prefix_collisions())
+
+    def test_resync_shared_sequence_with_other_prefix(self):
+        """Receiptbooks sharing an ir.sequence resync to the highest number used by any of them,
+        read with the sequence prefix, even if a receiptbook has another prefix."""
+        self._enable_payment_accounts(self.company_bank_journal)
+        sequence = self.receiptbook.sequence_id
+        other_rb = self.env["account.payment.receiptbook"].create(
+            {
+                "name": "Shared sequence",
+                "partner_type": "customer",
+                "company_id": self.company.id,
+                "document_type_id": self.receiptbook.document_type_id.id,
+                "prefix": "001-",
+                "sequence_id": sequence.id,
+            }
+        )
+        self.assertEqual(other_rb.sequence_id, sequence)
+        self._post_receipt()
+        self._post_receipt(other_rb)
+        self._post_receipt()
+        self._post_receipt(other_rb)
+        expected_next = sequence.number_next_actual
+
+        for receiptbooks in (self.receiptbook | other_rb, other_rb, self.receiptbook):
+            sequence.number_next = 1
+            receiptbooks.action_resync_sequence()
+            self.assertEqual(sequence.number_next_actual, expected_next)
+
+    def test_skipped_canceled_payment_does_not_take_a_receipt_number(self):
+        """Posting a selection with a canceled payment numbers only the draft."""
+        vals = {
+            "amount": 100,
+            "payment_type": "inbound",
+            "partner_id": self.partner_ri.id,
+            "journal_id": self.company_bank_journal.id,
+            "date": self.today,
+            "company_id": self.company.id,
+            "receiptbook_id": self.receiptbook.id,
+        }
+        draft = self.env["account.payment"].create(vals)
+        canceled = self.env["account.payment"].create(vals)
+        canceled.action_cancel()
+        sequence = self.receiptbook.with_context(ir_sequence_date=self.today).sequence_id
+        number_next = sequence.number_next_actual
+
+        (draft | canceled).action_post()
+
+        sequence.invalidate_recordset(["number_next_actual"])
+        self.assertEqual(sequence.number_next_actual, number_next + 1)
+        self.assertEqual(canceled.state, "canceled")
+        self.assertIn(canceled.name, (False, "/"))
