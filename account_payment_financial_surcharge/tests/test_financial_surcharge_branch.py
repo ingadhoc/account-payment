@@ -60,6 +60,9 @@ class TestFinancialSurchargeBranch(AccountTestInvoicingCommon):
                 }
             )
         )
+        # reading net_amount first must not leave the surcharge negative
+        payment.invalidate_recordset()
+        self.assertAlmostEqual(payment.net_amount, 100_000, places=2)
         self.assertAlmostEqual(payment.financing_surcharge, 10_000, places=2)
 
         payment.action_post()
