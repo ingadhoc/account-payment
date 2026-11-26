@@ -158,7 +158,7 @@ class TestBundleEarlyDiscount(EarlyDiscountCommon):
             }
         )
         check.operation_ids = return_payment
-        return_payment.state = "in_process"
+        return_payment.state = "paid"
         main.invalidate_recordset(["early_discount_warning_credit_note_ids"])
         self.assertEqual(main.early_discount_warning_credit_note_ids, credit_note)
 
