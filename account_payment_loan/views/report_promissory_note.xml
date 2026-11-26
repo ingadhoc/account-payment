@@ -9,8 +9,8 @@
 
                     <t t-foreach="invoice_ids.invoice_line_ids" t-as="line">
                         <tr>
-                            <td><span t-esc="line.quantity"/></td>
-                            <td><span t-field="line.name"/></td>
+                            <td><span t-out="line.quantity"/></td>
+                            <td><span t-field="line.label"/></td>
                             <td class="text-right">
                                 <span t-field="line.price_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
                             </td>
@@ -45,7 +45,7 @@
                 <t t-foreach="docs" t-as="doc">
                     <div class="page" style="font-size: 0.8em;">
                         <div>
-                            <span t-field="doc.company_id.city"/>, <span t-esc="doc.date.strftime('%d de %B de %Y')"/>
+                            <span t-field="doc.company_id.city"/>, <span t-out="doc.date.strftime('%d de %B de %Y')"/>
                         </div>
                         <div>
                             <strong>Número: <span t-field="doc.name"/></strong>
@@ -117,7 +117,7 @@
                                     <strong>ANEXO PAGARÉ N°: <span t-field="doc.name"/></strong>
                                 </h4>
                                 <p class="text-right">
-                                    <span t-field="doc.company_id.city"/>, <span t-esc="doc.date.strftime('%d de %B de %Y')"/>
+                                    <span t-field="doc.company_id.city"/>, <span t-out="doc.date.strftime('%d de %B de %Y')"/>
                                 </p>
                                 <p>
                                     En cumplimiento de lo establecido en el artículo 36 de la Ley de Defensa del Consumidor (24.240), se deja expresa
@@ -170,7 +170,6 @@
             <field name="model">account.move</field>
             <field name="report_type">qweb-pdf</field>
             <field name="report_name">account_payment_loan.report_promissory_note</field>
-            <field name="report_file">account_payment_loan.report_promissory_note</field>
             <field name="print_report_name">'promissory_note_%s' % (object.name)</field>
             <field name="attachment"/>
             <field name="binding_model_id" ref="model_account_move"/>

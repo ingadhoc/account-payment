@@ -18,6 +18,4 @@
             </field>
         </field>
     </record>
-    <menuitem action="card_installment.action_account_card" id="card_installment.menu_account_card" parent="account.root_payment_menu" sequence="20" />
-    <menuitem action="card_installment.action_card_installment" id="card_installment.menu_account_finacial_plans" parent="account.root_payment_menu" sequence="21" />
 </odoo>

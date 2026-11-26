@@ -7,6 +7,9 @@ class AccountChartTemplate(models.AbstractModel):
 
     @template(model="account.account")
     def _get_personal_loan_account_account(self, template_code):
+        if self.env.company.parent_id:
+            # Branches use the loan settings of their root company
+            return None
         return {
             "account_loan_account": {
                 "name": _("Account Receivable Loan"),
@@ -28,6 +31,9 @@ class AccountChartTemplate(models.AbstractModel):
 
     @template(model="account.journal")
     def _get_personal_loan_journal(self, template_code):
+        if self.env.company.parent_id:
+            # Branches use the loan settings of their root company
+            return None
         return {
             "account_loan_journal": {
                 "name": _("Personal Loans"),
@@ -36,10 +42,13 @@ class AccountChartTemplate(models.AbstractModel):
             },
         }
 
-    def _post_load_data(self, template_code, company, template_data):
-        super()._post_load_data(template_code, company, template_data)
-        company = (company or self.env.company).root_id
+    def _load_data(self, data):
+        res = super()._load_data(data)
+        if "account_loan_account" in data.get("account.account", {}):
+            self._set_loan_settings(self.env.company.root_id)
+        return res
 
+    def _set_loan_settings(self, company):
         # Settle the account_type recompute (scheduled when `code` was set) while the account is
         # not yet a journal default. Otherwise a later flush triggers _check_account_is_bank_journal_bank_account
         # on the already-linked receivable account and raises.
