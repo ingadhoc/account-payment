@@ -24,8 +24,9 @@ class AccountMove(models.Model):
         help="Payment that created this early payment discount credit note.",
     )
 
-    def _is_early_discount_eligible(self, payment_date, amount):
-        """Return whether paying ``amount`` (in invoice currency) on ``payment_date`` gets the early discount."""
+    def _get_early_discount_if_paid(self, payment_date):
+        """Early discount of the invoice, in invoice currency, if its residual is paid on ``payment_date``; zero if
+        it does not get it."""
         self.ensure_one()
         term = self.invoice_payment_term_id
         term_line = self.line_ids.filtered(lambda line: line.display_type == "payment_term")
@@ -42,16 +43,15 @@ class AccountMove(models.Model):
             or payment_date > term_line.discount_date
             or self.reversal_move_ids.filtered(lambda move: move.is_early_discount and move.state != "cancel")
         ):
-            return False
+            return 0.0
         # every previous payment must also be within the discount period; credit notes do not count as payments
         if any(
             partial.credit_move_id.date > term_line.discount_date
             and partial.credit_move_id.move_id.move_type != "out_refund"
             for partial in term_line.matched_credit_ids
         ):
-            return False
-        required = term_line.amount_residual_currency - self._get_early_discount_amount()
-        return self.currency_id.compare_amounts(amount, required) >= 0
+            return 0.0
+        return self._get_early_discount_amount()
 
     def _get_early_discount_amount(self):
         """Early discount of the invoice, in invoice currency: the total of its early discount credit note, computed

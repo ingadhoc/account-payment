@@ -22,7 +22,7 @@ The payment is spread over the selected debt in the same order Odoo reconciles i
 
 ### Draft Payment
 - **Suggested amount**: new payments suggest the amount with discount instead of the full debt, when opened from the invoice, when debt is added and when the payment date changes. An amount set by the user is kept.
-- **Early Payment Discount**: next to the payment total, the discount to apply. With the discount applied, the difference of the payment total is the one after the discount, and the buttons to send it to the amount or to the write-off keep the discount.
+- **Early Payment Discount**: next to the payment total, the discount to apply, shown whenever the selected debt gets one, also before the amount covers it. With the discount applied, the difference of the payment total is the one after the discount. The buttons to send the difference to the amount or to the write-off keep the discount, also when the amount does not cover the debt with discount yet: they add only what is missing to get it.
 - **Exclude the discount**: the **Exclude** button next to the discount turns it off for that payment, when the customer does not take it. The suggested amount goes back to the full debt and no credit note is created. **Recalculate** turns it on again. Each payment of the invoice can turn it on or off again.
 - **Debt lines**: the **Discount Until** and **Amount with Discount** columns are shown only on the invoices that get the discount if paid on the payment date, and they follow the date when it is changed. **Amount with Discount** is what is left to pay with the discount, after previous payments and linked credit notes.
 
