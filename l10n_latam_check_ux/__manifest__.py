@@ -19,7 +19,7 @@
 ##############################################################################
 {
     "name": "Latam Check UX",
-    "version": "20.0.1.0.0",
+    "version": "20.0.1.1.0",
     "category": "Accounting",
     "sequence": 14,
     "summary": "",
@@ -47,6 +47,12 @@
         "reports/report_checks_to_date.xml",
         "security/ir.access.csv",
     ],
+    "assets": {
+        "web.assets_backend": [
+            "l10n_latam_check_ux/static/src/check_dashboard/*",
+            "l10n_latam_check_ux/static/src/check_operations_field/*",
+        ],
+    },
     "demo": [],
     "installable": True,
     "auto_install": True,

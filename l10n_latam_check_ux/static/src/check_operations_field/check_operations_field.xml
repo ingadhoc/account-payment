@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="l10n_latam_check_ux.CheckOperationsField">
+        <div class="o_l10n_latam_check_operations d-flex align-items-start gap-2">
+            <span class="flex-grow-1" t-out="this.value"/>
+            <button t-if="this.props.record.resId"
+                    type="button"
+                    class="oi btn btn-link p-0"
+                    data-icon="history"
+                    title="Check Operations"
+                    aria-label="Check Operations"
+                    t-on-click.stop="this.openOperations"/>
+        </div>
+    </t>
+</templates>

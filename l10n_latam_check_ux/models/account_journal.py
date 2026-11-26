@@ -16,6 +16,12 @@ class AccountJournal(models.Model):
             "en dicho método de ese método de pago."
         ),
     )
+    l10n_latam_rejected_checks = fields.Boolean(
+        string="Rejected Checks Journal",
+        help="Third party checks sitting in this journal are shown as rejected, and the journal is proposed "
+        "when rejecting checks. The system cannot tell which journal holds the rejected checks, so it is "
+        "flagged here.",
+    )
 
     @api.model_create_multi
     def create(self, vals_list):

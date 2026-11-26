@@ -1,4 +1,33 @@
+from datetime import timedelta
+
 from odoo import _, api, fields, models
+from odoo.exceptions import UserError
+
+THIRD_PARTY_CHECK_STATES = [
+    ("on_hand", "In Portfolio"),
+    ("deposited", "Deposited"),
+    ("endorsed", "Endorsed"),
+    ("rejected", "Rejected"),
+    ("returned", "Returned"),
+]
+OWN_CHECK_STATES = [
+    ("handed", "Issued"),
+    ("debited", "Debited"),
+    ("voided", "Voided"),
+]
+
+# Which check states each list action accepts (the matrix of task 80427). An action is offered for a
+# selection only when it applies to every selected check.
+CHECK_ACTION_STATES = {
+    "deposit": ("on_hand",),
+    "transfer": ("on_hand",),
+    "endorse": ("on_hand",),
+    "return": ("on_hand", "rejected"),
+    # rejecting a check in portfolio comes with task 78297
+    "reject": ("deposited", "endorsed"),
+    "debit": ("handed",),
+    "void": ("handed",),
+}
 
 
 class l10nLatamAccountPaymentCheck(models.Model):
@@ -35,6 +64,77 @@ class l10nLatamAccountPaymentCheck(models.Model):
     user_can_write = fields.Boolean(
         compute="_compute_user_can_write",
     )
+    check_state = fields.Selection(
+        selection=THIRD_PARTY_CHECK_STATES + OWN_CHECK_STATES,
+        compute="_compute_check_state",
+        store=True,
+        index=True,
+        help="Where the check stands. Third party checks: in portfolio, deposited, endorsed, rejected or returned. "
+        "Own checks: issued, debited or voided.",
+    )
+    operations_summary = fields.Text(
+        string="Operations",
+        compute="_compute_operations_summary",
+        help="Payments of the third party check, one per line, oldest first.",
+    )
+
+    @api.depends(
+        "payment_method_line_id.code",
+        "issue_state",
+        "current_journal_id.type",
+        "current_journal_id.l10n_latam_rejected_checks",
+        "payment_id.state",
+        "operation_ids.state",
+        "operation_ids.payment_type",
+        "operation_ids.partner_type",
+        "operation_ids.l10n_latam_move_check_ids_operation_date",
+    )
+    def _compute_check_state(self):
+        for rec in self:
+            rec.check_state = rec._get_check_state()
+
+    def _get_check_state(self):
+        self.ensure_one()
+        code = self.payment_method_line_id.code
+        if code == "own_checks":
+            return self.issue_state
+        if code != "new_third_party_checks":
+            return False
+        last_operation = self._get_last_operation()
+        if not last_operation:
+            return False
+        if last_operation.payment_type == "outbound":
+            # an internal transfer is always followed by its inbound pair, so it is never the last operation
+            if last_operation.is_internal_transfer:
+                return False
+            # same criteria as _compute_can_reject: some journals have no specific "return" method
+            if last_operation.partner_type == "customer":
+                return "returned"
+            return "endorsed"
+        journal = self.current_journal_id
+        # the rejected checks journal can be of type cash, so it goes before "in portfolio"
+        if journal.l10n_latam_rejected_checks:
+            return "rejected"
+        if journal.type == "bank":
+            return "deposited"
+        if journal.type == "cash":
+            return "on_hand"
+        return False
+
+    @api.depends(
+        "payment_method_line_id.code",
+        "payment_id.state",
+        "payment_id.name",
+        "operation_ids.state",
+        "operation_ids.name",
+        "operation_ids.l10n_latam_move_check_ids_operation_date",
+    )
+    def _compute_operations_summary(self):
+        third_party_checks = self.filtered(lambda c: c.payment_method_line_id.code == "new_third_party_checks")
+        (self - third_party_checks).operations_summary = False
+        for rec in third_party_checks:
+            # one payment per line, oldest first: Text fields keep line breaks in the list
+            rec.operations_summary = "\n".join(rec._get_operations().mapped("name"))
 
     def _compute_user_can_write(self):
         for rec in self:
@@ -189,3 +289,249 @@ class l10nLatamAccountPaymentCheck(models.Model):
             deposited = rec.current_journal_id != rec.original_journal_id
 
             rec.can_reject = endorsed or deposited
+
+    # ------------------------------------------------------------------
+    # List actions: each one is offered only for the states of the matrix
+    # ------------------------------------------------------------------
+    def _get_check_action_label(self, action):
+        return {
+            "deposit": _("Deposit"),
+            "transfer": _("Transfer"),
+            "endorse": _("Endorse"),
+            "return": _("Return to Customer"),
+            "reject": _("Reject"),
+            "debit": _("Debit"),
+            "void": _("Void"),
+        }[action]
+
+    def _get_check_action_errors(self, action):
+        """Return the reasons why ``action`` does not apply to these checks, one line per problem.
+
+        An empty list means the action can run on the whole selection.
+        """
+        if not self:
+            return [_("Select at least one check.")]
+        state_labels = dict(self._fields["check_state"]._description_selection(self.env))
+        allowed_states = CHECK_ACTION_STATES[action]
+        errors = []
+        for check in self:
+            if check.check_state not in allowed_states:
+                errors.append(
+                    _(
+                        "%(check)s is %(state)s; it must be %(allowed)s.",
+                        check=check.display_name,
+                        state=state_labels.get(check.check_state, _("without state")),
+                        allowed=_(" or ").join(state_labels[state] for state in allowed_states),
+                    )
+                )
+            elif action == "reject" and not check.can_reject:
+                errors.append(_("%(check)s cannot be rejected.", check=check.display_name))
+            elif action == "debit" and not check.check_add_debit_button:
+                errors.append(
+                    _(
+                        "%(check)s: the journal %(journal)s does not allow debiting checks with a button.",
+                        check=check.display_name,
+                        journal=check.original_journal_id.display_name,
+                    )
+                )
+        if errors:
+            return errors
+        if action in ("deposit", "transfer", "endorse", "return") and len(self.current_journal_id) > 1:
+            errors.append(
+                _(
+                    "The checks are on different journals (%(journals)s); they are moved one journal at a time.",
+                    journals=", ".join(self.current_journal_id.mapped("display_name")),
+                )
+            )
+        if action == "return" and len(self.partner_id) > 1:
+            errors.append(_("The checks belong to different customers; they are returned one customer at a time."))
+        if action == "reject" and len(self.company_id) > 1:
+            errors.append(_("All selected checks must belong to the same company."))
+        if action == "void" and len(self) > 1:
+            errors.append(_("Checks are voided one at a time."))
+        return errors
+
+    def _check_action_allowed(self, action):
+        errors = self._get_check_action_errors(action)
+        if errors:
+            raise UserError(
+                _(
+                    "%(action)s cannot be applied to the selected checks:\n%(errors)s",
+                    action=self._get_check_action_label(action),
+                    errors="\n".join("- %s" % error for error in errors),
+                )
+            )
+
+    def _get_check_wizard_action(self, xml_id, name=None, **context):
+        action = self.env["ir.actions.act_window"]._for_xml_id(xml_id)
+        action["context"] = {
+            "active_model": self._name,
+            "active_ids": self.ids,
+            "active_id": self[:1].id,
+            **context,
+        }
+        if name:
+            action["name"] = name
+        return action
+
+    def action_check_deposit(self):
+        self._check_action_allowed("deposit")
+        return self._get_check_wizard_action(
+            "l10n_latam_check.action_view_l10n_latam_payment_mass_transfer",
+            name=_("Deposit Checks"),
+            default_transfer_mode="deposit",
+        )
+
+    def action_check_transfer(self):
+        self._check_action_allowed("transfer")
+        return self._get_check_wizard_action(
+            "l10n_latam_check.action_view_l10n_latam_payment_mass_transfer",
+            name=_("Transfer Checks"),
+            default_transfer_mode="transfer",
+        )
+
+    def action_check_reject(self):
+        self._check_action_allowed("reject")
+        return self._get_check_wizard_action("l10n_latam_check_ux.action_reject_check_wizard")
+
+    def action_check_debit(self):
+        self._check_action_allowed("debit")
+        return self._get_check_wizard_action("l10n_latam_check_ux.action_debit_check_wizard", name=_("Debit Checks"))
+
+    def action_check_void(self):
+        self._check_action_allowed("void")
+        self.action_void()
+        return True
+
+    def action_check_endorse(self):
+        """Open a draft vendor payment with the checks already loaded.
+
+        It is not posted from here: debts, withholdings and other payment methods are completed on the payment
+        form, as when the payment is created by hand.
+        """
+        self._check_action_allowed("endorse")
+        journal = self.current_journal_id
+        method_line = journal._get_available_payment_method_lines("outbound").filtered(
+            lambda x: x.code == "out_third_party_checks"
+        )[:1]
+        if not method_line:
+            raise UserError(
+                _(
+                    "The journal %(journal)s has no outbound payment method of type 'Existing Third Party Checks'.",
+                    journal=journal.display_name,
+                )
+            )
+        return self._get_check_payment_form_action(
+            _("Endorse Checks"), journal, method_line, partner_type="supplier", partner=False
+        )
+
+    def action_check_return(self):
+        """Open a draft payment returning the checks to the customer that gave them."""
+        self._check_action_allowed("return")
+        journal = self.current_journal_id
+        lines = journal._get_available_payment_method_lines("outbound")
+        method_line = (
+            lines.filtered(lambda x: x.code == "return_third_party_checks")[:1]
+            or lines.filtered(lambda x: x.code == "out_third_party_checks")[:1]
+        )
+        if not method_line:
+            raise UserError(
+                _(
+                    "The journal %(journal)s has no outbound payment method of type 'Return Third Party Checks' or "
+                    "'Existing Third Party Checks'.",
+                    journal=journal.display_name,
+                )
+            )
+        return self._get_check_payment_form_action(
+            _("Return Checks to Customer"), journal, method_line, partner_type="customer", partner=self.partner_id
+        )
+
+    def _get_check_payment_form_action(self, name, journal, method_line, partner_type, partner):
+        context = {
+            "default_payment_type": "outbound",
+            "default_partner_type": partner_type,
+            "default_journal_id": journal.id,
+            "default_company_id": journal.company_id.id,
+            "default_payment_method_line_id": method_line.id,
+            "default_l10n_latam_move_check_ids": [fields.Command.set(self.ids)],
+        }
+        if partner:
+            context["default_partner_id"] = partner.id
+        return {
+            "name": name,
+            "type": "ir.actions.act_window",
+            "res_model": "account.payment",
+            "views": [(False, "form")],
+            "target": "current",
+            "context": context,
+        }
+
+    # ------------------------------------------------------------------
+    # Dashboard
+    # ------------------------------------------------------------------
+    @api.model
+    def _get_dashboard_sections(self):
+        return {
+            "third_party": {
+                "domain": [("payment_method_line_id.code", "=", "new_third_party_checks")],
+                "states": [state for state, _label in THIRD_PARTY_CHECK_STATES],
+                "due_state": "on_hand",
+                "filters": {state: "check_state_%s" % state for state, _label in THIRD_PARTY_CHECK_STATES},
+            },
+            "own": {
+                "domain": [("payment_method_line_id.code", "=", "own_checks")],
+                "states": [state for state, _label in OWN_CHECK_STATES],
+                "due_state": "handed",
+                # the core filters of own checks, on issue_state, which check_state copies
+                "filters": {"handed": "checks_handed", "debited": "checks_debited", "voided": "checks_voided"},
+            },
+        }
+
+    @api.model
+    def _get_dashboard_due_domain(self):
+        today = fields.Date.context_today(self)
+        return [("payment_date", ">=", today), ("payment_date", "<=", today + timedelta(days=7))]
+
+    @api.model
+    def get_check_dashboard_data(self, section_key):
+        """Cards of the KPIs shown on top of a checks list: count and amount per state, for the active companies.
+
+        Amounts are grouped by currency: checks in different currencies are never added up. Each card carries the
+        names of the search filters that show its checks.
+        """
+        section = self._get_dashboard_sections()[section_key]
+        state_labels = dict(self._fields["check_state"]._description_selection(self.env))
+        base_domain = [("company_id", "in", self.env.companies.ids)] + section["domain"]
+        filters = section["filters"]
+        cards = {
+            state: {
+                "key": state,
+                "label": state_labels[state],
+                "count": 0,
+                "amounts": [],
+                "filters": [filters[state]],
+            }
+            for state in section["states"]
+        }
+        for state, currency, count, amount in self._read_group(
+            base_domain + [("check_state", "in", section["states"])],
+            ["check_state", "payment_id.currency_id"],
+            ["__count", "amount:sum"],
+        ):
+            cards[state]["count"] += count
+            cards[state]["amounts"].append({"currency_id": currency.id, "amount": amount})
+        due = {
+            "key": "due_week",
+            "label": _("Due This Week"),
+            "count": 0,
+            "amounts": [],
+            "filters": [filters[section["due_state"]], "due_week"],
+        }
+        for currency, count, amount in self._read_group(
+            base_domain + [("check_state", "=", section["due_state"])] + self._get_dashboard_due_domain(),
+            ["payment_id.currency_id"],
+            ["__count", "amount:sum"],
+        ):
+            due["count"] += count
+            due["amounts"].append({"currency_id": currency.id, "amount": amount})
+        return list(cards.values()) + [due]
