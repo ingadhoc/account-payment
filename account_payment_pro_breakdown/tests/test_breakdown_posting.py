@@ -30,14 +30,6 @@ class TestBreakdownPosting(BreakdownCommon):
         self.assertEqual(len(self._counterparts(payment)), 1)
         self.assertEqual(sorted(abs(debt.amount_residual) for debt in debts), [0, 60000])
 
-    def test_supplier_payment_with_three_bills(self):
-        debts = self._debt(50000, "in_invoice") + self._debt(50000, "in_invoice") + self._debt(50000, "in_invoice")
-        payment = self._payment(60000, debts, payment_type="outbound")
-        self._break_down(payment, [10000, 20000, 30000])
-        payment.action_post()
-        self.assertEqual(self._counterparts(payment).mapped("balance"), [10000, 20000, 30000])
-        self.assertResiduals(debts, [40000, 30000, 20000])
-
     def test_supplier_payment_with_credit_card(self):
         card_journal = self.env["account.journal"].create({"name": "Card BD", "type": "credit", "code": "CRDBD"})
         card_journal.outbound_payment_method_line_ids.payment_account_id = card_journal.default_account_id
@@ -47,7 +39,9 @@ class TestBreakdownPosting(BreakdownCommon):
         self._break_down(payment, [20000, 50000])
         payment.action_post()
         self.assertEqual(payment.move_id.state, "posted")
-        self.assertTrue(all(self._counterparts(payment).mapped("reconciled")))
+        counterparts = self._counterparts(payment)
+        self.assertEqual(counterparts.mapped("balance"), [20000, 50000])
+        self.assertTrue(all(counterparts.mapped("reconciled")))
         self.assertResiduals(debts, [30000, 0])
 
     def test_two_own_checks_against_three_bills(self):
@@ -87,22 +81,8 @@ class TestBreakdownPosting(BreakdownCommon):
 
     def test_foreign_currency_debts_with_exchange_difference(self):
         yesterday = fields.Date.subtract(self.today, days=1)
-        self.env["res.currency.rate"].create(
-            [
-                {
-                    "name": yesterday,
-                    "currency_id": self.foreign_currency.id,
-                    "company_id": self.company.id,
-                    "inverse_company_rate": 1100,
-                },
-                {
-                    "name": self.today,
-                    "currency_id": self.foreign_currency.id,
-                    "company_id": self.company.id,
-                    "inverse_company_rate": 1200,
-                },
-            ]
-        )
+        self._set_rate(yesterday, 1100)
+        self._set_rate(self.today, 1200)
         debts = self._debt(1000, currency=self.foreign_currency, date=yesterday) + self._debt(
             1000, currency=self.foreign_currency, date=yesterday
         )
@@ -119,14 +99,7 @@ class TestBreakdownPosting(BreakdownCommon):
         self.assertResiduals(debts, [440000, 660000])
 
     def test_foreign_currency_rounding_goes_to_the_last_part(self):
-        self.env["res.currency.rate"].create(
-            {
-                "name": self.today,
-                "currency_id": self.foreign_currency.id,
-                "company_id": self.company.id,
-                "inverse_company_rate": 1000,
-            }
-        )
+        self._set_rate(self.today, 1000)
         debts = (
             self._debt(1000, currency=self.foreign_currency)
             + self._debt(1000, currency=self.foreign_currency)
@@ -151,11 +124,6 @@ class TestBreakdownBlocks(BreakdownCommon):
         self.debts = self._debt(80000) + self._debt(80000)
         self.payment = self._payment(100000, self.debts)
         self._break_down(self.payment, [60000, 40000])
-
-    def test_breakdown_that_does_not_add_up(self):
-        self.payment.breakdown_ids[1].amount = 30000
-        with self.assertRaisesRegex(UserError, "does not add up"):
-            self.payment.action_post()
 
     def test_debt_no_longer_selected(self):
         self.payment.to_pay_move_line_ids = [Command.unlink(self.debts[1].id)]

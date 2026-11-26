@@ -44,6 +44,16 @@ class BreakdownCommon(common.TransactionCase):
             [("currency_id", "=", cls.foreign_currency.id), ("company_id", "=", cls.company.id)]
         ).unlink()
 
+    def _set_rate(self, date, inverse_rate):
+        self.env["res.currency.rate"].create(
+            {
+                "name": date,
+                "currency_id": self.foreign_currency.id,
+                "company_id": self.company.id,
+                "inverse_company_rate": inverse_rate,
+            }
+        )
+
     def _debt(self, amount, move_type="out_invoice", currency=None, date=None):
         """Post an invoice or bill without taxes and return its receivable or payable line."""
         sale = move_type == "out_invoice"
