@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 20.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-25 20:47+0000\n"
-"PO-Revision-Date: 2026-11-25 20:47+0000\n"
+"POT-Creation-Date: 2026-11-26 11:53+0000\n"
+"PO-Revision-Date: 2026-11-26 11:53+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -35,7 +35,7 @@ msgid ""
 "\n"
 "### Breakdown Tab\n"
 "- **Breakdown**: once saved, a tab next to **Debts** shows each debt with its amount. In draft the amounts can be edited and the lines deleted; deleting all of them leaves the payment as before. When the amounts do not add up to the payment, the tab shows the difference.\n"
-"- **Posted payments**: the tab stays read-only, as a record of how the payment was broken down.\n"
+"- **Posted payments**: the tab is hidden; the **Paid** tab already shows how much each debt received.\n"
 "\n"
 "### Journal Entry\n"
 "- **One counterpart line per debt**: the counterpart of the entry is split by the breakdown. The liquidity lines do not change, so a payment with several checks works the same.\n"
@@ -308,12 +308,6 @@ msgid "Select the debts to pay first."
 msgstr ""
 
 #. module: account_payment_pro_breakdown
-#. odoo-python
-#: code:addons/account_payment_pro_breakdown/wizards/account_payment_breakdown_wizard.py:0
-msgid "The amount allocated to a debt can't be negative."
-msgstr ""
-
-#. module: account_payment_pro_breakdown
 #: model:ir.model.constraint,message:account_payment_pro_breakdown.constraint_account_payment_breakdown_positive_amount
 msgid "The amount allocated to a debt must be positive."
 msgstr ""
@@ -352,12 +346,6 @@ msgstr ""
 msgid ""
 "The breakdown of %(payment)s has debts that are no longer selected: "
 "%(debts)s. Break down the amount again."
-msgstr ""
-
-#. module: account_payment_pro_breakdown
-#. odoo-python
-#: code:addons/account_payment_pro_breakdown/wizards/account_payment_breakdown_wizard.py:0
-msgid "These debts would receive more than they owe: %(debts)s"
 msgstr ""
 
 #. module: account_payment_pro_breakdown
