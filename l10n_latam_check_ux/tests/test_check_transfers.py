@@ -373,7 +373,7 @@ class TestL10nLatamCheckUxTransfers(AccountTestInvoicingCommon):
             wizard.action_confirm()
 
     # ------------------------------------------------------------------
-    # third party checks on hand in the credit limit (task 52412)
+    # third party checks on hand in the credit limit
     # ------------------------------------------------------------------
     def _set_check_credit(self, value):
         self.env["ir.config_parameter"].sudo().set_param("l10n_latam_check_ux.add_check_credit", value)
