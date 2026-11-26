@@ -55,7 +55,6 @@ class AccountPayment(models.Model):
                 total_excluded, currency=rec.currency_id
             )["total_included"]
 
-            rec.financing_surcharge = total_included
             rec.net_amount = rec.amount + total_included
 
     @api.onchange("installment_id")
