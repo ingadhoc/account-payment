@@ -38,6 +38,18 @@ class TestBreakdownPosting(BreakdownCommon):
         self.assertEqual(self._counterparts(payment).mapped("balance"), [10000, 20000, 30000])
         self.assertResiduals(debts, [40000, 30000, 20000])
 
+    def test_supplier_payment_with_credit_card(self):
+        card_journal = self.env["account.journal"].create({"name": "Card BD", "type": "credit", "code": "CRDBD"})
+        card_journal.outbound_payment_method_line_ids.payment_account_id = card_journal.default_account_id
+        debts = self._debt(50000, "in_invoice") + self._debt(50000, "in_invoice")
+        payment = self._payment(70000, debts, payment_type="outbound", journal_id=card_journal.id)
+        self.assertEqual(payment.outstanding_account_id.account_type, "liability_credit_card")
+        self._break_down(payment, [20000, 50000])
+        payment.action_post()
+        self.assertEqual(payment.move_id.state, "posted")
+        self.assertTrue(all(self._counterparts(payment).mapped("reconciled")))
+        self.assertResiduals(debts, [30000, 0])
+
     def test_two_own_checks_against_three_bills(self):
         checks_account = self.env["account.account"].create(
             {
