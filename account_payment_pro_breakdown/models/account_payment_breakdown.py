@@ -42,7 +42,7 @@ class AccountPaymentBreakdown(models.Model):
         residual = debt.amount_residual if currency == debt.company_currency_id else debt.amount_residual_currency
         return abs(residual)
 
-    @api.depends("move_line_id", "currency_id")
+    @api.depends("move_line_id.amount_residual", "move_line_id.amount_residual_currency", "currency_id")
     def _compute_amount_residual(self):
         for line in self:
             line.amount_residual = self._get_debt_residual(line.move_line_id, line.currency_id)

@@ -40,18 +40,6 @@ class AccountPaymentBreakdownWizard(models.TransientModel):
                     difference=self.currency_id.format(self.difference),
                 )
             )
-        if self.line_ids.filtered(lambda line: self.currency_id.compare_amounts(line.amount, 0) < 0):
-            raise UserError(_("The amount allocated to a debt can't be negative."))
-        # Until it is decided whether the excess becomes an advance, a debt can't receive more than it owes.
-        if exceeded := self.line_ids.filtered(
-            lambda line: self.currency_id.compare_amounts(line.amount, line.amount_residual) > 0
-        ):
-            raise UserError(
-                _(
-                    "These debts would receive more than they owe: %(debts)s",
-                    debts=", ".join(exceeded.move_line_id.move_id.mapped("display_name")),
-                )
-            )
         self.payment_id.breakdown_ids.unlink()
         self.env["account.payment.breakdown"].create(
             [
@@ -60,6 +48,8 @@ class AccountPaymentBreakdownWizard(models.TransientModel):
                 if not self.currency_id.is_zero(line.amount)
             ]
         )
+        # The same checks as on posting: an error rolls back the new breakdown.
+        self.payment_id._check_breakdown()
 
 
 class AccountPaymentBreakdownWizardLine(models.TransientModel):
@@ -75,7 +65,7 @@ class AccountPaymentBreakdownWizardLine(models.TransientModel):
     amount_residual = fields.Monetary(compute="_compute_amount_residual", string="Amount Due")
     amount = fields.Monetary(string="Amount to Allocate")
 
-    @api.depends("move_line_id", "currency_id")
+    @api.depends("move_line_id.amount_residual", "move_line_id.amount_residual_currency", "currency_id")
     def _compute_amount_residual(self):
         breakdown = self.env["account.payment.breakdown"]
         for line in self:

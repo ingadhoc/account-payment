@@ -39,10 +39,14 @@ class AccountPayment(models.Model):
             return _("Only payments to a partner that use Payment Pro can be broken down.")
         if not self.to_pay_move_line_ids:
             return _("Select the debts to pay first.")
-        # Until it is decided what the total to break down is when the counterpart covers more than the cash.
-        if self.write_off_amount or self._prepare_move_withholding_lines({}):
+        if self._has_write_off_or_withholdings():
             return _("Payments with write-off or withholdings can't be broken down yet.")
         return False
+
+    def _has_write_off_or_withholdings(self):
+        # Until it is decided what the total to break down is when the counterpart covers more than the cash.
+        self.ensure_one()
+        return bool(self.write_off_amount or self._prepare_move_withholding_lines({}))
 
     def _get_breakdown_label(self):
         """Name the payment in a message: a draft payment has no number yet."""
@@ -53,7 +57,6 @@ class AccountPayment(models.Model):
 
     def _check_breakdown(self):
         """Block the posting of a payment whose breakdown no longer matches the payment."""
-        breakdown = self.env["account.payment.breakdown"]
         for payment in self.filtered("breakdown_ids"):
             currency = payment.counterpart_currency_id
             label = payment._get_breakdown_label()
@@ -74,11 +77,9 @@ class AccountPayment(models.Model):
                         debts=", ".join(not_selected.move_id.mapped("display_name")),
                     )
                 )
+            # Until it is decided whether the excess becomes an advance, a debt can't receive more than it owes.
             if exceeded := payment.breakdown_ids.filtered(
-                lambda line: currency.compare_amounts(
-                    line.amount, breakdown._get_debt_residual(line.move_line_id, currency)
-                )
-                > 0
+                lambda line: currency.compare_amounts(line.amount, line.amount_residual) > 0
             ):
                 raise UserError(
                     _(
@@ -87,7 +88,7 @@ class AccountPayment(models.Model):
                         debts=", ".join(exceeded.move_id.mapped("display_name")),
                     )
                 )
-            if payment.write_off_amount or payment._prepare_move_withholding_lines({}):
+            if payment._has_write_off_or_withholdings():
                 raise UserError(
                     _(
                         "%(payment)s has a breakdown and write-off or withholdings, which can't be combined yet. "
@@ -155,9 +156,7 @@ class AccountPayment(models.Model):
                 continue
             currency = counterpart.currency_id
             total = abs(counterpart.amount_currency)
-            if payment.breakdown_mismatch or currency.compare_amounts(
-                sum(payment.breakdown_ids.mapped("amount")), total
-            ):
+            if currency.compare_amounts(sum(payment.breakdown_ids.mapped("amount")), total):
                 if raise_on_mismatch:
                     raise UserError(
                         _(

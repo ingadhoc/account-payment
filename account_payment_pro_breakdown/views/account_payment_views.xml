@@ -15,7 +15,6 @@
                         The breakdown does not add up to the payment amount. Difference:
                         <field name="breakdown_difference" class="oe_inline"/>
                     </div>
-                    <field name="breakdown_mismatch" invisible="1"/>
                     <field name="breakdown_ids">
                         <list editable="bottom" create="0">
                             <field name="currency_id" column_invisible="1"/>
