@@ -34,6 +34,7 @@ class AccountPayment(models.Model):
         main_payments = self.filtered("is_main_payment")
         main_payments.amount = 0.0
         main_payments.amount_exact = 0.0
+        main_payments.early_discount_suggested_amount = 0.0
 
     def _early_discount_update_suggested_amount(self):
         return super(AccountPayment, self - self.filtered("is_main_payment"))._early_discount_update_suggested_amount()
@@ -43,8 +44,7 @@ class AccountPayment(models.Model):
         # selected debt, and the discount shown is the one of the invoices already paid, as the credit notes
         main_payments = self.filtered(lambda x: x.is_main_payment and x._is_early_discount_payment())
         super(AccountPayment, self - main_payments)._compute_early_discount_amount()
-        for rec in self - main_payments:
-            rec.bundle_early_discount_applied = rec.early_discount_amount
+        (self - main_payments).bundle_early_discount_applied = 0.0
         for rec in main_payments:
             available = rec._get_bundle_early_discount_available()
             amount = available if rec.early_discount_apply else 0.0

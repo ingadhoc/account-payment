@@ -8,17 +8,13 @@
         <field name="arch" type="xml">
             <!-- on the main payment the discount shown is the one of the invoices the linked payments already pay; the
                  label and the buttons stay, so the discount can be excluded from the start -->
-            <xpath expr="//label[@for='early_discount_amount']" position="attributes">
-                <attribute name="for">bundle_early_discount_applied</attribute>
-                <attribute name="string">Early Payment Discount</attribute>
-            </xpath>
             <xpath expr="//div[@name='early_discount_amount']/field[@name='early_discount_amount']" position="attributes">
-                <attribute name="invisible">1</attribute>
+                <attribute name="invisible">is_main_payment</attribute>
             </xpath>
             <xpath expr="//div[@name='early_discount_amount']/field[@name='early_discount_amount']" position="after">
                 <field name="is_main_payment" invisible="1"/>
                 <field name="bundle_early_discount_applied" class="oe_inline"
-                    invisible="is_main_payment and not bundle_early_discount_applied"/>
+                    invisible="not is_main_payment or not bundle_early_discount_applied"/>
             </xpath>
         </field>
     </record>
