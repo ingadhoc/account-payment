@@ -36,7 +36,7 @@ msgstr "(diferencia"
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
 msgid "+ Credit Note"
-msgstr "+ Nota de Cŕedito"
+msgstr "+ Nota de crédito"
 
 #. module: account_payment_pro
 #: model_terms:ir.ui.view,arch_db:account_payment_pro.latam_check_view_account_payment_form_inherited
@@ -853,7 +853,7 @@ msgstr ""
 #. module: account_payment_pro
 #: model:ir.model.fields,field_description:account_payment_pro.field_account_payment_invoice_wizard__invoice_date
 msgid "Refund Date"
-msgstr "Fecha de Reembolso"
+msgstr "Fecha del comprobante"
 
 #. module: account_payment_pro
 #. odoo-python

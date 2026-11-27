@@ -195,12 +195,14 @@ msgid ""
 "Check '%s' cannot be rejected. Only third-party checks in valid states can "
 "be rejected."
 msgstr ""
+"El cheque \"%s\" no se puede rechazar: solo se rechazan cheques de terceros "
+"en un estado válido."
 
 #. module: l10n_latam_check_ux
 #. odoo-python
 #: code:addons/l10n_latam_check_ux/wizards/account_check_reject_wizard.py:0
 msgid "Check '%s' is not a third-party check and cannot be rejected."
-msgstr ""
+msgstr "El cheque \"%s\" no es de terceros y no se puede rechazar."
 
 #. module: l10n_latam_check_ux
 #: model:ir.actions.act_window,name:l10n_latam_check_ux.action_debit_check_wizard
@@ -349,7 +351,7 @@ msgstr "Diario Destino"
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_l10n_latam_payment_mass_transfer__destination_payment_method_line_id
 msgid "Destination Journal Payment Method"
-msgstr ""
+msgstr "Método de pago del diario destino"
 
 #. module: l10n_latam_check_ux
 #: model:ir.model.fields,field_description:l10n_latam_check_ux.field_account_check_to_date_report_wizard__journal_id
