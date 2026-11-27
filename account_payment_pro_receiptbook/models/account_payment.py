@@ -47,6 +47,10 @@ class AccountPayment(models.Model):
                 prefix = rec.receiptbook_id.document_type_id.doc_code_prefix
                 rec.name = ("%s %s" % (prefix, name)) if prefix else (name or "/")
 
+            # A payment created with its entry already built (draft entry, payment in process) has no sync
+            # of the name to the entry, and posting the entry would number it with the journal sequence.
+            rec.move_id.filtered(lambda m: m.state == "draft" and m.name != rec.name).name = rec.name
+
         res = super().action_post()
         # Reincorporamos el seteo del l10n_latam_document_type_id para el caso de usar talonario de recibo
         # Ya que debido al fix en
