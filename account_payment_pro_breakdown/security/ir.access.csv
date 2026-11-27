@@ -1,0 +1,6 @@
+id,name,model_id,group_id/id,operation,domain
+access_account_payment_breakdown_readonly,account.payment.breakdown,account.payment.breakdown,account.group_account_readonly,r,
+access_account_payment_breakdown,account.payment.breakdown,account.payment.breakdown,account.group_account_invoice,crud,
+account_payment_breakdown_comp_rule,Account payment breakdown company rule,account.payment.breakdown,,crud,"[('company_id', 'in', company_ids)]"
+access_account_payment_breakdown_wizard,account.payment.breakdown.wizard,account.payment.breakdown.wizard,account.group_account_invoice,crud,
+access_account_payment_breakdown_wizard_line,account.payment.breakdown.wizard.line,account.payment.breakdown.wizard.line,account.group_account_invoice,crud,
